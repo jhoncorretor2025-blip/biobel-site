@@ -1,40 +1,37 @@
-/* MENU PREMIUM BIOBEL */
+/* BIOBEL PREMIUM STYLE */
+
 .menu-premium{
-background:#fff;
 display:flex;
 justify-content:center;
 align-items:center;
 flex-wrap:wrap;
-gap:12px;
-padding:14px 20px;
+gap:14px;
+padding:16px;
+margin:15px 20px;
+background:linear-gradient(135deg,#cc7d8d,#df96a4);
+border-radius:22px;
+box-shadow:0 10px 25px rgba(204,125,141,.25);
 overflow-x:auto;
 white-space:nowrap;
-border-top:1px solid #f0d8dd;
-border-bottom:1px solid #f0d8dd;
 }
 
 .menu-premium a{
-color:#8f5e68;
 text-decoration:none;
-padding:12px 18px;
+color:#fff;
+padding:12px 22px;
 font-size:14px;
 font-weight:600;
-border-radius:999px;
-background:#fff;
-border:1px solid #f2d8dd;
-box-shadow:0 2px 8px rgba(0,0,0,.05);
-transition:all .25s ease;
+border-radius:30px;
+background:rgba(255,255,255,.15);
+backdrop-filter:blur(10px);
+transition:all .3s ease;
 }
 
 .menu-premium a:hover{
-transform:translateY(-2px);
-background:linear-gradient(135deg,#cf7f8f,#df96a4);
-color:#fff;
-box-shadow:0 8px 20px rgba(207,127,143,.25);
-}
-
-.menu-premium a:active{
-transform:scale(.98);
+background:#fff;
+color:#cc7d8d;
+transform:translateY(-3px);
+box-shadow:0 8px 20px rgba(0,0,0,.12);
 }
 
 .logo{
@@ -48,7 +45,7 @@ gap:18px;
 padding:22px;
 border-radius:16px;
 background:#fff;
-box-shadow:0 3px 10px rgba(0,0,0,.05);
+box-shadow:0 3px 12px rgba(0,0,0,.06);
 }
 
 .benefit-icon{
@@ -66,6 +63,7 @@ font-size:24px;
 .menu-premium{
 justify-content:flex-start;
 padding:12px;
+margin:10px;
 }
 
 .menu-premium a{
