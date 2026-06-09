@@ -1,0 +1,65 @@
+/* MENU PREMIUM BIOBEL */
+.menu-premium{
+background:linear-gradient(90deg,#cf7f8f,#db6f88);
+display:flex;
+justify-content:center;
+align-items:center;
+flex-wrap:wrap;
+overflow-x:auto;
+white-space:nowrap;
+box-shadow:0 2px 12px rgba(0,0,0,.08);
+}
+
+.menu-premium a{
+color:#fff;
+text-decoration:none;
+padding:18px 24px;
+font-size:14px;
+font-weight:600;
+border-right:1px solid rgba(255,255,255,.25);
+transition:.3s;
+}
+
+.menu-premium a:hover{
+background:rgba(255,255,255,.15);
+}
+
+.menu-premium a:last-child{
+border-right:none;
+}
+
+.logo{
+width:120px;
+}
+
+.box{
+display:flex;
+align-items:center;
+gap:18px;
+padding:22px;
+border-radius:16px;
+background:#fff;
+box-shadow:0 3px 10px rgba(0,0,0,.05);
+}
+
+.benefit-icon{
+width:52px;
+height:52px;
+border-radius:50%;
+background:#f8e5e8;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:24px;
+}
+
+@media(max-width:900px){
+.menu-premium{
+justify-content:flex-start;
+}
+
+.menu-premium a{
+padding:16px 18px;
+font-size:13px;
+}
+}
