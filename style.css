@@ -1,31 +1,40 @@
 /* MENU PREMIUM BIOBEL */
 .menu-premium{
-background:linear-gradient(90deg,#cf7f8f,#db6f88);
+background:#fff;
 display:flex;
 justify-content:center;
 align-items:center;
 flex-wrap:wrap;
+gap:12px;
+padding:14px 20px;
 overflow-x:auto;
 white-space:nowrap;
-box-shadow:0 2px 12px rgba(0,0,0,.08);
+border-top:1px solid #f0d8dd;
+border-bottom:1px solid #f0d8dd;
 }
 
 .menu-premium a{
-color:#fff;
+color:#8f5e68;
 text-decoration:none;
-padding:18px 24px;
+padding:12px 18px;
 font-size:14px;
 font-weight:600;
-border-right:1px solid rgba(255,255,255,.25);
-transition:.3s;
+border-radius:999px;
+background:#fff;
+border:1px solid #f2d8dd;
+box-shadow:0 2px 8px rgba(0,0,0,.05);
+transition:all .25s ease;
 }
 
 .menu-premium a:hover{
-background:rgba(255,255,255,.15);
+transform:translateY(-2px);
+background:linear-gradient(135deg,#cf7f8f,#df96a4);
+color:#fff;
+box-shadow:0 8px 20px rgba(207,127,143,.25);
 }
 
-.menu-premium a:last-child{
-border-right:none;
+.menu-premium a:active{
+transform:scale(.98);
 }
 
 .logo{
@@ -56,10 +65,11 @@ font-size:24px;
 @media(max-width:900px){
 .menu-premium{
 justify-content:flex-start;
+padding:12px;
 }
 
 .menu-premium a{
-padding:16px 18px;
+padding:11px 15px;
 font-size:13px;
 }
 }
