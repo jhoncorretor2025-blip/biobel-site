@@ -1,0 +1,25 @@
+name: Apply navigation improvements
+on:
+  push:
+    paths:
+      - 'navigation-improvements.js'
+      - '.github/workflows/apply-navigation-improvements.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add navigation script to site
+        run: |
+          if ! grep -q 'navigation-improvements.js' index.html; then
+            sed -i 's#</body>#<script src="navigation-improvements.js" defer></script></body>#' index.html
+          fi
+      - name: Commit change
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "Ativa melhorias prioritárias de navegação"
+          git push
