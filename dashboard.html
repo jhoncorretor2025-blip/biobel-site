@@ -1126,15 +1126,16 @@ async function loadGoogleSheet(){
 }
 function startGoogleAutoRefresh(){
  if(googleTimer) clearInterval(googleTimer);
- const url=localStorage.getItem('biobel_google_sheet_url');
- if(url) googleTimer=setInterval(loadGoogleSheet,60000);
+ googleTimer=setInterval(loadGoogleSheet,60000);
 }
 (function initGoogleConfig(){
  const saved=localStorage.getItem('biobel_google_sheet_url');
  const input=document.getElementById('googleSheetUrl');
  if(saved && input) input.value=saved;
+ // Sempre busca a planilha ao abrir a página (usa o link salvo, ou o link padrão da loja),
+ // e sempre mantém a atualização automática ligada — mesmo em um computador novo.
  startGoogleAutoRefresh();
- if(saved) setTimeout(loadGoogleSheet,800);
+ setTimeout(loadGoogleSheet,800);
 })();
 
 document.getElementById('fileInput').addEventListener('change',async e=>{
@@ -1338,6 +1339,31 @@ render = function(){
   renderAdvancedDashboard();
   const infoTab = document.getElementById('infoTab');
   if(infoTab && !infoTab.classList.contains('hidden')) renderInfoTab();
+
+  // Mantém os seletores de dia da Caixa Simples e Caixa Completo sempre com a lista mais recente,
+  // mesmo se a pessoa já estiver com a aba aberta quando a planilha atualizar sozinha.
+  const simpleSel = document.getElementById('simpleDaySelect');
+  if(simpleSel){
+    const prevValue = simpleSel.value;
+    simpleSel.innerHTML = daysData.map(d=>`<option value="${d.dia}">${d.dia}</option>`).join('');
+    if(daysData.length){
+      const hasPrev = daysData.some(d=>d.dia===prevValue);
+      simpleSel.value = hasPrev ? prevValue : daysData[daysData.length-1].dia;
+      const caixaTab = document.getElementById('caixaTab');
+      if(caixaTab && !caixaTab.classList.contains('hidden')) updateSimpleDay(simpleSel.value);
+    }
+  }
+  const completeSel = document.getElementById('completeDaySelect');
+  if(completeSel){
+    const prevValue = completeSel.value;
+    completeSel.innerHTML = daysData.map(d=>`<option value="${d.dia}">${d.dia}</option>`).join('');
+    if(daysData.length){
+      const hasPrev = daysData.some(d=>d.dia===prevValue);
+      completeSel.value = hasPrev ? prevValue : daysData[daysData.length-1].dia;
+      const caixaCompletoTab = document.getElementById('caixaCompletoTab');
+      if(caixaCompletoTab && !caixaCompletoTab.classList.contains('hidden')) updateCompleteDay(completeSel.value);
+    }
+  }
 };
 
 updateSelected = function(day){
