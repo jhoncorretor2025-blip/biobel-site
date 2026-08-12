@@ -182,6 +182,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 <nav class="no-print max-w-7xl mx-auto px-4 md:px-6 pt-4">
  <div class="flex gap-2 border-b border-slate-800">
   <button id="tabDashboard" onclick="showTab('dashboard')" class="tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm">Dashboard</button>
+  <button id="tabInfo" onclick="showTab('info')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">Informação Geral</button>
   <button id="tabCaixa" onclick="showTab('caixa')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">Caixa simples</button>
   <button id="tabConfig" onclick="showTab('config')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">Configuração</button>
  </div>
@@ -315,6 +316,64 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
 </main>
 
+<section id="infoTab" class="hidden max-w-5xl mx-auto p-4 md:p-6 space-y-4">
+
+ <div class="adv-card">
+  <div class="adv-card-title">
+   <h3>🎯 Meta do mês</h3>
+   <span>faturamento acumulado x meta</span>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+   <div>
+    <div style="font-size:11px;color:#8fa1b8;font-weight:800;letter-spacing:.06em;text-transform:uppercase;">Total vendido até agora</div>
+    <div style="font-size:30px;font-weight:900;color:#27d7a0;margin-top:6px;" id="infoTotalSales">R$ 0,00</div>
+   </div>
+   <div>
+    <div style="font-size:11px;color:#8fa1b8;font-weight:800;letter-spacing:.06em;text-transform:uppercase;">Meta do mês</div>
+    <div style="font-size:30px;font-weight:900;color:#f6f9fd;margin-top:6px;" id="infoGoalValue">R$ 45.000,00</div>
+   </div>
+  </div>
+  <div style="background:#0b1728;border:1px solid var(--line);border-radius:999px;height:26px;overflow:hidden;position:relative;">
+   <div id="infoGoalBar" style="height:100%;background:linear-gradient(90deg,#27d7a0,#0ea97a);width:0%;transition:width .4s;"></div>
+   <div id="infoGoalPct" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;">0%</div>
+  </div>
+  <div style="display:flex;justify-content:space-between;margin-top:10px;font-size:12px;color:#91a1b8;">
+   <span>Faltam <b id="infoGoalRemaining" style="color:#dce5f2">R$ 0,00</b> para bater a meta</span>
+   <a href="#" onclick="showTab('config');return false;" class="no-print" style="color:var(--green);text-decoration:underline;">Alterar meta em Configuração →</a>
+  </div>
+ </div>
+
+ <div class="adv-card">
+  <div class="adv-card-title">
+   <h3>💳 Total recebido por forma de pagamento</h3>
+   <span>acumulado até o momento</span>
+  </div>
+  <div class="adv-grid4" style="margin-top:0;">
+   <div class="adv-kpi green">
+    <div class="label">💵 Dinheiro</div>
+    <div class="value" id="infoDinheiro">R$ 0,00</div>
+    <div class="sub" id="infoDinheiroPct">0% do total</div>
+   </div>
+   <div class="adv-kpi blue">
+    <div class="label">💳 Cartão de Débito</div>
+    <div class="value" id="infoDebito">R$ 0,00</div>
+    <div class="sub" id="infoDebitoPct">0% do total</div>
+   </div>
+   <div class="adv-kpi gold">
+    <div class="label">💳 Cartão de Crédito</div>
+    <div class="value" id="infoCredito">R$ 0,00</div>
+    <div class="sub" id="infoCreditoPct">0% do total</div>
+   </div>
+   <div class="adv-kpi red">
+    <div class="label">📲 Pix</div>
+    <div class="value" id="infoPix">R$ 0,00</div>
+    <div class="sub" id="infoPixPct">0% do total</div>
+   </div>
+  </div>
+ </div>
+
+</section>
+
 <section id="configTab" class="hidden max-w-3xl mx-auto p-4 md:p-6">
  <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
   <div class="mb-6">
@@ -335,6 +394,17 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <div class="mt-5 text-xs text-slate-500 leading-relaxed">
    <strong class="text-slate-300">Importante:</strong> para leitura direta pelo navegador, a planilha precisa permitir acesso de leitura sem login (por exemplo, “Qualquer pessoa com o link — Leitor” ou estar publicada). Se a planilha estiver privada, será necessário usar uma integração/proxy autenticado.
   </div>
+ </div>
+
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6">
+  <div class="mb-6">
+   <h2 class="text-xl font-bold">Meta de vendas do mês</h2>
+   <p class="text-sm text-slate-400 mt-1">Esse valor é usado na aba "Informação Geral" para calcular a porcentagem da meta batida. Padrão: R$ 45.000,00.</p>
+  </div>
+  <label class="block text-sm font-semibold mb-2">Valor da meta (R$)</label>
+  <input id="salesGoalInput" type="number" step="0.01" min="0" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500" placeholder="45000">
+  <button onclick="saveSalesGoal()" class="mt-4 w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-xl font-semibold text-sm">Salvar meta</button>
+  <div id="goalStatus" class="mt-3 text-sm text-slate-400"></div>
  </div>
 </section>
 
@@ -374,7 +444,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 <div id="printReceipt" class="print-receipt"></div>
 
 <script>
-const embeddedData = [{"dia":"01.08","initial":117.3,"sales":2053.88,"withdrawals":50,"closing":229.3},{"dia":"03.08","initial":117,"sales":1128.98,"withdrawals":0,"closing":279},{"dia":"04.08","initial":208.05,"sales":1459.79,"withdrawals":400,"closing":137.05},{"dia":"05.08","initial":137.15,"sales":3415.34,"withdrawals":650,"closing":66.5},{"dia":"06.08","initial":67.5,"sales":4086.72,"withdrawals":600,"closing":103.5},{"dia":"07.08","initial":103.5,"sales":3843.48,"withdrawals":500,"closing":150.9},{"dia":"08.08","initial":150.9,"sales":2828.86,"withdrawals":100,"closing":116.9},{"dia":"10.08","initial":84,"sales":2119.4,"withdrawals":500,"closing":36.9},{"dia":"11.08","initial":55,"sales":2073.5,"withdrawals":550,"closing":109.5}];
+const embeddedData = [{"dia":"01.08","initial":117.3,"sales":2053.88,"withdrawals":50,"closing":229.3,"dinheiro":162,"debito":314.99,"credito":480.97,"pix":1095.92},{"dia":"03.08","initial":117,"sales":1128.98,"withdrawals":0,"closing":279,"dinheiro":162,"debito":186.5,"credito":445.49,"pix":334.99},{"dia":"04.08","initial":208.05,"sales":1459.79,"withdrawals":400,"closing":137.05,"dinheiro":329,"debito":386,"credito":279.89,"pix":464.9},{"dia":"05.08","initial":137.15,"sales":3415.34,"withdrawals":650,"closing":66.5,"dinheiro":579.35,"debito":737.58,"credito":1013.95,"pix":1084.46},{"dia":"06.08","initial":67.5,"sales":4086.72,"withdrawals":600,"closing":103.5,"dinheiro":636,"debito":593.79,"credito":1942.93,"pix":914},{"dia":"07.08","initial":103.5,"sales":3843.48,"withdrawals":500,"closing":150.9,"dinheiro":547.4,"debito":1033.58,"credito":2102.5,"pix":160},{"dia":"08.08","initial":150.9,"sales":2828.86,"withdrawals":100,"closing":116.9,"dinheiro":66,"debito":481.9,"credito":1334.99,"pix":945.97},{"dia":"10.08","initial":84,"sales":2119.4,"withdrawals":500,"closing":36.9,"dinheiro":452.9,"debito":146,"credito":752,"pix":768.5},{"dia":"11.08","initial":55,"sales":2073.5,"withdrawals":550,"closing":109.5,"dinheiro":604.5,"debito":460,"credito":220,"pix":789}];
 let daysData = [...embeddedData];
 let chart = null;
 
@@ -461,28 +531,79 @@ function updateSimpleDay(day){
 }
 function showTab(tab){
  const dash=document.getElementById('dashboardTab');
+ const info=document.getElementById('infoTab');
  const caixa=document.getElementById('caixaTab');
  const config=document.getElementById('configTab');
  const b1=document.getElementById('tabDashboard');
+ const b4=document.getElementById('tabInfo');
  const b2=document.getElementById('tabCaixa');
  const b3=document.getElementById('tabConfig');
- [dash,caixa,config].forEach(x=>x.classList.add('hidden'));
- [b1,b2,b3].forEach(x=>x.className='tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm');
+ [dash,info,caixa,config].forEach(x=>x.classList.add('hidden'));
+ [b1,b4,b2,b3].forEach(x=>x.className='tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm');
  if(tab==='caixa'){
   caixa.classList.remove('hidden');
   b2.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
   const sel=document.getElementById('simpleDaySelect');
   sel.innerHTML=daysData.map(d=>`<option value="${d.dia}">${d.dia}</option>`).join('');
   if(daysData.length) { sel.value=daysData[daysData.length-1].dia; updateSimpleDay(sel.value); }
+ } else if(tab==='info'){
+  info.classList.remove('hidden');
+  b4.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
+  renderInfoTab();
  } else if(tab==='config'){
   config.classList.remove('hidden');
   b3.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
+  const goalInput=document.getElementById('salesGoalInput');
+  if(goalInput) goalInput.value = getSalesGoal();
  } else {
   dash.classList.remove('hidden');
   b1.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
  }
 }
 document.getElementById('simpleDaySelect').addEventListener('change',e=>updateSimpleDay(e.target.value));
+
+function getSalesGoal(){
+ const saved = localStorage.getItem('biobel_sales_goal');
+ return saved ? parseFloat(saved) : 45000;
+}
+function saveSalesGoal(){
+ const val = parseFloat(document.getElementById('salesGoalInput').value);
+ const statusEl = document.getElementById('goalStatus');
+ if(isNaN(val) || val <= 0){
+  statusEl.innerHTML = '<span class="text-rose-400">Digite um valor de meta válido.</span>';
+  return;
+ }
+ localStorage.setItem('biobel_sales_goal', String(val));
+ statusEl.innerHTML = '<span class="text-emerald-400">Meta salva: ' + money(val) + '</span>';
+}
+function renderInfoTab(){
+ const totalSales = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const goal = getSalesGoal();
+ const pct = goal>0 ? Math.min(100, (totalSales/goal)*100) : 0;
+ const remaining = Math.max(0, goal-totalSales);
+
+ document.getElementById('infoTotalSales').textContent = money(totalSales);
+ document.getElementById('infoGoalValue').textContent = money(goal);
+ document.getElementById('infoGoalBar').style.width = pct.toFixed(1)+'%';
+ document.getElementById('infoGoalPct').textContent = pct.toFixed(1)+'% da meta';
+ document.getElementById('infoGoalRemaining').textContent = money(remaining);
+
+ const dinheiro = daysData.reduce((s,d)=>s+(Number(d.dinheiro)||0),0);
+ const debito = daysData.reduce((s,d)=>s+(Number(d.debito)||0),0);
+ const credito = daysData.reduce((s,d)=>s+(Number(d.credito)||0),0);
+ const pix = daysData.reduce((s,d)=>s+(Number(d.pix)||0),0);
+ const totalPagamentos = dinheiro+debito+credito+pix;
+ const pctOf = v => totalPagamentos>0 ? ((v/totalPagamentos)*100).toFixed(1)+'% do total' : '0% do total';
+
+ document.getElementById('infoDinheiro').textContent = money(dinheiro);
+ document.getElementById('infoDinheiroPct').textContent = pctOf(dinheiro);
+ document.getElementById('infoDebito').textContent = money(debito);
+ document.getElementById('infoDebitoPct').textContent = pctOf(debito);
+ document.getElementById('infoCredito').textContent = money(credito);
+ document.getElementById('infoCreditoPct').textContent = pctOf(credito);
+ document.getElementById('infoPix').textContent = money(pix);
+ document.getElementById('infoPixPct').textContent = pctOf(pix);
+}
 
 function buildReceipt(type, day){
  const el=document.getElementById('printReceipt');
@@ -560,6 +681,21 @@ function saveGoogleConfig(){
  loadGoogleSheet();
 }
 function getGoogleUrl(){return localStorage.getItem('biobel_google_sheet_url') || document.getElementById('googleSheetUrl')?.value || DEFAULT_GOOGLE_URL;}
+function findPaymentTotals(rows){
+ // Procura a linha "total" da seção FORMA DE PAGAMENTO (colunas: nº, Dinheiro, Débito, Crédito, Pix)
+ for(let r=0;r<rows.length;r++){
+  const label=String(rows[r]?.[0]??'').trim().toLowerCase();
+  if(label==='total'){
+   const dinheiro=typeof rows[r][1]==='number'?rows[r][1]:0;
+   const debito=typeof rows[r][2]==='number'?rows[r][2]:0;
+   const credito=typeof rows[r][3]==='number'?rows[r][3]:0;
+   const pix=typeof rows[r][4]==='number'?rows[r][4]:0;
+   return {dinheiro,debito,credito,pix};
+  }
+ }
+ return {dinheiro:0,debito:0,credito:0,pix:0};
+}
+
 async function loadGoogleSheet(){
  const url=getGoogleUrl();
  const id=extractSpreadsheetId(url);
@@ -591,8 +727,9 @@ async function loadGoogleSheet(){
     }
    }
    const sales=typeof rows[1]?.[15]==='number'?rows[1][15]:0;
+   const {dinheiro,debito,credito,pix}=findPaymentTotals(rows);
    daysData=daysData.filter(x=>x.dia!==sheetName);
-   daysData.push({dia:sheetName,initial,sales,withdrawals,closing});
+   daysData.push({dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix});
    found++;
   }
   render();
@@ -642,7 +779,8 @@ document.getElementById('fileInput').addEventListener('change',async e=>{
     }
    }
    const sales=typeof rows[1]?.[15]==='number'?rows[1][15]:0;
-   const item={dia:sheetName,initial,sales,withdrawals,closing};
+   const {dinheiro,debito,credito,pix}=findPaymentTotals(rows);
+   const item={dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix};
    daysData=daysData.filter(x=>x.dia!==sheetName);
    daysData.push(item);
   }
@@ -782,6 +920,8 @@ function updateAdvancedSelected(day){
 // continuam usando suas funções originais.
 render = function(){
   renderAdvancedDashboard();
+  const infoTab = document.getElementById('infoTab');
+  if(infoTab && !infoTab.classList.contains('hidden')) renderInfoTab();
 };
 
 updateSelected = function(day){
