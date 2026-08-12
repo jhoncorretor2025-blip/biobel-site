@@ -272,6 +272,7 @@ if (localStorage.getItem('biobel_theme') === 'light') {
   <button id="tabDashboard" data-tab="dashboard" role="tab" aria-selected="true" aria-controls="dashboardTab" onclick="showTab('dashboard')" class="tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm">📊 Dashboard</button>
   <button id="tabInfo" data-tab="info" role="tab" aria-selected="false" aria-controls="infoTab" onclick="showTab('info')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">🎯 Informação Geral</button>
   <button id="tabCaixa" data-tab="caixa" role="tab" aria-selected="false" aria-controls="caixaTab" onclick="showTab('caixa')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">🧾 Caixa simples</button>
+  <button id="tabCaixaCompleto" data-tab="caixaCompleto" role="tab" aria-selected="false" aria-controls="caixaCompletoTab" onclick="showTab('caixaCompleto')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">📖 Caixa completo</button>
   <button id="tabConfig" data-tab="config" role="tab" aria-selected="false" aria-controls="configTab" onclick="showTab('config')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">⚙️ Configuração</button>
  </div>
 </nav>
@@ -285,6 +286,7 @@ if (localStorage.getItem('biobel_theme') === 'light') {
         <button data-tab="dashboard" onclick="showTab('dashboard')">📊 &nbsp; Dashboard Avançado</button>
         <button data-tab="info" onclick="showTab('info')">🎯 &nbsp; Informação Geral</button>
         <button data-tab="caixa" onclick="showTab('caixa')">🧾 &nbsp; Caixa Simples</button>
+        <button data-tab="caixaCompleto" onclick="showTab('caixaCompleto')">📖 &nbsp; Caixa Completo</button>
         <button data-tab="config" onclick="showTab('config')">⚙️ &nbsp; Configuração (Google Sheets)</button>
       </div>
 
@@ -514,7 +516,6 @@ if (localStorage.getItem('biobel_theme') === 'light') {
    </div>
    <div class="flex items-center gap-2">
     <select id="simpleDaySelect" class="no-print bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm"></select>
-    <button id="btnToggleLegend" onclick="toggleLegend()" class="no-print bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🙈 Esconder explicações</button>
     <button onclick="printSimpleDay()" class="no-print bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🖨 Imprimir</button>
    </div>
   </div>
@@ -524,39 +525,94 @@ if (localStorage.getItem('biobel_theme') === 'light') {
      <span class="text-slate-300">🌅 Valor de início do caixa</span>
      <strong id="simpleInitial" class="text-xl">R$ 0,00</strong>
     </div>
-    <p class="simple-legend text-xs text-slate-500 mt-1">Quanto tinha na gaveta quando a loja <strong class="text-slate-400">abriu</strong> — o dinheiro que ficou de troco do dia anterior.</p>
    </div>
    <div class="rounded-xl border border-blue-500/20 bg-slate-950 px-4 py-4">
     <div class="flex items-center justify-between">
      <span class="text-slate-300">💰 Vendas do dia</span>
      <strong id="simpleSales" class="text-xl text-blue-400">R$ 0,00</strong>
     </div>
-    <p class="simple-legend text-xs text-slate-500 mt-1">Tudo que foi vendido no dia, somando <strong class="text-slate-400">dinheiro + cartão + Pix</strong> juntos. Esse total <strong class="text-slate-400">não passa direto pela gaveta</strong> — só a parte em dinheiro (linha abaixo) passa.</p>
-   </div>
-   <div class="rounded-xl border border-amber-500/20 bg-slate-950 px-4 py-4">
-    <div class="flex items-center justify-between">
-     <span class="text-slate-300">💵 Dinheiro que entrou na gaveta</span>
-     <strong id="simpleDinheiro" class="text-xl text-amber-400">R$ 0,00</strong>
-    </div>
-    <p class="simple-legend text-xs text-slate-500 mt-1">Só a parte das vendas que foi <strong class="text-slate-400">paga em dinheiro</strong> (sem contar cartão/Pix) — é esse valor que realmente entra na gaveta física.</p>
    </div>
    <div class="rounded-xl border border-rose-500/20 bg-slate-950 px-4 py-4">
     <div class="flex items-center justify-between">
      <span class="text-slate-300">💸 Retiradas / despesas do dia</span>
      <strong id="simpleWithdrawals" class="text-xl text-rose-400">R$ 0,00</strong>
     </div>
-    <p class="simple-legend text-xs text-slate-500 mt-1">Dinheiro que <strong class="text-slate-400">saiu da gaveta</strong> durante o dia (compras, troco, sangria etc).</p>
    </div>
    <div class="rounded-xl border border-emerald-500/30 bg-slate-950 px-4 py-5">
     <div class="flex items-center justify-between">
      <span class="font-semibold text-slate-200">🔒 Valor que ficou no caixa</span>
      <strong id="simpleClosing" class="text-2xl text-emerald-400">R$ 0,00</strong>
     </div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<section id="caixaCompletoTab" class="hidden max-w-3xl mx-auto p-4 md:p-6" role="tabpanel" aria-labelledby="tabCaixaCompleto">
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
+  <div class="flex items-center justify-between gap-3 mb-6 flex-wrap">
+   <div>
+    <h2 class="text-xl font-bold">Caixa completo</h2>
+    <p class="text-sm text-slate-400 mt-1">Todas as informações do caixa do dia, incluindo dinheiro, cartão e Pix.</p>
+   </div>
+   <div class="flex items-center gap-2">
+    <select id="completeDaySelect" class="no-print bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm"></select>
+    <button id="btnToggleLegendCompleto" onclick="toggleLegend()" class="no-print bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🙈 Esconder explicações</button>
+    <button onclick="printCompleteDay()" class="no-print bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🖨 Imprimir</button>
+   </div>
+  </div>
+  <div class="space-y-3">
+   <div class="rounded-xl border border-slate-800 bg-slate-950 px-4 py-4">
+    <div class="flex items-center justify-between">
+     <span class="text-slate-300">🌅 Valor de início do caixa</span>
+     <strong id="completeInitial" class="text-xl">R$ 0,00</strong>
+    </div>
+    <p class="simple-legend text-xs text-slate-500 mt-1">Quanto tinha na gaveta quando a loja <strong class="text-slate-400">abriu</strong> — o dinheiro que ficou de troco do dia anterior.</p>
+   </div>
+   <div class="rounded-xl border border-blue-500/20 bg-slate-950 px-4 py-4">
+    <div class="flex items-center justify-between">
+     <span class="text-slate-300">💰 Vendas do dia (total)</span>
+     <strong id="completeSales" class="text-xl text-blue-400">R$ 0,00</strong>
+    </div>
+    <p class="simple-legend text-xs text-slate-500 mt-1">Tudo que foi vendido no dia, somando <strong class="text-slate-400">dinheiro + cartão + Pix</strong> juntos.</p>
+   </div>
+   <div class="grid grid-cols-2 gap-3">
+    <div class="rounded-xl border border-amber-500/20 bg-slate-950 px-4 py-4">
+     <div class="text-slate-300 text-sm">💵 Dinheiro</div>
+     <strong id="completeDinheiro" class="text-lg text-amber-400">R$ 0,00</strong>
+    </div>
+    <div class="rounded-xl border border-cyan-500/20 bg-slate-950 px-4 py-4">
+     <div class="text-slate-300 text-sm">💳 Débito</div>
+     <strong id="completeDebito" class="text-lg text-cyan-400">R$ 0,00</strong>
+    </div>
+    <div class="rounded-xl border border-purple-500/20 bg-slate-950 px-4 py-4">
+     <div class="text-slate-300 text-sm">💳 Crédito</div>
+     <strong id="completeCredito" class="text-lg text-purple-400">R$ 0,00</strong>
+    </div>
+    <div class="rounded-xl border border-teal-500/20 bg-slate-950 px-4 py-4">
+     <div class="text-slate-300 text-sm">📲 Pix</div>
+     <strong id="completePix" class="text-lg text-teal-400">R$ 0,00</strong>
+    </div>
+   </div>
+   <p class="simple-legend text-xs text-slate-500">Só a parte em <strong class="text-slate-400">dinheiro</strong> passa pela gaveta física. Débito, crédito e Pix vão direto pro banco.</p>
+   <div class="rounded-xl border border-rose-500/20 bg-slate-950 px-4 py-4">
+    <div class="flex items-center justify-between">
+     <span class="text-slate-300">💸 Retiradas / despesas do dia</span>
+     <strong id="completeWithdrawals" class="text-xl text-rose-400">R$ 0,00</strong>
+    </div>
+    <p class="simple-legend text-xs text-slate-500 mt-1">Dinheiro que <strong class="text-slate-400">saiu da gaveta</strong> durante o dia (compras, troco, sangria etc).</p>
+   </div>
+   <div class="rounded-xl border border-emerald-500/30 bg-slate-950 px-4 py-5">
+    <div class="flex items-center justify-between">
+     <span class="font-semibold text-slate-200">🔒 Valor que ficou no caixa</span>
+     <strong id="completeClosing" class="text-2xl text-emerald-400">R$ 0,00</strong>
+    </div>
     <p class="simple-legend text-xs text-slate-500 mt-1">Quanto tinha na gaveta quando a loja <strong class="text-slate-400">fechou</strong> — o valor final, contado na hora de fechar.</p>
    </div>
   </div>
  </div>
 </section>
+
 
 <div id="printReceipt" class="print-receipt"></div>
 
@@ -643,21 +699,34 @@ function updateSimpleDay(day){
  if(!d) return;
  document.getElementById('simpleInitial').textContent=money(d.initial);
  document.getElementById('simpleSales').textContent=money(d.sales);
- document.getElementById('simpleDinheiro').textContent=money(d.dinheiro);
  document.getElementById('simpleWithdrawals').textContent=money(d.withdrawals);
  document.getElementById('simpleClosing').textContent=money(d.closing);
+}
+function updateCompleteDay(day){
+ const d=daysData.find(x=>x.dia===day);
+ if(!d) return;
+ document.getElementById('completeInitial').textContent=money(d.initial);
+ document.getElementById('completeSales').textContent=money(d.sales);
+ document.getElementById('completeDinheiro').textContent=money(d.dinheiro);
+ document.getElementById('completeDebito').textContent=money(d.debito);
+ document.getElementById('completeCredito').textContent=money(d.credito);
+ document.getElementById('completePix').textContent=money(d.pix);
+ document.getElementById('completeWithdrawals').textContent=money(d.withdrawals);
+ document.getElementById('completeClosing').textContent=money(d.closing);
 }
 function showTab(tab){
  const dash=document.getElementById('dashboardTab');
  const info=document.getElementById('infoTab');
  const caixa=document.getElementById('caixaTab');
+ const caixaCompleto=document.getElementById('caixaCompletoTab');
  const config=document.getElementById('configTab');
  const b1=document.getElementById('tabDashboard');
  const b4=document.getElementById('tabInfo');
  const b2=document.getElementById('tabCaixa');
+ const b5=document.getElementById('tabCaixaCompleto');
  const b3=document.getElementById('tabConfig');
- [dash,info,caixa,config].forEach(x=>x.classList.add('hidden'));
- [b1,b4,b2,b3].forEach(x=>{x.className='tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm';x.setAttribute('aria-selected','false');});
+ [dash,info,caixa,caixaCompleto,config].forEach(x=>x.classList.add('hidden'));
+ [b1,b4,b2,b5,b3].forEach(x=>{x.className='tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm';x.setAttribute('aria-selected','false');});
 
  // Sincroniza o menu lateral (sidebar) com a mesma aba selecionada.
  document.querySelectorAll('.adv-nav button[data-tab]').forEach(btn=>{
@@ -671,6 +740,13 @@ function showTab(tab){
   const sel=document.getElementById('simpleDaySelect');
   sel.innerHTML=daysData.map(d=>`<option value="${d.dia}">${d.dia}</option>`).join('');
   if(daysData.length) { sel.value=daysData[daysData.length-1].dia; updateSimpleDay(sel.value); }
+ } else if(tab==='caixaCompleto'){
+  caixaCompleto.classList.remove('hidden');
+  b5.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
+  b5.setAttribute('aria-selected','true');
+  const sel=document.getElementById('completeDaySelect');
+  sel.innerHTML=daysData.map(d=>`<option value="${d.dia}">${d.dia}</option>`).join('');
+  if(daysData.length) { sel.value=daysData[daysData.length-1].dia; updateCompleteDay(sel.value); }
  } else if(tab==='info'){
   info.classList.remove('hidden');
   b4.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
@@ -689,6 +765,7 @@ function showTab(tab){
  }
 }
 document.getElementById('simpleDaySelect').addEventListener('change',e=>updateSimpleDay(e.target.value));
+document.getElementById('completeDaySelect').addEventListener('change',e=>updateCompleteDay(e.target.value));
 
 function toggleLegend(){
  const hidden = document.body.classList.toggle('hide-legends');
@@ -696,7 +773,7 @@ function toggleLegend(){
  updateLegendButton(hidden);
 }
 function updateLegendButton(hidden){
- const btn = document.getElementById('btnToggleLegend');
+ const btn = document.getElementById('btnToggleLegendCompleto');
  if(btn) btn.textContent = hidden ? '👁 Mostrar explicações' : '🙈 Esconder explicações';
 }
 // Aplica a preferência salva assim que a página carrega.
@@ -771,14 +848,30 @@ function renderInfoTab(){
 function buildReceipt(type, day){
  const el=document.getElementById('printReceipt');
  const now=new Date().toLocaleString('pt-BR');
- if(type==='daily'){
+ if(type==='daily-simple'){
+  const d=daysData.find(x=>x.dia===day);
+  if(!d) return false;
+  el.innerHTML=`<div class="receipt-center"><strong style="font-size:17px">BIOBEL</strong><br>FECHAMENTO DE CAIXA<br>${d.dia}/08/2026</div>
+  <div class="receipt-line"></div>
+  <div class="receipt-row"><span>Saldo inicial (abertura)</span><strong>${money(d.initial)}</strong></div>
+  <div class="receipt-row"><span>Vendas do dia</span><strong>${money(d.sales)}</strong></div>
+  <div class="receipt-row"><span>Retiradas do dia</span><strong>${money(d.withdrawals)}</strong></div>
+  <div class="receipt-row"><span>Fechamento da gaveta</span><strong>${money(d.closing)}</strong></div>
+  <div class="receipt-line"></div>
+  <div class="receipt-center receipt-total">FECHAMENTO: ${money(d.closing)}</div>
+  <div class="receipt-line"></div>
+  <div class="receipt-center receipt-small">Impresso em ${now}</div>`;
+ } else if(type==='daily-complete' || type==='daily'){
   const d=daysData.find(x=>x.dia===day);
   if(!d) return false;
   el.innerHTML=`<div class="receipt-center"><strong style="font-size:17px">BIOBEL</strong><br>FECHAMENTO DE CAIXA<br>${d.dia}/08/2026</div>
   <div class="receipt-line"></div>
   <div class="receipt-row"><span>Saldo inicial (abertura)</span><strong>${money(d.initial)}</strong></div>
   <div class="receipt-row"><span>Faturamento do dia (total)</span><strong>${money(d.sales)}</strong></div>
-  <div class="receipt-row"><span>Dinheiro recebido no dia</span><strong>${money(d.dinheiro)}</strong></div>
+  <div class="receipt-row"><span>Dinheiro</span><strong>${money(d.dinheiro)}</strong></div>
+  <div class="receipt-row"><span>Débito</span><strong>${money(d.debito)}</strong></div>
+  <div class="receipt-row"><span>Crédito</span><strong>${money(d.credito)}</strong></div>
+  <div class="receipt-row"><span>Pix</span><strong>${money(d.pix)}</strong></div>
   <div class="receipt-row"><span>Retiradas do dia</span><strong>${money(d.withdrawals)}</strong></div>
   <div class="receipt-row"><span>Fechamento da gaveta</span><strong>${money(d.closing)}</strong></div>
   <div class="receipt-line"></div>
@@ -814,7 +907,7 @@ function printDaily(){
  const day=document.getElementById('daySelect').value;
  if(!day) return alert('Selecione um dia antes de imprimir.');
  updateSelected(day);
- if(buildReceipt('daily',day)) startReceiptPrint('daily');
+ if(buildReceipt('daily-complete',day)) startReceiptPrint('daily-complete');
 }
 function printMonthly(){
  buildReceipt('monthly');
@@ -823,7 +916,12 @@ function printMonthly(){
 function printSimpleDay(){
  const day=document.getElementById('simpleDaySelect').value;
  if(!day) return alert('Selecione um dia antes de imprimir.');
- if(buildReceipt('daily',day)) startReceiptPrint('daily');
+ if(buildReceipt('daily-simple',day)) startReceiptPrint('daily-simple');
+}
+function printCompleteDay(){
+ const day=document.getElementById('completeDaySelect').value;
+ if(!day) return alert('Selecione um dia antes de imprimir.');
+ if(buildReceipt('daily-complete',day)) startReceiptPrint('daily-complete');
 }
 
 const DEFAULT_GOOGLE_URL='https://docs.google.com/spreadsheets/d/1idL5VN5CRRgQaXZb4i14V9_sRg6CbxUJx3M-PdSpJGA/edit?usp=sharing';
