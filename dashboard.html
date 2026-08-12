@@ -74,7 +74,7 @@ body{
   background:linear-gradient(180deg,#0d1a2c,#0a1525);
   border:1px solid var(--line);border-radius:18px;padding:16px;
 }
-.adv-brand{font-size:11px;font-weight:800;color:#8ea0b8;letter-spacing:.08em;text-transform:uppercase;margin:4px 8px 14px}
+.adv-brand{font-size:11px;font-weight:800;color:#a0b1c6;letter-spacing:.08em;text-transform:uppercase;margin:4px 8px 14px}
 .adv-nav{display:flex;flex-direction:column;gap:8px}
 .adv-nav button{
   width:100%;text-align:left;border:1px solid transparent;background:transparent;color:#9fb0c7;
@@ -87,7 +87,7 @@ body{
   padding:10px 0;border-bottom:1px solid rgba(32,51,78,.7)
 }
 .adv-summary .mini:last-child{border-bottom:0}
-.adv-summary .k{font-size:11px;color:#8da0b8}
+.adv-summary .k{font-size:11px;color:#a0b1c6}
 .adv-summary .v{font-size:18px;font-weight:800;margin-top:4px}
 .adv-summary .g{color:var(--green)} .adv-summary .b{color:var(--blue)}
 .adv-summary .p{color:var(--purple)} .adv-summary .y{color:var(--yellow)}
@@ -116,21 +116,21 @@ body{
 .adv-kpi.blue{border-left:3px solid var(--blue)} .adv-kpi.blue:before{background:var(--blue)}
 .adv-kpi.red{border-left:3px solid var(--red)} .adv-kpi.red:before{background:var(--red)}
 .adv-kpi.gold{border-left:3px solid var(--yellow)} .adv-kpi.gold:before{background:var(--yellow)}
-.adv-kpi .label{color:#8fa1b8;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.adv-kpi .label{color:#a1b2c7;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
 .adv-kpi .value{font-size:27px;font-weight:900;margin-top:10px;letter-spacing:-.03em}
-.adv-kpi .sub{font-size:11px;color:#788aa3;margin-top:6px}
+.adv-kpi .sub{font-size:11px;color:#93a3ba;margin-top:6px}
 .adv-content2{display:grid;grid-template-columns:minmax(0,1.8fr) minmax(260px,.9fr);gap:14px;margin-top:14px}
 .adv-card{
   background:rgba(13,26,44,.92);border:1px solid var(--line);border-radius:17px;padding:16px;
 }
 .adv-card-title{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
 .adv-card-title h3{font-size:14px;margin:0;font-weight:800;color:#fff}
-.adv-card-title span{font-size:11px;color:#7e92aa}
+.adv-card-title span{font-size:11px;color:#97a8bd}
 .adv-chart{height:320px}
 .adv-donut{height:280px}
 .adv-table-card{margin-top:14px}
 .adv-table{width:100%;border-collapse:collapse;font-size:12px}
-.adv-table th{padding:11px 10px;text-align:left;color:#8da1b9;font-size:10px;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--line)}
+.adv-table th{padding:11px 10px;text-align:left;color:#a1b3c8;font-size:10px;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--line)}
 .adv-table td{padding:11px 10px;border-bottom:1px solid rgba(32,51,78,.55);color:#dce5f2}
 .adv-table td.right{text-align:right}
 .adv-table tr:hover td{background:rgba(255,255,255,.02)}
@@ -139,7 +139,7 @@ body{
 .adv-btn.green{background:rgba(39,215,160,.12);border-color:rgba(39,215,160,.28);color:var(--green)}
 .adv-btn.blue{background:rgba(79,156,255,.12);border-color:rgba(79,156,255,.28);color:#75b5ff}
 .adv-update{margin-top:14px;border:1px solid var(--line);border-radius:14px;padding:12px;background:#0b1728}
-@media(max-width:1100px){
+@media(max-width:1180px){
   .adv-shell{grid-template-columns:1fr}.adv-sidebar{position:static}.adv-nav{flex-direction:row;flex-wrap:wrap}.adv-nav button{width:auto}.adv-summary{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.adv-summary .mini{border-bottom:0}
   .adv-grid4{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
@@ -153,6 +153,84 @@ body{
   .adv-kpi .label,.adv-kpi .sub,.adv-card-title span{color:#666!important}
   .adv-kpi .value,.adv-card-title h3,.adv-table td,.adv-table th{color:#111!important}
 }
+
+/* Foco visível para navegação por teclado */
+button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible{
+  outline:2px solid var(--green);
+  outline-offset:2px;
+  border-radius:6px;
+}
+
+/* Indicador de rolagem horizontal da tabela em telas pequenas */
+.table-scroll-wrap{position:relative}
+.scroll-hint{display:none;font-size:11px;color:#93a3ba;margin-bottom:6px;}
+@media(max-width:760px){
+  .scroll-hint{display:block}
+  .table-scroll-wrap{position:relative}
+  .table-scroll-wrap::after{
+    content:"";position:absolute;top:0;right:0;bottom:0;width:26px;pointer-events:none;
+    background:linear-gradient(to right, transparent, rgba(7,17,31,.85));
+  }
+}
+
+/* Estado vazio (nenhum dado carregado) */
+.empty-state{
+  text-align:center;padding:48px 20px;color:#a0b1c6;
+}
+.empty-state .icon{font-size:40px;margin-bottom:12px}
+.empty-state .title{font-size:16px;font-weight:800;color:#f6f9fd;margin-bottom:6px}
+.empty-state .desc{font-size:13px;max-width:340px;margin:0 auto;}
+
+/* ========== MODO CLARO ========== */
+body.light-mode{
+  background:#f4f6f9!important;
+  color:#0f172a!important;
+}
+body.light-mode.bg-slate-950{background-color:#f4f6f9!important}
+body.light-mode .bg-slate-900,
+body.light-mode .bg-slate-900\/95{background-color:#ffffff!important}
+body.light-mode .bg-slate-950{background-color:#eef1f5!important}
+body.light-mode .bg-slate-800{background-color:#e6eaf0!important;color:#0f172a!important}
+body.light-mode .border-slate-800{border-color:#dde3ea!important}
+body.light-mode .border-slate-700{border-color:#cbd5e1!important}
+body.light-mode .text-slate-100{color:#0f172a!important}
+body.light-mode .text-slate-300{color:#334155!important}
+body.light-mode .text-slate-400{color:#5b6b80!important}
+body.light-mode .text-white{color:#0f172a!important}
+body.light-mode .card{background:#ffffff!important;border-color:#dde3ea!important}
+
+body.light-mode .adv-sidebar{background:linear-gradient(180deg,#ffffff,#f5f7fa);border-color:#dde3ea}
+body.light-mode .adv-brand{color:#5b6b80}
+body.light-mode .adv-nav button{color:#475569}
+body.light-mode .adv-nav button:hover{background:#eef1f5;color:#0f172a}
+body.light-mode .adv-nav button.active{background:linear-gradient(90deg,rgba(14,169,122,.14),rgba(14,169,122,.04));color:#0ea97a}
+body.light-mode .adv-summary{border-color:#dde3ea}
+body.light-mode .adv-summary .mini{border-color:#e7ebf0}
+body.light-mode .adv-summary .k{color:#5b6b80}
+body.light-mode .adv-topbar{background:rgba(255,255,255,.92);border-color:#dde3ea}
+body.light-mode .adv-select-wrap{color:#0ea97a}
+body.light-mode .adv-select{background:#ffffff;color:#0f172a;border-color:#cbd5e1}
+body.light-mode .adv-pill{background:#eef1f5;border-color:#dde3ea;color:#334155}
+body.light-mode .adv-pill b{color:#0f172a}
+body.light-mode .adv-kpi{background:linear-gradient(180deg,#ffffff,#f7f9fb);border-color:#dde3ea}
+body.light-mode .adv-kpi .label{color:#5b6b80}
+body.light-mode .adv-kpi .value{color:#0f172a}
+body.light-mode .adv-kpi .sub{color:#7c8ba0}
+body.light-mode .adv-card{background:#ffffff;border-color:#dde3ea}
+body.light-mode .adv-card-title h3{color:#0f172a}
+body.light-mode .adv-card-title span{color:#7c8ba0}
+body.light-mode .adv-table th{color:#5b6b80;border-color:#dde3ea}
+body.light-mode .adv-table td{color:#1e293b;border-color:#eef1f5}
+body.light-mode .adv-table tr:hover td{background:rgba(15,23,42,.03)}
+body.light-mode .adv-btn{background:#eef1f5;border-color:#cbd5e1;color:#334155}
+body.light-mode .adv-btn.green{background:rgba(14,169,122,.10);border-color:rgba(14,169,122,.28);color:#0ea97a}
+body.light-mode .adv-btn.blue{background:rgba(79,156,255,.10);border-color:rgba(79,156,255,.28);color:#2f78e0}
+body.light-mode .adv-update{background:#f7f9fb;border-color:#dde3ea}
+body.light-mode input, body.light-mode select{color:#0f172a}
+body.light-mode .scroll-hint{color:#5b6b80}
+body.light-mode .table-scroll-wrap::after{background:linear-gradient(to right, transparent, rgba(244,246,249,.9))}
+body.light-mode .empty-state{color:#5b6b80}
+body.light-mode .empty-state .title{color:#0f172a}
 </style>
 
 </head>
@@ -162,11 +240,18 @@ body{
 if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   window.location.href = 'login.html';
 }
+// Aplica o tema salvo o mais cedo possível, para evitar "flash" de tela escura/clara.
+if (localStorage.getItem('biobel_theme') === 'light') {
+  document.body.classList.add('light-mode');
+}
 </script>
 
 <header class="border-b border-slate-800 bg-slate-900/95 sticky top-0 z-20 backdrop-blur">
- <div class="max-w-7xl mx-auto px-4 pt-2 flex justify-end">
-  <button onclick="sessionStorage.removeItem('biobel_logged_in');window.location.href='login.html';" class="no-print text-xs text-slate-400 hover:text-rose-400 underline">Sair</button>
+ <div class="max-w-7xl mx-auto px-4 pt-2 flex justify-end items-center gap-4">
+  <button id="themeToggleBtn" onclick="toggleTheme()" class="no-print text-xs text-slate-400 hover:text-white flex items-center gap-1">
+   <span id="themeToggleIcon">🌙</span> <span id="themeToggleLabel">Modo claro</span>
+  </button>
+  <button onclick="confirmLogout()" class="no-print text-xs text-slate-400 hover:text-rose-400 underline">Sair</button>
  </div>
  <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row gap-4 justify-between items-center">
   <div>
@@ -180,23 +265,24 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
  </div>
 </header>
 <nav class="no-print max-w-7xl mx-auto px-4 md:px-6 pt-4">
- <div class="flex gap-2 border-b border-slate-800">
-  <button id="tabDashboard" onclick="showTab('dashboard')" class="tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm">Dashboard</button>
-  <button id="tabInfo" onclick="showTab('info')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">Informação Geral</button>
-  <button id="tabCaixa" onclick="showTab('caixa')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">Caixa simples</button>
-  <button id="tabConfig" onclick="showTab('config')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">Configuração</button>
+ <div class="flex gap-2 border-b border-slate-800" role="tablist" aria-label="Navegação do painel">
+  <button id="tabDashboard" data-tab="dashboard" role="tab" aria-selected="true" aria-controls="dashboardTab" onclick="showTab('dashboard')" class="tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm">📊 Dashboard</button>
+  <button id="tabInfo" data-tab="info" role="tab" aria-selected="false" aria-controls="infoTab" onclick="showTab('info')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">🎯 Informação Geral</button>
+  <button id="tabCaixa" data-tab="caixa" role="tab" aria-selected="false" aria-controls="caixaTab" onclick="showTab('caixa')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">🧾 Caixa simples</button>
+  <button id="tabConfig" data-tab="config" role="tab" aria-selected="false" aria-controls="configTab" onclick="showTab('config')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">⚙️ Configuração</button>
  </div>
 </nav>
 
-<main id="dashboardTab" class="max-w-7xl mx-auto p-4 md:p-6 space-y-4">
+<main id="dashboardTab" class="max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabDashboard">
   <div class="adv-shell">
 
     <aside class="adv-sidebar no-print">
       <div class="adv-brand">Navegação</div>
       <div class="adv-nav">
-        <button class="active" onclick="showTab('dashboard')">▥ &nbsp; Dashboard Avançado</button>
-        <button onclick="showTab('caixa')">▣ &nbsp; Caixa Simples</button>
-        <button onclick="showTab('config')">⚙ &nbsp; Configuração (Google Sheets)</button>
+        <button data-tab="dashboard" onclick="showTab('dashboard')">📊 &nbsp; Dashboard Avançado</button>
+        <button data-tab="info" onclick="showTab('info')">🎯 &nbsp; Informação Geral</button>
+        <button data-tab="caixa" onclick="showTab('caixa')">🧾 &nbsp; Caixa Simples</button>
+        <button data-tab="config" onclick="showTab('config')">⚙️ &nbsp; Configuração (Google Sheets)</button>
       </div>
 
       <div class="adv-summary">
@@ -219,26 +305,33 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
       </div>
 
       <div class="adv-update">
-        <div class="k" style="color:#8da0b8;font-size:11px;">Última atualização</div>
+        <div class="k" style="color:#a0b1c6;font-size:11px;">Última atualização</div>
         <div id="advLastUpdate" style="font-size:12px;margin-top:4px;color:#dce5f2;">—</div>
-        <button class="adv-btn green" style="width:100%;margin-top:10px;" onclick="loadGoogleSheet()">↻ Atualizar agora</button>
+        <button id="btnRefreshSidebar" class="adv-btn green" style="width:100%;margin-top:10px;" onclick="loadGoogleSheet()">↻ Atualizar agora</button>
       </div>
     </aside>
 
     <section class="adv-main">
       <div class="adv-topbar">
         <div class="adv-topbar-left">
-          <div class="adv-select-wrap">◩ <span>Selecione o Dia:</span>
+          <div class="adv-select-wrap">📅 <span>Selecione o Dia:</span>
             <select id="daySelect" class="adv-select"></select>
           </div>
         </div>
         <div class="adv-pills">
-          <div class="adv-pill">▣ Inicial: <b id="advPillInitial">R$ 0,00</b></div>
-          <div class="adv-pill">▣ Fechamento: <b id="advPillClosing">R$ 0,00</b></div>
-          <div class="adv-pill">◉ Total Vendas: <b id="advPillSales">R$ 0,00</b></div>
+          <div class="adv-pill">💼 Inicial: <b id="advPillInitial">R$ 0,00</b></div>
+          <div class="adv-pill">✅ Fechamento: <b id="advPillClosing">R$ 0,00</b></div>
+          <div class="adv-pill">💰 Total Vendas: <b id="advPillSales">R$ 0,00</b></div>
         </div>
       </div>
 
+      <div id="emptyStateDashboard" class="empty-state adv-card" style="display:none;">
+        <div class="icon">📭</div>
+        <div class="title">Nenhum dado carregado ainda</div>
+        <div class="desc">Clique em "↻ Atualizar agora" para buscar a planilha do Google Sheets, ou use o botão "Carregar Excel/CSV" no topo da página.</div>
+      </div>
+
+      <div id="dashboardContent">
       <div class="adv-grid4">
         <div class="adv-kpi green">
           <div class="label">Saldo inicial (caixa)</div>
@@ -265,7 +358,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
       <div class="adv-content2">
         <div class="adv-card">
           <div class="adv-card-title">
-            <h3>▥ Histórico de Fechamento do Caixa</h3>
+            <h3>📈 Histórico de Fechamento do Caixa</h3>
             <span>evolução por dia</span>
           </div>
           <div class="adv-chart"><canvas id="closingChart"></canvas></div>
@@ -273,7 +366,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
         <div class="adv-card">
           <div class="adv-card-title">
-            <h3>◉ Resumo Geral</h3>
+            <h3>🍩 Resumo Geral</h3>
             <span>visão acumulada</span>
           </div>
           <div class="adv-donut"><canvas id="summaryDonut"></canvas></div>
@@ -286,13 +379,15 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
       <div class="adv-card adv-table-card">
         <div class="adv-card-title">
-          <h3>▦ Resumo Diário</h3>
+          <h3>📋 Resumo Diário</h3>
           <div class="adv-actions">
-            <button class="adv-btn green" onclick="printMonthly()">⇩ Imprimir Relatório</button>
+            <button class="adv-btn green" onclick="printMonthly()">🖨 Imprimir Relatório</button>
             <button class="adv-btn blue" onclick="printDaily()">🖨 Imprimir Dia</button>
           </div>
         </div>
 
+        <div class="scroll-hint">⇔ arraste a tabela para o lado para ver mais colunas</div>
+        <div class="table-scroll-wrap">
         <div style="overflow:auto">
           <table class="adv-table">
             <thead>
@@ -302,21 +397,20 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
                 <th class="right">Vendas do dia</th>
                 <th class="right">Retiradas</th>
                 <th class="right">Fechamento</th>
-                <th class="right">Diferença</th>
+                <th class="right" title="Fechamento menos saldo inicial. Só reflete dinheiro físico, não inclui cartão/Pix.">Variação (dinheiro)</th>
               </tr>
             </thead>
             <tbody id="advTableBody"></tbody>
           </table>
         </div>
+        </div>
+      </div>
       </div>
     </section>
   </div>
 </main>
 
-
-</main>
-
-<section id="infoTab" class="hidden max-w-5xl mx-auto p-4 md:p-6 space-y-4">
+<section id="infoTab" class="hidden max-w-5xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabInfo">
 
  <div class="adv-card">
   <div class="adv-card-title">
@@ -325,11 +419,11 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
    <div>
-    <div style="font-size:11px;color:#8fa1b8;font-weight:800;letter-spacing:.06em;text-transform:uppercase;">Total vendido até agora</div>
+    <div style="font-size:11px;color:#a1b2c7;font-weight:800;letter-spacing:.06em;text-transform:uppercase;">Total vendido até agora</div>
     <div style="font-size:30px;font-weight:900;color:#27d7a0;margin-top:6px;" id="infoTotalSales">R$ 0,00</div>
    </div>
    <div>
-    <div style="font-size:11px;color:#8fa1b8;font-weight:800;letter-spacing:.06em;text-transform:uppercase;">Meta do mês</div>
+    <div style="font-size:11px;color:#a1b2c7;font-weight:800;letter-spacing:.06em;text-transform:uppercase;">Meta do mês</div>
     <div style="font-size:30px;font-weight:900;color:#f6f9fd;margin-top:6px;" id="infoGoalValue">R$ 45.000,00</div>
    </div>
   </div>
@@ -374,7 +468,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
 </section>
 
-<section id="configTab" class="hidden max-w-3xl mx-auto p-4 md:p-6">
+<section id="configTab" class="hidden max-w-3xl mx-auto p-4 md:p-6" role="tabpanel" aria-labelledby="tabConfig">
  <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
   <div class="mb-6">
    <h2 class="text-xl font-bold">Configuração — Google Sheets</h2>
@@ -384,7 +478,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <input id="googleSheetUrl" type="url" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500" placeholder="https://docs.google.com/spreadsheets/d/..." value="https://docs.google.com/spreadsheets/d/1idL5VN5CRRgQaXZb4i14V9_sRg6CbxUJx3M-PdSpJGA/edit?usp=sharing">
   <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
    <button onclick="saveGoogleConfig()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-xl font-semibold text-sm">Salvar configuração</button>
-   <button onclick="loadGoogleSheet()" class="bg-blue-600 hover:bg-blue-500 px-4 py-3 rounded-xl font-semibold text-sm">↻ Atualizar agora</button>
+   <button id="btnRefreshConfig" onclick="loadGoogleSheet()" class="bg-blue-600 hover:bg-blue-500 px-4 py-3 rounded-xl font-semibold text-sm">↻ Atualizar agora</button>
   </div>
   <div class="mt-5 rounded-xl border border-slate-800 bg-slate-950 p-4 text-sm">
    <div class="font-semibold mb-1">Atualização automática</div>
@@ -408,7 +502,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
  </div>
 </section>
 
-<section id="caixaTab" class="hidden max-w-3xl mx-auto p-4 md:p-6">
+<section id="caixaTab" class="hidden max-w-3xl mx-auto p-4 md:p-6" role="tabpanel" aria-labelledby="tabCaixa">
  <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
   <div class="flex items-center justify-between gap-3 mb-6 flex-wrap">
    <div>
@@ -539,28 +633,58 @@ function showTab(tab){
  const b2=document.getElementById('tabCaixa');
  const b3=document.getElementById('tabConfig');
  [dash,info,caixa,config].forEach(x=>x.classList.add('hidden'));
- [b1,b4,b2,b3].forEach(x=>x.className='tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm');
+ [b1,b4,b2,b3].forEach(x=>{x.className='tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm';x.setAttribute('aria-selected','false');});
+
+ // Sincroniza o menu lateral (sidebar) com a mesma aba selecionada.
+ document.querySelectorAll('.adv-nav button[data-tab]').forEach(btn=>{
+  btn.classList.toggle('active', btn.dataset.tab===tab);
+ });
+
  if(tab==='caixa'){
   caixa.classList.remove('hidden');
   b2.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
+  b2.setAttribute('aria-selected','true');
   const sel=document.getElementById('simpleDaySelect');
   sel.innerHTML=daysData.map(d=>`<option value="${d.dia}">${d.dia}</option>`).join('');
   if(daysData.length) { sel.value=daysData[daysData.length-1].dia; updateSimpleDay(sel.value); }
  } else if(tab==='info'){
   info.classList.remove('hidden');
   b4.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
+  b4.setAttribute('aria-selected','true');
   renderInfoTab();
  } else if(tab==='config'){
   config.classList.remove('hidden');
   b3.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
+  b3.setAttribute('aria-selected','true');
   const goalInput=document.getElementById('salesGoalInput');
   if(goalInput) goalInput.value = getSalesGoal();
  } else {
   dash.classList.remove('hidden');
   b1.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
+  b1.setAttribute('aria-selected','true');
  }
 }
 document.getElementById('simpleDaySelect').addEventListener('change',e=>updateSimpleDay(e.target.value));
+
+function confirmLogout(){
+ if(confirm('Tem certeza que quer sair do painel administrativo?')){
+  sessionStorage.removeItem('biobel_logged_in');
+  window.location.href='login.html';
+ }
+}
+
+function toggleTheme(){
+ const isLight = document.body.classList.toggle('light-mode');
+ localStorage.setItem('biobel_theme', isLight ? 'light' : 'dark');
+ updateThemeButton(isLight);
+}
+function updateThemeButton(isLight){
+ const icon=document.getElementById('themeToggleIcon');
+ const label=document.getElementById('themeToggleLabel');
+ if(icon) icon.textContent = isLight ? '☀️' : '🌙';
+ if(label) label.textContent = isLight ? 'Modo escuro' : 'Modo claro';
+}
+updateThemeButton(document.body.classList.contains('light-mode'));
 
 function getSalesGoal(){
  const saved = localStorage.getItem('biobel_sales_goal');
@@ -616,7 +740,8 @@ function buildReceipt(type, day){
   <div class="receipt-row"><span>Saldo inicial</span><strong>${money(d.initial)}</strong></div>
   <div class="receipt-row"><span>Faturamento do dia</span><strong>${money(d.sales)}</strong></div>
   <div class="receipt-row"><span>Fechamento da gaveta</span><strong>${money(d.closing)}</strong></div>
-  <div class="receipt-row"><span>Variação</span><strong>${money(d.closing-d.initial)}</strong></div>
+  <div class="receipt-row"><span>Variação da gaveta (dinheiro)</span><strong>${money(d.closing-d.initial)}</strong></div>
+  <div class="receipt-small" style="margin-top:2px;">*Só reflete o dinheiro físico. Vendas em cartão/Pix não passam pela gaveta.</div>
   <div class="receipt-line"></div>
   <div class="receipt-center receipt-total">FECHAMENTO: ${money(d.closing)}</div>
   <div class="receipt-line"></div>
@@ -696,12 +821,30 @@ function findPaymentTotals(rows){
  return {dinheiro:0,debito:0,credito:0,pix:0};
 }
 
+function setRefreshButtonsLoading(loading){
+ const btns = [document.getElementById('btnRefreshSidebar'), document.getElementById('btnRefreshConfig')].filter(Boolean);
+ btns.forEach(btn=>{
+  if(loading){
+   btn.dataset.originalText = btn.dataset.originalText || btn.textContent;
+   btn.disabled = true;
+   btn.style.opacity = '0.65';
+   btn.style.cursor = 'wait';
+   btn.textContent = '⏳ Atualizando...';
+  } else {
+   btn.disabled = false;
+   btn.style.opacity = '';
+   btn.style.cursor = '';
+   btn.textContent = btn.dataset.originalText || '↻ Atualizar agora';
+  }
+ });
+}
 async function loadGoogleSheet(){
  const url=getGoogleUrl();
  const id=extractSpreadsheetId(url);
  if(!id) return setGoogleStatus('link inválido.');
  const exportUrl=`https://docs.google.com/spreadsheets/d/${id}/export?format=xlsx`;
  setGoogleStatus('conectando à planilha...');
+ setRefreshButtonsLoading(true);
  try{
   const response=await fetch(exportUrl,{cache:'no-store'});
   if(!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -737,6 +880,8 @@ async function loadGoogleSheet(){
  }catch(err){
   console.error(err);
   setGoogleStatus('não foi possível ler a planilha. Verifique se ela está acessível para leitura sem login e se o navegador permite o acesso.');
+ }finally{
+  setRefreshButtonsLoading(false);
  }
 }
 function startGoogleAutoRefresh(){
@@ -756,8 +901,23 @@ document.getElementById('fileInput').addEventListener('change',async e=>{
  for(const file of e.target.files){
   const buf=await file.arrayBuffer();
   const wb=XLSX.read(buf,{type:'array'});
-  for(const sheetName of wb.SheetNames){
-   if(!/^\d{2}\.\d{2}$/.test(sheetName)) continue;
+  const validSheets = wb.SheetNames.filter(name=>/^\d{2}\.\d{2}$/.test(name));
+  const jaExistem = validSheets.filter(name=>daysData.some(d=>d.dia===name));
+
+  if(validSheets.length===0){
+   alert('Nenhuma aba de dia (formato DD.MM) foi encontrada em "'+file.name+'".');
+   continue;
+  }
+  if(jaExistem.length>0){
+   const ok = confirm(
+    'O arquivo "'+file.name+'" tem dados para o(s) dia(s): '+jaExistem.join(', ')+'.\n\n'+
+    'Esse(s) dia(s) JÁ EXISTE(M) no painel e será(ão) SUBSTITUÍDO(S) pelos novos dados.\n\n'+
+    'Deseja continuar?'
+   );
+   if(!ok){ continue; }
+  }
+
+  for(const sheetName of validSheets){
    const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{header:1,defval:null,raw:true});
    const colM=12;
    let initial=0,closing=0,withdrawals=0;
@@ -785,14 +945,29 @@ document.getElementById('fileInput').addEventListener('change',async e=>{
    daysData.push(item);
   }
  }
+ e.target.value='';
  render();
 });
+
 
 
 let advSummaryDonut = null;
 
 function renderAdvancedDashboard(){
   sortDays();
+
+  const emptyEl = document.getElementById('emptyStateDashboard');
+  const contentEl = document.getElementById('dashboardContent');
+  if(emptyEl && contentEl){
+    if(daysData.length===0){
+      emptyEl.style.display='block';
+      contentEl.style.display='none';
+    } else {
+      emptyEl.style.display='none';
+      contentEl.style.display='block';
+    }
+  }
+
   const totalSales = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
   const totalClosing = daysData.reduce((s,d)=>s+(Number(d.closing)||0),0);
   const avgClosing = daysData.length ? totalClosing/daysData.length : 0;
