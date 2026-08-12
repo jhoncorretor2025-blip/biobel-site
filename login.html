@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Biobel — Área do Administrador</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(39,215,160,.10), transparent 26%),
+    radial-gradient(circle at 88% 0%, rgba(79,156,255,.08), transparent 28%),
+    #07111f;
+  padding:16px;
+}
+form{
+  width:100%;max-width:360px;background:linear-gradient(180deg,#0d1a2c,#0a1525);
+  border:1px solid #20334e;border-radius:18px;padding:28px 24px;
+  box-shadow:0 10px 30px rgba(0,0,0,.35);
+}
+.title{text-align:center;margin-bottom:18px;}
+.title strong{font-size:20px;font-weight:900;color:#f6f9fd;display:block}
+.title span{font-size:12px;color:#91a1b8;margin-top:6px;display:block}
+label{display:block;font-size:12px;color:#9fb0c7;font-weight:700;margin-bottom:6px;}
+input{
+  width:100%;background:#081426;color:#fff;border:1px solid #29405e;border-radius:11px;
+  padding:11px 12px;font-weight:600;outline:none;margin-bottom:14px;font-size:14px;
+}
+input:focus{border-color:#27d7a0}
+#loginError{display:none;color:#ff6174;font-size:12px;font-weight:700;margin-bottom:10px;}
+button{
+  width:100%;background:linear-gradient(90deg,#27d7a0,#0ea97a);color:#04241a;border:none;
+  border-radius:11px;padding:12px;font-weight:900;font-size:14px;cursor:pointer;margin-top:6px;
+}
+button:active{transform:translateY(1px)}
+.back{display:block;text-align:center;margin-top:16px;font-size:12px;color:#7e92aa;text-decoration:none}
+.back:hover{color:#cbd5e1}
+</style>
+</head>
+<body>
+<form id="loginForm">
+  <div class="title">
+    <strong>Biobel — Acesso Restrito</strong>
+    <span>Digite o login e a senha para acessar o painel</span>
+  </div>
+  <label for="loginUser">Login</label>
+  <input id="loginUser" type="text" autocomplete="username" placeholder="usuário" autofocus>
+  <label for="loginPass">Senha</label>
+  <input id="loginPass" type="password" autocomplete="current-password" placeholder="senha">
+  <div id="loginError">Login ou senha incorretos. Tente novamente.</div>
+  <button type="submit">Entrar</button>
+  <a class="back" href="index.html">← Voltar para o site</a>
+</form>
+<script>
+(function(){
+  var CORRECT_USER = 'admin';
+  var CORRECT_PASS = 'admin';
+  var form = document.getElementById('loginForm');
+  var err = document.getElementById('loginError');
+
+  // Se já estiver logado nesta sessão do navegador, pula direto para o painel.
+  if (sessionStorage.getItem('biobel_logged_in') === 'yes') {
+    window.location.href = 'dashboard.html';
+  }
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    var u = document.getElementById('loginUser').value.trim();
+    var p = document.getElementById('loginPass').value;
+    if (u === CORRECT_USER && p === CORRECT_PASS) {
+      sessionStorage.setItem('biobel_logged_in', 'yes');
+      window.location.href = 'dashboard.html';
+    } else {
+      err.style.display = 'block';
+    }
+  });
+})();
+</script>
+</body>
+</html>
