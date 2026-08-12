@@ -231,6 +231,9 @@ body.light-mode .scroll-hint{color:#5b6b80}
 body.light-mode .table-scroll-wrap::after{background:linear-gradient(to right, transparent, rgba(244,246,249,.9))}
 body.light-mode .empty-state{color:#5b6b80}
 body.light-mode .empty-state .title{color:#0f172a}
+
+/* Esconde as legendas explicativas da Caixa Simples quando o usuário desativa */
+body.hide-legends .simple-legend{display:none!important}
 </style>
 
 </head>
@@ -511,6 +514,7 @@ if (localStorage.getItem('biobel_theme') === 'light') {
    </div>
    <div class="flex items-center gap-2">
     <select id="simpleDaySelect" class="no-print bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm"></select>
+    <button id="btnToggleLegend" onclick="toggleLegend()" class="no-print bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🙈 Esconder explicações</button>
     <button onclick="printSimpleDay()" class="no-print bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🖨 Imprimir</button>
    </div>
   </div>
@@ -520,38 +524,38 @@ if (localStorage.getItem('biobel_theme') === 'light') {
      <span class="text-slate-300">Valor de início do caixa</span>
      <strong id="simpleInitial" class="text-xl">R$ 0,00</strong>
     </div>
-    <p class="text-xs text-slate-500 mt-1">Quanto tinha na gaveta quando a loja <strong class="text-slate-400">abriu</strong> — o dinheiro que ficou de troco do dia anterior.</p>
+    <p class="simple-legend text-xs text-slate-500 mt-1">Quanto tinha na gaveta quando a loja <strong class="text-slate-400">abriu</strong> — o dinheiro que ficou de troco do dia anterior.</p>
    </div>
    <div class="rounded-xl border border-blue-500/20 bg-slate-950 px-4 py-4">
     <div class="flex items-center justify-between">
      <span class="text-slate-300">Vendas do dia</span>
      <strong id="simpleSales" class="text-xl text-blue-400">R$ 0,00</strong>
     </div>
-    <p class="text-xs text-slate-500 mt-1">Tudo que foi vendido no dia, somando <strong class="text-slate-400">dinheiro + cartão + Pix</strong> juntos.</p>
+    <p class="simple-legend text-xs text-slate-500 mt-1">Tudo que foi vendido no dia, somando <strong class="text-slate-400">dinheiro + cartão + Pix</strong> juntos.</p>
    </div>
    <div class="rounded-xl border border-rose-500/20 bg-slate-950 px-4 py-4">
     <div class="flex items-center justify-between">
      <span class="text-slate-300">Retiradas / despesas do dia</span>
      <strong id="simpleWithdrawals" class="text-xl text-rose-400">R$ 0,00</strong>
     </div>
-    <p class="text-xs text-slate-500 mt-1">Dinheiro que <strong class="text-slate-400">saiu da gaveta</strong> durante o dia (compras, troco, sangria etc).</p>
+    <p class="simple-legend text-xs text-slate-500 mt-1">Dinheiro que <strong class="text-slate-400">saiu da gaveta</strong> durante o dia (compras, troco, sangria etc).</p>
    </div>
    <div class="rounded-xl border border-emerald-500/30 bg-slate-950 px-4 py-5">
     <div class="flex items-center justify-between">
      <span class="font-semibold text-slate-200">Valor que ficou no caixa</span>
      <strong id="simpleClosing" class="text-2xl text-emerald-400">R$ 0,00</strong>
     </div>
-    <p class="text-xs text-slate-500 mt-1">Quanto tinha na gaveta quando a loja <strong class="text-slate-400">fechou</strong> — o valor final, contado na hora de fechar.</p>
+    <p class="simple-legend text-xs text-slate-500 mt-1">Quanto tinha na gaveta quando a loja <strong class="text-slate-400">fechou</strong> — o valor final, contado na hora de fechar.</p>
    </div>
    <div class="rounded-xl border border-slate-800 bg-slate-950 px-4 py-4">
     <div class="flex items-center justify-between">
      <span class="text-slate-300">Variação da gaveta (dinheiro)</span>
      <strong id="simpleVariacao" class="text-xl text-slate-200">R$ 0,00</strong>
     </div>
-    <p class="text-xs text-slate-500 mt-1">É a diferença entre o <strong class="text-slate-400">valor de início</strong> e o <strong class="text-slate-400">valor final</strong> — ou seja, quanto o dinheiro da gaveta aumentou (ou diminuiu) do começo ao fim do dia.</p>
+    <p class="simple-legend text-xs text-slate-500 mt-1">É a diferença entre o <strong class="text-slate-400">valor de início</strong> e o <strong class="text-slate-400">valor final</strong> — ou seja, quanto o dinheiro da gaveta aumentou (ou diminuiu) do começo ao fim do dia.</p>
    </div>
   </div>
-  <div id="simpleExampleBox" class="mt-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-xs text-slate-300 leading-relaxed">
+  <div id="simpleExampleBox" class="simple-legend mt-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-xs text-slate-300 leading-relaxed">
    💡 <strong class="text-slate-100">Exemplo com os números de hoje:</strong>
    <span id="simpleExampleText">a gaveta começou o dia com R$ 0,00 e fechou com R$ 0,00. A diferença entre esses dois valores é R$ 0,00 — isso é a "Variação da gaveta".</span>
    <br><span class="text-slate-400">Repare que as vendas em <strong class="text-slate-300">cartão e Pix não entram nessa conta</strong>, porque esse dinheiro vai direto pro banco, sem passar pela gaveta física da loja.</span>
@@ -700,6 +704,21 @@ function showTab(tab){
  }
 }
 document.getElementById('simpleDaySelect').addEventListener('change',e=>updateSimpleDay(e.target.value));
+
+function toggleLegend(){
+ const hidden = document.body.classList.toggle('hide-legends');
+ localStorage.setItem('biobel_hide_legends', hidden ? 'yes' : 'no');
+ updateLegendButton(hidden);
+}
+function updateLegendButton(hidden){
+ const btn = document.getElementById('btnToggleLegend');
+ if(btn) btn.textContent = hidden ? '👁 Mostrar explicações' : '🙈 Esconder explicações';
+}
+// Aplica a preferência salva assim que a página carrega.
+if (localStorage.getItem('biobel_hide_legends') === 'yes') {
+ document.body.classList.add('hide-legends');
+}
+updateLegendButton(document.body.classList.contains('hide-legends'));
 
 function confirmLogout(){
  if(confirm('Tem certeza que quer sair do painel administrativo?')){
