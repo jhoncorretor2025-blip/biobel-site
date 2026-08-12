@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Biobel — Fechamento de Caixa Diário</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.card{box-shadow:0 10px 30px rgba(0,0,0,.18)}
+@media print{
+  body{background:#fff!important;color:#111!important}
+  header,.no-print,.no-print *{display:none!important}
+  main{max-width:none!important;padding:0!important}
+  .card{box-shadow:none!important;border:1px solid #ddd!important;background:#fff!important;color:#111!important}
+  .text-slate-400,.text-slate-500,.text-slate-300{color:#555!important}
+  .text-white{color:#111!important}
+  .text-emerald-400,.text-emerald-300{color:#087443!important}
+  canvas{max-height:300px!important}
+  .print-title{display:block!important}
+}
+.print-title{display:none}
+</style>
+
+<style id="advanced-dashboard-design">
+:root{
+  --bg:#07111f;
+  --panel:#0d1a2c;
+  --panel2:#101f34;
+  --line:#20334e;
+  --muted:#91a1b8;
+  --text:#f6f9fd;
+  --green:#27d7a0;
+  --green2:#0ea97a;
+  --blue:#4f9cff;
+  --red:#ff6174;
+  --yellow:#ffbf47;
+  --purple:#a97cff;
+}
+body{
+  background:
+    radial-gradient(circle at 12% 0%, rgba(39,215,160,.08), transparent 26%),
+    radial-gradient(circle at 88% 0%, rgba(79,156,255,.07), transparent 28%),
+    var(--bg)!important;
+}
+.adv-shell{display:grid;grid-template-columns:240px minmax(0,1fr);gap:18px;align-items:start}
+.adv-sidebar{
+  position:sticky;top:92px;
+  background:linear-gradient(180deg,#0d1a2c,#0a1525);
+  border:1px solid var(--line);border-radius:18px;padding:16px;
+}
+.adv-brand{font-size:11px;font-weight:800;color:#8ea0b8;letter-spacing:.08em;text-transform:uppercase;margin:4px 8px 14px}
+.adv-nav{display:flex;flex-direction:column;gap:8px}
+.adv-nav button{
+  width:100%;text-align:left;border:1px solid transparent;background:transparent;color:#9fb0c7;
+  padding:11px 12px;border-radius:12px;font-weight:700;font-size:13px;cursor:pointer;
+}
+.adv-nav button:hover{background:#12233b;color:#fff}
+.adv-nav button.active{background:linear-gradient(90deg,rgba(39,215,160,.15),rgba(39,215,160,.04));border-color:rgba(39,215,160,.16);color:var(--green)}
+.adv-summary{margin-top:18px;border-top:1px solid var(--line);padding-top:16px}
+.adv-summary .mini{
+  padding:10px 0;border-bottom:1px solid rgba(32,51,78,.7)
+}
+.adv-summary .mini:last-child{border-bottom:0}
+.adv-summary .k{font-size:11px;color:#8da0b8}
+.adv-summary .v{font-size:18px;font-weight:800;margin-top:4px}
+.adv-summary .g{color:var(--green)} .adv-summary .b{color:var(--blue)}
+.adv-summary .p{color:var(--purple)} .adv-summary .y{color:var(--yellow)}
+.adv-main{min-width:0}
+.adv-topbar{
+  display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+  background:rgba(13,26,44,.9);border:1px solid var(--line);border-radius:18px;padding:14px 16px;
+}
+.adv-topbar-left{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.adv-select-wrap{display:flex;align-items:center;gap:8px;color:var(--green);font-weight:800;font-size:13px}
+.adv-select{
+  background:#081426;color:#fff;border:1px solid #29405e;border-radius:11px;padding:9px 12px;font-weight:700;outline:none
+}
+.adv-pills{display:flex;gap:8px;flex-wrap:wrap}
+.adv-pill{
+  border:1px solid var(--line);background:#091528;padding:8px 11px;border-radius:10px;font-size:12px;color:#b8c5d8
+}
+.adv-pill b{color:#fff}
+.adv-grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px}
+.adv-kpi{
+  background:linear-gradient(180deg,rgba(15,31,52,.98),rgba(10,22,38,.98));
+  border:1px solid var(--line);border-radius:17px;padding:16px;min-height:128px;position:relative;overflow:hidden;
+}
+.adv-kpi:before{content:"";position:absolute;inset:auto -25px -45px auto;width:130px;height:130px;border-radius:50%;opacity:.13}
+.adv-kpi.green{border-left:3px solid var(--green)} .adv-kpi.green:before{background:var(--green)}
+.adv-kpi.blue{border-left:3px solid var(--blue)} .adv-kpi.blue:before{background:var(--blue)}
+.adv-kpi.red{border-left:3px solid var(--red)} .adv-kpi.red:before{background:var(--red)}
+.adv-kpi.gold{border-left:3px solid var(--yellow)} .adv-kpi.gold:before{background:var(--yellow)}
+.adv-kpi .label{color:#8fa1b8;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.adv-kpi .value{font-size:27px;font-weight:900;margin-top:10px;letter-spacing:-.03em}
+.adv-kpi .sub{font-size:11px;color:#788aa3;margin-top:6px}
+.adv-content2{display:grid;grid-template-columns:minmax(0,1.8fr) minmax(260px,.9fr);gap:14px;margin-top:14px}
+.adv-card{
+  background:rgba(13,26,44,.92);border:1px solid var(--line);border-radius:17px;padding:16px;
+}
+.adv-card-title{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
+.adv-card-title h3{font-size:14px;margin:0;font-weight:800;color:#fff}
+.adv-card-title span{font-size:11px;color:#7e92aa}
+.adv-chart{height:320px}
+.adv-donut{height:280px}
+.adv-table-card{margin-top:14px}
+.adv-table{width:100%;border-collapse:collapse;font-size:12px}
+.adv-table th{padding:11px 10px;text-align:left;color:#8da1b9;font-size:10px;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--line)}
+.adv-table td{padding:11px 10px;border-bottom:1px solid rgba(32,51,78,.55);color:#dce5f2}
+.adv-table td.right{text-align:right}
+.adv-table tr:hover td{background:rgba(255,255,255,.02)}
+.adv-actions{display:flex;gap:8px;flex-wrap:wrap}
+.adv-btn{border:1px solid #2a4667;background:#10213a;color:#dce8f7;border-radius:9px;padding:8px 10px;font-weight:800;font-size:11px;cursor:pointer}
+.adv-btn.green{background:rgba(39,215,160,.12);border-color:rgba(39,215,160,.28);color:var(--green)}
+.adv-btn.blue{background:rgba(79,156,255,.12);border-color:rgba(79,156,255,.28);color:#75b5ff}
+.adv-update{margin-top:14px;border:1px solid var(--line);border-radius:14px;padding:12px;background:#0b1728}
+@media(max-width:1100px){
+  .adv-shell{grid-template-columns:1fr}.adv-sidebar{position:static}.adv-nav{flex-direction:row;flex-wrap:wrap}.adv-nav button{width:auto}.adv-summary{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.adv-summary .mini{border-bottom:0}
+  .adv-grid4{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  .adv-grid4{grid-template-columns:1fr}.adv-content2{grid-template-columns:1fr}.adv-summary{grid-template-columns:1fr}
+}
+@media print{
+  .adv-sidebar,.adv-topbar,.adv-actions,.adv-update,.no-print{display:none!important}
+  .adv-shell{display:block}
+  .adv-kpi,.adv-card{border:1px solid #ddd!important;background:#fff!important}
+  .adv-kpi .label,.adv-kpi .sub,.adv-card-title span{color:#666!important}
+  .adv-kpi .value,.adv-card-title h3,.adv-table td,.adv-table th{color:#111!important}
+}
+</style>
+
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+<script>
+// Proteção de acesso: só entra aqui quem passou pela tela de login (login.html).
+if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
+  window.location.href = 'login.html';
+}
+</script>
+
+<header class="border-b border-slate-800 bg-slate-900/95 sticky top-0 z-20 backdrop-blur">
+ <div class="max-w-7xl mx-auto px-4 pt-2 flex justify-end">
+  <button onclick="sessionStorage.removeItem('biobel_logged_in');window.location.href='login.html';" class="no-print text-xs text-slate-400 hover:text-rose-400 underline">Sair</button>
+ </div>
+ <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row gap-4 justify-between items-center">
+  <div>
+   <h1 class="text-2xl font-bold">Biobel — Fechamento de Caixa</h1>
+   <p class="text-sm text-slate-400">Leitura diária da planilha + histórico do fechamento da gaveta</p>
+  </div>
+  <label class="cursor-pointer bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm">
+   Carregar Excel/CSV
+   <input id="fileInput" type="file" multiple accept=".xlsx,.xls,.csv" class="hidden">
+  </label>
+ </div>
+</header>
+<nav class="no-print max-w-7xl mx-auto px-4 md:px-6 pt-4">
+ <div class="flex gap-2 border-b border-slate-800">
+  <button id="tabDashboard" onclick="showTab('dashboard')" class="tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm">Dashboard</button>
+  <button id="tabCaixa" onclick="showTab('caixa')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">Caixa simples</button>
+  <button id="tabConfig" onclick="showTab('config')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">Configuração</button>
+ </div>
+</nav>
+
+<main id="dashboardTab" class="max-w-7xl mx-auto p-4 md:p-6 space-y-4">
+  <div class="adv-shell">
+
+    <aside class="adv-sidebar no-print">
+      <div class="adv-brand">Navegação</div>
+      <div class="adv-nav">
+        <button class="active" onclick="showTab('dashboard')">▥ &nbsp; Dashboard Avançado</button>
+        <button onclick="showTab('caixa')">▣ &nbsp; Caixa Simples</button>
+        <button onclick="showTab('config')">⚙ &nbsp; Configuração (Google Sheets)</button>
+      </div>
+
+      <div class="adv-summary">
+        <div class="mini">
+          <div class="k">Faturamento total</div>
+          <div class="v g" id="advTotalSales">R$ 0,00</div>
+        </div>
+        <div class="mini">
+          <div class="k">Total de fechamentos</div>
+          <div class="v b" id="advTotalClosing">R$ 0,00</div>
+        </div>
+        <div class="mini">
+          <div class="k">Dias lançados</div>
+          <div class="v p" id="advDaysCount">0</div>
+        </div>
+        <div class="mini">
+          <div class="k">Média de fechamento</div>
+          <div class="v y" id="advAvgClosing">R$ 0,00</div>
+        </div>
+      </div>
+
+      <div class="adv-update">
+        <div class="k" style="color:#8da0b8;font-size:11px;">Última atualização</div>
+        <div id="advLastUpdate" style="font-size:12px;margin-top:4px;color:#dce5f2;">—</div>
+        <button class="adv-btn green" style="width:100%;margin-top:10px;" onclick="loadGoogleSheet()">↻ Atualizar agora</button>
+      </div>
+    </aside>
+
+    <section class="adv-main">
+      <div class="adv-topbar">
+        <div class="adv-topbar-left">
+          <div class="adv-select-wrap">◩ <span>Selecione o Dia:</span>
+            <select id="daySelect" class="adv-select"></select>
+          </div>
+        </div>
+        <div class="adv-pills">
+          <div class="adv-pill">▣ Inicial: <b id="advPillInitial">R$ 0,00</b></div>
+          <div class="adv-pill">▣ Fechamento: <b id="advPillClosing">R$ 0,00</b></div>
+          <div class="adv-pill">◉ Total Vendas: <b id="advPillSales">R$ 0,00</b></div>
+        </div>
+      </div>
+
+      <div class="adv-grid4">
+        <div class="adv-kpi green">
+          <div class="label">Saldo inicial (caixa)</div>
+          <div class="value" id="advInitial">R$ 0,00</div>
+          <div class="sub">Reposição e fundo de troco</div>
+        </div>
+        <div class="adv-kpi blue">
+          <div class="label">Entradas (vendas dia)</div>
+          <div class="value" id="advSales">R$ 0,00</div>
+          <div class="sub">Total faturado no dia</div>
+        </div>
+        <div class="adv-kpi red">
+          <div class="label">Saídas / retiradas</div>
+          <div class="value" id="advWithdrawals">R$ 0,00</div>
+          <div class="sub">Retiradas ou sangrias de gaveta</div>
+        </div>
+        <div class="adv-kpi green">
+          <div class="label">Fechamento do caixa</div>
+          <div class="value" id="advClosing">R$ 0,00</div>
+          <div class="sub">Valor conferido na gaveta</div>
+        </div>
+      </div>
+
+      <div class="adv-content2">
+        <div class="adv-card">
+          <div class="adv-card-title">
+            <h3>▥ Histórico de Fechamento do Caixa</h3>
+            <span>evolução por dia</span>
+          </div>
+          <div class="adv-chart"><canvas id="closingChart"></canvas></div>
+        </div>
+
+        <div class="adv-card">
+          <div class="adv-card-title">
+            <h3>◉ Resumo Geral</h3>
+            <span>visão acumulada</span>
+          </div>
+          <div class="adv-donut"><canvas id="summaryDonut"></canvas></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+            <div class="adv-pill">Faturamento<br><b id="donutSales">R$ 0,00</b></div>
+            <div class="adv-pill">Fechamentos<br><b id="donutClosing">R$ 0,00</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="adv-card adv-table-card">
+        <div class="adv-card-title">
+          <h3>▦ Resumo Diário</h3>
+          <div class="adv-actions">
+            <button class="adv-btn green" onclick="printMonthly()">⇩ Imprimir Relatório</button>
+            <button class="adv-btn blue" onclick="printDaily()">🖨 Imprimir Dia</button>
+          </div>
+        </div>
+
+        <div style="overflow:auto">
+          <table class="adv-table">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th class="right">Saldo inicial</th>
+                <th class="right">Vendas do dia</th>
+                <th class="right">Retiradas</th>
+                <th class="right">Fechamento</th>
+                <th class="right">Diferença</th>
+              </tr>
+            </thead>
+            <tbody id="advTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+
+</main>
+
+<section id="configTab" class="hidden max-w-3xl mx-auto p-4 md:p-6">
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
+  <div class="mb-6">
+   <h2 class="text-xl font-bold">Configuração — Google Sheets</h2>
+   <p class="text-sm text-slate-400 mt-1">Cole o link da sua planilha Google. O dashboard poderá atualizar os dados automaticamente.</p>
+  </div>
+  <label class="block text-sm font-semibold mb-2">Link do Google Sheets</label>
+  <input id="googleSheetUrl" type="url" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500" placeholder="https://docs.google.com/spreadsheets/d/..." value="https://docs.google.com/spreadsheets/d/1idL5VN5CRRgQaXZb4i14V9_sRg6CbxUJx3M-PdSpJGA/edit?usp=sharing">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+   <button onclick="saveGoogleConfig()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-xl font-semibold text-sm">Salvar configuração</button>
+   <button onclick="loadGoogleSheet()" class="bg-blue-600 hover:bg-blue-500 px-4 py-3 rounded-xl font-semibold text-sm">↻ Atualizar agora</button>
+  </div>
+  <div class="mt-5 rounded-xl border border-slate-800 bg-slate-950 p-4 text-sm">
+   <div class="font-semibold mb-1">Atualização automática</div>
+   <div class="text-slate-400">O dashboard verifica a planilha a cada <strong class="text-white">1 minuto</strong> enquanto esta página estiver aberta.</div>
+  </div>
+  <div id="googleStatus" class="mt-4 text-sm text-slate-400">Status: configuração ainda não carregada.</div>
+  <div class="mt-5 text-xs text-slate-500 leading-relaxed">
+   <strong class="text-slate-300">Importante:</strong> para leitura direta pelo navegador, a planilha precisa permitir acesso de leitura sem login (por exemplo, “Qualquer pessoa com o link — Leitor” ou estar publicada). Se a planilha estiver privada, será necessário usar uma integração/proxy autenticado.
+  </div>
+ </div>
+</section>
+
+<section id="caixaTab" class="hidden max-w-3xl mx-auto p-4 md:p-6">
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
+  <div class="flex items-center justify-between gap-3 mb-6">
+   <div>
+    <h2 class="text-xl font-bold">Caixa simples</h2>
+    <p class="text-sm text-slate-400 mt-1">Somente os valores principais do caixa do dia.</p>
+   </div>
+   <select id="simpleDaySelect" class="no-print bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm"></select>
+  </div>
+  <div class="space-y-3">
+   <div class="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950 px-4 py-4">
+    <span class="text-slate-300">Valor de início do caixa</span>
+    <strong id="simpleInitial" class="text-xl">R$ 0,00</strong>
+   </div>
+   <div class="flex items-center justify-between rounded-xl border border-rose-500/20 bg-slate-950 px-4 py-4">
+    <span class="text-slate-300">Retiradas / despesas do dia</span>
+    <strong id="simpleWithdrawals" class="text-xl text-rose-400">R$ 0,00</strong>
+   </div>
+   <div class="flex items-center justify-between rounded-xl border border-emerald-500/30 bg-slate-950 px-4 py-5">
+    <span class="font-semibold text-slate-200">Valor que ficou no caixa</span>
+    <strong id="simpleClosing" class="text-2xl text-emerald-400">R$ 0,00</strong>
+   </div>
+  </div>
+ </div>
+</section>
+
+<div id="printReceipt" class="print-receipt"></div>
+
+<script>
+const embeddedData = [{"dia":"01.08","initial":117.3,"sales":2053.88,"withdrawals":50,"closing":229.3},{"dia":"03.08","initial":117,"sales":1128.98,"withdrawals":0,"closing":279},{"dia":"04.08","initial":208.05,"sales":1459.79,"withdrawals":400,"closing":137.05},{"dia":"05.08","initial":137.15,"sales":3415.34,"withdrawals":650,"closing":66.5},{"dia":"06.08","initial":67.5,"sales":4086.72,"withdrawals":600,"closing":103.5},{"dia":"07.08","initial":103.5,"sales":3843.48,"withdrawals":500,"closing":150.9},{"dia":"08.08","initial":150.9,"sales":2828.86,"withdrawals":100,"closing":116.9},{"dia":"10.08","initial":84,"sales":2119.4,"withdrawals":500,"closing":36.9},{"dia":"11.08","initial":55,"sales":2073.5,"withdrawals":550,"closing":109.5}];
+let daysData = [...embeddedData];
+let chart = null;
+
+function money(v) {
+ return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(v)||0);
+}
+function sortDays() {
+ daysData.sort((a,b)=>Number(a.dia.slice(0,2))-Number(b.dia.slice(0,2)));
+}
+function render() {
+ sortDays();
+ const total=daysData.reduce((s,d)=>s+d.closing,0);
+ const max=daysData.length?Math.max(...daysData.map(d=>d.closing)):0;
+ const avg=daysData.length?total/daysData.length:0;
+ document.getElementById('totalClosing').textContent=money(total);
+ const totalSales=daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ document.getElementById('totalSales').textContent=money(totalSales);
+ document.getElementById('salesDays').textContent=`${daysData.filter(d=>(Number(d.sales)||0)>0).length} dias com vendas`;
+ document.getElementById('maxClosing').textContent=money(max);
+ document.getElementById('avgClosing').textContent=money(avg);
+
+ const select=document.getElementById('daySelect');
+ select.innerHTML=daysData.map(d=>`<option value="${d.dia}">${d.dia}</option>`).join('');
+ if(daysData.length) updateSelected(daysData[daysData.length-1].dia);
+
+ const tbody=document.getElementById('tableBody');
+ tbody.innerHTML=daysData.map(d=>`<tr class="border-t border-slate-800 hover:bg-slate-800/60">
+  <td class="p-3 font-semibold">${d.dia}</td>
+  <td class="p-3 text-right">${money(d.initial)}</td>
+  <td class="p-3 text-right">${money(d.sales)}</td>
+  <td class="p-3 text-right font-bold text-emerald-400">${money(d.closing)}</td>
+  <td class="p-3 text-right">${money(d.closing-d.initial)}</td>
+ </tr>`).join('');
+
+ drawChart();
+}
+function updateSelected(day) {
+ const d=daysData.find(x=>x.dia===day);
+ if(!d) return;
+ document.getElementById('selectedDay').textContent='Dia '+d.dia;
+ document.getElementById('selectedClosing').textContent=money(d.closing);
+}
+function drawChart() {
+ const ctx=document.getElementById('closingChart');
+ if(chart) chart.destroy();
+ chart=new Chart(ctx,{
+  type:'line',
+  data:{
+   labels:daysData.map(d=>d.dia),
+   datasets:[{
+    label:'Fechamento do caixa',
+    data:daysData.map(d=>d.closing),
+    borderWidth:3,
+    tension:.25,
+    fill:true,
+    pointRadius:5,
+    pointHoverRadius:7
+   }]
+  },
+  options:{
+   responsive:true,
+   maintainAspectRatio:false,
+   interaction:{mode:'index',intersect:false},
+   plugins:{
+    legend:{display:true,labels:{color:'#cbd5e1'}},
+    tooltip:{callbacks:{label:c=>money(c.raw)}}
+   },
+   scales:{
+    x:{ticks:{color:'#94a3b8'},grid:{color:'rgba(148,163,184,.08)'}},
+    y:{beginAtZero:true,ticks:{color:'#94a3b8',callback:v=>money(v)},grid:{color:'rgba(148,163,184,.08)'}}
+   }
+  }
+ });
+}
+document.getElementById('daySelect').addEventListener('change',e=>updateSelected(e.target.value));
+
+function updateSimpleDay(day){
+ const d=daysData.find(x=>x.dia===day);
+ if(!d) return;
+ document.getElementById('simpleInitial').textContent=money(d.initial);
+ document.getElementById('simpleWithdrawals').textContent=money(d.withdrawals);
+ document.getElementById('simpleClosing').textContent=money(d.closing);
+}
+function showTab(tab){
+ const dash=document.getElementById('dashboardTab');
+ const caixa=document.getElementById('caixaTab');
+ const config=document.getElementById('configTab');
+ const b1=document.getElementById('tabDashboard');
+ const b2=document.getElementById('tabCaixa');
+ const b3=document.getElementById('tabConfig');
+ [dash,caixa,config].forEach(x=>x.classList.add('hidden'));
+ [b1,b2,b3].forEach(x=>x.className='tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm');
+ if(tab==='caixa'){
+  caixa.classList.remove('hidden');
+  b2.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
+  const sel=document.getElementById('simpleDaySelect');
+  sel.innerHTML=daysData.map(d=>`<option value="${d.dia}">${d.dia}</option>`).join('');
+  if(daysData.length) { sel.value=daysData[daysData.length-1].dia; updateSimpleDay(sel.value); }
+ } else if(tab==='config'){
+  config.classList.remove('hidden');
+  b3.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
+ } else {
+  dash.classList.remove('hidden');
+  b1.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
+ }
+}
+document.getElementById('simpleDaySelect').addEventListener('change',e=>updateSimpleDay(e.target.value));
+
+function buildReceipt(type, day){
+ const el=document.getElementById('printReceipt');
+ const now=new Date().toLocaleString('pt-BR');
+ if(type==='daily'){
+  const d=daysData.find(x=>x.dia===day);
+  if(!d) return false;
+  el.innerHTML=`<div class="receipt-center"><strong style="font-size:17px">BIOBEL</strong><br>FECHAMENTO DE CAIXA<br>${d.dia}/08/2026</div>
+  <div class="receipt-line"></div>
+  <div class="receipt-row"><span>Saldo inicial</span><strong>${money(d.initial)}</strong></div>
+  <div class="receipt-row"><span>Faturamento do dia</span><strong>${money(d.sales)}</strong></div>
+  <div class="receipt-row"><span>Fechamento da gaveta</span><strong>${money(d.closing)}</strong></div>
+  <div class="receipt-row"><span>Variação</span><strong>${money(d.closing-d.initial)}</strong></div>
+  <div class="receipt-line"></div>
+  <div class="receipt-center receipt-total">FECHAMENTO: ${money(d.closing)}</div>
+  <div class="receipt-line"></div>
+  <div class="receipt-center receipt-small">Impresso em ${now}</div>`;
+ } else {
+  const totalSales=daysData.reduce((a,d)=>a+(Number(d.sales)||0),0);
+  const totalClosing=daysData.reduce((a,d)=>a+(Number(d.closing)||0),0);
+  const totalInitial=daysData.reduce((a,d)=>a+(Number(d.initial)||0),0);
+  el.innerHTML=`<div class="receipt-center"><strong style="font-size:17px">BIOBEL</strong><br>RELATÓRIO FINANCEIRO<br>AGOSTO/2026</div>
+  <div class="receipt-line"></div>
+  <div class="receipt-row"><span>Dias registrados</span><strong>${daysData.length}</strong></div>
+  <div class="receipt-row"><span>Faturamento total</span><strong>${money(totalSales)}</strong></div>
+  <div class="receipt-row"><span>Total dos fechamentos</span><strong>${money(totalClosing)}</strong></div>
+  <div class="receipt-row"><span>Total dos saldos iniciais</span><strong>${money(totalInitial)}</strong></div>
+  <div class="receipt-line"></div>
+  <strong>FECHAMENTO POR DIA</strong><br>
+  ${daysData.map(d=>`<div class="receipt-row"><span>${d.dia}</span><span>${money(d.closing)}</span></div>`).join('')}
+  <div class="receipt-line"></div>
+  <div class="receipt-center receipt-total">FATURAMENTO: ${money(totalSales)}</div>
+  <div class="receipt-line"></div>
+  <div class="receipt-center receipt-small">Impresso em ${now}</div>`;
+ }
+ return true;
+}
+function startReceiptPrint(type){
+ document.body.classList.add('receipt-printing');
+ window.onafterprint=()=>document.body.classList.remove('receipt-printing');
+ setTimeout(()=>window.print(),50);
+}
+function printDaily(){
+ const day=document.getElementById('daySelect').value;
+ if(!day) return alert('Selecione um dia antes de imprimir.');
+ updateSelected(day);
+ if(buildReceipt('daily',day)) startReceiptPrint('daily');
+}
+function printMonthly(){
+ buildReceipt('monthly');
+ startReceiptPrint('monthly');
+}
+
+const DEFAULT_GOOGLE_URL='https://docs.google.com/spreadsheets/d/1idL5VN5CRRgQaXZb4i14V9_sRg6CbxUJx3M-PdSpJGA/edit?usp=sharing';
+let googleTimer=null;
+function setGoogleStatus(msg, ok=false){
+ const el=document.getElementById('googleStatus');
+ if(el) el.innerHTML=`Status: <span class="${ok?'text-emerald-400':'text-slate-400'}">${msg}</span>`;
+}
+function extractSpreadsheetId(url){
+ const m=String(url||'').match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+ return m?m[1]:'';
+}
+function saveGoogleConfig(){
+ const url=document.getElementById('googleSheetUrl').value.trim();
+ const id=extractSpreadsheetId(url);
+ if(!id) return setGoogleStatus('link inválido. Cole o endereço completo do Google Sheets.');
+ localStorage.setItem('biobel_google_sheet_url',url);
+ setGoogleStatus('configuração salva.',true);
+ loadGoogleSheet();
+}
+function getGoogleUrl(){return localStorage.getItem('biobel_google_sheet_url') || document.getElementById('googleSheetUrl')?.value || DEFAULT_GOOGLE_URL;}
+async function loadGoogleSheet(){
+ const url=getGoogleUrl();
+ const id=extractSpreadsheetId(url);
+ if(!id) return setGoogleStatus('link inválido.');
+ const exportUrl=`https://docs.google.com/spreadsheets/d/${id}/export?format=xlsx`;
+ setGoogleStatus('conectando à planilha...');
+ try{
+  const response=await fetch(exportUrl,{cache:'no-store'});
+  if(!response.ok) throw new Error(`HTTP ${response.status}`);
+  const buf=await response.arrayBuffer();
+  const wb=XLSX.read(buf,{type:'array'});
+  let found=0;
+  for(const sheetName of wb.SheetNames){
+   if(!/^\d{2}\.\d{2}$/.test(sheetName)) continue;
+   const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{header:1,defval:null,raw:true});
+   const colM=12;
+   let initial=0,closing=0,withdrawals=0;
+   for(let r=0;r<rows.length;r++){
+    const label=String(rows[r]?.[colM]??'').toLowerCase();
+    if(label.includes('inicio do caixa')){
+     for(let rr=r+1;rr<Math.min(r+8,rows.length);rr++){const v=rows[rr]?.[colM]; if(typeof v==='number'){initial=v;break;}}
+    }
+    if(label.includes('retirada do caixa')){
+     for(let rr=r+1;rr<Math.min(r+8,rows.length);rr++){const v=rows[rr]?.[colM]; if(typeof v==='number'){withdrawals=v;break;} if(String(v??'').toLowerCase().includes('fechamento')) break;}
+    }
+    if(label.includes('fechamento do caixa')){
+     for(let rr=r+1;rr<Math.min(r+8,rows.length);rr++){const v=rows[rr]?.[colM]; if(typeof v==='number'){closing=v;break;}}
+     if(!closing && typeof rows[r+1]?.[0]==='number') closing=rows[r+1][0];
+    }
+   }
+   const sales=typeof rows[1]?.[15]==='number'?rows[1][15]:0;
+   daysData=daysData.filter(x=>x.dia!==sheetName);
+   daysData.push({dia:sheetName,initial,sales,withdrawals,closing});
+   found++;
+  }
+  render();
+  setGoogleStatus(`conectado. ${found} dia(s) atualizado(s) às ${new Date().toLocaleTimeString('pt-BR')}.`,true);
+ }catch(err){
+  console.error(err);
+  setGoogleStatus('não foi possível ler a planilha. Verifique se ela está acessível para leitura sem login e se o navegador permite o acesso.');
+ }
+}
+function startGoogleAutoRefresh(){
+ if(googleTimer) clearInterval(googleTimer);
+ const url=localStorage.getItem('biobel_google_sheet_url');
+ if(url) googleTimer=setInterval(loadGoogleSheet,60000);
+}
+(function initGoogleConfig(){
+ const saved=localStorage.getItem('biobel_google_sheet_url');
+ const input=document.getElementById('googleSheetUrl');
+ if(saved && input) input.value=saved;
+ startGoogleAutoRefresh();
+ if(saved) setTimeout(loadGoogleSheet,800);
+})();
+
+document.getElementById('fileInput').addEventListener('change',async e=>{
+ for(const file of e.target.files){
+  const buf=await file.arrayBuffer();
+  const wb=XLSX.read(buf,{type:'array'});
+  for(const sheetName of wb.SheetNames){
+   if(!/^\d{2}\.\d{2}$/.test(sheetName)) continue;
+   const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{header:1,defval:null,raw:true});
+   const colM=12;
+   let initial=0,closing=0,withdrawals=0;
+   for(let r=0;r<rows.length;r++){
+    const label=String(rows[r][colM]??'').toLowerCase();
+    if(label.includes('inicio do caixa')){
+     for(let rr=r+1;rr<Math.min(r+6,rows.length);rr++) if(typeof rows[rr][colM]==='number'){initial=rows[rr][colM];break;}
+    }
+    if(label.includes('retirada do caixa')){
+     for(let rr=r+1;rr<Math.min(r+6,rows.length);rr++){
+      const v=rows[rr][colM];
+      if(typeof v==='number'){withdrawals=v;break;}
+      if(String(v??'').toLowerCase().includes('fechamento')) break;
+     }
+    }
+    if(label.includes('fechamento do caixa')){
+     for(let rr=r+1;rr<Math.min(r+6,rows.length);rr++) if(typeof rows[rr][colM]==='number'){closing=rows[rr][colM];break;}
+     if(!closing && typeof rows[r+1]?.[0]==='number') closing=rows[r+1][0];
+    }
+   }
+   const sales=typeof rows[1]?.[15]==='number'?rows[1][15]:0;
+   const item={dia:sheetName,initial,sales,withdrawals,closing};
+   daysData=daysData.filter(x=>x.dia!==sheetName);
+   daysData.push(item);
+  }
+ }
+ render();
+});
+
+
+let advSummaryDonut = null;
+
+function renderAdvancedDashboard(){
+  sortDays();
+  const totalSales = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+  const totalClosing = daysData.reduce((s,d)=>s+(Number(d.closing)||0),0);
+  const avgClosing = daysData.length ? totalClosing/daysData.length : 0;
+
+  const ids = {
+    advTotalSales: totalSales, advTotalClosing: totalClosing,
+    advDaysCount: daysData.length, advAvgClosing: avgClosing,
+    advPillInitial: 0, advPillClosing: 0, advPillSales: 0,
+    advInitial: 0, advSales: 0, advWithdrawals: 0, advClosing: 0,
+    donutSales: totalSales, donutClosing: totalClosing
+  };
+  Object.entries(ids).forEach(([id,val])=>{
+    const el=document.getElementById(id); if(!el) return;
+    el.textContent = id==='advDaysCount' ? String(val) : money(val);
+  });
+
+  const sel=document.getElementById('daySelect');
+  const current=sel?.value;
+  if(sel){
+    sel.innerHTML=daysData.map(d=>`<option value="${d.dia}">${d.dia}/2026</option>`).join('');
+    if(current && daysData.some(d=>d.dia===current)) sel.value=current;
+    else if(daysData.length) sel.value=daysData[daysData.length-1].dia;
+    updateAdvancedSelected(sel.value);
+  }
+
+  const tbody=document.getElementById('advTableBody');
+  if(tbody){
+    tbody.innerHTML=daysData.map(d=>`
+      <tr>
+        <td><b>${d.dia}/2026</b></td>
+        <td class="right">${money(d.initial)}</td>
+        <td class="right">${money(d.sales)}</td>
+        <td class="right">${money(d.withdrawals)}</td>
+        <td class="right"><b style="color:var(--green)">${money(d.closing)}</b></td>
+        <td class="right">${money(d.closing-d.initial)}</td>
+      </tr>`).join('');
+    tbody.innerHTML += `<tr>
+      <td><b>TOTAIS</b></td>
+      <td class="right"><b>${money(daysData.reduce((s,d)=>s+d.initial,0))}</b></td>
+      <td class="right"><b>${money(totalSales)}</b></td>
+      <td class="right"><b>${money(daysData.reduce((s,d)=>s+d.withdrawals,0))}</b></td>
+      <td class="right"><b style="color:var(--green)">${money(totalClosing)}</b></td>
+      <td class="right"><b>${money(daysData.reduce((s,d)=>s+(d.closing-d.initial),0))}</b></td>
+    </tr>`;
+  }
+
+  // Existing chart canvas is reused, but with the designer styling.
+  if(window.chart && typeof chart.destroy==='function') { try{ chart.destroy(); }catch(e){} }
+  const ctx=document.getElementById('closingChart');
+  if(ctx){
+    chart=new Chart(ctx,{
+      type:'line',
+      data:{
+        labels:daysData.map(d=>d.dia),
+        datasets:[{
+          label:'Fechamento do caixa',
+          data:daysData.map(d=>d.closing),
+          borderColor:'#27d7a0',
+          backgroundColor:'rgba(39,215,160,.14)',
+          pointBackgroundColor:'#0d1a2c',
+          pointBorderColor:'#66e6bf',
+          pointRadius:4,
+          pointHoverRadius:6,
+          borderWidth:3,
+          tension:.35,
+          fill:true
+        }]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        interaction:{mode:'index',intersect:false},
+        plugins:{
+          legend:{display:false},
+          tooltip:{callbacks:{label:c=>` Fechamento: ${money(c.raw)}`}}
+        },
+        scales:{
+          x:{ticks:{color:'#91a1b8'},grid:{color:'rgba(145,161,184,.06)'}},
+          y:{beginAtZero:true,ticks:{color:'#91a1b8',callback:v=>money(v)},grid:{color:'rgba(145,161,184,.08)'}}
+        }
+      }
+    });
+  }
+
+  const dctx=document.getElementById('summaryDonut');
+  if(dctx){
+    if(advSummaryDonut) advSummaryDonut.destroy();
+    const withdrawals=daysData.reduce((s,d)=>s+d.withdrawals,0);
+    const initials=daysData.reduce((s,d)=>s+d.initial,0);
+    advSummaryDonut=new Chart(dctx,{
+      type:'doughnut',
+      data:{
+        labels:['Faturamento','Fechamentos','Retiradas','Saldo Inicial'],
+        datasets:[{
+          data:[totalSales,totalClosing,withdrawals,initials],
+          backgroundColor:['#27d7a0','#4f9cff','#ff6174','#ffbf47'],
+          borderWidth:0,
+          hoverOffset:5
+        }]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{
+          legend:{position:'bottom',labels:{color:'#cbd5e1',boxWidth:10,font:{size:10}}},
+          tooltip:{callbacks:{label:c=>`${c.label}: ${money(c.raw)}`}}
+        },
+        cutout:'64%'
+      }
+    });
+  }
+  const now=new Date().toLocaleString('pt-BR');
+  const last=document.getElementById('advLastUpdate'); if(last) last.textContent=now;
+}
+
+function updateAdvancedSelected(day){
+  const d=daysData.find(x=>x.dia===day); if(!d) return;
+  const map={advPillInitial:d.initial,advPillClosing:d.closing,advPillSales:d.sales,
+             advInitial:d.initial,advSales:d.sales,advWithdrawals:d.withdrawals,advClosing:d.closing};
+  Object.entries(map).forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.textContent=money(v)});
+  const sel=document.getElementById('simpleDaySelect');
+  if(sel) { sel.innerHTML=daysData.map(x=>`<option value="${x.dia}">${x.dia}</option>`).join(''); sel.value=day; updateSimpleDay(day); }
+}
+
+
+// O Dashboard Avançado usa uma renderização própria; as abas simples/configuração
+// continuam usando suas funções originais.
+render = function(){
+  renderAdvancedDashboard();
+};
+
+updateSelected = function(day){
+  updateAdvancedSelected(day);
+};
+
+document.getElementById('daySelect')?.addEventListener('change',e=>updateAdvancedSelected(e.target.value));
+
+
+
+render();
+</script>
+</body>
+</html>
