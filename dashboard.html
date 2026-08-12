@@ -471,6 +471,24 @@ if (localStorage.getItem('biobel_theme') === 'light') {
   </div>
  </div>
 
+ <div class="adv-content2">
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>🏆 Ranking de vendedoras</h3>
+    <span>quem mais vendeu no mês</span>
+   </div>
+   <div id="infoSellerRanking" style="display:flex;flex-direction:column;gap:10px;"></div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>📅 Dias que mais venderam</h3>
+    <span>ranking do mês</span>
+   </div>
+   <div id="infoTopDays" style="display:flex;flex-direction:column;gap:10px;"></div>
+  </div>
+ </div>
+
 </section>
 
 <section id="configTab" class="hidden max-w-3xl mx-auto p-4 md:p-6" role="tabpanel" aria-labelledby="tabConfig">
@@ -617,7 +635,7 @@ if (localStorage.getItem('biobel_theme') === 'light') {
 <div id="printReceipt" class="print-receipt"></div>
 
 <script>
-const embeddedData = [{"dia":"01.08","initial":117.3,"sales":2053.88,"withdrawals":50,"closing":229.3,"dinheiro":162,"debito":314.99,"credito":480.97,"pix":1095.92},{"dia":"03.08","initial":117,"sales":1128.98,"withdrawals":0,"closing":279,"dinheiro":162,"debito":186.5,"credito":445.49,"pix":334.99},{"dia":"04.08","initial":208.05,"sales":1459.79,"withdrawals":400,"closing":137.05,"dinheiro":329,"debito":386,"credito":279.89,"pix":464.9},{"dia":"05.08","initial":137.15,"sales":3415.34,"withdrawals":650,"closing":66.5,"dinheiro":579.35,"debito":737.58,"credito":1013.95,"pix":1084.46},{"dia":"06.08","initial":67.5,"sales":4086.72,"withdrawals":600,"closing":103.5,"dinheiro":636,"debito":593.79,"credito":1942.93,"pix":914},{"dia":"07.08","initial":103.5,"sales":3843.48,"withdrawals":500,"closing":150.9,"dinheiro":547.4,"debito":1033.58,"credito":2102.5,"pix":160},{"dia":"08.08","initial":150.9,"sales":2828.86,"withdrawals":100,"closing":116.9,"dinheiro":66,"debito":481.9,"credito":1334.99,"pix":945.97},{"dia":"10.08","initial":84,"sales":2119.4,"withdrawals":500,"closing":36.9,"dinheiro":452.9,"debito":146,"credito":752,"pix":768.5},{"dia":"11.08","initial":55,"sales":2073.5,"withdrawals":550,"closing":109.5,"dinheiro":604.5,"debito":460,"credito":220,"pix":789}];
+const embeddedData = [{"dia": "01.08", "initial": 117.3, "sales": 2053.88, "withdrawals": 50, "closing": 229.3, "dinheiro": 162, "debito": 314.99, "credito": 480.97, "pix": 1095.92, "vendedoras": {"alesandra": 1285.94, "Day": 767.94}}, {"dia": "03.08", "initial": 117, "sales": 1128.98, "withdrawals": 0, "closing": 279, "dinheiro": 162, "debito": 186.5, "credito": 445.49, "pix": 334.99, "vendedoras": {"alesandra": 795.99, "Gabriela": 164.0, "Day": 168.99}}, {"dia": "04.08", "initial": 208.05, "sales": 1459.79, "withdrawals": 400, "closing": 137.05, "dinheiro": 329, "debito": 386, "credito": 279.89, "pix": 464.9, "vendedoras": {"Gabriela": 460.0, "Day": 615.89, "alesandra": 383.9}}, {"dia": "05.08", "initial": 137.15, "sales": 3415.34, "withdrawals": 650, "closing": 66.5, "dinheiro": 579.35, "debito": 737.58, "credito": 1013.95, "pix": 1084.46, "vendedoras": {"alesandra": 1963.41, "Gabriela": 1004.95, "Day": 446.98}}, {"dia": "06.08", "initial": 67.5, "sales": 4086.72, "withdrawals": 600, "closing": 103.5, "dinheiro": 636, "debito": 593.79, "credito": 1942.93, "pix": 914, "vendedoras": {"Gabriela": 2004.99, "alesandra": 1296.96, "Day": 784.77}}, {"dia": "07.08", "initial": 103.5, "sales": 3843.48, "withdrawals": 500, "closing": 150.9, "dinheiro": 547.4, "debito": 1033.58, "credito": 2102.5, "pix": 160, "vendedoras": {"Gabriela": 1325.0, "alesandra": 1353.5, "Day": 1164.98}}, {"dia": "08.08", "initial": 150.9, "sales": 2828.86, "withdrawals": 100, "closing": 116.9, "dinheiro": 66, "debito": 481.9, "credito": 1334.99, "pix": 945.97, "vendedoras": {"alesandra": 602.9, "Day": 993.96, "Gabriela": 1232.0}}, {"dia": "10.08", "initial": 84, "sales": 2119.4, "withdrawals": 500, "closing": 36.9, "dinheiro": 452.9, "debito": 146, "credito": 752, "pix": 768.5, "vendedoras": {"alesandra": 390.4, "Gabriela": 1096.0, "Day": 633.0}}, {"dia": "11.08", "initial": 55, "sales": 2073.5, "withdrawals": 550, "closing": 109.5, "dinheiro": 604.5, "debito": 460, "credito": 220, "pix": 789, "vendedoras": {"alesandra": 874.0, "Gabriela": 819.0, "Day": 380.5}}];
 let daysData = [...embeddedData];
 let chart = null;
 
@@ -843,6 +861,68 @@ function renderInfoTab(){
  document.getElementById('infoCreditoPct').textContent = pctOf(credito);
  document.getElementById('infoPix').textContent = money(pix);
  document.getElementById('infoPixPct').textContent = pctOf(pix);
+
+ renderSellerRanking();
+ renderTopDays();
+}
+
+function renderSellerRanking(){
+ const el = document.getElementById('infoSellerRanking');
+ if(!el) return;
+ const totals = {};
+ daysData.forEach(d=>{
+  const vendedoras = d.vendedoras || {};
+  Object.entries(vendedoras).forEach(([nome,valor])=>{
+   totals[nome] = (totals[nome]||0) + (Number(valor)||0);
+  });
+ });
+ const ranked = Object.entries(totals).sort((a,b)=>b[1]-a[1]);
+ if(ranked.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:13px;">Nenhum dado de vendedora encontrado ainda.</p>';
+  return;
+ }
+ const max = ranked[0][1];
+ const medalhas = ['🥇','🥈','🥉'];
+ el.innerHTML = ranked.map(([nome,valor],i)=>{
+  const pct = max>0 ? (valor/max)*100 : 0;
+  const medalha = medalhas[i] || '▪️';
+  return `
+   <div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+     <span style="color:#dce5f2;">${medalha} ${nome}</span>
+     <strong style="color:#f6f9fd;">${money(valor)}</strong>
+    </div>
+    <div style="background:#0b1728;border-radius:999px;height:10px;overflow:hidden;">
+     <div style="height:100%;width:${pct.toFixed(1)}%;background:linear-gradient(90deg,#27d7a0,#0ea97a);"></div>
+    </div>
+   </div>`;
+ }).join('');
+}
+
+function renderTopDays(){
+ const el = document.getElementById('infoTopDays');
+ if(!el) return;
+ if(daysData.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:13px;">Nenhum dia lançado ainda.</p>';
+  return;
+ }
+ const ranked = [...daysData].sort((a,b)=>(Number(b.sales)||0)-(Number(a.sales)||0));
+ const max = Number(ranked[0].sales)||0;
+ const medalhas = ['🥇','🥈','🥉'];
+ el.innerHTML = ranked.map((d,i)=>{
+  const pct = max>0 ? ((Number(d.sales)||0)/max)*100 : 0;
+  const medalha = medalhas[i] || '▪️';
+  return `
+   <div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+     <span style="color:#dce5f2;">${medalha} Dia ${d.dia}</span>
+     <strong style="color:#f6f9fd;">${money(d.sales)}</strong>
+    </div>
+    <div style="background:#0b1728;border-radius:999px;height:10px;overflow:hidden;">
+     <div style="height:100%;width:${pct.toFixed(1)}%;background:linear-gradient(90deg,#4f9cff,#2f78e0);"></div>
+    </div>
+   </div>`;
+ }).join('');
 }
 
 function buildReceipt(type, day){
@@ -958,6 +1038,28 @@ function findPaymentTotals(rows){
  return {dinheiro:0,debito:0,credito:0,pix:0};
 }
 
+function extractSellerTotals(rows){
+ // Cada linha de venda tem: nº (col A), Dinheiro/Débito/Crédito/Pix (col B-E), vendedora (col F).
+ // Soma o valor da venda (uma das 4 colunas de pagamento) por vendedora, até achar a linha "total".
+ const totals = {};
+ for(let r=0;r<rows.length;r++){
+  const rownum = rows[r]?.[0];
+  const label = String(rownum??'').trim().toLowerCase();
+  if(label==='total') break;
+  if(typeof rownum!=='number') continue;
+  const vendedora = rows[r]?.[5];
+  if(!vendedora || typeof vendedora!=='string' || !vendedora.trim()) continue;
+  const nome = vendedora.trim();
+  let valorVenda = 0;
+  for(const c of [1,2,3,4]){
+   const v = rows[r]?.[c];
+   if(typeof v==='number') valorVenda += v;
+  }
+  if(valorVenda>0) totals[nome] = (totals[nome]||0) + valorVenda;
+ }
+ return totals;
+}
+
 function setRefreshButtonsLoading(loading){
  const btns = [document.getElementById('btnRefreshSidebar'), document.getElementById('btnRefreshConfig')].filter(Boolean);
  btns.forEach(btn=>{
@@ -1008,8 +1110,9 @@ async function loadGoogleSheet(){
    }
    const sales=typeof rows[1]?.[15]==='number'?rows[1][15]:0;
    const {dinheiro,debito,credito,pix}=findPaymentTotals(rows);
+   const vendedoras=extractSellerTotals(rows);
    daysData=daysData.filter(x=>x.dia!==sheetName);
-   daysData.push({dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix});
+   daysData.push({dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras});
    found++;
   }
   render();
@@ -1077,7 +1180,8 @@ document.getElementById('fileInput').addEventListener('change',async e=>{
    }
    const sales=typeof rows[1]?.[15]==='number'?rows[1][15]:0;
    const {dinheiro,debito,credito,pix}=findPaymentTotals(rows);
-   const item={dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix};
+   const vendedoras=extractSellerTotals(rows);
+   const item={dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras};
    daysData=daysData.filter(x=>x.dia!==sheetName);
    daysData.push(item);
   }
