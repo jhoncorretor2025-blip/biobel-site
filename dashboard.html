@@ -531,6 +531,13 @@ if (localStorage.getItem('biobel_theme') === 'light') {
     <span class="font-semibold text-slate-200">Valor que ficou no caixa</span>
     <strong id="simpleClosing" class="text-2xl text-emerald-400">R$ 0,00</strong>
    </div>
+   <div class="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950 px-4 py-4">
+    <span class="text-slate-300">Variação da gaveta (dinheiro)</span>
+    <strong id="simpleVariacao" class="text-xl text-slate-200">R$ 0,00</strong>
+   </div>
+  </div>
+  <div class="mt-4 rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3 text-xs text-slate-400 leading-relaxed">
+   💡 <strong class="text-slate-300">O que é "Variação da gaveta"?</strong> É o fechamento menos o saldo inicial — ou seja, só o <strong class="text-slate-300">dinheiro físico</strong> que sobrou a mais (ou a menos) na gaveta. Vendas em <strong class="text-slate-300">cartão e Pix não entram nessa conta</strong>, porque esse dinheiro vai direto pro banco, sem passar pela gaveta. Esse mesmo aviso também sai no recibo impresso.
   </div>
  </div>
 </section>
@@ -622,6 +629,12 @@ function updateSimpleDay(day){
  document.getElementById('simpleSales').textContent=money(d.sales);
  document.getElementById('simpleWithdrawals').textContent=money(d.withdrawals);
  document.getElementById('simpleClosing').textContent=money(d.closing);
+ const variacao = d.closing - d.initial;
+ const varEl = document.getElementById('simpleVariacao');
+ if(varEl){
+  varEl.textContent = (variacao>=0?'+':'') + money(variacao);
+  varEl.className = 'text-xl ' + (variacao>=0 ? 'text-emerald-400' : 'text-rose-400');
+ }
 }
 function showTab(tab){
  const dash=document.getElementById('dashboardTab');
