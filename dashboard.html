@@ -531,7 +531,14 @@ if (localStorage.getItem('biobel_theme') === 'light') {
      <span class="text-slate-300">💰 Vendas do dia</span>
      <strong id="simpleSales" class="text-xl text-blue-400">R$ 0,00</strong>
     </div>
-    <p class="simple-legend text-xs text-slate-500 mt-1">Tudo que foi vendido no dia, somando <strong class="text-slate-400">dinheiro + cartão + Pix</strong> juntos.</p>
+    <p class="simple-legend text-xs text-slate-500 mt-1">Tudo que foi vendido no dia, somando <strong class="text-slate-400">dinheiro + cartão + Pix</strong> juntos. Esse total <strong class="text-slate-400">não passa direto pela gaveta</strong> — só a parte em dinheiro (linha abaixo) passa.</p>
+   </div>
+   <div class="rounded-xl border border-amber-500/20 bg-slate-950 px-4 py-4">
+    <div class="flex items-center justify-between">
+     <span class="text-slate-300">💵 Dinheiro que entrou na gaveta</span>
+     <strong id="simpleDinheiro" class="text-xl text-amber-400">R$ 0,00</strong>
+    </div>
+    <p class="simple-legend text-xs text-slate-500 mt-1">Só a parte das vendas que foi <strong class="text-slate-400">paga em dinheiro</strong> (sem contar cartão/Pix) — é esse valor que realmente entra na gaveta física.</p>
    </div>
    <div class="rounded-xl border border-rose-500/20 bg-slate-950 px-4 py-4">
     <div class="flex items-center justify-between">
@@ -636,6 +643,7 @@ function updateSimpleDay(day){
  if(!d) return;
  document.getElementById('simpleInitial').textContent=money(d.initial);
  document.getElementById('simpleSales').textContent=money(d.sales);
+ document.getElementById('simpleDinheiro').textContent=money(d.dinheiro);
  document.getElementById('simpleWithdrawals').textContent=money(d.withdrawals);
  document.getElementById('simpleClosing').textContent=money(d.closing);
 }
@@ -770,6 +778,8 @@ function buildReceipt(type, day){
   <div class="receipt-line"></div>
   <div class="receipt-row"><span>Saldo inicial (abertura)</span><strong>${money(d.initial)}</strong></div>
   <div class="receipt-row"><span>Faturamento do dia (total)</span><strong>${money(d.sales)}</strong></div>
+  <div class="receipt-row"><span>Dinheiro recebido no dia</span><strong>${money(d.dinheiro)}</strong></div>
+  <div class="receipt-row"><span>Retiradas do dia</span><strong>${money(d.withdrawals)}</strong></div>
   <div class="receipt-row"><span>Fechamento da gaveta</span><strong>${money(d.closing)}</strong></div>
   <div class="receipt-line"></div>
   <div class="receipt-center receipt-total">FECHAMENTO: ${money(d.closing)}</div>
