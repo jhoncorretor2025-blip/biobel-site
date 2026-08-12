@@ -515,29 +515,46 @@ if (localStorage.getItem('biobel_theme') === 'light') {
    </div>
   </div>
   <div class="space-y-3">
-   <div class="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950 px-4 py-4">
-    <span class="text-slate-300">Valor de início do caixa</span>
-    <strong id="simpleInitial" class="text-xl">R$ 0,00</strong>
+   <div class="rounded-xl border border-slate-800 bg-slate-950 px-4 py-4">
+    <div class="flex items-center justify-between">
+     <span class="text-slate-300">Valor de início do caixa</span>
+     <strong id="simpleInitial" class="text-xl">R$ 0,00</strong>
+    </div>
+    <p class="text-xs text-slate-500 mt-1">Quanto tinha na gaveta quando a loja <strong class="text-slate-400">abriu</strong> — o dinheiro que ficou de troco do dia anterior.</p>
    </div>
-   <div class="flex items-center justify-between rounded-xl border border-blue-500/20 bg-slate-950 px-4 py-4">
-    <span class="text-slate-300">Vendas do dia</span>
-    <strong id="simpleSales" class="text-xl text-blue-400">R$ 0,00</strong>
+   <div class="rounded-xl border border-blue-500/20 bg-slate-950 px-4 py-4">
+    <div class="flex items-center justify-between">
+     <span class="text-slate-300">Vendas do dia</span>
+     <strong id="simpleSales" class="text-xl text-blue-400">R$ 0,00</strong>
+    </div>
+    <p class="text-xs text-slate-500 mt-1">Tudo que foi vendido no dia, somando <strong class="text-slate-400">dinheiro + cartão + Pix</strong> juntos.</p>
    </div>
-   <div class="flex items-center justify-between rounded-xl border border-rose-500/20 bg-slate-950 px-4 py-4">
-    <span class="text-slate-300">Retiradas / despesas do dia</span>
-    <strong id="simpleWithdrawals" class="text-xl text-rose-400">R$ 0,00</strong>
+   <div class="rounded-xl border border-rose-500/20 bg-slate-950 px-4 py-4">
+    <div class="flex items-center justify-between">
+     <span class="text-slate-300">Retiradas / despesas do dia</span>
+     <strong id="simpleWithdrawals" class="text-xl text-rose-400">R$ 0,00</strong>
+    </div>
+    <p class="text-xs text-slate-500 mt-1">Dinheiro que <strong class="text-slate-400">saiu da gaveta</strong> durante o dia (compras, troco, sangria etc).</p>
    </div>
-   <div class="flex items-center justify-between rounded-xl border border-emerald-500/30 bg-slate-950 px-4 py-5">
-    <span class="font-semibold text-slate-200">Valor que ficou no caixa</span>
-    <strong id="simpleClosing" class="text-2xl text-emerald-400">R$ 0,00</strong>
+   <div class="rounded-xl border border-emerald-500/30 bg-slate-950 px-4 py-5">
+    <div class="flex items-center justify-between">
+     <span class="font-semibold text-slate-200">Valor que ficou no caixa</span>
+     <strong id="simpleClosing" class="text-2xl text-emerald-400">R$ 0,00</strong>
+    </div>
+    <p class="text-xs text-slate-500 mt-1">Quanto tinha na gaveta quando a loja <strong class="text-slate-400">fechou</strong> — o valor final, contado na hora de fechar.</p>
    </div>
-   <div class="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950 px-4 py-4">
-    <span class="text-slate-300">Variação da gaveta (dinheiro)</span>
-    <strong id="simpleVariacao" class="text-xl text-slate-200">R$ 0,00</strong>
+   <div class="rounded-xl border border-slate-800 bg-slate-950 px-4 py-4">
+    <div class="flex items-center justify-between">
+     <span class="text-slate-300">Variação da gaveta (dinheiro)</span>
+     <strong id="simpleVariacao" class="text-xl text-slate-200">R$ 0,00</strong>
+    </div>
+    <p class="text-xs text-slate-500 mt-1">É a diferença entre o <strong class="text-slate-400">valor de início</strong> e o <strong class="text-slate-400">valor final</strong> — ou seja, quanto o dinheiro da gaveta aumentou (ou diminuiu) do começo ao fim do dia.</p>
    </div>
   </div>
-  <div class="mt-4 rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3 text-xs text-slate-400 leading-relaxed">
-   💡 <strong class="text-slate-300">O que é "Variação da gaveta"?</strong> É o fechamento menos o saldo inicial — ou seja, só o <strong class="text-slate-300">dinheiro físico</strong> que sobrou a mais (ou a menos) na gaveta. Vendas em <strong class="text-slate-300">cartão e Pix não entram nessa conta</strong>, porque esse dinheiro vai direto pro banco, sem passar pela gaveta. Esse mesmo aviso também sai no recibo impresso.
+  <div id="simpleExampleBox" class="mt-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-xs text-slate-300 leading-relaxed">
+   💡 <strong class="text-slate-100">Exemplo com os números de hoje:</strong>
+   <span id="simpleExampleText">a gaveta começou o dia com R$ 0,00 e fechou com R$ 0,00. A diferença entre esses dois valores é R$ 0,00 — isso é a "Variação da gaveta".</span>
+   <br><span class="text-slate-400">Repare que as vendas em <strong class="text-slate-300">cartão e Pix não entram nessa conta</strong>, porque esse dinheiro vai direto pro banco, sem passar pela gaveta física da loja.</span>
   </div>
  </div>
 </section>
@@ -634,6 +651,11 @@ function updateSimpleDay(day){
  if(varEl){
   varEl.textContent = (variacao>=0?'+':'') + money(variacao);
   varEl.className = 'text-xl ' + (variacao>=0 ? 'text-emerald-400' : 'text-rose-400');
+ }
+ const exEl = document.getElementById('simpleExampleText');
+ if(exEl){
+  const sinal = variacao>=0 ? 'a mais' : 'a menos';
+  exEl.innerHTML = `a gaveta <strong class="text-slate-100">começou</strong> o dia ${d.dia} com <strong class="text-slate-100">${money(d.initial)}</strong> e <strong class="text-slate-100">terminou</strong> com <strong class="text-slate-100">${money(d.closing)}</strong>. A diferença entre esses dois valores é <strong class="text-slate-100">${money(Math.abs(variacao))} ${sinal}</strong> — isso é a "Variação da gaveta".`;
  }
 }
 function showTab(tab){
@@ -748,13 +770,15 @@ function buildReceipt(type, day){
  if(type==='daily'){
   const d=daysData.find(x=>x.dia===day);
   if(!d) return false;
+  const variacao = d.closing - d.initial;
+  const sinal = variacao>=0 ? 'a mais' : 'a menos';
   el.innerHTML=`<div class="receipt-center"><strong style="font-size:17px">BIOBEL</strong><br>FECHAMENTO DE CAIXA<br>${d.dia}/08/2026</div>
   <div class="receipt-line"></div>
-  <div class="receipt-row"><span>Saldo inicial</span><strong>${money(d.initial)}</strong></div>
-  <div class="receipt-row"><span>Faturamento do dia</span><strong>${money(d.sales)}</strong></div>
+  <div class="receipt-row"><span>Saldo inicial (abertura)</span><strong>${money(d.initial)}</strong></div>
+  <div class="receipt-row"><span>Faturamento do dia (total)</span><strong>${money(d.sales)}</strong></div>
   <div class="receipt-row"><span>Fechamento da gaveta</span><strong>${money(d.closing)}</strong></div>
-  <div class="receipt-row"><span>Variação da gaveta (dinheiro)</span><strong>${money(d.closing-d.initial)}</strong></div>
-  <div class="receipt-small" style="margin-top:2px;">*Só reflete o dinheiro físico. Vendas em cartão/Pix não passam pela gaveta.</div>
+  <div class="receipt-row"><span>Variação da gaveta (dinheiro)</span><strong>${money(Math.abs(variacao))} ${sinal}</strong></div>
+  <div class="receipt-small" style="margin-top:2px;">*Variação = fechamento (${money(d.closing)}) menos saldo inicial (${money(d.initial)}). Só reflete o dinheiro físico da gaveta — vendas em cartão/Pix vão direto pro banco e não entram nessa conta.</div>
   <div class="receipt-line"></div>
   <div class="receipt-center receipt-total">FECHAMENTO: ${money(d.closing)}</div>
   <div class="receipt-line"></div>
