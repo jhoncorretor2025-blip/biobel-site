@@ -502,11 +502,16 @@ if (localStorage.getItem('biobel_theme') === 'light') {
     <p class="text-sm text-slate-400 mt-1">Checklist semanal de atividades — marca sozinho e fica salvo.</p>
    </div>
    <div class="flex items-center gap-2 flex-wrap">
+    <button id="btnEquipeEditMode" onclick="toggleEquipeEditMode()" class="no-print bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">⚙️ Configurar atividades</button>
     <button onclick="printEquipeWeek()" class="no-print bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🖨 Imprimir semana</button>
     <button onclick="resetEquipeWeek()" class="no-print bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/40 text-rose-300 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🔄 Reiniciar semana</button>
    </div>
   </div>
   <div id="equipeResetMsg" style="display:none;" class="mb-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300 font-semibold"></div>
+  <div id="equipeEditHint" style="display:none;" class="mb-4 rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-3 text-sm text-blue-300">
+   ✏️ <strong>Modo de edição ligado.</strong> Agora dá pra <strong>remover</strong> (🗑), <strong>mover</strong> tarefas entre Gabi e Dai (🔁) e <strong>adicionar</strong> novas tarefas no fim de cada lista.
+   <button onclick="restaurarRotinaPadrao()" class="ml-2 text-rose-300 underline">Restaurar lista original</button>
+  </div>
 
   <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-2">
    <div>
@@ -726,14 +731,14 @@ if (localStorage.getItem('biobel_theme') === 'light') {
 <div id="printReceipt" class="print-receipt"></div>
 
 <script>
-const rotinaDiariaBase = [
+const rotinaDiariaBasePadrao = [
  {texto:'Abertura (Gabi): Fazer o café fresco na chegada e dar "Bom Dia" no WhatsApp da loja.', quem:'Gabi'},
  {texto:'Durante o dia (Gabi & Dai): Atendimento focado, alinhamento do balcão e passagem do celular à tarde.', quem:'Gabi & Dai'},
  {texto:'Criação e Conteúdo (Dai): Postagem de stories e criação de artes promocionais/WhatsApp.', quem:'Dai'},
  {texto:'Fechamento / Copa (Dai): Higienizar e deixar a cafeteira pronta na copa para a Gabi só ligar na manhã seguinte.', quem:'Dai'}
 ];
 
-const rotinaSemanal = {
+const rotinaSemanalPadrao = {
  segunda: {emoji:'🟢', nome:'Segunda-feira',
   gabi:['Organizar e conferir o estoque de retaguarda','Repor produtos faltantes no balcão e prateleiras','Varrer o chão da loja','Esvaziar os lixos e colocar para fora no fim do dia'],
   dai:['Alinhar e organizar prateleiras do setor CAPILAR (Truss, Lowell, Haskell, etc.)','Checar validades do setor Capilar (separar itens a vencer em 3 meses)','Passar pano no chão da loja','Deixar a cafeteira limpa na copa para a manhã seguinte']},
@@ -753,6 +758,22 @@ const rotinaSemanal = {
   gabi:['Reorganização rápida do setor de maquiagem/capilar pós-movimento','Passar pano na loja e deixar tudo alinhado para segunda-feira'],
   dai:['Organização final do balcão principal','Varrer a loja e esvaziar os lixos no encerramento','Deixar a cafeteira limpa e pronta para a segunda-feira']}
 };
+
+// Cópia editável da rotina (usada em toda a aba Equipe). Começa igual ao padrão,
+// mas é substituída pela versão personalizada salva no navegador, se existir.
+function cloneRotina(obj){ return JSON.parse(JSON.stringify(obj)); }
+function carregarRotinaPersonalizada(){
+ try{
+  const raw = localStorage.getItem('biobel_equipe_rotina_custom');
+  return raw ? JSON.parse(raw) : null;
+ }catch(e){ return null; }
+}
+const rotinaCustomSalva = carregarRotinaPersonalizada();
+let rotinaDiariaBase = rotinaCustomSalva?.diaria || cloneRotina(rotinaDiariaBasePadrao);
+let rotinaSemanal = rotinaCustomSalva?.semanal || cloneRotina(rotinaSemanalPadrao);
+function salvarRotinaPersonalizada(){
+ localStorage.setItem('biobel_equipe_rotina_custom', JSON.stringify({diaria: rotinaDiariaBase, semanal: rotinaSemanal}));
+}
 
 const embeddedData = [{"dia": "01.08", "initial": 117.3, "sales": 2053.88, "withdrawals": 50, "closing": 229.3, "dinheiro": 162, "debito": 314.99, "credito": 480.97, "pix": 1095.92, "vendedoras": {"alesandra": 1285.94, "Day": 767.94}}, {"dia": "03.08", "initial": 117, "sales": 1128.98, "withdrawals": 0, "closing": 279, "dinheiro": 162, "debito": 186.5, "credito": 445.49, "pix": 334.99, "vendedoras": {"alesandra": 795.99, "Gabriela": 164.0, "Day": 168.99}}, {"dia": "04.08", "initial": 208.05, "sales": 1459.79, "withdrawals": 400, "closing": 137.05, "dinheiro": 329, "debito": 386, "credito": 279.89, "pix": 464.9, "vendedoras": {"Gabriela": 460.0, "Day": 615.89, "alesandra": 383.9}}, {"dia": "05.08", "initial": 137.15, "sales": 3415.34, "withdrawals": 650, "closing": 66.5, "dinheiro": 579.35, "debito": 737.58, "credito": 1013.95, "pix": 1084.46, "vendedoras": {"alesandra": 1963.41, "Gabriela": 1004.95, "Day": 446.98}}, {"dia": "06.08", "initial": 67.5, "sales": 4086.72, "withdrawals": 600, "closing": 103.5, "dinheiro": 636, "debito": 593.79, "credito": 1942.93, "pix": 914, "vendedoras": {"Gabriela": 2004.99, "alesandra": 1296.96, "Day": 784.77}}, {"dia": "07.08", "initial": 103.5, "sales": 3843.48, "withdrawals": 500, "closing": 150.9, "dinheiro": 547.4, "debito": 1033.58, "credito": 2102.5, "pix": 160, "vendedoras": {"Gabriela": 1325.0, "alesandra": 1353.5, "Day": 1164.98}}, {"dia": "08.08", "initial": 150.9, "sales": 2828.86, "withdrawals": 100, "closing": 116.9, "dinheiro": 66, "debito": 481.9, "credito": 1334.99, "pix": 945.97, "vendedoras": {"alesandra": 602.9, "Day": 993.96, "Gabriela": 1232.0}}, {"dia": "10.08", "initial": 84, "sales": 2119.4, "withdrawals": 500, "closing": 36.9, "dinheiro": 452.9, "debito": 146, "credito": 752, "pix": 768.5, "vendedoras": {"alesandra": 390.4, "Gabriela": 1096.0, "Day": 633.0}}, {"dia": "11.08", "initial": 55, "sales": 2073.5, "withdrawals": 550, "closing": 109.5, "dinheiro": 604.5, "debito": 460, "credito": 220, "pix": 789, "vendedoras": {"alesandra": 874.0, "Gabriela": 819.0, "Day": 380.5}}];
 let daysData = [...embeddedData];
@@ -944,13 +965,98 @@ function toggleEquipeCheck(escopo, index){
  else renderEquipeDia(equipeDiaAtual);
 }
 
-function renderEquipeChecklistItem(escopo, index, texto){
+let equipeEditMode = false;
+
+function toggleEquipeEditMode(){
+ equipeEditMode = !equipeEditMode;
+ const btn = document.getElementById('btnEquipeEditMode');
+ if(btn) btn.textContent = equipeEditMode ? '✅ Concluir edição' : '⚙️ Configurar atividades';
+ const hint = document.getElementById('equipeEditHint');
+ if(hint) hint.style.display = equipeEditMode ? 'block' : 'none';
+ renderEquipeRotinaDiaria();
+ renderEquipeDia(equipeDiaAtual);
+}
+
+function renderEquipeChecklistItem(escopo, index, texto, editControlsHtml){
  const checked = isEquipeChecked(escopo,index);
  return `
-  <label style="display:flex;align-items:flex-start;gap:10px;background:${checked?'rgba(39,215,160,.06)':'#0b1728'};border:1px solid ${checked?'rgba(39,215,160,.25)':'#1c2c42'};border-radius:12px;padding:10px 12px;cursor:pointer;">
-   <input type="checkbox" ${checked?'checked':''} onchange="toggleEquipeCheck('${escopo}',${index})" style="margin-top:3px;width:16px;height:16px;accent-color:#27d7a0;cursor:pointer;flex-shrink:0;">
-   <span style="font-size:13px;color:${checked?'#93a3ba':'#dce5f2'};text-decoration:${checked?'line-through':'none'};">${texto}</span>
-  </label>`;
+  <div style="display:flex;align-items:center;gap:6px;">
+   <label style="flex:1;display:flex;align-items:flex-start;gap:10px;background:${checked?'rgba(39,215,160,.06)':'#0b1728'};border:1px solid ${checked?'rgba(39,215,160,.25)':'#1c2c42'};border-radius:12px;padding:10px 12px;cursor:pointer;">
+    <input type="checkbox" ${checked?'checked':''} onchange="toggleEquipeCheck('${escopo}',${index})" style="margin-top:3px;width:16px;height:16px;accent-color:#27d7a0;cursor:pointer;flex-shrink:0;">
+    <span style="font-size:13px;color:${checked?'#93a3ba':'#dce5f2'};text-decoration:${checked?'line-through':'none'};">${texto}</span>
+   </label>
+   ${editControlsHtml||''}
+  </div>`;
+}
+
+function addTarefaInputHtml(scopeKey, placeholder){
+ return `<div style="display:flex;gap:8px;margin-top:8px;">
+   <input id="novaTarefa_${scopeKey}" type="text" placeholder="${placeholder||'Nova tarefa...'}" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm" onkeydown="if(event.key==='Enter'){adicionarTarefaGenerica('${scopeKey}');event.preventDefault();}">
+   <button onclick="adicionarTarefaGenerica('${scopeKey}')" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-2 rounded-xl text-sm font-semibold whitespace-nowrap">+ Adicionar</button>
+  </div>`;
+}
+
+function adicionarTarefaGenerica(scopeKey){
+ const input = document.getElementById('novaTarefa_'+scopeKey);
+ const texto = input?.value.trim();
+ if(!texto) return;
+ if(scopeKey==='diaria'){
+  rotinaDiariaBase.push({texto, quem:''});
+  renderEquipeRotinaDiaria();
+ } else {
+  const partes = scopeKey.split('_');
+  const quem = partes.pop();
+  const dia = partes.join('_');
+  rotinaSemanal[dia][quem].push(texto);
+  renderEquipeDia(dia);
+ }
+ salvarRotinaPersonalizada();
+}
+
+function limparCheckboxesEscopo(prefixo){
+ Object.keys(localStorage).forEach(k=>{ if(k.startsWith(prefixo)) localStorage.removeItem(k); });
+}
+
+function removerTarefaDiaria(index){
+ if(!confirm('Remover esta tarefa da rotina diária base?')) return;
+ rotinaDiariaBase.splice(index,1);
+ limparCheckboxesEscopo('biobel_equipe_diaria_');
+ salvarRotinaPersonalizada();
+ renderEquipeRotinaDiaria();
+}
+
+function removerTarefaDia(dia, quem, index){
+ if(!confirm('Remover esta tarefa?')) return;
+ rotinaSemanal[dia][quem].splice(index,1);
+ limparCheckboxesEscopo(`biobel_equipe_${dia}_${quem}_`);
+ salvarRotinaPersonalizada();
+ renderEquipeDia(dia);
+}
+
+function moverTarefaDia(dia, quem, index){
+ const outraQuem = quem==='gabi' ? 'dai' : 'gabi';
+ const nomeOutra = outraQuem==='gabi' ? 'GABI' : 'DAI';
+ if(!confirm(`Mover esta tarefa para a ${nomeOutra}?`)) return;
+ const [texto] = rotinaSemanal[dia][quem].splice(index,1);
+ rotinaSemanal[dia][outraQuem].push(texto);
+ limparCheckboxesEscopo(`biobel_equipe_${dia}_gabi_`);
+ limparCheckboxesEscopo(`biobel_equipe_${dia}_dai_`);
+ salvarRotinaPersonalizada();
+ renderEquipeDia(dia);
+}
+
+function restaurarRotinaPadrao(){
+ if(!confirm('Isso vai apagar TODAS as suas alterações de atividades (tarefas adicionadas, removidas ou movidas) e voltar para a lista original da loja.\n\nAs tarefas marcadas também serão desmarcadas.\n\nTem certeza que quer restaurar?')) return;
+ rotinaDiariaBase = cloneRotina(rotinaDiariaBasePadrao);
+ rotinaSemanal = cloneRotina(rotinaSemanalPadrao);
+ localStorage.removeItem('biobel_equipe_rotina_custom');
+ limparCheckboxesEscopo('biobel_equipe_diaria_');
+ diasSemanaOrdem.forEach(dia=>{
+  limparCheckboxesEscopo(`biobel_equipe_${dia}_gabi_`);
+  limparCheckboxesEscopo(`biobel_equipe_${dia}_dai_`);
+ });
+ renderEquipeRotinaDiaria();
+ renderEquipeDia(equipeDiaAtual);
 }
 
 function calcEquipeProgresso(escopo, total){
@@ -972,7 +1078,12 @@ function updateEquipeProgressBar(barId, textId, escopo, total){
 function renderEquipeRotinaDiaria(){
  const el = document.getElementById('equipeRotinaDiaria');
  if(!el) return;
- el.innerHTML = rotinaDiariaBase.map((item,i)=>renderEquipeChecklistItem('diaria',i,item.texto)).join('');
+ let html = rotinaDiariaBase.map((item,i)=>{
+  const editControls = equipeEditMode ? `<button onclick="removerTarefaDiaria(${i})" title="Remover tarefa" class="no-print text-rose-400 hover:text-rose-300 text-lg px-2 flex-shrink-0">🗑</button>` : '';
+  return renderEquipeChecklistItem('diaria',i,item.texto,editControls);
+ }).join('');
+ if(equipeEditMode) html += addTarefaInputHtml('diaria','Nova tarefa da rotina diária...');
+ el.innerHTML = html;
  updateEquipeProgressBar('equipeProgressoDiariaBar','equipeProgressoDiariaTexto','diaria',rotinaDiariaBase.length);
 }
 
@@ -998,8 +1109,26 @@ function renderEquipeDia(dia){
  if(!d) return;
  const gabiEl = document.getElementById('equipeListaGabi');
  const daiEl = document.getElementById('equipeListaDai');
- if(gabiEl) gabiEl.innerHTML = d.gabi.map((texto,i)=>renderEquipeChecklistItem(`${dia}_gabi`,i,texto)).join('');
- if(daiEl) daiEl.innerHTML = d.dai.map((texto,i)=>renderEquipeChecklistItem(`${dia}_dai`,i,texto)).join('');
+ if(gabiEl){
+  let html = d.gabi.map((texto,i)=>{
+   const editControls = equipeEditMode ? `
+    <button onclick="moverTarefaDia('${dia}','gabi',${i})" title="Mover para a DAI" class="no-print text-blue-400 hover:text-blue-300 text-lg px-1 flex-shrink-0">🔁</button>
+    <button onclick="removerTarefaDia('${dia}','gabi',${i})" title="Remover tarefa" class="no-print text-rose-400 hover:text-rose-300 text-lg px-1 flex-shrink-0">🗑</button>` : '';
+   return renderEquipeChecklistItem(`${dia}_gabi`,i,texto,editControls);
+  }).join('');
+  if(equipeEditMode) html += addTarefaInputHtml(`${dia}_gabi`,'Nova tarefa para a Gabi...');
+  gabiEl.innerHTML = html;
+ }
+ if(daiEl){
+  let html = d.dai.map((texto,i)=>{
+   const editControls = equipeEditMode ? `
+    <button onclick="moverTarefaDia('${dia}','dai',${i})" title="Mover para a GABI" class="no-print text-blue-400 hover:text-blue-300 text-lg px-1 flex-shrink-0">🔁</button>
+    <button onclick="removerTarefaDia('${dia}','dai',${i})" title="Remover tarefa" class="no-print text-rose-400 hover:text-rose-300 text-lg px-1 flex-shrink-0">🗑</button>` : '';
+   return renderEquipeChecklistItem(`${dia}_dai`,i,texto,editControls);
+  }).join('');
+  if(equipeEditMode) html += addTarefaInputHtml(`${dia}_dai`,'Nova tarefa para a Dai...');
+  daiEl.innerHTML = html;
+ }
  updateEquipeProgressBar('equipeProgressoGabiBar','equipeProgressoGabiTexto',`${dia}_gabi`,d.gabi.length);
  updateEquipeProgressBar('equipeProgressoDaiBar','equipeProgressoDaiTexto',`${dia}_dai`,d.dai.length);
 }
