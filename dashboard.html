@@ -565,6 +565,17 @@ if (localStorage.getItem('biobel_theme') === 'light') {
   </div>
  </div>
 
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
+  <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
+   <div>
+    <h3 class="font-bold text-slate-200">📈 Histórico Semanal de Vistorias/Checklists</h3>
+    <p class="text-xs text-slate-500 mt-1">Fica registrado automaticamente toda vez que a semana é reiniciada.</p>
+   </div>
+   <button onclick="limparHistoricoEquipe()" class="no-print text-xs text-slate-500 hover:text-rose-400 underline whitespace-nowrap">Limpar histórico</button>
+  </div>
+  <div id="equipeHistorico" class="space-y-3"></div>
+ </div>
+
 </section>
 
 <section id="configTab" class="hidden max-w-3xl mx-auto p-4 md:p-6" role="tabpanel" aria-labelledby="tabConfig">
@@ -993,6 +1004,73 @@ function renderEquipeDia(dia){
  updateEquipeProgressBar('equipeProgressoDaiBar','equipeProgressoDaiTexto',`${dia}_dai`,d.dai.length);
 }
 
+function calcEquipeTotaisSemana(){
+ const diaria = calcEquipeProgresso('diaria', rotinaDiariaBase.length);
+ let gabiDone=0, gabiTotal=0, daiDone=0, daiTotal=0;
+ diasSemanaOrdem.forEach(dia=>{
+  const d = rotinaSemanal[dia];
+  const g = calcEquipeProgresso(`${dia}_gabi`, d.gabi.length);
+  const a = calcEquipeProgresso(`${dia}_dai`, d.dai.length);
+  gabiDone += g.done; gabiTotal += g.total;
+  daiDone += a.done; daiTotal += a.total;
+ });
+ const totalDone = diaria.done + gabiDone + daiDone;
+ const totalTasks = diaria.total + gabiTotal + daiTotal;
+ return {
+  diaria, gabi:{done:gabiDone,total:gabiTotal}, dai:{done:daiDone,total:daiTotal},
+  geral:{done:totalDone, total:totalTasks, pct: totalTasks>0 ? (totalDone/totalTasks)*100 : 0}
+ };
+}
+
+function getEquipeHistorico(){
+ try{ return JSON.parse(localStorage.getItem('biobel_equipe_historico')||'[]'); }
+ catch(e){ return []; }
+}
+function saveEquipeHistoricoEntry(entry){
+ const hist = getEquipeHistorico();
+ hist.unshift(entry);
+ if(hist.length>20) hist.length=20; // guarda só as últimas 20 semanas
+ localStorage.setItem('biobel_equipe_historico', JSON.stringify(hist));
+}
+function limparHistoricoEquipe(){
+ if(!confirm('Tem certeza que quer apagar todo o histórico de semanas anteriores? Essa ação não pode ser desfeita.')) return;
+ localStorage.removeItem('biobel_equipe_historico');
+ renderEquipeHistorico();
+}
+function renderEquipeHistorico(){
+ const el = document.getElementById('equipeHistorico');
+ if(!el) return;
+ const hist = getEquipeHistorico();
+ if(hist.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:13px;">Nenhuma semana registrada ainda. O histórico aparece aqui toda vez que você reiniciar a semana.</p>';
+  return;
+ }
+ el.innerHTML = hist.map(h=>{
+  const pctColor = h.geral.pct>=90 ? '#27d7a0' : h.geral.pct>=60 ? '#fbbf24' : '#fb7185';
+  return `
+   <div style="background:#0b1728;border:1px solid #1c2c42;border-radius:12px;padding:12px 14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+     <div>
+      <div style="font-size:13px;font-weight:700;color:#dce5f2;">${h.weekStart||'?'} a ${h.weekEnd||'?'}</div>
+      <div style="font-size:11px;color:#7c8ba0;margin-top:2px;">Reiniciada em ${h.dataReinicio}</div>
+     </div>
+     <div style="text-align:right;">
+      <div style="font-size:18px;font-weight:900;color:${pctColor};">${h.geral.pct.toFixed(0)}%</div>
+      <div style="font-size:11px;color:#7c8ba0;">${h.geral.done} de ${h.geral.total} tarefas</div>
+     </div>
+    </div>
+    <div style="background:#050d1a;border-radius:999px;height:6px;overflow:hidden;margin-top:8px;">
+     <div style="height:100%;width:${h.geral.pct.toFixed(0)}%;background:${pctColor};"></div>
+    </div>
+    <div style="display:flex;gap:16px;margin-top:8px;font-size:11px;color:#93a3ba;">
+     <span>💇‍♀️ ${h.nomeGabi||'Gabi'}: ${h.gabi.done}/${h.gabi.total}</span>
+     <span>✨ ${h.nomeDai||'Dai'}: ${h.dai.done}/${h.dai.total}</span>
+     <span>☀️ Diária: ${h.diaria.done}/${h.diaria.total}</span>
+    </div>
+   </div>`;
+ }).join('');
+}
+
 function initEquipeTab(){
  const savedDia = localStorage.getItem('biobel_equipe_dia_atual');
  if(savedDia && diasSemanaOrdem.includes(savedDia)) equipeDiaAtual = savedDia;
@@ -1009,11 +1087,25 @@ function initEquipeTab(){
  renderEquipeRotinaDiaria();
  renderEquipeDayTabs();
  renderEquipeDia(equipeDiaAtual);
+ renderEquipeHistorico();
 }
 
 function resetEquipeWeek(){
- const confirmado = confirm('🚨 ATENÇÃO — Reiniciar semana\n\nIsso vai desmarcar TODAS as tarefas: a rotina diária base E os checklists dos 6 dias da semana (Gabi e Dai).\n\nEssa ação não pode ser desfeita depois.\n\nTem certeza que quer reiniciar tudo agora?');
+ const confirmado = confirm('🚨 ATENÇÃO — Reiniciar semana\n\nIsso vai desmarcar TODAS as tarefas: a rotina diária base E os checklists dos 6 dias da semana (Gabi e Dai).\n\nO progresso desta semana será salvo no histórico antes de reiniciar.\n\nTem certeza que quer reiniciar tudo agora?');
  if(!confirmado) return;
+
+ // Salva um retrato (snapshot) da semana atual no histórico antes de zerar tudo.
+ const totais = calcEquipeTotaisSemana();
+ const weekStart = document.getElementById('equipeWeekStart')?.value || '';
+ const weekEnd = document.getElementById('equipeWeekEnd')?.value || '';
+ const nomeGabi = document.getElementById('equipeNomeGabi')?.value || '';
+ const nomeDai = document.getElementById('equipeNomeDai')?.value || '';
+ saveEquipeHistoricoEntry({
+  weekStart, weekEnd, nomeGabi, nomeDai,
+  dataReinicio: new Date().toLocaleString('pt-BR'),
+  diaria: totais.diaria, gabi: totais.gabi, dai: totais.dai, geral: totais.geral
+ });
+
  const prefixos = ['biobel_equipe_diaria_'];
  diasSemanaOrdem.forEach(dia=>{
   prefixos.push(`biobel_equipe_${dia}_gabi_`);
@@ -1024,12 +1116,13 @@ function resetEquipeWeek(){
  });
  renderEquipeRotinaDiaria();
  renderEquipeDia(equipeDiaAtual);
+ renderEquipeHistorico();
 
  const msg = document.getElementById('equipeResetMsg');
  if(msg){
-  msg.textContent = `✅ Semana reiniciada com sucesso às ${new Date().toLocaleTimeString('pt-BR')}. Todas as tarefas foram desmarcadas.`;
+  msg.textContent = `✅ Semana reiniciada com sucesso às ${new Date().toLocaleTimeString('pt-BR')}. O resultado dessa semana (${totais.geral.pct.toFixed(0)}%) foi salvo no histórico.`;
   msg.style.display = 'block';
-  setTimeout(()=>{ msg.style.display = 'none'; }, 6000);
+  setTimeout(()=>{ msg.style.display = 'none'; }, 7000);
  }
 }
 
