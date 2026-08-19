@@ -732,31 +732,31 @@ if (localStorage.getItem('biobel_theme') === 'light') {
 
 <script>
 const rotinaDiariaBasePadrao = [
- {texto:'Abertura (Gabi): Fazer o café fresco na chegada e dar "Bom Dia" no WhatsApp da loja.', quem:'Gabi'},
- {texto:'Durante o dia (Gabi & Dai): Atendimento focado, alinhamento do balcão e passagem do celular à tarde.', quem:'Gabi & Dai'},
- {texto:'Criação e Conteúdo (Dai): Postagem de stories e criação de artes promocionais/WhatsApp.', quem:'Dai'},
- {texto:'Fechamento / Copa (Dai): Higienizar e deixar a cafeteira pronta na copa para a Gabi só ligar na manhã seguinte.', quem:'Dai'}
+ {texto:'☕ Abertura (Gabi): Fazer o café fresco na chegada e dar "Bom Dia" no WhatsApp da loja.', quem:'Gabi'},
+ {texto:'📱 Durante o dia (Gabi & Dai): Atendimento focado, alinhamento do balcão e passagem do celular à tarde.', quem:'Gabi & Dai'},
+ {texto:'📸 Criação e Conteúdo (Dai): Postagem de stories e criação de artes promocionais/WhatsApp.', quem:'Dai'},
+ {texto:'🧼 Fechamento / Copa (Dai): Higienizar e deixar a cafeteira pronta na copa para a Gabi só ligar na manhã seguinte.', quem:'Dai'}
 ];
 
 const rotinaSemanalPadrao = {
  segunda: {emoji:'🟢', nome:'Segunda-feira',
-  gabi:['Organizar e conferir o estoque de retaguarda','Repor produtos faltantes no balcão e prateleiras','Varrer o chão da loja','Esvaziar os lixos e colocar para fora no fim do dia'],
-  dai:['Alinhar e organizar prateleiras do setor CAPILAR (Truss, Lowell, Haskell, etc.)','Checar validades do setor Capilar (separar itens a vencer em 3 meses)','Passar pano no chão da loja','Deixar a cafeteira limpa na copa para a manhã seguinte']},
+  gabi:['📦 Organizar e conferir o estoque de retaguarda','🔄 Repor produtos faltantes no balcão e prateleiras','🧹 Varrer o chão da loja','🗑️ Esvaziar os lixos e colocar para fora no fim do dia'],
+  dai:['💇‍♀️ Alinhar e organizar prateleiras do setor CAPILAR (Truss, Lowell, Haskell, etc.)','📅 Checar validades do setor Capilar (separar itens a vencer em 3 meses)','🧽 Passar pano no chão da loja','☕ Deixar a cafeteira limpa na copa para a manhã seguinte']},
  terca: {emoji:'🔵', nome:'Terça-feira',
-  gabi:['Organizar e alinhar o setor de MAQUIAGENS E PINCÉIS','Conferir etiquetas de preços e validades das maquiagens','Passar pano no chão da loja','Limpeza rápida e higienização do banheiro'],
-  dai:['Limpar vidros/espelhos do balcão e prateleiras iluminadas','Repor sacolas, fitas, caixas e brindes no balcão de atendimento','Varrer o chão da loja','Esvaziar os lixos e colocar para fora no fim do dia','Deixar a cafeteira limpa na copa para a manhã seguinte']},
+  gabi:['💄 Organizar e alinhar o setor de MAQUIAGENS E PINCÉIS','🏷️ Conferir etiquetas de preços e validades das maquiagens','🧽 Passar pano no chão da loja','🚻 Limpeza rápida e higienização do banheiro'],
+  dai:['🪟 Limpar vidros/espelhos do balcão e prateleiras iluminadas','🎁 Repor sacolas, fitas, caixas e brindes no balcão de atendimento','🧹 Varrer o chão da loja','🗑️ Esvaziar os lixos e colocar para fora no fim do dia','☕ Deixar a cafeteira limpa na copa para a manhã seguinte']},
  quarta: {emoji:'🟣', nome:'Quarta-feira',
-  gabi:['Organizar e conferir o setor de COLORAÇÕES E TINTAS (repor faltas)','Espanar produtos e passar pano rápido no vidro da vitrine (marcas de dedo)','Varrer o chão da loja','Esvaziar os lixos e colocar para fora no fim do dia'],
-  dai:['Organizar e alinhar o setor de PERFUMARIA, KITS E PRESENTES','Checar validades do setor de Perfumaria','Passar pano no chão da loja','Organização rápida da mesa da copa/cozinha','Deixar a cafeteira limpa na copa para a manhã seguinte']},
+  gabi:['🎨 Organizar e conferir o setor de COLORAÇÕES E TINTAS (repor faltas)','🪶 Espanar produtos e passar pano rápido no vidro da vitrine (marcas de dedo)','🧹 Varrer o chão da loja','🗑️ Esvaziar os lixos e colocar para fora no fim do dia'],
+  dai:['🎀 Organizar e alinhar o setor de PERFUMARIA, KITS E PRESENTES','📅 Checar validades do setor de Perfumaria','🧽 Passar pano no chão da loja','🍽️ Organização rápida da mesa da copa/cozinha','☕ Deixar a cafeteira limpa na copa para a manhã seguinte']},
  quinta: {emoji:'🟡', nome:'Quinta-feira (Dia de Destaques)',
-  gabi:['Ajuste da Vitrine: Trocar vitrine (se for semana de troca) OU alinhar produtos em destaque','Checagem geral de etiquetas de preço nas prateleiras da loja','Passar pano no chão da loja','Organização rápida da mesa da copa/cozinha'],
-  dai:['Limpeza e organização do Balcão Principal e gavetas de atendimento','Anotar produtos próximos do vencimento para ações de vendas/combos','Varrer o chão da loja','Esvaziar os lixos e colocar para fora no fim do dia','Deixar a cafeteira limpa na copa para a manhã seguinte']},
+  gabi:['🪟 Ajuste da Vitrine: Trocar vitrine (se for semana de troca) OU alinhar produtos em destaque','🏷️ Checagem geral de etiquetas de preço nas prateleiras da loja','🧽 Passar pano no chão da loja','🍽️ Organização rápida da mesa da copa/cozinha'],
+  dai:['🗄️ Limpeza e organização do Balcão Principal e gavetas de atendimento','📝 Anotar produtos próximos do vencimento para ações de vendas/combos','🧹 Varrer o chão da loja','🗑️ Esvaziar os lixos e colocar para fora no fim do dia','☕ Deixar a cafeteira limpa na copa para a manhã seguinte']},
  sexta: {emoji:'🟠', nome:'Sexta-feira',
-  gabi:['Reposição reforçada de produtos para o movimento do fim de semana','Reorganização rápida do estoque de apoio/caixas','Varrer o chão da loja','Esvaziar os lixos e colocar para fora no fim do dia'],
-  dai:['Frenteamento geral da loja (deixar todos os rótulos voltados para a frente)','Checagem e organização rápida do banheiro para o sábado','Passar pano no chão da loja','Deixar a cafeteira limpa na copa para a manhã seguinte']},
+  gabi:['📦 Reposição reforçada de produtos para o movimento do fim de semana','📦 Reorganização rápida do estoque de apoio/caixas','🧹 Varrer o chão da loja','🗑️ Esvaziar os lixos e colocar para fora no fim do dia'],
+  dai:['🏷️ Frenteamento geral da loja (deixar todos os rótulos voltados para a frente)','🚻 Checagem e organização rápida do banheiro para o sábado','🧽 Passar pano no chão da loja','☕ Deixar a cafeteira limpa na copa para a manhã seguinte']},
  sabado: {emoji:'🟡', nome:'Sábado (Fechamento Semanal)',
-  gabi:['Reorganização rápida do setor de maquiagem/capilar pós-movimento','Passar pano na loja e deixar tudo alinhado para segunda-feira'],
-  dai:['Organização final do balcão principal','Varrer a loja e esvaziar os lixos no encerramento','Deixar a cafeteira limpa e pronta para a segunda-feira']}
+  gabi:['💄 Reorganização rápida do setor de maquiagem/capilar pós-movimento','🧽 Passar pano na loja e deixar tudo alinhado para segunda-feira'],
+  dai:['🗄️ Organização final do balcão principal','🧹 Varrer a loja e esvaziar os lixos no encerramento','☕ Deixar a cafeteira limpa e pronta para a segunda-feira']}
 };
 
 // Cópia editável da rotina (usada em toda a aba Equipe). Começa igual ao padrão,
