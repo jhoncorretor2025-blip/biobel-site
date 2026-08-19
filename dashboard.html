@@ -273,6 +273,7 @@ if (localStorage.getItem('biobel_theme') === 'light') {
   <button id="tabInfo" data-tab="info" role="tab" aria-selected="false" aria-controls="infoTab" onclick="showTab('info')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">🎯 Informação Geral</button>
   <button id="tabCaixa" data-tab="caixa" role="tab" aria-selected="false" aria-controls="caixaTab" onclick="showTab('caixa')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">🧾 Caixa simples</button>
   <button id="tabCaixaCompleto" data-tab="caixaCompleto" role="tab" aria-selected="false" aria-controls="caixaCompletoTab" onclick="showTab('caixaCompleto')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">📖 Caixa completo</button>
+  <button id="tabEquipe" data-tab="equipe" role="tab" aria-selected="false" aria-controls="equipeTab" onclick="showTab('equipe')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">👩‍💼 Equipe</button>
   <button id="tabConfig" data-tab="config" role="tab" aria-selected="false" aria-controls="configTab" onclick="showTab('config')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">⚙️ Configuração</button>
  </div>
 </nav>
@@ -287,6 +288,7 @@ if (localStorage.getItem('biobel_theme') === 'light') {
         <button data-tab="info" onclick="showTab('info')">🎯 &nbsp; Informação Geral</button>
         <button data-tab="caixa" onclick="showTab('caixa')">🧾 &nbsp; Caixa Simples</button>
         <button data-tab="caixaCompleto" onclick="showTab('caixaCompleto')">📖 &nbsp; Caixa Completo</button>
+        <button data-tab="equipe" onclick="showTab('equipe')">👩‍💼 &nbsp; Equipe</button>
         <button data-tab="config" onclick="showTab('config')">⚙️ &nbsp; Configuração (Google Sheets)</button>
       </div>
 
@@ -491,6 +493,61 @@ if (localStorage.getItem('biobel_theme') === 'light') {
 
 </section>
 
+<section id="equipeTab" class="hidden max-w-5xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabEquipe">
+
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
+  <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
+   <div>
+    <h2 class="text-xl font-bold">👩‍💼 Rotina da Equipe</h2>
+    <p class="text-sm text-slate-400 mt-1">Checklist semanal de atividades — marca sozinho e fica salvo.</p>
+   </div>
+   <div class="flex items-center gap-2 flex-wrap">
+    <button onclick="printEquipeWeek()" class="no-print bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🖨 Imprimir semana</button>
+    <button onclick="resetEquipeWeek()" class="no-print bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🔄 Reiniciar semana</button>
+   </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-2">
+   <div>
+    <label class="block text-xs text-slate-400 font-semibold mb-1">Semana referente a (de)</label>
+    <input id="equipeWeekStart" type="date" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+   </div>
+   <div>
+    <label class="block text-xs text-slate-400 font-semibold mb-1">Semana referente a (até)</label>
+    <input id="equipeWeekEnd" type="date" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+   </div>
+   <div>
+    <label class="block text-xs text-slate-400 font-semibold mb-1">Vendedora (Gabi)</label>
+    <input id="equipeNomeGabi" type="text" placeholder="Nome" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+   </div>
+   <div>
+    <label class="block text-xs text-slate-400 font-semibold mb-1">Estagiária (Dai)</label>
+    <input id="equipeNomeDai" type="text" placeholder="Nome" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+   </div>
+  </div>
+ </div>
+
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
+  <h3 class="font-bold text-slate-200 mb-3">☀️ Rotina diária base (todos os dias)</h3>
+  <div id="equipeRotinaDiaria" class="space-y-2"></div>
+ </div>
+
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
+  <div class="flex gap-2 flex-wrap mb-5" id="equipeDayTabs"></div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+   <div>
+    <h3 class="font-bold text-emerald-400 mb-3">💇‍♀️ GABI</h3>
+    <div id="equipeListaGabi" class="space-y-2"></div>
+   </div>
+   <div>
+    <h3 class="font-bold text-blue-400 mb-3">✨ DAI</h3>
+    <div id="equipeListaDai" class="space-y-2"></div>
+   </div>
+  </div>
+ </div>
+
+</section>
+
 <section id="configTab" class="hidden max-w-3xl mx-auto p-4 md:p-6" role="tabpanel" aria-labelledby="tabConfig">
  <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
   <div class="mb-6">
@@ -639,6 +696,34 @@ if (localStorage.getItem('biobel_theme') === 'light') {
 <div id="printReceipt" class="print-receipt"></div>
 
 <script>
+const rotinaDiariaBase = [
+ {texto:'Abertura (Gabi): Fazer o café fresco na chegada e dar "Bom Dia" no WhatsApp da loja.', quem:'Gabi'},
+ {texto:'Durante o dia (Gabi & Dai): Atendimento focado, alinhamento do balcão e passagem do celular à tarde.', quem:'Gabi & Dai'},
+ {texto:'Criação e Conteúdo (Dai): Postagem de stories e criação de artes promocionais/WhatsApp.', quem:'Dai'},
+ {texto:'Fechamento / Copa (Dai): Higienizar e deixar a cafeteira pronta na copa para a Gabi só ligar na manhã seguinte.', quem:'Dai'}
+];
+
+const rotinaSemanal = {
+ segunda: {emoji:'🟢', nome:'Segunda-feira',
+  gabi:['Organizar e conferir o estoque de retaguarda','Repor produtos faltantes no balcão e prateleiras','Varrer o chão da loja','Esvaziar os lixos e colocar para fora no fim do dia'],
+  dai:['Alinhar e organizar prateleiras do setor CAPILAR (Truss, Lowell, Haskell, etc.)','Checar validades do setor Capilar (separar itens a vencer em 3 meses)','Passar pano no chão da loja','Deixar a cafeteira limpa na copa para a manhã seguinte']},
+ terca: {emoji:'🔵', nome:'Terça-feira',
+  gabi:['Organizar e alinhar o setor de MAQUIAGENS E PINCÉIS','Conferir etiquetas de preços e validades das maquiagens','Passar pano no chão da loja','Limpeza rápida e higienização do banheiro'],
+  dai:['Limpar vidros/espelhos do balcão e prateleiras iluminadas','Repor sacolas, fitas, caixas e brindes no balcão de atendimento','Varrer o chão da loja','Esvaziar os lixos e colocar para fora no fim do dia','Deixar a cafeteira limpa na copa para a manhã seguinte']},
+ quarta: {emoji:'🟣', nome:'Quarta-feira',
+  gabi:['Organizar e conferir o setor de COLORAÇÕES E TINTAS (repor faltas)','Espanar produtos e passar pano rápido no vidro da vitrine (marcas de dedo)','Varrer o chão da loja','Esvaziar os lixos e colocar para fora no fim do dia'],
+  dai:['Organizar e alinhar o setor de PERFUMARIA, KITS E PRESENTES','Checar validades do setor de Perfumaria','Passar pano no chão da loja','Organização rápida da mesa da copa/cozinha','Deixar a cafeteira limpa na copa para a manhã seguinte']},
+ quinta: {emoji:'🟡', nome:'Quinta-feira (Dia de Destaques)',
+  gabi:['Ajuste da Vitrine: Trocar vitrine (se for semana de troca) OU alinhar produtos em destaque','Checagem geral de etiquetas de preço nas prateleiras da loja','Passar pano no chão da loja','Organização rápida da mesa da copa/cozinha'],
+  dai:['Limpeza e organização do Balcão Principal e gavetas de atendimento','Anotar produtos próximos do vencimento para ações de vendas/combos','Varrer o chão da loja','Esvaziar os lixos e colocar para fora no fim do dia','Deixar a cafeteira limpa na copa para a manhã seguinte']},
+ sexta: {emoji:'🟠', nome:'Sexta-feira',
+  gabi:['Reposição reforçada de produtos para o movimento do fim de semana','Reorganização rápida do estoque de apoio/caixas','Varrer o chão da loja','Esvaziar os lixos e colocar para fora no fim do dia'],
+  dai:['Frenteamento geral da loja (deixar todos os rótulos voltados para a frente)','Checagem e organização rápida do banheiro para o sábado','Passar pano no chão da loja','Deixar a cafeteira limpa na copa para a manhã seguinte']},
+ sabado: {emoji:'🟡', nome:'Sábado (Fechamento Semanal)',
+  gabi:['Reorganização rápida do setor de maquiagem/capilar pós-movimento','Passar pano na loja e deixar tudo alinhado para segunda-feira'],
+  dai:['Organização final do balcão principal','Varrer a loja e esvaziar os lixos no encerramento','Deixar a cafeteira limpa e pronta para a segunda-feira']}
+};
+
 const embeddedData = [{"dia": "01.08", "initial": 117.3, "sales": 2053.88, "withdrawals": 50, "closing": 229.3, "dinheiro": 162, "debito": 314.99, "credito": 480.97, "pix": 1095.92, "vendedoras": {"alesandra": 1285.94, "Day": 767.94}}, {"dia": "03.08", "initial": 117, "sales": 1128.98, "withdrawals": 0, "closing": 279, "dinheiro": 162, "debito": 186.5, "credito": 445.49, "pix": 334.99, "vendedoras": {"alesandra": 795.99, "Gabriela": 164.0, "Day": 168.99}}, {"dia": "04.08", "initial": 208.05, "sales": 1459.79, "withdrawals": 400, "closing": 137.05, "dinheiro": 329, "debito": 386, "credito": 279.89, "pix": 464.9, "vendedoras": {"Gabriela": 460.0, "Day": 615.89, "alesandra": 383.9}}, {"dia": "05.08", "initial": 137.15, "sales": 3415.34, "withdrawals": 650, "closing": 66.5, "dinheiro": 579.35, "debito": 737.58, "credito": 1013.95, "pix": 1084.46, "vendedoras": {"alesandra": 1963.41, "Gabriela": 1004.95, "Day": 446.98}}, {"dia": "06.08", "initial": 67.5, "sales": 4086.72, "withdrawals": 600, "closing": 103.5, "dinheiro": 636, "debito": 593.79, "credito": 1942.93, "pix": 914, "vendedoras": {"Gabriela": 2004.99, "alesandra": 1296.96, "Day": 784.77}}, {"dia": "07.08", "initial": 103.5, "sales": 3843.48, "withdrawals": 500, "closing": 150.9, "dinheiro": 547.4, "debito": 1033.58, "credito": 2102.5, "pix": 160, "vendedoras": {"Gabriela": 1325.0, "alesandra": 1353.5, "Day": 1164.98}}, {"dia": "08.08", "initial": 150.9, "sales": 2828.86, "withdrawals": 100, "closing": 116.9, "dinheiro": 66, "debito": 481.9, "credito": 1334.99, "pix": 945.97, "vendedoras": {"alesandra": 602.9, "Day": 993.96, "Gabriela": 1232.0}}, {"dia": "10.08", "initial": 84, "sales": 2119.4, "withdrawals": 500, "closing": 36.9, "dinheiro": 452.9, "debito": 146, "credito": 752, "pix": 768.5, "vendedoras": {"alesandra": 390.4, "Gabriela": 1096.0, "Day": 633.0}}, {"dia": "11.08", "initial": 55, "sales": 2073.5, "withdrawals": 550, "closing": 109.5, "dinheiro": 604.5, "debito": 460, "credito": 220, "pix": 789, "vendedoras": {"alesandra": 874.0, "Gabriela": 819.0, "Day": 380.5}}];
 let daysData = [...embeddedData];
 let chart = null;
@@ -741,14 +826,16 @@ function showTab(tab){
  const info=document.getElementById('infoTab');
  const caixa=document.getElementById('caixaTab');
  const caixaCompleto=document.getElementById('caixaCompletoTab');
+ const equipe=document.getElementById('equipeTab');
  const config=document.getElementById('configTab');
  const b1=document.getElementById('tabDashboard');
  const b4=document.getElementById('tabInfo');
  const b2=document.getElementById('tabCaixa');
  const b5=document.getElementById('tabCaixaCompleto');
+ const b6=document.getElementById('tabEquipe');
  const b3=document.getElementById('tabConfig');
- [dash,info,caixa,caixaCompleto,config].forEach(x=>x.classList.add('hidden'));
- [b1,b4,b2,b5,b3].forEach(x=>{x.className='tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm';x.setAttribute('aria-selected','false');});
+ [dash,info,caixa,caixaCompleto,equipe,config].forEach(x=>x.classList.add('hidden'));
+ [b1,b4,b2,b5,b6,b3].forEach(x=>{x.className='tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm';x.setAttribute('aria-selected','false');});
 
  // Sincroniza o menu lateral (sidebar) com a mesma aba selecionada.
  document.querySelectorAll('.adv-nav button[data-tab]').forEach(btn=>{
@@ -769,6 +856,11 @@ function showTab(tab){
   const sel=document.getElementById('completeDaySelect');
   sel.innerHTML=daysData.map(d=>`<option value="${d.dia}">${d.dia}</option>`).join('');
   if(daysData.length) { sel.value=daysData[daysData.length-1].dia; updateCompleteDay(sel.value); }
+ } else if(tab==='equipe'){
+  equipe.classList.remove('hidden');
+  b6.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
+  b6.setAttribute('aria-selected','true');
+  initEquipeTab();
  } else if(tab==='info'){
   info.classList.remove('hidden');
   b4.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
@@ -803,6 +895,133 @@ if (localStorage.getItem('biobel_hide_legends') === 'yes') {
  document.body.classList.add('hide-legends');
 }
 updateLegendButton(document.body.classList.contains('hide-legends'));
+
+// ===== ABA EQUIPE (rotina semanal com checklist salvo) =====
+let equipeDiaAtual = 'segunda';
+const diasSemanaOrdem = ['segunda','terca','quarta','quinta','sexta','sabado'];
+
+function equipeCheckKey(escopo, index){
+ return `biobel_equipe_${escopo}_${index}`;
+}
+function isEquipeChecked(escopo, index){
+ return localStorage.getItem(equipeCheckKey(escopo,index)) === 'yes';
+}
+function toggleEquipeCheck(escopo, index){
+ const key = equipeCheckKey(escopo,index);
+ const novo = !isEquipeChecked(escopo,index);
+ localStorage.setItem(key, novo ? 'yes' : 'no');
+ if(escopo==='diaria') renderEquipeRotinaDiaria();
+ else renderEquipeDia(equipeDiaAtual);
+}
+
+function renderEquipeChecklistItem(escopo, index, texto){
+ const checked = isEquipeChecked(escopo,index);
+ return `
+  <label style="display:flex;align-items:flex-start;gap:10px;background:${checked?'rgba(39,215,160,.06)':'#0b1728'};border:1px solid ${checked?'rgba(39,215,160,.25)':'#1c2c42'};border-radius:12px;padding:10px 12px;cursor:pointer;">
+   <input type="checkbox" ${checked?'checked':''} onchange="toggleEquipeCheck('${escopo}',${index})" style="margin-top:3px;width:16px;height:16px;accent-color:#27d7a0;cursor:pointer;flex-shrink:0;">
+   <span style="font-size:13px;color:${checked?'#93a3ba':'#dce5f2'};text-decoration:${checked?'line-through':'none'};">${texto}</span>
+  </label>`;
+}
+
+function renderEquipeRotinaDiaria(){
+ const el = document.getElementById('equipeRotinaDiaria');
+ if(!el) return;
+ el.innerHTML = rotinaDiariaBase.map((item,i)=>renderEquipeChecklistItem('diaria',i,item.texto)).join('');
+}
+
+function renderEquipeDayTabs(){
+ const el = document.getElementById('equipeDayTabs');
+ if(!el) return;
+ el.innerHTML = diasSemanaOrdem.map(dia=>{
+  const d = rotinaSemanal[dia];
+  const ativo = dia===equipeDiaAtual;
+  return `<button onclick="selectEquipeDia('${dia}')" class="px-3 py-2 rounded-xl text-sm font-semibold whitespace-nowrap" style="background:${ativo?'#0ea97a':'#1c2c42'};color:${ativo?'#04241a':'#c3d0e0'};">${d.emoji} ${d.nome}</button>`;
+ }).join('');
+}
+
+function selectEquipeDia(dia){
+ equipeDiaAtual = dia;
+ localStorage.setItem('biobel_equipe_dia_atual', dia);
+ renderEquipeDayTabs();
+ renderEquipeDia(dia);
+}
+
+function renderEquipeDia(dia){
+ const d = rotinaSemanal[dia];
+ if(!d) return;
+ const gabiEl = document.getElementById('equipeListaGabi');
+ const daiEl = document.getElementById('equipeListaDai');
+ if(gabiEl) gabiEl.innerHTML = d.gabi.map((texto,i)=>renderEquipeChecklistItem(`${dia}_gabi`,i,texto)).join('');
+ if(daiEl) daiEl.innerHTML = d.dai.map((texto,i)=>renderEquipeChecklistItem(`${dia}_dai`,i,texto)).join('');
+}
+
+function initEquipeTab(){
+ const savedDia = localStorage.getItem('biobel_equipe_dia_atual');
+ if(savedDia && diasSemanaOrdem.includes(savedDia)) equipeDiaAtual = savedDia;
+
+ const inputs = ['equipeWeekStart','equipeWeekEnd','equipeNomeGabi','equipeNomeDai'];
+ inputs.forEach(id=>{
+  const el = document.getElementById(id);
+  if(!el) return;
+  const saved = localStorage.getItem('biobel_'+id);
+  if(saved) el.value = saved;
+  el.addEventListener('change', ()=>localStorage.setItem('biobel_'+id, el.value));
+ });
+
+ renderEquipeRotinaDiaria();
+ renderEquipeDayTabs();
+ renderEquipeDia(equipeDiaAtual);
+}
+
+function resetEquipeWeek(){
+ if(!confirm('Isso vai desmarcar TODAS as tarefas da semana (rotina diária + todos os dias). Tem certeza que quer reiniciar?')) return;
+ const prefixos = ['biobel_equipe_diaria_'];
+ diasSemanaOrdem.forEach(dia=>{
+  prefixos.push(`biobel_equipe_${dia}_gabi_`);
+  prefixos.push(`biobel_equipe_${dia}_dai_`);
+ });
+ Object.keys(localStorage).forEach(key=>{
+  if(prefixos.some(p=>key.startsWith(p))) localStorage.removeItem(key);
+ });
+ renderEquipeRotinaDiaria();
+ renderEquipeDia(equipeDiaAtual);
+}
+
+function printEquipeWeek(){
+ const el = document.getElementById('printReceipt');
+ const weekStart = document.getElementById('equipeWeekStart')?.value || '___';
+ const weekEnd = document.getElementById('equipeWeekEnd')?.value || '___';
+ const nomeGabi = document.getElementById('equipeNomeGabi')?.value || '________';
+ const nomeDai = document.getElementById('equipeNomeDai')?.value || '________';
+
+ let html = `<div class="receipt-center"><strong style="font-size:17px">BIOBEL</strong><br>ROTINA SEMANAL DA EQUIPE<br>Semana de ${weekStart} a ${weekEnd}</div><div class="receipt-line"></div>`;
+ html += `<strong>ROTINA DIÁRIA BASE (TODOS OS DIAS)</strong><br>`;
+ rotinaDiariaBase.forEach((item,i)=>{
+  const marcado = isEquipeChecked('diaria', i) ? '[x]' : '[ ]';
+  html += `<div class="receipt-row"><span>${marcado} ${item.texto}</span></div>`;
+ });
+ diasSemanaOrdem.forEach(dia=>{
+  const d = rotinaSemanal[dia];
+  html += `<div class="receipt-line"></div><strong>${d.emoji} ${d.nome.toUpperCase()}</strong><br>`;
+  html += `<span class="receipt-small">GABI:</span><br>`;
+  d.gabi.forEach((texto,i)=>{
+   const marcado = isEquipeChecked(`${dia}_gabi`, i) ? '[x]' : '[ ]';
+   html += `<div class="receipt-row"><span>${marcado} ${texto}</span></div>`;
+  });
+  html += `<span class="receipt-small">DAI:</span><br>`;
+  d.dai.forEach((texto,i)=>{
+   const marcado = isEquipeChecked(`${dia}_dai`, i) ? '[x]' : '[ ]';
+   html += `<div class="receipt-row"><span>${marcado} ${texto}</span></div>`;
+  });
+ });
+ html += `<div class="receipt-line"></div>`;
+ html += `<div class="receipt-row"><span>Vendedora (Gabi): ${nomeGabi}</span></div>`;
+ html += `<div class="receipt-row"><span>Estagiária (Dai): ${nomeDai}</span></div>`;
+ html += `<div class="receipt-line"></div><div class="receipt-center receipt-small">Impresso em ${new Date().toLocaleString('pt-BR')}</div>`;
+
+ el.innerHTML = html;
+ startReceiptPrint('equipe');
+}
 
 function confirmLogout(){
  if(confirm('Tem certeza que quer sair do painel administrativo?')){
