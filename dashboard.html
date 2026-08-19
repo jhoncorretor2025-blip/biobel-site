@@ -503,9 +503,10 @@ if (localStorage.getItem('biobel_theme') === 'light') {
    </div>
    <div class="flex items-center gap-2 flex-wrap">
     <button onclick="printEquipeWeek()" class="no-print bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🖨 Imprimir semana</button>
-    <button onclick="resetEquipeWeek()" class="no-print bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🔄 Reiniciar semana</button>
+    <button onclick="resetEquipeWeek()" class="no-print bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/40 text-rose-300 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🔄 Reiniciar semana</button>
    </div>
   </div>
+  <div id="equipeResetMsg" style="display:none;" class="mb-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300 font-semibold"></div>
 
   <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-2">
    <div>
@@ -528,7 +529,13 @@ if (localStorage.getItem('biobel_theme') === 'light') {
  </div>
 
  <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
-  <h3 class="font-bold text-slate-200 mb-3">☀️ Rotina diária base (todos os dias)</h3>
+  <div class="flex items-center justify-between gap-3 mb-3 flex-wrap">
+   <h3 class="font-bold text-slate-200">☀️ Rotina diária base (todos os dias)</h3>
+   <span id="equipeProgressoDiariaTexto" class="text-xs text-slate-400 font-semibold whitespace-nowrap">0 de 0</span>
+  </div>
+  <div style="background:#0b1728;border-radius:999px;height:8px;overflow:hidden;margin-bottom:14px;">
+   <div id="equipeProgressoDiariaBar" style="height:100%;width:0%;background:linear-gradient(90deg,#27d7a0,#0ea97a);transition:width .3s;"></div>
+  </div>
   <div id="equipeRotinaDiaria" class="space-y-2"></div>
  </div>
 
@@ -536,11 +543,23 @@ if (localStorage.getItem('biobel_theme') === 'light') {
   <div class="flex gap-2 flex-wrap mb-5" id="equipeDayTabs"></div>
   <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
    <div>
-    <h3 class="font-bold text-emerald-400 mb-3">💇‍♀️ GABI</h3>
+    <div class="flex items-center justify-between gap-2 mb-2">
+     <h3 class="font-bold text-emerald-400">💇‍♀️ GABI</h3>
+     <span id="equipeProgressoGabiTexto" class="text-xs text-slate-400 font-semibold whitespace-nowrap">0 de 0</span>
+    </div>
+    <div style="background:#0b1728;border-radius:999px;height:8px;overflow:hidden;margin-bottom:12px;">
+     <div id="equipeProgressoGabiBar" style="height:100%;width:0%;background:linear-gradient(90deg,#27d7a0,#0ea97a);transition:width .3s;"></div>
+    </div>
     <div id="equipeListaGabi" class="space-y-2"></div>
    </div>
    <div>
-    <h3 class="font-bold text-blue-400 mb-3">✨ DAI</h3>
+    <div class="flex items-center justify-between gap-2 mb-2">
+     <h3 class="font-bold text-blue-400">✨ DAI</h3>
+     <span id="equipeProgressoDaiTexto" class="text-xs text-slate-400 font-semibold whitespace-nowrap">0 de 0</span>
+    </div>
+    <div style="background:#0b1728;border-radius:999px;height:8px;overflow:hidden;margin-bottom:12px;">
+     <div id="equipeProgressoDaiBar" style="height:100%;width:0%;background:linear-gradient(90deg,#4f9cff,#2f78e0);transition:width .3s;"></div>
+    </div>
     <div id="equipeListaDai" class="space-y-2"></div>
    </div>
   </div>
@@ -923,10 +942,27 @@ function renderEquipeChecklistItem(escopo, index, texto){
   </label>`;
 }
 
+function calcEquipeProgresso(escopo, total){
+ let done = 0;
+ for(let i=0;i<total;i++){
+  if(isEquipeChecked(escopo,i)) done++;
+ }
+ const pct = total>0 ? (done/total)*100 : 0;
+ return {done, total, pct};
+}
+function updateEquipeProgressBar(barId, textId, escopo, total){
+ const {done, pct} = calcEquipeProgresso(escopo, total);
+ const bar = document.getElementById(barId);
+ const txt = document.getElementById(textId);
+ if(bar) bar.style.width = pct.toFixed(0)+'%';
+ if(txt) txt.textContent = `${done} de ${total}`;
+}
+
 function renderEquipeRotinaDiaria(){
  const el = document.getElementById('equipeRotinaDiaria');
  if(!el) return;
  el.innerHTML = rotinaDiariaBase.map((item,i)=>renderEquipeChecklistItem('diaria',i,item.texto)).join('');
+ updateEquipeProgressBar('equipeProgressoDiariaBar','equipeProgressoDiariaTexto','diaria',rotinaDiariaBase.length);
 }
 
 function renderEquipeDayTabs(){
@@ -953,6 +989,8 @@ function renderEquipeDia(dia){
  const daiEl = document.getElementById('equipeListaDai');
  if(gabiEl) gabiEl.innerHTML = d.gabi.map((texto,i)=>renderEquipeChecklistItem(`${dia}_gabi`,i,texto)).join('');
  if(daiEl) daiEl.innerHTML = d.dai.map((texto,i)=>renderEquipeChecklistItem(`${dia}_dai`,i,texto)).join('');
+ updateEquipeProgressBar('equipeProgressoGabiBar','equipeProgressoGabiTexto',`${dia}_gabi`,d.gabi.length);
+ updateEquipeProgressBar('equipeProgressoDaiBar','equipeProgressoDaiTexto',`${dia}_dai`,d.dai.length);
 }
 
 function initEquipeTab(){
@@ -974,7 +1012,8 @@ function initEquipeTab(){
 }
 
 function resetEquipeWeek(){
- if(!confirm('Isso vai desmarcar TODAS as tarefas da semana (rotina diária + todos os dias). Tem certeza que quer reiniciar?')) return;
+ const confirmado = confirm('🚨 ATENÇÃO — Reiniciar semana\n\nIsso vai desmarcar TODAS as tarefas: a rotina diária base E os checklists dos 6 dias da semana (Gabi e Dai).\n\nEssa ação não pode ser desfeita depois.\n\nTem certeza que quer reiniciar tudo agora?');
+ if(!confirmado) return;
  const prefixos = ['biobel_equipe_diaria_'];
  diasSemanaOrdem.forEach(dia=>{
   prefixos.push(`biobel_equipe_${dia}_gabi_`);
@@ -985,6 +1024,13 @@ function resetEquipeWeek(){
  });
  renderEquipeRotinaDiaria();
  renderEquipeDia(equipeDiaAtual);
+
+ const msg = document.getElementById('equipeResetMsg');
+ if(msg){
+  msg.textContent = `✅ Semana reiniciada com sucesso às ${new Date().toLocaleTimeString('pt-BR')}. Todas as tarefas foram desmarcadas.`;
+  msg.style.display = 'block';
+  setTimeout(()=>{ msg.style.display = 'none'; }, 6000);
+ }
 }
 
 function printEquipeWeek(){
