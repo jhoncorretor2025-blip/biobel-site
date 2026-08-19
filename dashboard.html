@@ -234,6 +234,28 @@ body.light-mode .empty-state .title{color:#0f172a}
 
 /* Esconde as legendas explicativas da Caixa Simples quando o usuário desativa */
 body.hide-legends .simple-legend{display:none!important}
+
+/* Linhas de valor da Caixa Simples/Completo: no celular, empilha o rótulo em cima
+   e o valor embaixo, em vez de tentar caber os dois lado a lado (o que quebrava o layout). */
+@media(max-width:480px){
+  .caixa-row{flex-direction:column;align-items:flex-start!important;gap:4px;}
+  .caixa-row strong{font-size:1.4rem;}
+}
+
+/* Banner de meta do dia batida */
+.meta-dia-banner{
+  display:none;
+  background:linear-gradient(90deg, rgba(39,215,160,.15), rgba(14,169,122,.08));
+  border:1px solid rgba(39,215,160,.4);
+  border-radius:14px;
+  padding:14px 16px;
+  margin-bottom:16px;
+  text-align:center;
+  font-weight:800;
+  color:#27d7a0;
+  font-size:14px;
+}
+body.light-mode .meta-dia-banner{background:linear-gradient(90deg, rgba(14,169,122,.10), rgba(14,169,122,.04));color:#0a7a56;}
 </style>
 
 </head>
@@ -615,6 +637,17 @@ if (localStorage.getItem('biobel_theme') === 'light') {
   <button onclick="saveSalesGoal()" class="mt-4 w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-xl font-semibold text-sm">Salvar meta</button>
   <div id="goalStatus" class="mt-3 text-sm text-slate-400"></div>
  </div>
+
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6">
+  <div class="mb-6">
+   <h2 class="text-xl font-bold">🎯 Meta de vendas do dia</h2>
+   <p class="text-sm text-slate-400 mt-1">Quando as vendas do dia baterem esse valor, aparece uma mensagem de parabéns nas abas "Caixa simples" e "Caixa completo" (e também no recibo impresso). Padrão: R$ 1.500,00.</p>
+  </div>
+  <label class="block text-sm font-semibold mb-2">Valor da meta diária (R$)</label>
+  <input id="dailyGoalInput" type="number" step="0.01" min="0" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500" placeholder="1500">
+  <button onclick="saveDailyGoal()" class="mt-4 w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-xl font-semibold text-sm">Salvar meta diária</button>
+  <div id="dailyGoalStatus" class="mt-3 text-sm text-slate-400"></div>
+ </div>
 </section>
 
 <section id="caixaTab" class="hidden max-w-3xl mx-auto p-4 md:p-6" role="tabpanel" aria-labelledby="tabCaixa">
@@ -631,27 +664,28 @@ if (localStorage.getItem('biobel_theme') === 'light') {
    </div>
   </div>
   <p class="no-print text-xs text-slate-500 mb-6">Não achou o dia de hoje na lista? <a href="#" onclick="loadGoogleSheet();return false;" class="text-emerald-400 underline">Clique aqui para atualizar</a>.</p>
+  <div id="simpleGoalBanner" class="meta-dia-banner"></div>
   <div class="space-y-3">
    <div class="rounded-xl border border-slate-800 bg-slate-950 px-4 py-4">
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between caixa-row">
      <span class="text-slate-300">🌅 Valor de início do caixa</span>
      <strong id="simpleInitial" class="text-xl">R$ 0,00</strong>
     </div>
    </div>
    <div class="rounded-xl border border-blue-500/20 bg-slate-950 px-4 py-4">
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between caixa-row">
      <span class="text-slate-300">💰 Vendas do dia</span>
      <strong id="simpleSales" class="text-xl text-blue-400">R$ 0,00</strong>
     </div>
    </div>
    <div class="rounded-xl border border-rose-500/20 bg-slate-950 px-4 py-4">
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between caixa-row">
      <span class="text-slate-300">💸 Retiradas / despesas do dia</span>
      <strong id="simpleWithdrawals" class="text-xl text-rose-400">R$ 0,00</strong>
     </div>
    </div>
    <div class="rounded-xl border border-emerald-500/30 bg-slate-950 px-4 py-5">
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between caixa-row">
      <span class="font-semibold text-slate-200">🔒 Valor que ficou no caixa</span>
      <strong id="simpleClosing" class="text-2xl text-emerald-400">R$ 0,00</strong>
     </div>
@@ -675,16 +709,17 @@ if (localStorage.getItem('biobel_theme') === 'light') {
    </div>
   </div>
   <p class="no-print text-xs text-slate-500 mb-6">Não achou o dia de hoje na lista? <a href="#" onclick="loadGoogleSheet();return false;" class="text-emerald-400 underline">Clique aqui para atualizar</a>.</p>
+  <div id="completeGoalBanner" class="meta-dia-banner"></div>
   <div class="space-y-3">
    <div class="rounded-xl border border-slate-800 bg-slate-950 px-4 py-4">
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between caixa-row">
      <span class="text-slate-300">🌅 Valor de início do caixa</span>
      <strong id="completeInitial" class="text-xl">R$ 0,00</strong>
     </div>
     <p class="simple-legend text-xs text-slate-500 mt-1">Quanto tinha na gaveta quando a loja <strong class="text-slate-400">abriu</strong> — o dinheiro que ficou de troco do dia anterior.</p>
    </div>
    <div class="rounded-xl border border-blue-500/20 bg-slate-950 px-4 py-4">
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between caixa-row">
      <span class="text-slate-300">💰 Vendas do dia (total)</span>
      <strong id="completeSales" class="text-xl text-blue-400">R$ 0,00</strong>
     </div>
@@ -710,14 +745,14 @@ if (localStorage.getItem('biobel_theme') === 'light') {
    </div>
    <p class="simple-legend text-xs text-slate-500">Só a parte em <strong class="text-slate-400">dinheiro</strong> passa pela gaveta física. Débito, crédito e Pix vão direto pro banco.</p>
    <div class="rounded-xl border border-rose-500/20 bg-slate-950 px-4 py-4">
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between caixa-row">
      <span class="text-slate-300">💸 Retiradas / despesas do dia</span>
      <strong id="completeWithdrawals" class="text-xl text-rose-400">R$ 0,00</strong>
     </div>
     <p class="simple-legend text-xs text-slate-500 mt-1">Dinheiro que <strong class="text-slate-400">saiu da gaveta</strong> durante o dia (compras, troco, sangria etc).</p>
    </div>
    <div class="rounded-xl border border-emerald-500/30 bg-slate-950 px-4 py-5">
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between caixa-row">
      <span class="font-semibold text-slate-200">🔒 Valor que ficou no caixa</span>
      <strong id="completeClosing" class="text-2xl text-emerald-400">R$ 0,00</strong>
     </div>
@@ -859,6 +894,7 @@ function updateSimpleDay(day){
  document.getElementById('simpleSales').textContent=money(d.sales);
  document.getElementById('simpleWithdrawals').textContent=money(d.withdrawals);
  document.getElementById('simpleClosing').textContent=money(d.closing);
+ updateGoalBanner('simpleGoalBanner', Number(d.sales)||0);
 }
 function updateCompleteDay(day){
  const d=daysData.find(x=>x.dia===day);
@@ -871,6 +907,7 @@ function updateCompleteDay(day){
  document.getElementById('completePix').textContent=money(d.pix);
  document.getElementById('completeWithdrawals').textContent=money(d.withdrawals);
  document.getElementById('completeClosing').textContent=money(d.closing);
+ updateGoalBanner('completeGoalBanner', Number(d.sales)||0);
 }
 function showTab(tab){
  const dash=document.getElementById('dashboardTab');
@@ -923,6 +960,8 @@ function showTab(tab){
   b3.setAttribute('aria-selected','true');
   const goalInput=document.getElementById('salesGoalInput');
   if(goalInput) goalInput.value = getSalesGoal();
+  const dailyGoalInput=document.getElementById('dailyGoalInput');
+  if(dailyGoalInput) dailyGoalInput.value = getDailyGoal();
  } else {
   dash.classList.remove('hidden');
   b1.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
@@ -1325,6 +1364,33 @@ function saveSalesGoal(){
  localStorage.setItem('biobel_sales_goal', String(val));
  statusEl.innerHTML = '<span class="text-emerald-400">Meta salva: ' + money(val) + '</span>';
 }
+
+function getDailyGoal(){
+ const saved = localStorage.getItem('biobel_daily_sales_goal');
+ return saved ? parseFloat(saved) : 1500;
+}
+function saveDailyGoal(){
+ const val = parseFloat(document.getElementById('dailyGoalInput').value);
+ const statusEl = document.getElementById('dailyGoalStatus');
+ if(isNaN(val) || val <= 0){
+  statusEl.innerHTML = '<span class="text-rose-400">Digite um valor de meta válido.</span>';
+  return;
+ }
+ localStorage.setItem('biobel_daily_sales_goal', String(val));
+ statusEl.innerHTML = '<span class="text-emerald-400">Meta diária salva: ' + money(val) + '</span>';
+}
+function updateGoalBanner(bannerId, sales){
+ const el = document.getElementById(bannerId);
+ if(!el) return;
+ const goal = getDailyGoal();
+ if(sales >= goal && goal > 0){
+  el.style.display = 'block';
+  el.innerHTML = `🎉 <strong>Parabéns! Meta do dia batida!</strong><br><span style="font-weight:600;font-size:12px;">Vendeu ${money(sales)} de uma meta de ${money(goal)} 🎯</span>`;
+ } else {
+  el.style.display = 'none';
+ }
+}
+
 function renderInfoTab(){
  const totalSales = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
  const goal = getSalesGoal();
@@ -1422,6 +1488,7 @@ function buildReceipt(type, day){
  if(type==='daily-simple'){
   const d=daysData.find(x=>x.dia===day);
   if(!d) return false;
+  const metaBatida = (Number(d.sales)||0) >= getDailyGoal();
   el.innerHTML=`<div class="receipt-center"><strong style="font-size:17px">BIOBEL</strong><br>FECHAMENTO DE CAIXA<br>${d.dia}/08/2026</div>
   <div class="receipt-line"></div>
   <div class="receipt-row"><span>Saldo inicial (abertura)</span><strong>${money(d.initial)}</strong></div>
@@ -1430,11 +1497,13 @@ function buildReceipt(type, day){
   <div class="receipt-row"><span>Fechamento da gaveta</span><strong>${money(d.closing)}</strong></div>
   <div class="receipt-line"></div>
   <div class="receipt-center receipt-total">FECHAMENTO: ${money(d.closing)}</div>
+  ${metaBatida ? '<div class="receipt-line"></div><div class="receipt-center" style="font-weight:900;">*** PARABENS! META DO DIA BATIDA! ***</div>' : ''}
   <div class="receipt-line"></div>
   <div class="receipt-center receipt-small">Impresso em ${now}</div>`;
  } else if(type==='daily-complete' || type==='daily'){
   const d=daysData.find(x=>x.dia===day);
   if(!d) return false;
+  const metaBatida = (Number(d.sales)||0) >= getDailyGoal();
   el.innerHTML=`<div class="receipt-center"><strong style="font-size:17px">BIOBEL</strong><br>FECHAMENTO DE CAIXA<br>${d.dia}/08/2026</div>
   <div class="receipt-line"></div>
   <div class="receipt-row"><span>Saldo inicial (abertura)</span><strong>${money(d.initial)}</strong></div>
@@ -1447,6 +1516,7 @@ function buildReceipt(type, day){
   <div class="receipt-row"><span>Fechamento da gaveta</span><strong>${money(d.closing)}</strong></div>
   <div class="receipt-line"></div>
   <div class="receipt-center receipt-total">FECHAMENTO: ${money(d.closing)}</div>
+  ${metaBatida ? '<div class="receipt-line"></div><div class="receipt-center" style="font-weight:900;">*** PARABENS! META DO DIA BATIDA! ***</div>' : ''}
   <div class="receipt-line"></div>
   <div class="receipt-center receipt-small">Impresso em ${now}</div>`;
  } else {
