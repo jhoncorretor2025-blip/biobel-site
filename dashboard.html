@@ -493,6 +493,28 @@ if (localStorage.getItem('biobel_theme') === 'light') {
     <div class="sub" id="infoPixPct">0% do total</div>
    </div>
   </div>
+  <div class="adv-grid4" style="margin-top:16px;">
+   <div class="adv-kpi green">
+    <div class="label">🎯 Ticket Médio por Venda</div>
+    <div class="value" id="infoTicketMedio">R$ 0,00</div>
+    <div class="sub" id="infoTicketMedioSub">baseado nas vendas com contagem disponível</div>
+   </div>
+   <div class="adv-kpi blue">
+    <div class="label">🧾 Total de Atendimentos/Vendas</div>
+    <div class="value" id="infoQtdVendas">0</div>
+    <div class="sub">no mês, somando todos os dias lançados</div>
+   </div>
+   <div class="adv-kpi gold">
+    <div class="label">📈 Projeção até o Fim do Mês</div>
+    <div class="value" id="infoProjecao">R$ 0,00</div>
+    <div class="sub" id="infoProjecaoSub">baseado na média diária até agora</div>
+   </div>
+   <div class="adv-kpi red">
+    <div class="label">📊 Comparativo com o Mês Anterior</div>
+    <div class="value" id="infoComparativoMes">—</div>
+    <div class="sub" id="infoComparativoMesSub">ainda sem dados do mês passado</div>
+   </div>
+  </div>
  </div>
 
  <div class="adv-content2">
@@ -509,6 +531,11 @@ if (localStorage.getItem('biobel_theme') === 'light') {
     <h3>📅 Dias que mais venderam</h3>
     <span>ranking do mês</span>
    </div>
+   <div style="display:flex;gap:6px;margin-bottom:10px;">
+    <input id="buscaDiaInput" type="text" placeholder="Buscar dia (ex: 20.08)" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12px;">
+    <button onclick="buscarPosicaoDia()" style="background:#2f78e0;color:#fff;border:0;border-radius:8px;padding:8px 12px;font-size:12px;cursor:pointer;">🔎 Ver posição</button>
+   </div>
+   <div id="resultadoBuscaDia" style="display:none;background:#0b1728;border:1px solid #2f78e0;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:13px;color:#dce5f2;"></div>
    <div id="infoTopDays" style="display:flex;flex-direction:column;gap:10px;"></div>
   </div>
  </div>
@@ -1421,6 +1448,81 @@ function renderInfoTab(){
 
  renderSellerRanking();
  renderTopDays();
+ renderNovasMetricas();
+}
+
+function renderNovasMetricas(){
+ if(daysData.length===0) return;
+
+ // 1) Ticket Medio por Venda + Quantidade Total de Vendas
+ const totalSales = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const totalQtdVendas = daysData.reduce((s,d)=>s+(Number(d.qtdVendas)||0),0);
+ const ticketMedio = totalQtdVendas>0 ? totalSales/totalQtdVendas : 0;
+ const elTicket=document.getElementById('infoTicketMedio');
+ if(elTicket) elTicket.textContent = money(ticketMedio);
+ const elQtd=document.getElementById('infoQtdVendas');
+ if(elQtd) elQtd.textContent = String(totalQtdVendas);
+ const elTicketSub=document.getElementById('infoTicketMedioSub');
+ if(elTicketSub) elTicketSub.textContent = totalQtdVendas>0 ? totalQtdVendas+' venda(s) contada(s) no mês' : 'ainda sem dados de quantidade (recarregue a planilha)';
+
+ // 2) Projecao de Faturamento ate o Fim do Mes
+ const mesAtual = daysData[0]?.dia?.split('.')[1];
+ const anoAtual = 2026;
+ let diasNoMes = 30;
+ if(mesAtual){
+  diasNoMes = new Date(anoAtual, Number(mesAtual), 0).getDate();
+ }
+ const diasComDados = daysData.length;
+ const mediaDiaria = diasComDados>0 ? totalSales/diasComDados : 0;
+ const projecao = mediaDiaria * diasNoMes;
+ const elProj=document.getElementById('infoProjecao');
+ if(elProj) elProj.textContent = money(projecao);
+ const elProjSub=document.getElementById('infoProjecaoSub');
+ if(elProjSub) elProjSub.textContent = `média de ${money(mediaDiaria)}/dia × ${diasNoMes} dias no mês`;
+
+ // 3) Comparativo com o Mes Anterior (guarda o total de cada mes no localStorage pra comparar futuramente)
+ if(mesAtual){
+  let historico = {};
+  try{ historico = JSON.parse(localStorage.getItem('biobel_historico_meses')||'{}'); }catch(e){}
+  historico[mesAtual] = totalSales;
+  localStorage.setItem('biobel_historico_meses', JSON.stringify(historico));
+
+  const mesAnteriorNum = String(Number(mesAtual)-1).padStart(2,'0');
+  const totalMesAnterior = historico[mesAnteriorNum];
+  const elComp=document.getElementById('infoComparativoMes');
+  const elCompSub=document.getElementById('infoComparativoMesSub');
+  if(totalMesAnterior!==undefined && totalMesAnterior>0){
+   const variacao = ((totalSales-totalMesAnterior)/totalMesAnterior)*100;
+   const sinal = variacao>=0?'+':'';
+   if(elComp) elComp.textContent = sinal+variacao.toFixed(1)+'%';
+   if(elComp) elComp.style.color = variacao>=0 ? 'var(--green)' : 'var(--red)';
+   if(elCompSub) elCompSub.textContent = `${money(totalSales)} este mês vs ${money(totalMesAnterior)} no mês ${mesAnteriorNum}`;
+  } else {
+   if(elComp) elComp.textContent = '—';
+   if(elCompSub) elCompSub.textContent = 'ainda sem dados do mês anterior salvos';
+  }
+ }
+}
+
+function buscarPosicaoDia(){
+ const input = document.getElementById('buscaDiaInput');
+ const resultado = document.getElementById('resultadoBuscaDia');
+ if(!input || !resultado) return;
+ const termo = input.value.trim();
+ if(!termo){ resultado.style.display='none'; return; }
+
+ const ranked = [...daysData].sort((a,b)=>(Number(b.sales)||0)-(Number(a.sales)||0));
+ const idx = ranked.findIndex(d=>d.dia===termo || d.dia===termo.replace('/','.'));
+
+ resultado.style.display='block';
+ if(idx===-1){
+  resultado.innerHTML = `❌ O dia <b>${termo}</b> ainda não foi lançado no painel.`;
+  return;
+ }
+ const dia = ranked[idx];
+ const posicao = idx+1;
+ const totalDias = ranked.length;
+ resultado.innerHTML = `📍 O dia <b>${dia.dia}</b> ficou na posição <b>${posicao}ª de ${totalDias}</b>, com <b>${money(dia.sales)}</b> em vendas.`;
 }
 
 function renderSellerRanking(){
@@ -1621,6 +1723,24 @@ function extractSellerTotals(rows){
  return totals;
 }
 
+function countTransactions(rows){
+ // Conta quantas linhas de venda existem (uma linha = um atendimento/venda), até achar a linha "total".
+ let qtd = 0;
+ for(let r=0;r<rows.length;r++){
+  const rownum = rows[r]?.[0];
+  const label = String(rownum??'').trim().toLowerCase();
+  if(label==='total') break;
+  if(typeof rownum!=='number') continue;
+  let valorVenda = 0;
+  for(const c of [1,2,3,4]){
+   const v = rows[r]?.[c];
+   if(typeof v==='number') valorVenda += v;
+  }
+  if(valorVenda>0) qtd++;
+ }
+ return qtd;
+}
+
 function setRefreshButtonsLoading(loading){
  const btns = [
   document.getElementById('btnRefreshSidebar'),
@@ -1677,8 +1797,9 @@ async function loadGoogleSheet(){
    const sales=typeof rows[1]?.[15]==='number'?rows[1][15]:0;
    const {dinheiro,debito,credito,pix}=findPaymentTotals(rows);
    const vendedoras=extractSellerTotals(rows);
+   const qtdVendas=countTransactions(rows);
    daysData=daysData.filter(x=>x.dia!==sheetName);
-   daysData.push({dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras});
+   daysData.push({dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas});
    found++;
   }
   render();
@@ -1748,7 +1869,8 @@ document.getElementById('fileInput').addEventListener('change',async e=>{
    const sales=typeof rows[1]?.[15]==='number'?rows[1][15]:0;
    const {dinheiro,debito,credito,pix}=findPaymentTotals(rows);
    const vendedoras=extractSellerTotals(rows);
-   const item={dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras};
+   const qtdVendas=countTransactions(rows);
+   const item={dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas};
    daysData=daysData.filter(x=>x.dia!==sheetName);
    daysData.push(item);
   }
