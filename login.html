@@ -49,7 +49,10 @@ button:active{transform:translateY(1px)}
   <label for="loginUser">Login</label>
   <input id="loginUser" type="text" autocomplete="username" placeholder="usuário" autofocus>
   <label for="loginPass">Senha</label>
-  <input id="loginPass" type="password" autocomplete="current-password" placeholder="senha">
+  <div style="position:relative;">
+    <input id="loginPass" type="password" autocomplete="current-password" placeholder="senha" style="padding-right:44px;">
+    <button type="button" id="btnMostrarSenha" aria-label="Mostrar senha" aria-pressed="false" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;padding:4px;color:#7e92aa;">👁️</button>
+  </div>
   <div id="loginError">Login ou senha incorretos. Tente novamente.</div>
   <button type="submit">Entrar</button>
   <a class="back" href="index.html">← Voltar para o site</a>
@@ -60,6 +63,16 @@ button:active{transform:translateY(1px)}
   var CORRECT_PASS = 'admin';
   var form = document.getElementById('loginForm');
   var err = document.getElementById('loginError');
+  var btnMostrarSenha = document.getElementById('btnMostrarSenha');
+  var campoSenha = document.getElementById('loginPass');
+
+  btnMostrarSenha.addEventListener('click', function(){
+    var visivel = campoSenha.type === 'text';
+    campoSenha.type = visivel ? 'password' : 'text';
+    btnMostrarSenha.textContent = visivel ? '👁️' : '🙈';
+    btnMostrarSenha.setAttribute('aria-label', visivel ? 'Mostrar senha' : 'Esconder senha');
+    btnMostrarSenha.setAttribute('aria-pressed', visivel ? 'false' : 'true');
+  });
 
   // Se já estiver logado nesta sessão do navegador, pula direto para o painel.
   if (sessionStorage.getItem('biobel_logged_in') === 'yes') {
