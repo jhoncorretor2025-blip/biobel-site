@@ -556,6 +556,47 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
  </div>
 
+ <div class="adv-card">
+  <div class="adv-card-title">
+   <h3>📈 Mais números do mês</h3>
+   <span>médias, recordes e comparação justa</span>
+  </div>
+  <div class="adv-grid4" style="margin-top:0;">
+   <div class="adv-kpi blue">
+    <div class="label">📊 Média de Vendas por Dia</div>
+    <div class="value" id="infoMediaDiaria">R$ 0,00</div>
+    <div class="sub" id="infoMediaDiariaSub">considerando os dias já lançados</div>
+   </div>
+   <div class="adv-kpi green">
+    <div class="label">🚀 Maior Venda do Mês</div>
+    <div class="value" id="infoMaiorVenda">R$ 0,00</div>
+    <div class="sub" id="infoMaiorVendaSub">—</div>
+   </div>
+   <div class="adv-kpi red">
+    <div class="label">📉 Menor Venda do Mês</div>
+    <div class="value" id="infoMenorVenda">R$ 0,00</div>
+    <div class="sub" id="infoMenorVendaSub">—</div>
+   </div>
+   <div class="adv-kpi gold">
+    <div class="label">✅ Dias que Bateram a Meta</div>
+    <div class="value" id="infoDiasMetaBatida">0 de 0</div>
+    <div class="sub" id="infoDiasMetaBatidaSub">meta diária considerada</div>
+   </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px;">
+   <div class="adv-kpi blue">
+    <div class="label">📆 Melhor Dia da Semana (em média)</div>
+    <div class="value" id="infoMelhorDiaSemana">—</div>
+    <div class="sub" id="infoMelhorDiaSemanaSub">baseado na média de todos os dias lançados</div>
+   </div>
+   <div class="adv-kpi green">
+    <div class="label">⚖️ Comparativo até o Mesmo Dia (mês passado)</div>
+    <div class="value" id="infoComparativoMesmoDia">—</div>
+    <div class="sub" id="infoComparativoMesmoDiaSub">comparação mais justa que o total do mês fechado</div>
+   </div>
+  </div>
+ </div>
+
  <div class="adv-content2">
   <div class="adv-card">
    <div class="adv-card-title">
@@ -1706,6 +1747,7 @@ function renderInfoTab(){
  renderSellerRanking();
  renderTopDays();
  renderNovasMetricas();
+ renderMaisNumerosDoMes();
 }
 
 function montarSeletorMeses(){
@@ -1809,6 +1851,93 @@ function renderNovasMetricas(){
  }
 }
 
+function renderMaisNumerosDoMes(){
+ if(daysData.length===0) return;
+ const totalSales = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+
+ // Média de vendas por dia
+ const media = totalSales/daysData.length;
+ const elMedia=document.getElementById('infoMediaDiaria');
+ if(elMedia) elMedia.textContent = money(media);
+
+ // Maior e menor venda do mês
+ const ordenado = [...daysData].sort((a,b)=>(Number(a.sales)||0)-(Number(b.sales)||0));
+ const menor = ordenado[0];
+ const maior = ordenado[ordenado.length-1];
+ const elMaior=document.getElementById('infoMaiorVenda');
+ const elMaiorSub=document.getElementById('infoMaiorVendaSub');
+ if(elMaior) elMaior.textContent = money(maior.sales);
+ if(elMaiorSub) elMaiorSub.textContent = 'dia '+maior.dia;
+ const elMenor=document.getElementById('infoMenorVenda');
+ const elMenorSub=document.getElementById('infoMenorVendaSub');
+ if(elMenor) elMenor.textContent = money(menor.sales);
+ if(elMenorSub) elMenorSub.textContent = 'dia '+menor.dia;
+
+ // Dias que bateram a meta diária
+ const meta = getDailyGoal();
+ const bateram = daysData.filter(d=>(Number(d.sales)||0) >= meta).length;
+ const elDiasMeta=document.getElementById('infoDiasMetaBatida');
+ const elDiasMetaSub=document.getElementById('infoDiasMetaBatidaSub');
+ if(elDiasMeta) elDiasMeta.textContent = bateram+' de '+daysData.length;
+ if(elDiasMetaSub) elDiasMetaSub.textContent = 'meta diária de '+money(meta)+' considerada';
+
+ // Melhor dia da semana (em média)
+ const nomesDias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+ const porDiaSemana = {};
+ daysData.forEach(d=>{
+  const partes = String(d.dia||'').split('.');
+  if(partes.length<2) return;
+  const dia = Number(partes[0]), mes = Number(partes[1]);
+  if(!dia||!mes) return;
+  const dt = new Date(2026, mes-1, dia);
+  const dow = dt.getDay();
+  if(!porDiaSemana[dow]) porDiaSemana[dow] = {soma:0,qtd:0};
+  porDiaSemana[dow].soma += Number(d.sales)||0;
+  porDiaSemana[dow].qtd += 1;
+ });
+ let melhorDow = null, melhorMedia = -1;
+ Object.keys(porDiaSemana).forEach(dow=>{
+  const m = porDiaSemana[dow].soma/porDiaSemana[dow].qtd;
+  if(m>melhorMedia){melhorMedia=m; melhorDow=Number(dow);}
+ });
+ const elDow=document.getElementById('infoMelhorDiaSemana');
+ const elDowSub=document.getElementById('infoMelhorDiaSemanaSub');
+ if(melhorDow!==null){
+  if(elDow) elDow.textContent = nomesDias[melhorDow];
+  if(elDowSub) elDowSub.textContent = 'média de '+money(melhorMedia)+' nesse dia da semana';
+ }
+
+ // Comparativo "até o mesmo dia" do mês passado (mais justo que comparar mês fechado com mês em andamento)
+ const mesAtual = daysData[0]?.dia?.split('.')[1];
+ const elComp=document.getElementById('infoComparativoMesmoDia');
+ const elCompSub=document.getElementById('infoComparativoMesmoDiaSub');
+ if(mesAtual && elComp){
+  const maiorDiaAtual = Math.max(...daysData.map(d=>Number(String(d.dia).split('.')[0])||0));
+  const mesAnteriorNum = String(Number(mesAtual)-1).padStart(2,'0');
+  let arquivo = {};
+  try{ arquivo = JSON.parse(localStorage.getItem('biobel_arquivo_meses')||'{}'); }catch(e){}
+  const dadosMesAnterior = arquivo[mesAnteriorNum];
+  if(dadosMesAnterior && dadosMesAnterior.length){
+   const totalMesAnteriorAteODia = dadosMesAnterior
+    .filter(d=>Number(String(d.dia).split('.')[0])<=maiorDiaAtual)
+    .reduce((s,d)=>s+(Number(d.sales)||0),0);
+   if(totalMesAnteriorAteODia>0){
+    const variacao = ((totalSales-totalMesAnteriorAteODia)/totalMesAnteriorAteODia)*100;
+    const sinal = variacao>=0?'+':'';
+    elComp.textContent = sinal+variacao.toFixed(1)+'%';
+    elComp.style.color = variacao>=0 ? 'var(--green)' : 'var(--red)';
+    if(elCompSub) elCompSub.textContent = `${money(totalSales)} até o dia ${maiorDiaAtual} vs ${money(totalMesAnteriorAteODia)} até o mesmo dia no mês ${mesAnteriorNum}`;
+   } else {
+    elComp.textContent = '—';
+    if(elCompSub) elCompSub.textContent = 'sem dados suficientes no mês anterior até esse dia';
+   }
+  } else {
+   elComp.textContent = '—';
+   if(elCompSub) elCompSub.textContent = 'ainda sem o mês anterior arquivado pra comparar';
+  }
+ }
+}
+
 function buscarPosicaoDia(){
  const input = document.getElementById('buscaDiaInput');
  const resultado = document.getElementById('resultadoBuscaDia');
@@ -1834,10 +1963,15 @@ function renderSellerRanking(){
  const el = document.getElementById('infoSellerRanking');
  if(!el) return;
  const totals = {};
+ const qtds = {};
  daysData.forEach(d=>{
   const vendedoras = d.vendedoras || {};
   Object.entries(vendedoras).forEach(([nome,valor])=>{
    totals[nome] = (totals[nome]||0) + (Number(valor)||0);
+  });
+  const detalhe = d.vendedorasDetalhe || {};
+  Object.entries(detalhe).forEach(([nome,info])=>{
+   qtds[nome] = (qtds[nome]||0) + (Number(info.qtd)||0);
   });
  });
  const ranked = Object.entries(totals).sort((a,b)=>b[1]-a[1]);
@@ -1850,11 +1984,15 @@ function renderSellerRanking(){
  el.innerHTML = ranked.map(([nome,valor],i)=>{
   const pct = max>0 ? (valor/max)*100 : 0;
   const posicao = medalhas[i] || (i+1)+'º';
+  const qtd = qtds[nome]||0;
   return `
    <div>
     <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
      <span style="color:#dce5f2;"><span style="display:inline-block;min-width:26px;color:#93a3ba;font-weight:800;">${posicao}</span> ${nome}</span>
-     <strong style="color:#f6f9fd;">${money(valor)}</strong>
+     <span style="text-align:right;">
+      <strong style="color:#f6f9fd;">${money(valor)}</strong>
+      <span style="color:#93a3ba;font-size:11px;display:block;">${qtd} venda${qtd===1?'':'s'}</span>
+     </span>
     </div>
     <div style="background:#0b1728;border-radius:999px;height:10px;overflow:hidden;">
      <div style="height:100%;width:${pct.toFixed(1)}%;background:linear-gradient(90deg,#27d7a0,#0ea97a);"></div>
