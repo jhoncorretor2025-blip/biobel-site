@@ -76,7 +76,7 @@ body{
   background:linear-gradient(180deg,#0d1a2c,#0a1525);
   border:1px solid var(--line);border-radius:18px;padding:16px;
 }
-.adv-brand{font-size:11px;font-weight:800;color:#a0b1c6;letter-spacing:.08em;text-transform:uppercase;margin:4px 8px 14px}
+.adv-brand{font-size:11px;font-weight:800;color:#93a3ba;letter-spacing:.08em;text-transform:uppercase;margin:4px 8px 14px}
 .adv-nav{display:flex;flex-direction:column;gap:8px}
 .adv-nav button{
   width:100%;text-align:left;border:1px solid transparent;background:transparent;color:#9fb0c7;
@@ -89,7 +89,7 @@ body{
   padding:10px 0;border-bottom:1px solid rgba(32,51,78,.7)
 }
 .adv-summary .mini:last-child{border-bottom:0}
-.adv-summary .k{font-size:11px;color:#a0b1c6}
+.adv-summary .k{font-size:11px;color:#93a3ba}
 .adv-summary .v{font-size:18px;font-weight:800;margin-top:4px}
 .adv-summary .g{color:var(--green)} .adv-summary .b{color:var(--blue)}
 .adv-summary .p{color:var(--purple)} .adv-summary .y{color:var(--yellow)}
@@ -118,7 +118,7 @@ body{
 .adv-kpi.blue{border-left:3px solid var(--blue)} .adv-kpi.blue:before{background:var(--blue)}
 .adv-kpi.red{border-left:3px solid var(--red)} .adv-kpi.red:before{background:var(--red)}
 .adv-kpi.gold{border-left:3px solid var(--yellow)} .adv-kpi.gold:before{background:var(--yellow)}
-.adv-kpi .label{color:#a1b2c7;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.adv-kpi .label{color:#93a3ba;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
 .adv-kpi .value{font-size:27px;font-weight:900;margin-top:10px;letter-spacing:-.03em}
 .adv-kpi .sub{font-size:11px;color:#93a3ba;margin-top:6px}
 .adv-content2{display:grid;grid-template-columns:minmax(0,1.8fr) minmax(260px,.9fr);gap:14px;margin-top:14px}
@@ -177,7 +177,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible
 
 /* Estado vazio (nenhum dado carregado) */
 .empty-state{
-  text-align:center;padding:48px 20px;color:#a0b1c6;
+  text-align:center;padding:48px 20px;color:#93a3ba;
 }
 .empty-state .icon{font-size:40px;margin-bottom:12px}
 .empty-state .title{font-size:16px;font-weight:800;color:#f6f9fd;margin-bottom:6px}
@@ -217,10 +217,10 @@ body.light-mode .adv-pill b{color:#0f172a}
 body.light-mode .adv-kpi{background:linear-gradient(180deg,#ffffff,#f7f9fb);border-color:#dde3ea}
 body.light-mode .adv-kpi .label{color:#5b6b80}
 body.light-mode .adv-kpi .value{color:#0f172a}
-body.light-mode .adv-kpi .sub{color:#7c8ba0}
+body.light-mode .adv-kpi .sub{color:#93a3ba}
 body.light-mode .adv-card{background:#ffffff;border-color:#dde3ea}
 body.light-mode .adv-card-title h3{color:#0f172a}
-body.light-mode .adv-card-title span{color:#7c8ba0}
+body.light-mode .adv-card-title span{color:#93a3ba}
 body.light-mode .adv-table th{color:#5b6b80;border-color:#dde3ea}
 body.light-mode .adv-table td{color:#1e293b;border-color:#eef1f5}
 body.light-mode .adv-table tr:hover td{background:rgba(15,23,42,.03)}
@@ -272,20 +272,34 @@ body.light-mode .meta-dia-banner{background:linear-gradient(90deg, rgba(14,169,1
 
 </head>
 <body class="min-h-screen bg-slate-950 text-slate-100">
+<a href="#dashboardTab" style="position:absolute;left:-9999px;top:0;z-index:9999;background:#0ea97a;color:#04241a;padding:12px 18px;border-radius:0 0 10px 0;font-weight:700;text-decoration:none" onfocus="this.style.left='0'" onblur="this.style.left='-9999px'">Pular para o conteúdo</a>
 <script>
 // Proteção de acesso: só entra aqui quem passou pela tela de login (login.html).
 if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   window.location.href = 'login.html';
 }
 // Aplica o tema salvo o mais cedo possível, para evitar "flash" de tela escura/clara.
-if (localStorage.getItem('biobel_theme') === 'light') {
-  document.body.classList.add('light-mode');
-}
+// Na primeira visita (sem preferência salva ainda), usa o tema do sistema operacional.
+(function(){
+  let temaSalvo = localStorage.getItem('biobel_theme');
+  if(!temaSalvo){
+    temaSalvo = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+  }
+  if(temaSalvo === 'light'){
+    document.body.classList.add('light-mode');
+  }
+})();
 </script>
 
 <header class="border-b border-slate-800 bg-slate-900/95 sticky top-0 z-20 backdrop-blur">
  <div class="max-w-7xl mx-auto px-4 pt-2 flex justify-end items-center gap-4">
+  <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
+  <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
+   <button onclick="ajustarFonteBiobel(-1)" aria-label="Diminuir tamanho da fonte" title="Diminuir fonte" style="background:transparent;border:none;color:#93a3ba;padding:4px 8px;font-size:12px;font-weight:800;cursor:pointer;">A-</button>
+   <button onclick="ajustarFonteBiobel(0)" aria-label="Restaurar tamanho padrão da fonte" title="Tamanho padrão" style="background:transparent;border:none;border-left:1px solid #1c2c42;border-right:1px solid #1c2c42;color:#93a3ba;padding:4px 8px;font-size:12px;font-weight:800;cursor:pointer;">A</button>
+   <button onclick="ajustarFonteBiobel(1)" aria-label="Aumentar tamanho da fonte" title="Aumentar fonte" style="background:transparent;border:none;color:#93a3ba;padding:4px 8px;font-size:12px;font-weight:800;cursor:pointer;">A+</button>
+  </div>
   <button id="themeToggleBtn" onclick="toggleTheme()" class="no-print text-xs text-slate-400 hover:text-white flex items-center gap-1">
    <span id="themeToggleIcon">🌙</span> <span id="themeToggleLabel">Modo claro</span>
   </button>
@@ -347,7 +361,7 @@ if (localStorage.getItem('biobel_theme') === 'light') {
       </div>
 
       <div class="adv-update">
-        <div class="k" style="color:#a0b1c6;font-size:11px;">Última atualização</div>
+        <div class="k" style="color:#93a3ba;font-size:11px;">Última atualização</div>
         <div id="advLastUpdate" style="font-size:12px;margin-top:4px;color:#dce5f2;">—</div>
         <button id="btnRefreshSidebar" class="adv-btn green" style="width:100%;margin-top:10px;" onclick="loadGoogleSheet()">↻ Atualizar agora</button>
       </div>
@@ -357,7 +371,7 @@ if (localStorage.getItem('biobel_theme') === 'light') {
       <div class="adv-topbar">
         <div class="adv-topbar-left">
           <div class="adv-select-wrap">📅 <span>Selecione o Dia:</span>
-            <select id="daySelect" class="adv-select"></select>
+            <select id="daySelect" class="adv-select" aria-label="Selecionar dia do caixa"></select>
           </div>
         </div>
         <div class="adv-pills">
@@ -455,8 +469,8 @@ if (localStorage.getItem('biobel_theme') === 'light') {
 <section id="infoTab" class="hidden max-w-5xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabInfo">
 
  <div class="adv-card no-print" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-  <span style="font-size:12px;color:#a1b2c7;font-weight:800;">📅 Ver dados de:</span>
-  <select id="seletorMes" onchange="visualizarMes(this.value)" style="background:#0b1728;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12px;flex:1;min-width:160px;">
+  <span style="font-size:12px;color:#93a3ba;font-weight:800;">📅 Ver dados de:</span>
+  <select id="seletorMes" aria-label="Selecionar mês do histórico" onchange="visualizarMes(this.value)" style="background:#0b1728;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12px;flex:1;min-width:160px;">
    <option value="">Mês atual (ao vivo)</option>
   </select>
   <span id="avisoMesPassado" style="display:none;background:#3a2a0b;color:#f5c542;font-size:11px;font-weight:800;padding:6px 10px;border-radius:8px;">📌 Visualizando dados arquivados — não atualiza sozinho</span>
@@ -469,11 +483,11 @@ if (localStorage.getItem('biobel_theme') === 'light') {
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
    <div>
-    <div style="font-size:11px;color:#a1b2c7;font-weight:800;letter-spacing:.06em;text-transform:uppercase;">Total vendido até agora</div>
+    <div style="font-size:11px;color:#93a3ba;font-weight:800;letter-spacing:.06em;text-transform:uppercase;">Total vendido até agora</div>
     <div style="font-size:30px;font-weight:900;color:#27d7a0;margin-top:6px;" id="infoTotalSales">R$ 0,00</div>
    </div>
    <div>
-    <div style="font-size:11px;color:#a1b2c7;font-weight:800;letter-spacing:.06em;text-transform:uppercase;">Meta do mês</div>
+    <div style="font-size:11px;color:#93a3ba;font-weight:800;letter-spacing:.06em;text-transform:uppercase;">Meta do mês</div>
     <div style="font-size:30px;font-weight:900;color:#f6f9fd;margin-top:6px;" id="infoGoalValue">R$ 45.000,00</div>
    </div>
   </div>
@@ -546,7 +560,7 @@ if (localStorage.getItem('biobel_theme') === 'light') {
    </div>
    <div id="infoSellerRanking" style="display:flex;flex-direction:column;gap:10px;"></div>
    <div style="border-top:1px solid #1e2c42;margin:16px 0 12px;padding-top:14px;">
-    <div style="font-size:12px;font-weight:800;color:#a1b2c7;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">🔀 Ticket Médio e Forma de Pagamento Preferida</div>
+    <div style="font-size:12px;font-weight:800;color:#93a3ba;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">🔀 Ticket Médio e Forma de Pagamento Preferida</div>
     <div id="infoSellerCruzamento" style="display:flex;flex-direction:column;gap:12px;"></div>
    </div>
   </div>
@@ -589,19 +603,19 @@ if (localStorage.getItem('biobel_theme') === 'light') {
 
   <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-2">
    <div>
-    <label class="block text-xs text-slate-400 font-semibold mb-1">Semana referente a (de)</label>
+    <label class="block text-xs text-slate-400 font-semibold mb-1" for="equipeWeekStart">Semana referente a (de)</label>
     <input id="equipeWeekStart" type="date" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm">
    </div>
    <div>
-    <label class="block text-xs text-slate-400 font-semibold mb-1">Semana referente a (até)</label>
+    <label class="block text-xs text-slate-400 font-semibold mb-1" for="equipeWeekEnd">Semana referente a (até)</label>
     <input id="equipeWeekEnd" type="date" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm">
    </div>
    <div>
-    <label class="block text-xs text-slate-400 font-semibold mb-1">Vendedora (Gabi)</label>
+    <label class="block text-xs text-slate-400 font-semibold mb-1" for="equipeNomeGabi">Vendedora (Gabi)</label>
     <input id="equipeNomeGabi" type="text" placeholder="Nome" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm">
    </div>
    <div>
-    <label class="block text-xs text-slate-400 font-semibold mb-1">Estagiária (Dai)</label>
+    <label class="block text-xs text-slate-400 font-semibold mb-1" for="equipeNomeDai">Estagiária (Dai)</label>
     <input id="equipeNomeDai" type="text" placeholder="Nome" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm">
    </div>
   </div>
@@ -663,7 +677,7 @@ if (localStorage.getItem('biobel_theme') === 'light') {
    <h2 class="text-xl font-bold">Configuração — Google Sheets</h2>
    <p class="text-sm text-slate-400 mt-1">Cole o link da sua planilha Google. O dashboard poderá atualizar os dados automaticamente.</p>
   </div>
-  <label class="block text-sm font-semibold mb-2">Link do Google Sheets</label>
+  <label class="block text-sm font-semibold mb-2" for="googleSheetUrl">Link do Google Sheets</label>
   <input id="googleSheetUrl" type="url" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500" placeholder="https://docs.google.com/spreadsheets/d/..." value="https://docs.google.com/spreadsheets/d/1idL5VN5CRRgQaXZb4i14V9_sRg6CbxUJx3M-PdSpJGA/edit?usp=sharing">
   <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
    <button onclick="saveGoogleConfig()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-xl font-semibold text-sm">Salvar configuração</button>
@@ -672,6 +686,7 @@ if (localStorage.getItem('biobel_theme') === 'light') {
   <div class="mt-5 rounded-xl border border-slate-800 bg-slate-950 p-4 text-sm">
    <div class="font-semibold mb-1">Atualização automática</div>
    <div class="text-slate-400">O dashboard verifica a planilha a cada <strong class="text-white">1 minuto</strong> enquanto esta página estiver aberta.</div>
+   <div class="text-slate-500 text-xs mt-2">⌨️ Atalho: aperte <strong class="text-slate-300">Alt+A</strong> em qualquer aba do painel pra atualizar na hora.</div>
   </div>
   <div id="googleStatus" class="mt-4 text-sm text-slate-400">Status: configuração ainda não carregada.</div>
   <div class="mt-5 text-xs text-slate-500 leading-relaxed">
@@ -681,7 +696,7 @@ if (localStorage.getItem('biobel_theme') === 'light') {
   <div class="mt-6 pt-6 border-t border-slate-800">
    <h3 class="font-bold text-slate-200 mb-1">📂 Planilhas salvas (troca rápida entre meses)</h3>
    <p class="text-xs text-slate-500 mb-3">Salve o link de cada mês aqui uma vez. Depois é só escolher no menu abaixo pra trocar, sem precisar colar o link de novo toda vez.</p>
-   <select id="planilhaSalvaSelect" onchange="selecionarPlanilhaSalva()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500 mb-3">
+   <select id="planilhaSalvaSelect" aria-label="Selecionar planilha salva" onchange="selecionarPlanilhaSalva()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500 mb-3">
     <option value="">— Nenhuma planilha salva ainda —</option>
    </select>
    <div id="listaPlanilhasSalvas" class="space-y-2 mb-4"></div>
@@ -697,8 +712,9 @@ if (localStorage.getItem('biobel_theme') === 'light') {
    <h2 class="text-xl font-bold">Meta de vendas do mês</h2>
    <p class="text-sm text-slate-400 mt-1">Esse valor é usado na aba "Informação Geral" para calcular a porcentagem da meta batida. Padrão: R$ 45.000,00.</p>
   </div>
-  <label class="block text-sm font-semibold mb-2">Valor da meta (R$)</label>
+  <label class="block text-sm font-semibold mb-2" for="salesGoalInput">Valor da meta (R$)</label>
   <input id="salesGoalInput" type="text" inputmode="decimal" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500" placeholder="R$ 0,00">
+  <p class="text-xs text-slate-500 mt-2">💡 Digite só os números — o valor se forma da direita pra esquerda, tipo caixa eletrônico (ex: para R$ 50.000,00, digite <code>5000000</code>).</p>
   <button onclick="saveSalesGoal()" class="mt-4 w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-xl font-semibold text-sm">Salvar meta</button>
   <div id="goalStatus" class="mt-3 text-sm text-slate-400"></div>
  </div>
@@ -718,8 +734,9 @@ if (localStorage.getItem('biobel_theme') === 'light') {
    Definir um valor manual diferente (em vez do cálculo automático)
   </label>
   <div id="dailyGoalManualWrap" style="display:none;">
-   <label class="block text-sm font-semibold mb-2">Valor da meta diária manual (R$)</label>
+   <label class="block text-sm font-semibold mb-2" for="dailyGoalInput">Valor da meta diária manual (R$)</label>
    <input id="dailyGoalInput" type="text" inputmode="decimal" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500" placeholder="R$ 0,00">
+   <p class="text-xs text-slate-500 mt-2">💡 Digite só os números — o valor se forma da direita pra esquerda, tipo caixa eletrônico.</p>
    <button onclick="saveDailyGoal()" class="mt-4 w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-xl font-semibold text-sm">Salvar meta diária manual</button>
    <div id="dailyGoalStatus" class="mt-3 text-sm text-slate-400"></div>
   </div>
@@ -734,12 +751,14 @@ if (localStorage.getItem('biobel_theme') === 'light') {
     <p class="text-sm text-slate-400 mt-1">Somente os valores principais do caixa do dia.</p>
    </div>
    <div class="flex items-center gap-2">
-    <select id="simpleDaySelect" class="no-print bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm"></select>
+    <select id="simpleDaySelect" aria-label="Selecionar dia (Caixa Simples)" class="no-print bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm"></select>
+    <span class="no-print" style="width:1px;height:24px;background:#1c2c42;display:inline-block;"></span>
     <button id="btnRefreshSimple" onclick="loadGoogleSheet()" class="no-print bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🔄 Atualizar</button>
     <button onclick="printSimpleDay()" class="no-print bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🖨 Imprimir</button>
    </div>
   </div>
-  <p class="no-print text-xs text-slate-500 mb-6">Não achou o dia de hoje na lista? <a href="#" onclick="loadGoogleSheet();return false;" class="text-emerald-400 underline">Clique aqui para atualizar</a>.</p>
+  <p class="no-print text-xs text-slate-500 mb-1">Não achou o dia de hoje na lista? <a href="#" onclick="loadGoogleSheet();return false;" class="text-emerald-400 underline">Clique aqui para atualizar</a>.</p>
+  <p class="no-print text-xs text-slate-500 mb-6">🖨️ O recibo é formatado para impressora de recibo (58/80mm). Numa impressora comum (A4), pode sair pequeno no canto da folha.</p>
   <div id="simpleGoalBanner" class="meta-dia-banner"></div>
   <div class="space-y-3">
    <div class="rounded-xl border border-slate-800 bg-slate-950 px-4 py-4">
@@ -778,13 +797,14 @@ if (localStorage.getItem('biobel_theme') === 'light') {
     <p class="text-sm text-slate-400 mt-1">Todas as informações do caixa do dia, incluindo dinheiro, cartão e Pix.</p>
    </div>
    <div class="flex items-center gap-2">
-    <select id="completeDaySelect" class="no-print bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm"></select>
+    <select id="completeDaySelect" aria-label="Selecionar dia (Caixa Completo)" class="no-print bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm"></select>
     <button id="btnRefreshCompleto" onclick="loadGoogleSheet()" class="no-print bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🔄 Atualizar</button>
     <button id="btnToggleLegendCompleto" onclick="toggleLegend()" class="no-print bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🙈 Esconder explicações</button>
     <button onclick="printCompleteDay()" class="no-print bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🖨 Imprimir</button>
    </div>
   </div>
-  <p class="no-print text-xs text-slate-500 mb-6">Não achou o dia de hoje na lista? <a href="#" onclick="loadGoogleSheet();return false;" class="text-emerald-400 underline">Clique aqui para atualizar</a>.</p>
+  <p class="no-print text-xs text-slate-500 mb-1">Não achou o dia de hoje na lista? <a href="#" onclick="loadGoogleSheet();return false;" class="text-emerald-400 underline">Clique aqui para atualizar</a>.</p>
+  <p class="no-print text-xs text-slate-500 mb-6">🖨️ O recibo é formatado para impressora de recibo (58/80mm). Numa impressora comum (A4), pode sair pequeno no canto da folha.</p>
   <div id="completeGoalBanner" class="meta-dia-banner"></div>
   <div class="space-y-3">
    <div class="rounded-xl border border-slate-800 bg-slate-950 px-4 py-4">
@@ -923,11 +943,53 @@ function normalizarNome(nome){
  if(!nome) return nome;
  return nome.trim().toLowerCase().split(' ').filter(Boolean).map(p=>p.charAt(0).toUpperCase()+p.slice(1)).join(' ');
 }
+function confirmarBiobel(msg, aoConfirmar){
+ const overlay=document.createElement('div');
+ overlay.style.cssText='display:flex;z-index:5000;position:fixed;inset:0;background:rgba(7,17,31,.6);align-items:flex-start;justify-content:center';
+ overlay.innerHTML=`<div style="max-width:340px;margin:15vh 16px 0;padding:22px;text-align:center;background:linear-gradient(180deg,#0d1a2c,#0a1525);border:1px solid #20334e;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.35)">
+   <div style="font-size:30px;margin-bottom:8px">⚠️</div>
+   <p style="margin:0 0 18px;font-size:14px;line-height:1.5;color:#dce5f2">${msg}</p>
+   <div style="display:flex;gap:8px;justify-content:center">
+    <button type="button" id="confCanceBiobel" style="background:#1c2c42;color:#c3d0e0;border:none;border-radius:10px;padding:10px 18px;font-weight:700;font-size:13px;cursor:pointer">Cancelar</button>
+    <button type="button" id="confOkBiobel" style="background:#dc2626;color:#fff;border:none;border-radius:10px;padding:10px 18px;font-weight:700;font-size:13px;cursor:pointer">Confirmar</button>
+   </div>
+  </div>`;
+ document.body.appendChild(overlay);
+ function fechar(resultado){ overlay.remove(); if(resultado) aoConfirmar(); }
+ overlay.addEventListener('click', e=>{ if(e.target===overlay) fechar(false); });
+ overlay.querySelector('#confCanceBiobel').addEventListener('click', ()=>fechar(false));
+ overlay.querySelector('#confOkBiobel').addEventListener('click', ()=>fechar(true));
+ overlay.querySelector('#confOkBiobel').focus();
+}
+
+function confirmarBiobelAsync(msg){
+ return new Promise(resolve=>{
+  const overlay=document.createElement('div');
+  overlay.style.cssText='display:flex;z-index:5000;position:fixed;inset:0;background:rgba(7,17,31,.6);align-items:flex-start;justify-content:center';
+  overlay.innerHTML=`<div style="max-width:380px;margin:15vh 16px 0;padding:22px;text-align:center;background:linear-gradient(180deg,#0d1a2c,#0a1525);border:1px solid #20334e;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.35)">
+    <div style="font-size:30px;margin-bottom:8px">⚠️</div>
+    <p style="margin:0 0 18px;font-size:14px;line-height:1.5;color:#dce5f2;white-space:pre-line">${msg}</p>
+    <div style="display:flex;gap:8px;justify-content:center">
+     <button type="button" id="confCanceBiobelA" style="background:#1c2c42;color:#c3d0e0;border:none;border-radius:10px;padding:10px 18px;font-weight:700;font-size:13px;cursor:pointer">Cancelar</button>
+     <button type="button" id="confOkBiobelA" style="background:#0ea97a;color:#fff;border:none;border-radius:10px;padding:10px 18px;font-weight:700;font-size:13px;cursor:pointer">Continuar</button>
+    </div>
+   </div>`;
+  document.body.appendChild(overlay);
+  function fechar(resultado){ overlay.remove(); resolve(resultado); }
+  overlay.addEventListener('click', e=>{ if(e.target===overlay) fechar(false); });
+  overlay.querySelector('#confCanceBiobelA').addEventListener('click', ()=>fechar(false));
+  overlay.querySelector('#confOkBiobelA').addEventListener('click', ()=>fechar(true));
+  overlay.querySelector('#confOkBiobelA').focus();
+ });
+}
+
 function mostrarToast(texto){
  let el = document.getElementById('toastBiobel');
  if(!el){
   el = document.createElement('div');
   el.id = 'toastBiobel';
+  el.setAttribute('role','status');
+  el.setAttribute('aria-live','polite');
   el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#0ea97a;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:800;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:9999;opacity:0;transition:opacity .25s,transform .25s;';
   document.body.appendChild(el);
  }
@@ -1033,6 +1095,16 @@ function updateCompleteDay(day){
  updateGoalBanner('completeGoalBanner', Number(d.sales)||0);
 }
 function showTab(tab){
+ const titulosAba = {
+  dashboard: 'Dashboard — Biobel',
+  info: 'Informação Geral — Biobel',
+  caixa: 'Caixa Simples — Biobel',
+  caixaCompleto: 'Caixa Completo — Biobel',
+  equipe: 'Equipe — Biobel',
+  config: 'Configuração — Biobel'
+ };
+ document.title = titulosAba[tab] || 'Biobel — Fechamento de Caixa Diário';
+
  const dash=document.getElementById('dashboardTab');
  const info=document.getElementById('infoTab');
  const caixa=document.getElementById('caixaTab');
@@ -1180,45 +1252,52 @@ function limparCheckboxesEscopo(prefixo){
 }
 
 function removerTarefaDiaria(index){
- if(!confirm('Remover esta tarefa da rotina diária base?')) return;
- rotinaDiariaBase.splice(index,1);
- limparCheckboxesEscopo('biobel_equipe_diaria_');
- salvarRotinaPersonalizada();
- renderEquipeRotinaDiaria();
+ const texto = rotinaDiariaBase[index]?.texto || 'esta tarefa';
+ confirmarBiobel(`Remover a tarefa "${texto}" da rotina diária base?`, ()=>{
+  rotinaDiariaBase.splice(index,1);
+  limparCheckboxesEscopo('biobel_equipe_diaria_');
+  salvarRotinaPersonalizada();
+  renderEquipeRotinaDiaria();
+ });
 }
 
 function removerTarefaDia(dia, quem, index){
- if(!confirm('Remover esta tarefa?')) return;
- rotinaSemanal[dia][quem].splice(index,1);
- limparCheckboxesEscopo(`biobel_equipe_${dia}_${quem}_`);
- salvarRotinaPersonalizada();
- renderEquipeDia(dia);
+ const texto = rotinaSemanal[dia]?.[quem]?.[index] || 'esta tarefa';
+ confirmarBiobel(`Remover a tarefa "${texto}"?`, ()=>{
+  rotinaSemanal[dia][quem].splice(index,1);
+  limparCheckboxesEscopo(`biobel_equipe_${dia}_${quem}_`);
+  salvarRotinaPersonalizada();
+  renderEquipeDia(dia);
+ });
 }
 
 function moverTarefaDia(dia, quem, index){
  const outraQuem = quem==='gabi' ? 'dai' : 'gabi';
  const nomeOutra = outraQuem==='gabi' ? 'GABI' : 'DAI';
- if(!confirm(`Mover esta tarefa para a ${nomeOutra}?`)) return;
- const [texto] = rotinaSemanal[dia][quem].splice(index,1);
- rotinaSemanal[dia][outraQuem].push(texto);
- limparCheckboxesEscopo(`biobel_equipe_${dia}_gabi_`);
- limparCheckboxesEscopo(`biobel_equipe_${dia}_dai_`);
- salvarRotinaPersonalizada();
- renderEquipeDia(dia);
+ const textoTarefa = rotinaSemanal[dia]?.[quem]?.[index] || 'esta tarefa';
+ confirmarBiobel(`Mover a tarefa "${textoTarefa}" para a ${nomeOutra}?`, ()=>{
+  const [texto] = rotinaSemanal[dia][quem].splice(index,1);
+  rotinaSemanal[dia][outraQuem].push(texto);
+  limparCheckboxesEscopo(`biobel_equipe_${dia}_gabi_`);
+  limparCheckboxesEscopo(`biobel_equipe_${dia}_dai_`);
+  salvarRotinaPersonalizada();
+  renderEquipeDia(dia);
+ });
 }
 
 function restaurarRotinaPadrao(){
- if(!confirm('Isso vai apagar TODAS as suas alterações de atividades (tarefas adicionadas, removidas ou movidas) e voltar para a lista original da loja.\n\nAs tarefas marcadas também serão desmarcadas.\n\nTem certeza que quer restaurar?')) return;
- rotinaDiariaBase = cloneRotina(rotinaDiariaBasePadrao);
- rotinaSemanal = cloneRotina(rotinaSemanalPadrao);
- localStorage.removeItem('biobel_equipe_rotina_custom');
- limparCheckboxesEscopo('biobel_equipe_diaria_');
- diasSemanaOrdem.forEach(dia=>{
-  limparCheckboxesEscopo(`biobel_equipe_${dia}_gabi_`);
-  limparCheckboxesEscopo(`biobel_equipe_${dia}_dai_`);
+ confirmarBiobel('Isso vai apagar TODAS as suas alterações de atividades (tarefas adicionadas, removidas ou movidas) e voltar para a lista original da loja.<br><br>As tarefas marcadas também serão desmarcadas.<br><br>Tem certeza que quer restaurar?', ()=>{
+  rotinaDiariaBase = cloneRotina(rotinaDiariaBasePadrao);
+  rotinaSemanal = cloneRotina(rotinaSemanalPadrao);
+  localStorage.removeItem('biobel_equipe_rotina_custom');
+  limparCheckboxesEscopo('biobel_equipe_diaria_');
+  diasSemanaOrdem.forEach(dia=>{
+   limparCheckboxesEscopo(`biobel_equipe_${dia}_gabi_`);
+   limparCheckboxesEscopo(`biobel_equipe_${dia}_dai_`);
+  });
+  renderEquipeRotinaDiaria();
+  renderEquipeDia(equipeDiaAtual);
  });
- renderEquipeRotinaDiaria();
- renderEquipeDia(equipeDiaAtual);
 }
 
 function calcEquipeProgresso(escopo, total){
@@ -1324,9 +1403,10 @@ function saveEquipeHistoricoEntry(entry){
  localStorage.setItem('biobel_equipe_historico', JSON.stringify(hist));
 }
 function limparHistoricoEquipe(){
- if(!confirm('Tem certeza que quer apagar todo o histórico de semanas anteriores? Essa ação não pode ser desfeita.')) return;
- localStorage.removeItem('biobel_equipe_historico');
- renderEquipeHistorico();
+ confirmarBiobel('Tem certeza que quer apagar todo o histórico de semanas anteriores? Essa ação não pode ser desfeita.', ()=>{
+  localStorage.removeItem('biobel_equipe_historico');
+  renderEquipeHistorico();
+ });
 }
 function renderEquipeHistorico(){
  const el = document.getElementById('equipeHistorico');
@@ -1343,11 +1423,11 @@ function renderEquipeHistorico(){
     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
      <div>
       <div style="font-size:13px;font-weight:700;color:#dce5f2;">${h.weekStart||'?'} a ${h.weekEnd||'?'}</div>
-      <div style="font-size:11px;color:#7c8ba0;margin-top:2px;">Reiniciada em ${h.dataReinicio}</div>
+      <div style="font-size:11px;color:#93a3ba;margin-top:2px;">Reiniciada em ${h.dataReinicio}</div>
      </div>
      <div style="text-align:right;">
       <div style="font-size:18px;font-weight:900;color:${pctColor};">${h.geral.pct.toFixed(0)}%</div>
-      <div style="font-size:11px;color:#7c8ba0;">${h.geral.done} de ${h.geral.total} tarefas</div>
+      <div style="font-size:11px;color:#93a3ba;">${h.geral.done} de ${h.geral.total} tarefas</div>
      </div>
     </div>
     <div style="background:#050d1a;border-radius:999px;height:6px;overflow:hidden;margin-top:8px;">
@@ -1382,9 +1462,9 @@ function initEquipeTab(){
 }
 
 function resetEquipeWeek(){
- const confirmado = confirm('🚨 ATENÇÃO — Reiniciar semana\n\nIsso vai desmarcar TODAS as tarefas: a rotina diária base E os checklists dos 6 dias da semana (Gabi e Dai).\n\nO progresso desta semana será salvo no histórico antes de reiniciar.\n\nTem certeza que quer reiniciar tudo agora?');
- if(!confirmado) return;
-
+ confirmarBiobel('🚨 ATENÇÃO — Reiniciar semana<br><br>Isso vai desmarcar TODAS as tarefas: a rotina diária base E os checklists dos 6 dias da semana (Gabi e Dai).<br><br>O progresso desta semana será salvo no histórico antes de reiniciar.<br><br>Tem certeza que quer reiniciar tudo agora?', _resetEquipeWeekReal);
+}
+function _resetEquipeWeekReal(){
  // Salva um retrato (snapshot) da semana atual no histórico antes de zerar tudo.
  const totais = calcEquipeTotaisSemana();
  const weekStart = document.getElementById('equipeWeekStart')?.value || '';
@@ -1454,11 +1534,29 @@ function printEquipeWeek(){
 }
 
 function confirmLogout(){
- if(confirm('Tem certeza que quer sair do painel administrativo?')){
+ confirmarBiobel('Tem certeza que quer sair do painel administrativo?', ()=>{
   sessionStorage.removeItem('biobel_logged_in');
   window.location.href='login.html';
- }
+ });
 }
+
+let nivelFonteAtual = 100;
+function aplicarFonteBiobel(pct){
+ document.documentElement.style.fontSize = pct+'%';
+ nivelFonteAtual = pct;
+ localStorage.setItem('biobel_font_pct', String(pct));
+}
+function ajustarFonteBiobel(direcao){
+ if(direcao===0){ aplicarFonteBiobel(100); mostrarToast('🔤 Fonte no tamanho padrão'); return; }
+ let novo = nivelFonteAtual + (direcao*8);
+ novo = Math.max(88, Math.min(130, novo));
+ aplicarFonteBiobel(novo);
+ mostrarToast(direcao>0 ? '🔤 Fonte aumentada' : '🔤 Fonte diminuída');
+}
+(function initFonteBiobel(){
+ const salvo = localStorage.getItem('biobel_font_pct');
+ if(salvo) aplicarFonteBiobel(parseFloat(salvo));
+})();
 
 function toggleTheme(){
  const isLight = document.body.classList.toggle('light-mode');
@@ -1920,12 +2018,18 @@ function updateConnBadge(state){
  const el = document.getElementById('connBadge');
  if(!el) return;
  el.className = 'conn-badge conn-'+state;
- el.textContent = state==='ok' ? '🟢 Conectado' : state==='error' ? '🔴 Erro de conexão' : '🟡 Conectando...';
+ if(state==='ok'){
+  const agora = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  el.textContent = '🟢 Atualizado às '+agora;
+ } else {
+  el.textContent = state==='error' ? '🔴 Erro de conexão' : '🟡 Conectando...';
+ }
 }
 function setGoogleStatus(msg, ok=false, state){
  const el=document.getElementById('googleStatus');
  if(el) el.innerHTML=`Status: <span class="${ok?'text-emerald-400':'text-slate-400'}">${msg}</span>`;
  updateConnBadge(state || (ok ? 'ok' : 'error'));
+ atualizarNomePlanilhaAtiva();
 }
 function extractSpreadsheetId(url){
  const m=String(url||'').match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
@@ -1967,17 +2071,31 @@ function selecionarPlanilhaSalva(){
  const select = document.getElementById('planilhaSalvaSelect');
  const url = select.value;
  if(!url) return;
+ const nomeSelecionado = select.options[select.selectedIndex]?.textContent || '';
  document.getElementById('googleSheetUrl').value = url;
  localStorage.setItem('biobel_google_sheet_url', url);
  setGoogleStatus('trocando de planilha...', false, 'connecting');
+ mostrarToast('🔄 Trocando para: '+nomeSelecionado);
  loadGoogleSheet();
+ atualizarNomePlanilhaAtiva();
+}
+function atualizarNomePlanilhaAtiva(){
+ const el = document.getElementById('nomePlanilhaAtivaHeader');
+ if(!el) return;
+ const lista = getPlanilhasSalvas();
+ const urlAtual = getGoogleUrl();
+ const encontrada = lista.find(p=>p.url===urlAtual);
+ el.textContent = encontrada ? '📂 '+encontrada.nome : '';
 }
 function removerPlanilhaSalva(index){
- if(!confirm('Remover essa planilha da lista salva? (Isso não apaga a planilha, só tira ela da listinha aqui.)')) return;
- const lista = getPlanilhasSalvas();
- lista.splice(index,1);
- salvarListaPlanilhas(lista);
- renderPlanilhasSalvas();
+ const lista0 = getPlanilhasSalvas();
+ const nome = lista0[index]?.nome || 'esta planilha';
+ confirmarBiobel(`Remover "${nome}" da lista salva? (Isso não apaga a planilha, só tira ela da listinha aqui.)`, ()=>{
+  const lista = getPlanilhasSalvas();
+  lista.splice(index,1);
+  salvarListaPlanilhas(lista);
+  renderPlanilhasSalvas();
+ });
 }
 function renderPlanilhasSalvas(){
  const select = document.getElementById('planilhaSalvaSelect');
@@ -2176,7 +2294,7 @@ document.getElementById('fileInput').addEventListener('change',async e=>{
    continue;
   }
   if(jaExistem.length>0){
-   const ok = confirm(
+   const ok = await confirmarBiobelAsync(
     'O arquivo "'+file.name+'" tem dados para o(s) dia(s): '+jaExistem.join(', ')+'.\n\n'+
     'Esse(s) dia(s) JÁ EXISTE(M) no painel e será(ão) SUBSTITUÍDO(S) pelos novos dados.\n\n'+
     'Deseja continuar?'
@@ -2402,6 +2520,15 @@ document.getElementById('daySelect')?.addEventListener('change',e=>updateAdvance
 
 attachMoneyMask('salesGoalInput');
 attachMoneyMask('dailyGoalInput');
+
+// Atalho de teclado: Alt+A atualiza a planilha na hora, de qualquer aba (evita precisar clicar).
+document.addEventListener('keydown', e=>{
+ if(e.altKey && (e.key==='a' || e.key==='A')){
+  e.preventDefault();
+  loadGoogleSheet();
+  mostrarToast('🔄 Atualizando planilha... (atalho Alt+A)');
+ }
+});
 
 render();
 </script>
