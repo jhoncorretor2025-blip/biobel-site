@@ -5,10 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Biobel — Fechamento de Caixa Diário</title>
 <link rel="icon" type="image/png" href="/logo_biobel_gravatai.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Biobel">
+<meta property="og:title" content="Biobel — Fechamento de Caixa Diário">
+<meta property="og:description" content="Painel de fechamento de caixa da Biobel: leitura diária da planilha, ranking de vendedoras, dias que mais venderam, ticket médio e projeção de faturamento.">
+<meta property="og:image" content="https://jhoncorretor2025-blip.github.io/biobel-site/logo_biobel_gravatai.png">
+<meta property="og:locale" content="pt_BR">
 <meta name="description" content="Painel de fechamento de caixa da Biobel: leitura diária da planilha, ranking de vendedoras, dias que mais venderam, ticket médio e projeção de faturamento.">
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <style>
 body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 .card{box-shadow:0 10px 30px rgba(0,0,0,.18)}
@@ -861,6 +865,8 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
 <div id="printReceipt" class="print-receipt"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script>
 const rotinaDiariaBasePadrao = [
  {texto:'☕ Abertura (Gabi): Fazer o café fresco na chegada e dar "Bom Dia" no WhatsApp da loja.', quem:'Gabi'},
