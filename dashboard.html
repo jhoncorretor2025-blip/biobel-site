@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Biobel — Fechamento de Caixa Diário</title>
+<link rel="icon" type="image/png" href="/logo_biobel_gravatai.png">
+<meta name="description" content="Painel de fechamento de caixa da Biobel: leitura diária da planilha, ranking de vendedoras, dias que mais venderam, ticket médio e projeção de faturamento.">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
@@ -441,6 +443,14 @@ if (localStorage.getItem('biobel_theme') === 'light') {
 
 <section id="infoTab" class="hidden max-w-5xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabInfo">
 
+ <div class="adv-card no-print" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+  <span style="font-size:12px;color:#a1b2c7;font-weight:800;">📅 Ver dados de:</span>
+  <select id="seletorMes" onchange="visualizarMes(this.value)" style="background:#0b1728;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12px;flex:1;min-width:160px;">
+   <option value="">Mês atual (ao vivo)</option>
+  </select>
+  <span id="avisoMesPassado" style="display:none;background:#3a2a0b;color:#f5c542;font-size:11px;font-weight:800;padding:6px 10px;border-radius:8px;">📌 Visualizando dados arquivados — não atualiza sozinho</span>
+ </div>
+
  <div class="adv-card">
   <div class="adv-card-title">
    <h3>🎯 Meta do mês</h3>
@@ -664,7 +674,7 @@ if (localStorage.getItem('biobel_theme') === 'light') {
    <p class="text-sm text-slate-400 mt-1">Esse valor é usado na aba "Informação Geral" para calcular a porcentagem da meta batida. Padrão: R$ 45.000,00.</p>
   </div>
   <label class="block text-sm font-semibold mb-2">Valor da meta (R$)</label>
-  <input id="salesGoalInput" type="number" step="0.01" min="0" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500" placeholder="45000">
+  <input id="salesGoalInput" type="number" step="0.01" min="0" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500" placeholder="Ex: 45000 (R$ 45.000,00)">
   <button onclick="saveSalesGoal()" class="mt-4 w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-xl font-semibold text-sm">Salvar meta</button>
   <div id="goalStatus" class="mt-3 text-sm text-slate-400"></div>
  </div>
@@ -675,7 +685,7 @@ if (localStorage.getItem('biobel_theme') === 'light') {
    <p class="text-sm text-slate-400 mt-1">Quando as vendas do dia baterem esse valor, aparece uma mensagem de parabéns nas abas "Caixa simples" e "Caixa completo" (e também no recibo impresso). Padrão: R$ 1.500,00.</p>
   </div>
   <label class="block text-sm font-semibold mb-2">Valor da meta diária (R$)</label>
-  <input id="dailyGoalInput" type="number" step="0.01" min="0" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500" placeholder="1500">
+  <input id="dailyGoalInput" type="number" step="0.01" min="0" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500" placeholder="Ex: 1500 (R$ 1.500,00)">
   <button onclick="saveDailyGoal()" class="mt-4 w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-xl font-semibold text-sm">Salvar meta diária</button>
   <div id="dailyGoalStatus" class="mt-3 text-sm text-slate-400"></div>
  </div>
@@ -843,10 +853,37 @@ function salvarRotinaPersonalizada(){
 
 const embeddedData = [{"dia": "01.08", "initial": 117.3, "sales": 2053.88, "withdrawals": 50, "closing": 229.3, "dinheiro": 162, "debito": 314.99, "credito": 480.97, "pix": 1095.92, "vendedoras": {"alesandra": 1285.94, "Day": 767.94}}, {"dia": "03.08", "initial": 117, "sales": 1128.98, "withdrawals": 0, "closing": 279, "dinheiro": 162, "debito": 186.5, "credito": 445.49, "pix": 334.99, "vendedoras": {"alesandra": 795.99, "Gabriela": 164.0, "Day": 168.99}}, {"dia": "04.08", "initial": 208.05, "sales": 1459.79, "withdrawals": 400, "closing": 137.05, "dinheiro": 329, "debito": 386, "credito": 279.89, "pix": 464.9, "vendedoras": {"Gabriela": 460.0, "Day": 615.89, "alesandra": 383.9}}, {"dia": "05.08", "initial": 137.15, "sales": 3415.34, "withdrawals": 650, "closing": 66.5, "dinheiro": 579.35, "debito": 737.58, "credito": 1013.95, "pix": 1084.46, "vendedoras": {"alesandra": 1963.41, "Gabriela": 1004.95, "Day": 446.98}}, {"dia": "06.08", "initial": 67.5, "sales": 4086.72, "withdrawals": 600, "closing": 103.5, "dinheiro": 636, "debito": 593.79, "credito": 1942.93, "pix": 914, "vendedoras": {"Gabriela": 2004.99, "alesandra": 1296.96, "Day": 784.77}}, {"dia": "07.08", "initial": 103.5, "sales": 3843.48, "withdrawals": 500, "closing": 150.9, "dinheiro": 547.4, "debito": 1033.58, "credito": 2102.5, "pix": 160, "vendedoras": {"Gabriela": 1325.0, "alesandra": 1353.5, "Day": 1164.98}}, {"dia": "08.08", "initial": 150.9, "sales": 2828.86, "withdrawals": 100, "closing": 116.9, "dinheiro": 66, "debito": 481.9, "credito": 1334.99, "pix": 945.97, "vendedoras": {"alesandra": 602.9, "Day": 993.96, "Gabriela": 1232.0}}, {"dia": "10.08", "initial": 84, "sales": 2119.4, "withdrawals": 500, "closing": 36.9, "dinheiro": 452.9, "debito": 146, "credito": 752, "pix": 768.5, "vendedoras": {"alesandra": 390.4, "Gabriela": 1096.0, "Day": 633.0}}, {"dia": "11.08", "initial": 55, "sales": 2073.5, "withdrawals": 550, "closing": 109.5, "dinheiro": 604.5, "debito": 460, "credito": 220, "pix": 789, "vendedoras": {"alesandra": 874.0, "Gabriela": 819.0, "Day": 380.5}}];
 let daysData = [...embeddedData];
+let mesVisualizadoPassado = null; // null = mes atual (ao vivo). Se preenchido (ex: '07'), esta vendo um mes arquivado.
+let daysDataOriginal = null; // guarda os dados ao vivo enquanto a pessoa esta vendo um mes passado, pra poder voltar
 let chart = null;
 
 function money(v) {
  return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(v)||0);
+}
+function diaComAno(dia){
+ if(!dia) return dia;
+ return dia+'.2026';
+}
+function normalizarNome(nome){
+ if(!nome) return nome;
+ return nome.trim().toLowerCase().split(' ').filter(Boolean).map(p=>p.charAt(0).toUpperCase()+p.slice(1)).join(' ');
+}
+function mostrarToast(texto){
+ let el = document.getElementById('toastBiobel');
+ if(!el){
+  el = document.createElement('div');
+  el.id = 'toastBiobel';
+  el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#0ea97a;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:800;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:9999;opacity:0;transition:opacity .25s,transform .25s;';
+  document.body.appendChild(el);
+ }
+ el.textContent = texto;
+ el.style.opacity = '1';
+ el.style.transform = 'translateX(-50%) translateY(0)';
+ clearTimeout(window._toastBiobelTimer);
+ window._toastBiobelTimer = setTimeout(()=>{
+  el.style.opacity = '0';
+  el.style.transform = 'translateX(-50%) translateY(20px)';
+ }, 2600);
 }
 function sortDays() {
  daysData.sort((a,b)=>Number(a.dia.slice(0,2))-Number(b.dia.slice(0,2)));
@@ -1394,6 +1431,7 @@ function saveSalesGoal(){
  }
  localStorage.setItem('biobel_sales_goal', String(val));
  statusEl.innerHTML = '<span class="text-emerald-400">Meta salva: ' + money(val) + '</span>';
+ mostrarToast('✅ Meta mensal salva com sucesso!');
 }
 
 function getDailyGoal(){
@@ -1409,6 +1447,7 @@ function saveDailyGoal(){
  }
  localStorage.setItem('biobel_daily_sales_goal', String(val));
  statusEl.innerHTML = '<span class="text-emerald-400">Meta diária salva: ' + money(val) + '</span>';
+ mostrarToast('✅ Meta diária salva com sucesso!');
 }
 function updateGoalBanner(bannerId, sales){
  const el = document.getElementById(bannerId);
@@ -1455,6 +1494,43 @@ function renderInfoTab(){
  renderNovasMetricas();
 }
 
+function montarSeletorMeses(){
+ const sel = document.getElementById('seletorMes');
+ if(!sel) return;
+ let arquivo = {};
+ try{ arquivo = JSON.parse(localStorage.getItem('biobel_arquivo_meses')||'{}'); }catch(e){}
+ const nomesMeses = {'01':'Janeiro','02':'Fevereiro','03':'Março','04':'Abril','05':'Maio','06':'Junho','07':'Julho','08':'Agosto','09':'Setembro','10':'Outubro','11':'Novembro','12':'Dezembro'};
+ const valorAtual = sel.value;
+ const mesesArquivados = Object.keys(arquivo).sort();
+ sel.innerHTML = '<option value="">Mês atual (ao vivo)</option>' +
+  mesesArquivados.map(m=>`<option value="${m}">${nomesMeses[m]||m} 2026 (arquivado)</option>`).join('');
+ sel.value = valorAtual;
+}
+
+function visualizarMes(mesKey){
+ if(!mesKey){
+  if(daysDataOriginal){ daysData = daysDataOriginal; daysDataOriginal = null; }
+  mesVisualizadoPassado = null;
+  const aviso = document.getElementById('avisoMesPassado');
+  if(aviso) aviso.style.display = 'none';
+  renderAdvancedDashboard();
+  return;
+ }
+ let arquivo = {};
+ try{ arquivo = JSON.parse(localStorage.getItem('biobel_arquivo_meses')||'{}'); }catch(e){}
+ const dadosDoMes = arquivo[mesKey];
+ if(!dadosDoMes || !dadosDoMes.length){
+  alert('Não há dados arquivados para esse mês.');
+  return;
+ }
+ if(!daysDataOriginal) daysDataOriginal = daysData;
+ daysData = dadosDoMes;
+ mesVisualizadoPassado = mesKey;
+ const aviso = document.getElementById('avisoMesPassado');
+ if(aviso) aviso.style.display = 'inline-block';
+ renderAdvancedDashboard();
+}
+
 function renderNovasMetricas(){
  if(daysData.length===0) return;
 
@@ -1491,6 +1567,16 @@ function renderNovasMetricas(){
   historico[mesAtual] = totalSales;
   localStorage.setItem('biobel_historico_meses', JSON.stringify(historico));
 
+  // arquiva o mes completo (todos os dias), separado do historico de totais acima, pra poder ver o mes passado inteiro depois
+  if(!mesVisualizadoPassado){
+   try{
+    let arquivo = JSON.parse(localStorage.getItem('biobel_arquivo_meses')||'{}');
+    arquivo[mesAtual] = JSON.parse(JSON.stringify(daysData));
+    localStorage.setItem('biobel_arquivo_meses', JSON.stringify(arquivo));
+    montarSeletorMeses();
+   }catch(e){}
+  }
+
   const mesAnteriorNum = String(Number(mesAtual)-1).padStart(2,'0');
   const totalMesAnterior = historico[mesAnteriorNum];
   const elComp=document.getElementById('infoComparativoMes');
@@ -1503,6 +1589,7 @@ function renderNovasMetricas(){
    if(elCompSub) elCompSub.textContent = `${money(totalSales)} este mês vs ${money(totalMesAnterior)} no mês ${mesAnteriorNum}`;
   } else {
    if(elComp) elComp.textContent = '—';
+   if(elComp) elComp.style.color = 'var(--muted)';
    if(elCompSub) elCompSub.textContent = 'ainda sem dados do mês anterior salvos';
   }
  }
@@ -1526,7 +1613,7 @@ function buscarPosicaoDia(){
  const dia = ranked[idx];
  const posicao = idx+1;
  const totalDias = ranked.length;
- resultado.innerHTML = `📍 O dia <b>${dia.dia}</b> ficou na posição <b>${posicao}ª de ${totalDias}</b>, com <b>${money(dia.sales)}</b> em vendas.`;
+ resultado.innerHTML = `📍 O dia <b>${diaComAno(dia.dia)}</b> ficou na posição <b>${posicao}ª de ${totalDias}</b>, com <b>${money(dia.sales)}</b> em vendas.`;
 }
 
 function renderSellerRanking(){
@@ -1623,7 +1710,7 @@ function renderTopDays(){
   return `
    <div>
     <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
-     <span style="color:#dce5f2;"><span style="display:inline-block;min-width:26px;color:#93a3ba;font-weight:800;">${posicao}</span> Dia ${d.dia}</span>
+     <span style="color:#dce5f2;"><span style="display:inline-block;min-width:26px;color:#93a3ba;font-weight:800;">${posicao}</span> Dia ${diaComAno(d.dia)}</span>
      <strong style="color:#f6f9fd;">${money(d.sales)}</strong>
     </div>
     <div style="background:#0b1728;border-radius:999px;height:10px;overflow:hidden;">
@@ -1761,7 +1848,7 @@ function extractSellerTotals(rows){
   if(typeof rownum!=='number') continue;
   const vendedora = rows[r]?.[5];
   if(!vendedora || typeof vendedora!=='string' || !vendedora.trim()) continue;
-  const nome = vendedora.trim();
+  const nome = normalizarNome(vendedora);
   let valorVenda = 0;
   for(const c of [1,2,3,4]){
    const v = rows[r]?.[c];
@@ -1784,7 +1871,7 @@ function extractSellerDetalhes(rows){
   if(typeof rownum!=='number') continue;
   const vendedora = rows[r]?.[5];
   if(!vendedora || typeof vendedora!=='string' || !vendedora.trim()) continue;
-  const nome = vendedora.trim();
+  const nome = normalizarNome(vendedora);
   if(!detalhes[nome]) detalhes[nome]={total:0,qtd:0,dinheiro:0,debito:0,credito:0,pix:0};
   for(const c of [1,2,3,4]){
    const v = rows[r]?.[c];
