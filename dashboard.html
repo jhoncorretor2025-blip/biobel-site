@@ -687,6 +687,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <div class="sub" id="infoHorarioFracoSub">entre os horários com pelo menos 1 venda</div>
    </div>
   </div>
+  <div id="infoHorariosAvisoForaExpediente" style="display:none;background:#3a2a0b;color:#f5c542;font-size:11.5px;font-weight:600;padding:8px 12px;border-radius:8px;margin-bottom:12px;"></div>
   <div id="infoHorariosLista" style="display:flex;flex-direction:column;gap:8px;"></div>
  </div>
 
@@ -851,6 +852,29 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <button onclick="saveDailyGoal()" class="mt-4 w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-xl font-semibold text-sm">Salvar meta diária manual</button>
    <div id="dailyGoalStatus" class="mt-3 text-sm text-slate-400"></div>
   </div>
+ </div>
+
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6">
+  <div class="mb-6">
+   <h2 class="text-xl font-bold">🕘 Horário de funcionamento</h2>
+   <p class="text-sm text-slate-400 mt-1">Usado pra filtrar horários errados na aba "Informação Geral" (ex: uma venda digitada com hora antes da loja abrir). Domingo já é considerado sempre fechado.</p>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+   <div>
+    <label class="block text-sm font-semibold mb-2" for="horarioAbertura">Abertura (todos os dias)</label>
+    <input id="horarioAbertura" type="time" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500" value="09:00">
+   </div>
+   <div>
+    <label class="block text-sm font-semibold mb-2" for="horarioFechamentoSemana">Fechamento (seg a sex)</label>
+    <input id="horarioFechamentoSemana" type="time" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500" value="18:00">
+   </div>
+   <div>
+    <label class="block text-sm font-semibold mb-2" for="horarioFechamentoSabado">Fechamento (sábado)</label>
+    <input id="horarioFechamentoSabado" type="time" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500" value="16:00">
+   </div>
+  </div>
+  <button onclick="saveHorarioFuncionamento()" class="mt-4 w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-xl font-semibold text-sm">Salvar horário de funcionamento</button>
+  <div id="horarioFuncionamentoStatus" class="mt-3 text-sm text-slate-400"></div>
  </div>
 </section>
 
@@ -1270,6 +1294,7 @@ function showTab(tab){
   if(goalInput) goalInput.value = money(getSalesGoal());
   initDailyGoalUI();
   renderPlanilhasSalvas();
+  initHorarioFuncionamentoUI();
  } else {
   dash.classList.remove('hidden');
   b1.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
@@ -1750,6 +1775,45 @@ function saveDailyGoal(){
  statusEl.innerHTML = '<span class="text-emerald-400">Meta diária manual salva: ' + money(val) + '</span>';
  mostrarToast('✅ Meta diária salva com sucesso!');
 }
+
+function getHorarioFuncionamento(){
+ return {
+  abertura: localStorage.getItem('biobel_horario_abertura') || '09:00',
+  fechamentoSemana: localStorage.getItem('biobel_horario_fechamento_semana') || '18:00',
+  fechamentoSabado: localStorage.getItem('biobel_horario_fechamento_sabado') || '16:00'
+ };
+}
+function horaParaNumero(hhmm){
+ const partes = String(hhmm||'').split(':');
+ const h = Number(partes[0]);
+ return isNaN(h) ? null : h;
+}
+function saveHorarioFuncionamento(){
+ const abertura = document.getElementById('horarioAbertura').value;
+ const fechamentoSemana = document.getElementById('horarioFechamentoSemana').value;
+ const fechamentoSabado = document.getElementById('horarioFechamentoSabado').value;
+ const statusEl = document.getElementById('horarioFuncionamentoStatus');
+ if(!abertura || !fechamentoSemana || !fechamentoSabado){
+  statusEl.innerHTML = '<span class="text-rose-400">Preencha os três horários.</span>';
+  return;
+ }
+ localStorage.setItem('biobel_horario_abertura', abertura);
+ localStorage.setItem('biobel_horario_fechamento_semana', fechamentoSemana);
+ localStorage.setItem('biobel_horario_fechamento_sabado', fechamentoSabado);
+ statusEl.innerHTML = '<span class="text-emerald-400">Horário de funcionamento salvo!</span>';
+ mostrarToast('✅ Horário de funcionamento salvo com sucesso!');
+ renderHorariosPico();
+}
+function initHorarioFuncionamentoUI(){
+ const h = getHorarioFuncionamento();
+ const elA = document.getElementById('horarioAbertura');
+ const elFS = document.getElementById('horarioFechamentoSemana');
+ const elFSab = document.getElementById('horarioFechamentoSabado');
+ if(elA) elA.value = h.abertura;
+ if(elFS) elFS.value = h.fechamentoSemana;
+ if(elFSab) elFSab.value = h.fechamentoSabado;
+}
+
 function toggleDailyGoalManual(){
  const checked = document.getElementById('dailyGoalManualToggle').checked;
  document.getElementById('dailyGoalManualWrap').style.display = checked ? 'block' : 'none';
@@ -2167,14 +2231,36 @@ function renderHorariosPico(){
  const elFraco = document.getElementById('infoHorarioFraco');
  const elFracoSub = document.getElementById('infoHorarioFracoSub');
  const elLista = document.getElementById('infoHorariosLista');
+ const elAviso = document.getElementById('infoHorariosAvisoForaExpediente');
  if(!elLista) return;
 
+ const horarioFunc = getHorarioFuncionamento();
+ const horaAbertura = horaParaNumero(horarioFunc.abertura);
+ // Usa o fechamento mais tardio entre semana/sábado como limite superior geral,
+ // já que aqui somamos todos os dias juntos (não dá pra saber, só pela hora, se era sábado ou dia de semana).
+ const horaFechamento = Math.max(horaParaNumero(horarioFunc.fechamentoSemana), horaParaNumero(horarioFunc.fechamentoSabado));
+
  const totalPorHora = {};
+ let horariosForaDoExpediente = 0;
  daysData.forEach(d=>{
   Object.entries(d.horarios||{}).forEach(([hora,qtd])=>{
+   const h = Number(hora);
+   if(horaAbertura!==null && horaFechamento!==null && (h<horaAbertura || h>=horaFechamento)){
+    horariosForaDoExpediente += (Number(qtd)||0);
+    return; // ignora horário fora do funcionamento (provável erro de digitação na planilha)
+   }
    totalPorHora[hora] = (totalPorHora[hora]||0) + (Number(qtd)||0);
   });
  });
+
+ if(elAviso){
+  if(horariosForaDoExpediente>0){
+   elAviso.style.display = 'block';
+   elAviso.textContent = `⚠️ ${horariosForaDoExpediente} venda${horariosForaDoExpediente===1?'':'s'} com horário fora do funcionamento da loja (${horarioFunc.abertura} às ${horarioFunc.fechamentoSemana}/${horarioFunc.fechamentoSabado}) foram ignoradas aqui — provavelmente erro de digitação na hora, na planilha.`;
+  } else {
+   elAviso.style.display = 'none';
+  }
+ }
 
  const horas = Object.keys(totalPorHora);
  if(horas.length===0){
