@@ -691,6 +691,15 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <div id="infoHorariosForaExpediente" style="display:none;margin-top:18px;padding-top:16px;border-top:1px dashed #3a2a0b;"></div>
  </div>
 
+ <div class="adv-card">
+  <div class="adv-card-title">
+   <h3>🌅 Vendas por turno</h3>
+   <span>manhã x meio-dia x tarde, e quem mais vendeu em cada um</span>
+  </div>
+  <div id="infoTurnosResumo" style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px;"></div>
+  <div id="infoTurnosCruzamento" style="display:flex;flex-direction:column;gap:14px;"></div>
+ </div>
+
 </section>
 
 <section id="equipeTab" class="hidden max-w-5xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabEquipe">
@@ -731,6 +740,47 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <input id="equipeNomeDai" type="text" placeholder="Nome" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm">
    </div>
   </div>
+ </div>
+
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
+  <div class="mb-5">
+   <h2 class="text-xl font-bold">🕘 Horário de trabalho da equipe</h2>
+   <p class="text-sm text-slate-400 mt-1">Só pra referência — fica salvo aqui, no painel.</p>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+   <div>
+    <div style="font-size:12px;font-weight:800;color:#27d7a0;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">💇‍♀️ Gabi</div>
+    <label class="block text-xs text-slate-400 font-semibold mb-1">Segunda a sexta</label>
+    <div class="flex items-center gap-2 mb-3">
+     <input id="horaGabiSemanaInicio" type="time" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm" value="09:00">
+     <span class="text-slate-500 text-xs">até</span>
+     <input id="horaGabiSemanaFim" type="time" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm" value="18:00">
+    </div>
+    <label class="block text-xs text-slate-400 font-semibold mb-1">Sábado</label>
+    <div class="flex items-center gap-2">
+     <input id="horaGabiSabadoInicio" type="time" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm" value="09:00">
+     <span class="text-slate-500 text-xs">até</span>
+     <input id="horaGabiSabadoFim" type="time" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm" value="16:00">
+    </div>
+   </div>
+   <div>
+    <div style="font-size:12px;font-weight:800;color:#4f9cff;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">✨ Dai</div>
+    <label class="block text-xs text-slate-400 font-semibold mb-1">Segunda a sexta</label>
+    <div class="flex items-center gap-2 mb-3">
+     <input id="horaDaiSemanaInicio" type="time" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm" value="13:00">
+     <span class="text-slate-500 text-xs">até</span>
+     <input id="horaDaiSemanaFim" type="time" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm" value="18:00">
+    </div>
+    <label class="block text-xs text-slate-400 font-semibold mb-1">Sábado</label>
+    <div class="flex items-center gap-2">
+     <input id="horaDaiSabadoInicio" type="time" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm" value="09:00">
+     <span class="text-slate-500 text-xs">até</span>
+     <input id="horaDaiSabadoFim" type="time" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm" value="16:00">
+    </div>
+   </div>
+  </div>
+  <button onclick="saveHorarioEquipe()" class="mt-5 w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-xl font-semibold text-sm">Salvar horário da equipe</button>
+  <div id="horarioEquipeStatus" class="mt-3 text-sm text-slate-400"></div>
  </div>
 
  <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
@@ -1043,7 +1093,7 @@ function salvarRotinaPersonalizada(){
  localStorage.setItem('biobel_equipe_rotina_custom', JSON.stringify({diaria: rotinaDiariaBase, semanal: rotinaSemanal}));
 }
 
-const embeddedData = [{"dia": "01.08", "initial": 117.3, "sales": 2053.88, "withdrawals": 50, "closing": 229.3, "dinheiro": 162, "debito": 314.99, "credito": 480.97, "pix": 1095.92, "vendedoras": {"alesandra": 1285.94, "Day": 767.94}, "tipoVenda": {"presencial": 17, "online": 3}, "produtos": {"cabelo / Creme e shapoo e etc": {"qtd": 16.0, "valor": 1150.92}, "Creme": {"qtd": 3.0, "valor": 104.99}, "Perfume": {"qtd": 4.0, "valor": 130.99}, "maquiagem": {"qtd": 8.0, "valor": 427.0}, "presente": {"qtd": 1.0, "valor": 50.0}, "Coloração/Tinta": {"qtd": 6.0, "valor": 189.98}}, "horarios": {"10": {"qtd": 5, "valor": 240.99, "dinheiro": 0}, "11": {"qtd": 5, "valor": 607.97, "dinheiro": 162.0}, "13": {"qtd": 4, "valor": 509.94, "dinheiro": 0}, "15": {"qtd": 5, "valor": 474.98, "dinheiro": 0}, "16": {"qtd": 1, "valor": 220.0, "dinheiro": 0}}}, {"dia": "03.08", "initial": 117, "sales": 1128.98, "withdrawals": 0, "closing": 279, "dinheiro": 162, "debito": 186.5, "credito": 445.49, "pix": 334.99, "vendedoras": {"alesandra": 795.99, "Gabriela": 164.0, "Day": 168.99}, "tipoVenda": {"presencial": 18, "online": 2}, "produtos": {"Creme": {"qtd": 1.0, "valor": 50.0}, "cabelo / Creme e shapoo e etc": {"qtd": 13.0, "valor": 532.99}, "maquiagem": {"qtd": 4.0, "valor": 129.99}, "Coloração/Tinta": {"qtd": 8.0, "valor": 197.0}, "Unha": {"qtd": 9.0, "valor": 184.0}, "Perfume": {"qtd": 1.0, "valor": 35.0}}, "horarios": {"10": {"qtd": 4, "valor": 222.99, "dinheiro": 60.0}, "11": {"qtd": 3, "valor": 223.0, "dinheiro": 53.0}, "12": {"qtd": 3, "valor": 109.5, "dinheiro": 0}, "13": {"qtd": 1, "valor": 40.0, "dinheiro": 40.0}, "14": {"qtd": 1, "valor": 30.0, "dinheiro": 0}, "15": {"qtd": 1, "valor": 161.5, "dinheiro": 0}, "16": {"qtd": 1, "valor": 40.0, "dinheiro": 0}, "17": {"qtd": 4, "valor": 217.0, "dinheiro": 9.0}, "8": {"qtd": 1, "valor": 49.99, "dinheiro": 0}}}, {"dia": "04.08", "initial": 208.05, "sales": 1459.79, "withdrawals": 400, "closing": 137.05, "dinheiro": 329, "debito": 386, "credito": 279.89, "pix": 464.9, "vendedoras": {"Gabriela": 460.0, "Day": 615.89, "alesandra": 383.9}, "tipoVenda": {"presencial": 26, "online": 3}, "produtos": {"cabelo / Creme e shapoo e etc": {"qtd": 18.0, "valor": 664.9}, "maquiagem": {"qtd": 16.0, "valor": 480.89}, "Unha": {"qtd": 1.0, "valor": 10.0}, "Perfume": {"qtd": 3.0, "valor": 190.0}, "Coloração/Tinta": {"qtd": 5.0, "valor": 114.0}}, "horarios": {"9": {"qtd": 1, "valor": 110.0, "dinheiro": 110.0}, "10": {"qtd": 3, "valor": 166.9, "dinheiro": 12.0}, "12": {"qtd": 4, "valor": 199.9, "dinheiro": 0}, "13": {"qtd": 4, "valor": 175.0, "dinheiro": 10.0}, "14": {"qtd": 3, "valor": 199.0, "dinheiro": 0}, "15": {"qtd": 8, "valor": 369.0, "dinheiro": 197.0}, "16": {"qtd": 1, "valor": 60.0, "dinheiro": 0}, "17": {"qtd": 4, "valor": 150.0, "dinheiro": 0}, "18": {"qtd": 1, "valor": 29.99, "dinheiro": 0}}}, {"dia": "05.08", "initial": 137.15, "sales": 3415.34, "withdrawals": 650, "closing": 66.5, "dinheiro": 579.35, "debito": 737.58, "credito": 1013.95, "pix": 1084.46, "vendedoras": {"alesandra": 1963.41, "Gabriela": 1004.95, "Day": 446.98}, "tipoVenda": {"presencial": 50, "online": 1}, "produtos": {"cabelo / Creme e shapoo e etc": {"qtd": 58.0, "valor": 2167.87}, "maquiagem": {"qtd": 18.0, "valor": 517.47}, "Perfume": {"qtd": 4.0, "valor": 360.0}, "Coloração/Tinta": {"qtd": 11.0, "valor": 268.0}, "Unha": {"qtd": 5.0, "valor": 70.0}, "Cabelo/acessorios": {"qtd": 3.0, "valor": 32.0}}, "horarios": {"9": {"qtd": 1, "valor": 50.0, "dinheiro": 0}, "10": {"qtd": 6, "valor": 410.58, "dinheiro": 0}, "11": {"qtd": 6, "valor": 203.0, "dinheiro": 20.0}, "12": {"qtd": 10, "valor": 1309.92, "dinheiro": 281.45}, "13": {"qtd": 3, "valor": 200.0, "dinheiro": 0}, "18": {"qtd": 2, "valor": 225.0, "dinheiro": 0}, "14": {"qtd": 3, "valor": 95.0, "dinheiro": 80.0}, "15": {"qtd": 11, "valor": 504.85, "dinheiro": 122.9}, "16": {"qtd": 6, "valor": 216.99, "dinheiro": 55.0}, "17": {"qtd": 3, "valor": 200.0, "dinheiro": 20.0}}}, {"dia": "06.08", "initial": 67.5, "sales": 4086.72, "withdrawals": 600, "closing": 103.5, "dinheiro": 636, "debito": 593.79, "credito": 1942.93, "pix": 914, "vendedoras": {"Gabriela": 2004.99, "alesandra": 1296.96, "Day": 784.77}, "tipoVenda": {"presencial": 40, "online": 2}, "produtos": {"cabelo / Creme e shapoo e etc": {"qtd": 41.0, "valor": 2069.98}, "maquiagem": {"qtd": 6.0, "valor": 210.0}, "Coloração/Tinta": {"qtd": 21.0, "valor": 637.97}, "Perfume": {"qtd": 7.0, "valor": 1014.97}, "Unha": {"qtd": 4.0, "valor": 28.8}, "Creme": {"qtd": 1.0, "valor": 25.0}, "Cabelo/acessorios": {"qtd": 7.0, "valor": 100.0}}, "horarios": {"9": {"qtd": 1, "valor": 140.0, "dinheiro": 0}, "11": {"qtd": 5, "valor": 760.0, "dinheiro": 160.0}, "12": {"qtd": 6, "valor": 340.0, "dinheiro": 20.0}, "13": {"qtd": 6, "valor": 767.94, "dinheiro": 10.0}, "14": {"qtd": 6, "valor": 289.0, "dinheiro": 30.0}, "15": {"qtd": 8, "valor": 728.0, "dinheiro": 285.0}, "16": {"qtd": 3, "valor": 309.8, "dinheiro": 120.0}, "17": {"qtd": 7, "valor": 751.98, "dinheiro": 11.0}}}, {"dia": "07.08", "initial": 103.5, "sales": 3843.48, "withdrawals": 500, "closing": 150.9, "dinheiro": 547.4, "debito": 1033.58, "credito": 2102.5, "pix": 160, "vendedoras": {"Gabriela": 1325.0, "alesandra": 1353.5, "Day": 1164.98}, "tipoVenda": {"presencial": 33, "online": 2}, "produtos": {"Perfume": {"qtd": 9.0, "valor": 763.0}, "Coloração/Tinta": {"qtd": 17.0, "valor": 422.0}, "cabelo / Creme e shapoo e etc": {"qtd": 35.0, "valor": 2136.48}, "Creme": {"qtd": 1.0, "valor": 20.0}, "maquiagem": {"qtd": 9.0, "valor": 330.0}, "Unha": {"qtd": 7.0, "valor": 76.6}, "Cabelo/acessorios": {"qtd": 4.0, "valor": 95.4}}, "horarios": {"13": {"qtd": 20, "valor": 1753.5, "dinheiro": 332.0}, "14": {"qtd": 3, "valor": 769.6, "dinheiro": 0}, "15": {"qtd": 2, "valor": 85.0, "dinheiro": 0}, "16": {"qtd": 5, "valor": 545.38, "dinheiro": 165.4}, "17": {"qtd": 4, "valor": 570.0, "dinheiro": 50.0}, "18": {"qtd": 1, "valor": 120.0, "dinheiro": 0}}}, {"dia": "08.08", "initial": 150.9, "sales": 2828.86, "withdrawals": 100, "closing": 116.9, "dinheiro": 66, "debito": 481.9, "credito": 1334.99, "pix": 945.97, "vendedoras": {"alesandra": 602.9, "Day": 993.96, "Gabriela": 1232.0}, "tipoVenda": {"presencial": 26, "online": 6}, "produtos": {"Perfume": {"qtd": 14.0, "valor": 1228.0}, "cabelo / Creme e shapoo e etc": {"qtd": 13.0, "valor": 650.0}, "Coloração/Tinta": {"qtd": 15.0, "valor": 457.99}, "maquiagem": {"qtd": 15.0, "valor": 434.87}, "Creme": {"qtd": 1.0, "valor": 40.0}, "Unha": {"qtd": 2.0, "valor": 18.0}}, "horarios": {"9": {"qtd": 1, "valor": 60.0, "dinheiro": 0}, "10": {"qtd": 3, "valor": 257.0, "dinheiro": 32.0}, "11": {"qtd": 8, "valor": 614.0, "dinheiro": 22.0}, "12": {"qtd": 2, "valor": 95.0, "dinheiro": 0}, "13": {"qtd": 5, "valor": 529.96, "dinheiro": 0}, "14": {"qtd": 5, "valor": 208.0, "dinheiro": 12.0}, "15": {"qtd": 6, "valor": 872.9, "dinheiro": 0}, "8": {"qtd": 1, "valor": 32.0, "dinheiro": 0}}}, {"dia": "10.08", "initial": 84, "sales": 2119.4, "withdrawals": 500, "closing": 36.9, "dinheiro": 452.9, "debito": 146, "credito": 752, "pix": 768.5, "vendedoras": {"alesandra": 390.4, "Gabriela": 1096.0, "Day": 633.0}, "tipoVenda": {"presencial": 25, "online": 2}, "produtos": {"cabelo / Creme e shapoo e etc": {"qtd": 34.0, "valor": 1464.0}, "maquiagem": {"qtd": 6.0, "valor": 194.9}, "Creme": {"qtd": 4.0, "valor": 130.0}, "Coloração/Tinta": {"qtd": 2.0, "valor": 68.5}, "Perfume": {"qtd": 6.0, "valor": 262.0}}, "horarios": {"10": {"qtd": 4, "valor": 225.9, "dinheiro": 225.9}, "11": {"qtd": 3, "valor": 195.0, "dinheiro": 0}, "12": {"qtd": 2, "valor": 83.5, "dinheiro": 0}, "13": {"qtd": 6, "valor": 760.0, "dinheiro": 0}, "14": {"qtd": 2, "valor": 137.0, "dinheiro": 47.0}, "15": {"qtd": 5, "valor": 342.0, "dinheiro": 45.0}, "16": {"qtd": 1, "valor": 6.0, "dinheiro": 0}, "17": {"qtd": 4, "valor": 370.0, "dinheiro": 135.0}}}, {"dia": "11.08", "initial": 55, "sales": 2073.5, "withdrawals": 550, "closing": 109.5, "dinheiro": 604.5, "debito": 460, "credito": 220, "pix": 789, "vendedoras": {"alesandra": 874.0, "Gabriela": 819.0, "Day": 380.5}, "tipoVenda": {"presencial": 31, "online": 1}, "produtos": {"cabelo / Creme e shapoo e etc": {"qtd": 18.0, "valor": 867.0}, "Cabelo/acessorios": {"qtd": 2.0, "valor": 60.0}, "maquiagem": {"qtd": 19.0, "valor": 694.0}, "Perfume": {"qtd": 7.0, "valor": 260.0}, "Coloração/Tinta": {"qtd": 8.0, "valor": 179.0}, "Unha": {"qtd": 1, "valor": 13.5}}, "horarios": {"9": {"qtd": 2, "valor": 130.0, "dinheiro": 70.0}, "10": {"qtd": 5, "valor": 480.0, "dinheiro": 30.0}, "11": {"qtd": 2, "valor": 110.0, "dinheiro": 40.0}, "12": {"qtd": 3, "valor": 107.0, "dinheiro": 62.0}, "13": {"qtd": 5, "valor": 187.0, "dinheiro": 147.0}, "14": {"qtd": 2, "valor": 83.5, "dinheiro": 13.5}, "15": {"qtd": 7, "valor": 457.0, "dinheiro": 202.0}, "16": {"qtd": 2, "valor": 140.0, "dinheiro": 0}, "17": {"qtd": 3, "valor": 339.0, "dinheiro": 0}, "18": {"qtd": 1, "valor": 40.0, "dinheiro": 40.0}}}];
+const embeddedData = [{"dia": "01.08", "initial": 117.3, "sales": 2053.88, "withdrawals": 50, "closing": 229.3, "dinheiro": 162, "debito": 314.99, "credito": 480.97, "pix": 1095.92, "vendedoras": {"alesandra": 1285.94, "Day": 767.94}, "tipoVenda": {"presencial": 17, "online": 3}, "produtos": {"cabelo / Creme e shapoo e etc": {"qtd": 16.0, "valor": 1150.92}, "Creme": {"qtd": 3.0, "valor": 104.99}, "Perfume": {"qtd": 4.0, "valor": 130.99}, "maquiagem": {"qtd": 8.0, "valor": 427.0}, "presente": {"qtd": 1.0, "valor": 50.0}, "Coloração/Tinta": {"qtd": 6.0, "valor": 189.98}}, "horarios": {"10": {"qtd": 5, "valor": 240.99, "dinheiro": 0}, "11": {"qtd": 5, "valor": 607.97, "dinheiro": 162.0}, "13": {"qtd": 4, "valor": 509.94, "dinheiro": 0}, "15": {"qtd": 5, "valor": 474.98, "dinheiro": 0}, "16": {"qtd": 1, "valor": 220.0, "dinheiro": 0}}, "porTurno": {"manhã": {"qtd": 1, "valor": 49.99}, "tarde": {"qtd": 2, "valor": 106.0}}, "porTurnoVend": {"manhã": {"alesandra": {"qtd": 1, "valor": 49.99}}, "tarde": {"Day": {"qtd": 1, "valor": 25.0}, "alesandra": {"qtd": 1, "valor": 81.0}}}}, {"dia": "03.08", "initial": 117, "sales": 1128.98, "withdrawals": 0, "closing": 279, "dinheiro": 162, "debito": 186.5, "credito": 445.49, "pix": 334.99, "vendedoras": {"alesandra": 795.99, "Gabriela": 164.0, "Day": 168.99}, "tipoVenda": {"presencial": 18, "online": 2}, "produtos": {"Creme": {"qtd": 1.0, "valor": 50.0}, "cabelo / Creme e shapoo e etc": {"qtd": 13.0, "valor": 532.99}, "maquiagem": {"qtd": 4.0, "valor": 129.99}, "Coloração/Tinta": {"qtd": 8.0, "valor": 197.0}, "Unha": {"qtd": 9.0, "valor": 184.0}, "Perfume": {"qtd": 1.0, "valor": 35.0}}, "horarios": {"10": {"qtd": 4, "valor": 222.99, "dinheiro": 60.0}, "11": {"qtd": 3, "valor": 223.0, "dinheiro": 53.0}, "12": {"qtd": 3, "valor": 109.5, "dinheiro": 0}, "13": {"qtd": 1, "valor": 40.0, "dinheiro": 40.0}, "14": {"qtd": 1, "valor": 30.0, "dinheiro": 0}, "15": {"qtd": 1, "valor": 161.5, "dinheiro": 0}, "16": {"qtd": 1, "valor": 40.0, "dinheiro": 0}, "17": {"qtd": 4, "valor": 217.0, "dinheiro": 9.0}, "8": {"qtd": 1, "valor": 49.99, "dinheiro": 0}}, "porTurno": {"manhã": {"qtd": 2, "valor": 119.99}}, "porTurnoVend": {"manhã": {"alesandra": {"qtd": 2, "valor": 119.99}}}}, {"dia": "04.08", "initial": 208.05, "sales": 1459.79, "withdrawals": 400, "closing": 137.05, "dinheiro": 329, "debito": 386, "credito": 279.89, "pix": 464.9, "vendedoras": {"Gabriela": 460.0, "Day": 615.89, "alesandra": 383.9}, "tipoVenda": {"presencial": 26, "online": 3}, "produtos": {"cabelo / Creme e shapoo e etc": {"qtd": 18.0, "valor": 664.9}, "maquiagem": {"qtd": 16.0, "valor": 480.89}, "Unha": {"qtd": 1.0, "valor": 10.0}, "Perfume": {"qtd": 3.0, "valor": 190.0}, "Coloração/Tinta": {"qtd": 5.0, "valor": 114.0}}, "horarios": {"9": {"qtd": 1, "valor": 110.0, "dinheiro": 110.0}, "10": {"qtd": 3, "valor": 166.9, "dinheiro": 12.0}, "12": {"qtd": 4, "valor": 199.9, "dinheiro": 0}, "13": {"qtd": 4, "valor": 175.0, "dinheiro": 10.0}, "14": {"qtd": 3, "valor": 199.0, "dinheiro": 0}, "15": {"qtd": 8, "valor": 369.0, "dinheiro": 197.0}, "16": {"qtd": 1, "valor": 60.0, "dinheiro": 0}, "17": {"qtd": 4, "valor": 150.0, "dinheiro": 0}, "18": {"qtd": 1, "valor": 29.99, "dinheiro": 0}}, "porTurno": {"manhã": {"qtd": 1, "valor": 110.0}, "tarde": {"qtd": 12, "valor": 581.8}}, "porTurnoVend": {"manhã": {"Gabriela": {"qtd": 1, "valor": 110.0}}, "tarde": {"Day": {"qtd": 1, "valor": 99.9}, "Gabriela": {"qtd": 3, "valor": 200.0}, "alesandra": {"qtd": 8, "valor": 281.9}}}}, {"dia": "05.08", "initial": 137.15, "sales": 3415.34, "withdrawals": 650, "closing": 66.5, "dinheiro": 579.35, "debito": 737.58, "credito": 1013.95, "pix": 1084.46, "vendedoras": {"alesandra": 1963.41, "Gabriela": 1004.95, "Day": 446.98}, "tipoVenda": {"presencial": 50, "online": 1}, "produtos": {"cabelo / Creme e shapoo e etc": {"qtd": 58.0, "valor": 2167.87}, "maquiagem": {"qtd": 18.0, "valor": 517.47}, "Perfume": {"qtd": 4.0, "valor": 360.0}, "Coloração/Tinta": {"qtd": 11.0, "valor": 268.0}, "Unha": {"qtd": 5.0, "valor": 70.0}, "Cabelo/acessorios": {"qtd": 3.0, "valor": 32.0}}, "horarios": {"9": {"qtd": 1, "valor": 50.0, "dinheiro": 0}, "10": {"qtd": 6, "valor": 410.58, "dinheiro": 0}, "11": {"qtd": 6, "valor": 203.0, "dinheiro": 20.0}, "12": {"qtd": 10, "valor": 1309.92, "dinheiro": 281.45}, "13": {"qtd": 3, "valor": 200.0, "dinheiro": 0}, "18": {"qtd": 2, "valor": 225.0, "dinheiro": 0}, "14": {"qtd": 3, "valor": 95.0, "dinheiro": 80.0}, "15": {"qtd": 11, "valor": 504.85, "dinheiro": 122.9}, "16": {"qtd": 6, "valor": 216.99, "dinheiro": 55.0}, "17": {"qtd": 3, "valor": 200.0, "dinheiro": 20.0}}, "porTurno": {"manhã": {"qtd": 1, "valor": 50.0}, "meio-dia": {"qtd": 8, "valor": 431.58}, "tarde": {"qtd": 25, "valor": 2094.82}}, "porTurnoVend": {"manhã": {"alesandra": {"qtd": 1, "valor": 50.0}}, "meio-dia": {"alesandra": {"qtd": 7, "valor": 420.58}, "Gabriela": {"qtd": 1, "valor": 11.0}}, "tarde": {"Gabriela": {"qtd": 9, "valor": 618.96}, "alesandra": {"qtd": 11, "valor": 1180.86}, "Day": {"qtd": 5, "valor": 295.0}}}}, {"dia": "06.08", "initial": 67.5, "sales": 4086.72, "withdrawals": 600, "closing": 103.5, "dinheiro": 636, "debito": 593.79, "credito": 1942.93, "pix": 914, "vendedoras": {"Gabriela": 2004.99, "alesandra": 1296.96, "Day": 784.77}, "tipoVenda": {"presencial": 40, "online": 2}, "produtos": {"cabelo / Creme e shapoo e etc": {"qtd": 41.0, "valor": 2069.98}, "maquiagem": {"qtd": 6.0, "valor": 210.0}, "Coloração/Tinta": {"qtd": 21.0, "valor": 637.97}, "Perfume": {"qtd": 7.0, "valor": 1014.97}, "Unha": {"qtd": 4.0, "valor": 28.8}, "Creme": {"qtd": 1.0, "valor": 25.0}, "Cabelo/acessorios": {"qtd": 7.0, "valor": 100.0}}, "horarios": {"9": {"qtd": 1, "valor": 140.0, "dinheiro": 0}, "11": {"qtd": 5, "valor": 760.0, "dinheiro": 160.0}, "12": {"qtd": 6, "valor": 340.0, "dinheiro": 20.0}, "13": {"qtd": 6, "valor": 767.94, "dinheiro": 10.0}, "14": {"qtd": 6, "valor": 289.0, "dinheiro": 30.0}, "15": {"qtd": 8, "valor": 728.0, "dinheiro": 285.0}, "16": {"qtd": 3, "valor": 309.8, "dinheiro": 120.0}, "17": {"qtd": 7, "valor": 751.98, "dinheiro": 11.0}}, "porTurno": {"manhã": {"qtd": 1, "valor": 140.0}, "tarde": {"qtd": 24, "valor": 2226.94}}, "porTurnoVend": {"manhã": {"Gabriela": {"qtd": 1, "valor": 140.0}}, "tarde": {"Gabriela": {"qtd": 7, "valor": 840.0}, "alesandra": {"qtd": 10, "valor": 994.97}, "Day": {"qtd": 7, "valor": 391.97}}}}, {"dia": "07.08", "initial": 103.5, "sales": 3843.48, "withdrawals": 500, "closing": 150.9, "dinheiro": 547.4, "debito": 1033.58, "credito": 2102.5, "pix": 160, "vendedoras": {"Gabriela": 1325.0, "alesandra": 1353.5, "Day": 1164.98}, "tipoVenda": {"presencial": 33, "online": 2}, "produtos": {"Perfume": {"qtd": 9.0, "valor": 763.0}, "Coloração/Tinta": {"qtd": 17.0, "valor": 422.0}, "cabelo / Creme e shapoo e etc": {"qtd": 35.0, "valor": 2136.48}, "Creme": {"qtd": 1.0, "valor": 20.0}, "maquiagem": {"qtd": 9.0, "valor": 330.0}, "Unha": {"qtd": 7.0, "valor": 76.6}, "Cabelo/acessorios": {"qtd": 4.0, "valor": 95.4}}, "horarios": {"13": {"qtd": 20, "valor": 1753.5, "dinheiro": 332.0}, "14": {"qtd": 3, "valor": 769.6, "dinheiro": 0}, "15": {"qtd": 2, "valor": 85.0, "dinheiro": 0}, "16": {"qtd": 5, "valor": 545.38, "dinheiro": 165.4}, "17": {"qtd": 4, "valor": 570.0, "dinheiro": 50.0}, "18": {"qtd": 1, "valor": 120.0, "dinheiro": 0}}, "porTurno": {"meio-dia": {"qtd": 3, "valor": 192.0}, "tarde": {"qtd": 15, "valor": 1211.5}}, "porTurnoVend": {"meio-dia": {"Gabriela": {"qtd": 3, "valor": 192.0}}, "tarde": {"Gabriela": {"qtd": 5, "valor": 383.0}, "alesandra": {"qtd": 10, "valor": 828.5}}}}, {"dia": "08.08", "initial": 150.9, "sales": 2828.86, "withdrawals": 100, "closing": 116.9, "dinheiro": 66, "debito": 481.9, "credito": 1334.99, "pix": 945.97, "vendedoras": {"alesandra": 602.9, "Day": 993.96, "Gabriela": 1232.0}, "tipoVenda": {"presencial": 26, "online": 6}, "produtos": {"Perfume": {"qtd": 14.0, "valor": 1228.0}, "cabelo / Creme e shapoo e etc": {"qtd": 13.0, "valor": 650.0}, "Coloração/Tinta": {"qtd": 15.0, "valor": 457.99}, "maquiagem": {"qtd": 15.0, "valor": 434.87}, "Creme": {"qtd": 1.0, "valor": 40.0}, "Unha": {"qtd": 2.0, "valor": 18.0}}, "horarios": {"9": {"qtd": 1, "valor": 60.0, "dinheiro": 0}, "10": {"qtd": 3, "valor": 257.0, "dinheiro": 32.0}, "11": {"qtd": 8, "valor": 614.0, "dinheiro": 22.0}, "12": {"qtd": 2, "valor": 95.0, "dinheiro": 0}, "13": {"qtd": 5, "valor": 529.96, "dinheiro": 0}, "14": {"qtd": 5, "valor": 208.0, "dinheiro": 12.0}, "15": {"qtd": 6, "valor": 872.9, "dinheiro": 0}, "8": {"qtd": 1, "valor": 32.0, "dinheiro": 0}}, "porTurno": {"manhã": {"qtd": 2, "valor": 119.99}, "meio-dia": {"qtd": 1, "valor": 60.0}, "tarde": {"qtd": 11, "valor": 876.0}}, "porTurnoVend": {"manhã": {"alesandra": {"qtd": 1, "valor": 60.0}, "Day": {"qtd": 1, "valor": 59.99}}, "meio-dia": {"Day": {"qtd": 1, "valor": 60.0}}, "tarde": {"alesandra": {"qtd": 3, "valor": 237.0}, "Day": {"qtd": 5, "valor": 462.0}, "Gabriela": {"qtd": 3, "valor": 177.0}}}}, {"dia": "10.08", "initial": 84, "sales": 2119.4, "withdrawals": 500, "closing": 36.9, "dinheiro": 452.9, "debito": 146, "credito": 752, "pix": 768.5, "vendedoras": {"alesandra": 390.4, "Gabriela": 1096.0, "Day": 633.0}, "tipoVenda": {"presencial": 25, "online": 2}, "produtos": {"cabelo / Creme e shapoo e etc": {"qtd": 34.0, "valor": 1464.0}, "maquiagem": {"qtd": 6.0, "valor": 194.9}, "Creme": {"qtd": 4.0, "valor": 130.0}, "Coloração/Tinta": {"qtd": 2.0, "valor": 68.5}, "Perfume": {"qtd": 6.0, "valor": 262.0}}, "horarios": {"10": {"qtd": 4, "valor": 225.9, "dinheiro": 225.9}, "11": {"qtd": 3, "valor": 195.0, "dinheiro": 0}, "12": {"qtd": 2, "valor": 83.5, "dinheiro": 0}, "13": {"qtd": 6, "valor": 760.0, "dinheiro": 0}, "14": {"qtd": 2, "valor": 137.0, "dinheiro": 47.0}, "15": {"qtd": 5, "valor": 342.0, "dinheiro": 45.0}, "16": {"qtd": 1, "valor": 6.0, "dinheiro": 0}, "17": {"qtd": 4, "valor": 370.0, "dinheiro": 135.0}}, "porTurno": {"manhã": {"qtd": 1, "valor": 50.0}, "tarde": {"qtd": 9, "valor": 754.4}}, "porTurnoVend": {"manhã": {"alesandra": {"qtd": 1, "valor": 50.0}}, "tarde": {"Gabriela": {"qtd": 4, "valor": 586.0}, "alesandra": {"qtd": 5, "valor": 168.4}}}}, {"dia": "11.08", "initial": 55, "sales": 2073.5, "withdrawals": 550, "closing": 109.5, "dinheiro": 604.5, "debito": 460, "credito": 220, "pix": 789, "vendedoras": {"alesandra": 874.0, "Gabriela": 819.0, "Day": 380.5}, "tipoVenda": {"presencial": 31, "online": 1}, "produtos": {"cabelo / Creme e shapoo e etc": {"qtd": 18.0, "valor": 867.0}, "Cabelo/acessorios": {"qtd": 2.0, "valor": 60.0}, "maquiagem": {"qtd": 19.0, "valor": 694.0}, "Perfume": {"qtd": 7.0, "valor": 260.0}, "Coloração/Tinta": {"qtd": 8.0, "valor": 179.0}, "Unha": {"qtd": 1, "valor": 13.5}}, "horarios": {"9": {"qtd": 2, "valor": 130.0, "dinheiro": 70.0}, "10": {"qtd": 5, "valor": 480.0, "dinheiro": 30.0}, "11": {"qtd": 2, "valor": 110.0, "dinheiro": 40.0}, "12": {"qtd": 3, "valor": 107.0, "dinheiro": 62.0}, "13": {"qtd": 5, "valor": 187.0, "dinheiro": 147.0}, "14": {"qtd": 2, "valor": 83.5, "dinheiro": 13.5}, "15": {"qtd": 7, "valor": 457.0, "dinheiro": 202.0}, "16": {"qtd": 2, "valor": 140.0, "dinheiro": 0}, "17": {"qtd": 3, "valor": 339.0, "dinheiro": 0}, "18": {"qtd": 1, "valor": 40.0, "dinheiro": 40.0}}, "porTurno": {"manhã": {"qtd": 1, "valor": 70.0}, "tarde": {"qtd": 14, "valor": 851.0}}, "porTurnoVend": {"manhã": {"alesandra": {"qtd": 1, "valor": 70.0}}, "tarde": {"Gabriela": {"qtd": 6, "valor": 377.0}, "alesandra": {"qtd": 6, "valor": 444.0}, "Day": {"qtd": 2, "valor": 30.0}}}}];
 let daysData = [...embeddedData];
 let mesVisualizadoPassado = null; // null = mes atual (ao vivo). Se preenchido (ex: '07'), esta vendo um mes arquivado.
 let daysDataOriginal = null; // guarda os dados ao vivo enquanto a pessoa esta vendo um mes passado, pra poder voltar
@@ -1597,6 +1647,33 @@ function initEquipeTab(){
  renderEquipeDayTabs();
  renderEquipeDia(equipeDiaAtual);
  renderEquipeHistorico();
+ initHorarioEquipeUI();
+}
+
+const CAMPOS_HORARIO_EQUIPE = ['horaGabiSemanaInicio','horaGabiSemanaFim','horaGabiSabadoInicio','horaGabiSabadoFim','horaDaiSemanaInicio','horaDaiSemanaFim','horaDaiSabadoInicio','horaDaiSabadoFim'];
+function initHorarioEquipeUI(){
+ CAMPOS_HORARIO_EQUIPE.forEach(id=>{
+  const el = document.getElementById(id);
+  if(!el) return;
+  const saved = localStorage.getItem('biobel_'+id);
+  if(saved) el.value = saved;
+ });
+}
+function saveHorarioEquipe(){
+ const statusEl = document.getElementById('horarioEquipeStatus');
+ let algumVazio = false;
+ CAMPOS_HORARIO_EQUIPE.forEach(id=>{
+  const el = document.getElementById(id);
+  if(!el) return;
+  if(!el.value) algumVazio = true;
+  localStorage.setItem('biobel_'+id, el.value);
+ });
+ if(algumVazio){
+  statusEl.innerHTML = '<span class="text-rose-400">Preencha todos os horários antes de salvar.</span>';
+  return;
+ }
+ statusEl.innerHTML = '<span class="text-emerald-400">Horário da equipe salvo!</span>';
+ mostrarToast('✅ Horário de trabalho da equipe salvo!');
 }
 
 function resetEquipeWeek(){
@@ -1907,6 +1984,7 @@ function renderInfoTab(){
  renderTipoVenda();
  renderProdutosRanking();
  renderHorariosPico();
+ renderTurnos();
 }
 
 function montarSeletorMeses(){
@@ -2323,6 +2401,87 @@ function renderHorariosPico(){
     </div>
     <div style="background:#0b1728;border-radius:999px;height:8px;overflow:hidden;">
      <div style="height:100%;width:${Math.max(pct,3).toFixed(1)}%;background:linear-gradient(90deg,#4f9cff,#2f78e0);"></div>
+    </div>
+   </div>`;
+ }).join('');
+}
+
+function renderTurnos(){
+ const elResumo = document.getElementById('infoTurnosResumo');
+ const elCruzamento = document.getElementById('infoTurnosCruzamento');
+ if(!elResumo || !elCruzamento) return;
+
+ const nomesTurnos = {'manhã':'🌅 Manhã','meio-dia':'🌤️ Meio-dia','tarde':'🌇 Tarde'};
+ const ordemTurnos = ['manhã','meio-dia','tarde'];
+ const totalPorTurno = {};
+ const totalPorTurnoVend = {};
+
+ daysData.forEach(d=>{
+  Object.entries(d.porTurno||{}).forEach(([turno,info])=>{
+   if(!totalPorTurno[turno]) totalPorTurno[turno] = {qtd:0, valor:0};
+   totalPorTurno[turno].qtd += Number(info.qtd)||0;
+   totalPorTurno[turno].valor += Number(info.valor)||0;
+  });
+  Object.entries(d.porTurnoVend||{}).forEach(([turno,vends])=>{
+   if(!totalPorTurnoVend[turno]) totalPorTurnoVend[turno] = {};
+   Object.entries(vends).forEach(([nome,info])=>{
+    if(!totalPorTurnoVend[turno][nome]) totalPorTurnoVend[turno][nome] = {qtd:0, valor:0};
+    totalPorTurnoVend[turno][nome].qtd += Number(info.qtd)||0;
+    totalPorTurnoVend[turno][nome].valor += Number(info.valor)||0;
+   });
+  });
+ });
+
+ const turnosComDados = ordemTurnos.filter(t=>totalPorTurno[t]);
+ if(turnosComDados.length===0){
+  elResumo.innerHTML = '<p style="color:#93a3ba;font-size:13px;">Nenhum dado de turno encontrado ainda (coluna "turno de atendimento" da planilha vazia ou não lida).</p>';
+  elCruzamento.innerHTML = '';
+  return;
+ }
+
+ const maxValor = Math.max(...turnosComDados.map(t=>totalPorTurno[t].valor)) || 1;
+ elResumo.innerHTML = turnosComDados.map(t=>{
+  const info = totalPorTurno[t];
+  const pct = (info.valor/maxValor)*100;
+  return `
+   <div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+     <span style="color:#dce5f2;font-weight:700;">${nomesTurnos[t]||t}</span>
+     <span style="text-align:right;">
+      <strong style="color:#f6f9fd;">${money(info.valor)}</strong>
+      <span style="color:#93a3ba;font-size:11px;display:block;">${info.qtd} venda${info.qtd===1?'':'s'}</span>
+     </span>
+    </div>
+    <div style="background:#0b1728;border-radius:999px;height:10px;overflow:hidden;">
+     <div style="height:100%;width:${Math.max(pct,3).toFixed(1)}%;background:linear-gradient(90deg,#fbbf24,#f59e0b);"></div>
+    </div>
+   </div>`;
+ }).join('');
+
+ elCruzamento.innerHTML = turnosComDados.map(t=>{
+  const vends = totalPorTurnoVend[t] || {};
+  const ranked = Object.entries(vends).sort((a,b)=>b[1].valor-a[1].valor);
+  if(ranked.length===0) return '';
+  const maxV = ranked[0][1].valor || 1;
+  const medalhas = ['🥇','🥈','🥉'];
+  return `
+   <div>
+    <div style="font-size:11px;font-weight:800;color:#93a3ba;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">${nomesTurnos[t]||t} — quem mais vendeu</div>
+    <div style="display:flex;flex-direction:column;gap:6px;">
+     ${ranked.map(([nome,info],i)=>{
+      const pct = (info.valor/maxV)*100;
+      const posicao = medalhas[i] || (i+1)+'º';
+      return `
+       <div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px;">
+         <span style="color:#dce5f2;">${posicao} ${nome}</span>
+         <strong style="color:#f6f9fd;">${money(info.valor)} <span style="color:#93a3ba;font-weight:600;">(${info.qtd})</span></strong>
+        </div>
+        <div style="background:#0b1728;border-radius:999px;height:6px;overflow:hidden;">
+         <div style="height:100%;width:${Math.max(pct,3).toFixed(1)}%;background:linear-gradient(90deg,#4f9cff,#2f78e0);"></div>
+        </div>
+       </div>`;
+     }).join('')}
     </div>
    </div>`;
  }).join('');
@@ -2906,6 +3065,41 @@ function extrairHoraDoValor(v){
  return null;
 }
 
+function extractTurnos(rows){
+ // Usa a coluna "turno de atendimento" (K) que já vem pronta na planilha (manhã/meio-dia/tarde).
+ const porTurno = {};
+ const porTurnoVend = {};
+ const turnosValidos = ['manhã','meio-dia','tarde'];
+ for(let r=0;r<rows.length;r++){
+  const rownum = rows[r]?.[0];
+  const label = String(rownum??'').trim().toLowerCase();
+  if(label==='total') break;
+  if(typeof rownum!=='number') continue;
+  const turnoRaw = rows[r]?.[10];
+  if(!turnoRaw || typeof turnoRaw!=='string') continue;
+  const turno = turnoRaw.trim();
+  if(!turnosValidos.includes(turno)) continue; // ignora valores estranhos tipo #VALUE!
+  let valorVenda = 0;
+  for(const c of [1,2,3,4]){
+   const v = rows[r]?.[c];
+   if(typeof v==='number') valorVenda += v;
+  }
+  if(!porTurno[turno]) porTurno[turno] = {qtd:0, valor:0};
+  porTurno[turno].qtd += 1;
+  porTurno[turno].valor += valorVenda;
+
+  const vendedoraRaw = rows[r]?.[5];
+  if(vendedoraRaw && typeof vendedoraRaw==='string' && vendedoraRaw.trim()){
+   const nome = normalizarNome(vendedoraRaw);
+   if(!porTurnoVend[turno]) porTurnoVend[turno] = {};
+   if(!porTurnoVend[turno][nome]) porTurnoVend[turno][nome] = {qtd:0, valor:0};
+   porTurnoVend[turno][nome].qtd += 1;
+   porTurnoVend[turno][nome].valor += valorVenda;
+  }
+ }
+ return {porTurno, porTurnoVend};
+}
+
 function extractHorariosPico(rows){
  // Conta quantas vendas, o valor total e quanto foi em dinheiro, em cada hora do dia (coluna L, "temp").
  const porHora = {};
@@ -3034,8 +3228,9 @@ async function loadGoogleSheet(){
    const tipoVenda=extractTipoVendaTotais(rows);
    const produtos=extractProdutosVendidos(rows);
    const horarios=extractHorariosPico(rows);
+   const {porTurno,porTurnoVend}=extractTurnos(rows);
    daysData=daysData.filter(x=>x.dia!==sheetName);
-   daysData.push({dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos,horarios});
+   daysData.push({dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos,horarios,porTurno,porTurnoVend});
    found++;
   }
   render();
@@ -3110,7 +3305,8 @@ document.getElementById('fileInput').addEventListener('change',async e=>{
    const tipoVenda=extractTipoVendaTotais(rows);
    const produtos=extractProdutosVendidos(rows);
    const horarios=extractHorariosPico(rows);
-   const item={dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos,horarios};
+   const {porTurno,porTurnoVend}=extractTurnos(rows);
+   const item={dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos,horarios,porTurno,porTurnoVend};
    daysData=daysData.filter(x=>x.dia!==sheetName);
    daysData.push(item);
   }
