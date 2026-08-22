@@ -642,6 +642,24 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
  </div>
 
+ <div class="adv-content2">
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>🏬 Presencial x Online</h3>
+    <span>quantos atendimentos de cada tipo</span>
+   </div>
+   <div id="infoTipoVenda" style="display:flex;flex-direction:column;gap:14px;"></div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>🛍️ Produtos mais vendidos</h3>
+    <span>por quantidade, no mês</span>
+   </div>
+   <div id="infoProdutosRanking" style="display:flex;flex-direction:column;gap:10px;"></div>
+  </div>
+ </div>
+
 </section>
 
 <section id="equipeTab" class="hidden max-w-5xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabEquipe">
@@ -971,7 +989,7 @@ function salvarRotinaPersonalizada(){
  localStorage.setItem('biobel_equipe_rotina_custom', JSON.stringify({diaria: rotinaDiariaBase, semanal: rotinaSemanal}));
 }
 
-const embeddedData = [{"dia": "01.08", "initial": 117.3, "sales": 2053.88, "withdrawals": 50, "closing": 229.3, "dinheiro": 162, "debito": 314.99, "credito": 480.97, "pix": 1095.92, "vendedoras": {"alesandra": 1285.94, "Day": 767.94}}, {"dia": "03.08", "initial": 117, "sales": 1128.98, "withdrawals": 0, "closing": 279, "dinheiro": 162, "debito": 186.5, "credito": 445.49, "pix": 334.99, "vendedoras": {"alesandra": 795.99, "Gabriela": 164.0, "Day": 168.99}}, {"dia": "04.08", "initial": 208.05, "sales": 1459.79, "withdrawals": 400, "closing": 137.05, "dinheiro": 329, "debito": 386, "credito": 279.89, "pix": 464.9, "vendedoras": {"Gabriela": 460.0, "Day": 615.89, "alesandra": 383.9}}, {"dia": "05.08", "initial": 137.15, "sales": 3415.34, "withdrawals": 650, "closing": 66.5, "dinheiro": 579.35, "debito": 737.58, "credito": 1013.95, "pix": 1084.46, "vendedoras": {"alesandra": 1963.41, "Gabriela": 1004.95, "Day": 446.98}}, {"dia": "06.08", "initial": 67.5, "sales": 4086.72, "withdrawals": 600, "closing": 103.5, "dinheiro": 636, "debito": 593.79, "credito": 1942.93, "pix": 914, "vendedoras": {"Gabriela": 2004.99, "alesandra": 1296.96, "Day": 784.77}}, {"dia": "07.08", "initial": 103.5, "sales": 3843.48, "withdrawals": 500, "closing": 150.9, "dinheiro": 547.4, "debito": 1033.58, "credito": 2102.5, "pix": 160, "vendedoras": {"Gabriela": 1325.0, "alesandra": 1353.5, "Day": 1164.98}}, {"dia": "08.08", "initial": 150.9, "sales": 2828.86, "withdrawals": 100, "closing": 116.9, "dinheiro": 66, "debito": 481.9, "credito": 1334.99, "pix": 945.97, "vendedoras": {"alesandra": 602.9, "Day": 993.96, "Gabriela": 1232.0}}, {"dia": "10.08", "initial": 84, "sales": 2119.4, "withdrawals": 500, "closing": 36.9, "dinheiro": 452.9, "debito": 146, "credito": 752, "pix": 768.5, "vendedoras": {"alesandra": 390.4, "Gabriela": 1096.0, "Day": 633.0}}, {"dia": "11.08", "initial": 55, "sales": 2073.5, "withdrawals": 550, "closing": 109.5, "dinheiro": 604.5, "debito": 460, "credito": 220, "pix": 789, "vendedoras": {"alesandra": 874.0, "Gabriela": 819.0, "Day": 380.5}}];
+const embeddedData = [{"dia": "01.08", "initial": 117.3, "sales": 2053.88, "withdrawals": 50, "closing": 229.3, "dinheiro": 162, "debito": 314.99, "credito": 480.97, "pix": 1095.92, "vendedoras": {"alesandra": 1285.94, "Day": 767.94}, "tipoVenda": {"presencial": 17, "online": 3}, "produtos": {"cabelo / Creme e shapoo e etc": {"qtd": 16.0, "valor": 1150.92}, "Creme": {"qtd": 3.0, "valor": 104.99}, "Perfume": {"qtd": 4.0, "valor": 130.99}, "maquiagem": {"qtd": 8.0, "valor": 427.0}, "presente": {"qtd": 1.0, "valor": 50.0}, "Coloração/Tinta": {"qtd": 6.0, "valor": 189.98}}}, {"dia": "03.08", "initial": 117, "sales": 1128.98, "withdrawals": 0, "closing": 279, "dinheiro": 162, "debito": 186.5, "credito": 445.49, "pix": 334.99, "vendedoras": {"alesandra": 795.99, "Gabriela": 164.0, "Day": 168.99}, "tipoVenda": {"presencial": 18, "online": 2}, "produtos": {"Creme": {"qtd": 1.0, "valor": 50.0}, "cabelo / Creme e shapoo e etc": {"qtd": 13.0, "valor": 532.99}, "maquiagem": {"qtd": 4.0, "valor": 129.99}, "Coloração/Tinta": {"qtd": 8.0, "valor": 197.0}, "Unha": {"qtd": 9.0, "valor": 184.0}, "Perfume": {"qtd": 1.0, "valor": 35.0}}}, {"dia": "04.08", "initial": 208.05, "sales": 1459.79, "withdrawals": 400, "closing": 137.05, "dinheiro": 329, "debito": 386, "credito": 279.89, "pix": 464.9, "vendedoras": {"Gabriela": 460.0, "Day": 615.89, "alesandra": 383.9}, "tipoVenda": {"presencial": 26, "online": 3}, "produtos": {"cabelo / Creme e shapoo e etc": {"qtd": 18.0, "valor": 664.9}, "maquiagem": {"qtd": 16.0, "valor": 480.89}, "Unha": {"qtd": 1.0, "valor": 10.0}, "Perfume": {"qtd": 3.0, "valor": 190.0}, "Coloração/Tinta": {"qtd": 5.0, "valor": 114.0}}}, {"dia": "05.08", "initial": 137.15, "sales": 3415.34, "withdrawals": 650, "closing": 66.5, "dinheiro": 579.35, "debito": 737.58, "credito": 1013.95, "pix": 1084.46, "vendedoras": {"alesandra": 1963.41, "Gabriela": 1004.95, "Day": 446.98}, "tipoVenda": {"presencial": 50, "online": 1}, "produtos": {"cabelo / Creme e shapoo e etc": {"qtd": 58.0, "valor": 2167.87}, "maquiagem": {"qtd": 18.0, "valor": 517.47}, "Perfume": {"qtd": 4.0, "valor": 360.0}, "Coloração/Tinta": {"qtd": 11.0, "valor": 268.0}, "Unha": {"qtd": 5.0, "valor": 70.0}, "Cabelo/acessorios": {"qtd": 3.0, "valor": 32.0}}}, {"dia": "06.08", "initial": 67.5, "sales": 4086.72, "withdrawals": 600, "closing": 103.5, "dinheiro": 636, "debito": 593.79, "credito": 1942.93, "pix": 914, "vendedoras": {"Gabriela": 2004.99, "alesandra": 1296.96, "Day": 784.77}, "tipoVenda": {"presencial": 40, "online": 2}, "produtos": {"cabelo / Creme e shapoo e etc": {"qtd": 41.0, "valor": 2069.98}, "maquiagem": {"qtd": 6.0, "valor": 210.0}, "Coloração/Tinta": {"qtd": 21.0, "valor": 637.97}, "Perfume": {"qtd": 7.0, "valor": 1014.97}, "Unha": {"qtd": 4.0, "valor": 28.8}, "Creme": {"qtd": 1.0, "valor": 25.0}, "Cabelo/acessorios": {"qtd": 7.0, "valor": 100.0}}}, {"dia": "07.08", "initial": 103.5, "sales": 3843.48, "withdrawals": 500, "closing": 150.9, "dinheiro": 547.4, "debito": 1033.58, "credito": 2102.5, "pix": 160, "vendedoras": {"Gabriela": 1325.0, "alesandra": 1353.5, "Day": 1164.98}, "tipoVenda": {"presencial": 33, "online": 2}, "produtos": {"Perfume": {"qtd": 9.0, "valor": 763.0}, "Coloração/Tinta": {"qtd": 17.0, "valor": 422.0}, "cabelo / Creme e shapoo e etc": {"qtd": 35.0, "valor": 2136.48}, "Creme": {"qtd": 1.0, "valor": 20.0}, "maquiagem": {"qtd": 9.0, "valor": 330.0}, "Unha": {"qtd": 7.0, "valor": 76.6}, "Cabelo/acessorios": {"qtd": 4.0, "valor": 95.4}}}, {"dia": "08.08", "initial": 150.9, "sales": 2828.86, "withdrawals": 100, "closing": 116.9, "dinheiro": 66, "debito": 481.9, "credito": 1334.99, "pix": 945.97, "vendedoras": {"alesandra": 602.9, "Day": 993.96, "Gabriela": 1232.0}, "tipoVenda": {"presencial": 26, "online": 6}, "produtos": {"Perfume": {"qtd": 14.0, "valor": 1228.0}, "cabelo / Creme e shapoo e etc": {"qtd": 13.0, "valor": 650.0}, "Coloração/Tinta": {"qtd": 15.0, "valor": 457.99}, "maquiagem": {"qtd": 15.0, "valor": 434.87}, "Creme": {"qtd": 1.0, "valor": 40.0}, "Unha": {"qtd": 2.0, "valor": 18.0}}}, {"dia": "10.08", "initial": 84, "sales": 2119.4, "withdrawals": 500, "closing": 36.9, "dinheiro": 452.9, "debito": 146, "credito": 752, "pix": 768.5, "vendedoras": {"alesandra": 390.4, "Gabriela": 1096.0, "Day": 633.0}, "tipoVenda": {"presencial": 25, "online": 2}, "produtos": {"cabelo / Creme e shapoo e etc": {"qtd": 34.0, "valor": 1464.0}, "maquiagem": {"qtd": 6.0, "valor": 194.9}, "Creme": {"qtd": 4.0, "valor": 130.0}, "Coloração/Tinta": {"qtd": 2.0, "valor": 68.5}, "Perfume": {"qtd": 6.0, "valor": 262.0}}}, {"dia": "11.08", "initial": 55, "sales": 2073.5, "withdrawals": 550, "closing": 109.5, "dinheiro": 604.5, "debito": 460, "credito": 220, "pix": 789, "vendedoras": {"alesandra": 874.0, "Gabriela": 819.0, "Day": 380.5}, "tipoVenda": {"presencial": 31, "online": 1}, "produtos": {"cabelo / Creme e shapoo e etc": {"qtd": 18.0, "valor": 867.0}, "Cabelo/acessorios": {"qtd": 2.0, "valor": 60.0}, "maquiagem": {"qtd": 19.0, "valor": 694.0}, "Perfume": {"qtd": 7.0, "valor": 260.0}, "Coloração/Tinta": {"qtd": 8.0, "valor": 179.0}, "Unha": {"qtd": 1, "valor": 13.5}}}];
 let daysData = [...embeddedData];
 let mesVisualizadoPassado = null; // null = mes atual (ao vivo). Se preenchido (ex: '07'), esta vendo um mes arquivado.
 let daysDataOriginal = null; // guarda os dados ao vivo enquanto a pessoa esta vendo um mes passado, pra poder voltar
@@ -1766,6 +1784,8 @@ function renderInfoTab(){
  renderTopDays();
  renderNovasMetricas();
  renderMaisNumerosDoMes();
+ renderTipoVenda();
+ renderProdutosRanking();
 }
 
 function montarSeletorMeses(){
@@ -2009,6 +2029,81 @@ function renderMaisNumerosDoMes(){
  }
 }
 
+function renderTipoVenda(){
+ const el = document.getElementById('infoTipoVenda');
+ if(!el) return;
+ let presencial=0, online=0;
+ daysData.forEach(d=>{
+  presencial += Number(d.tipoVenda?.presencial)||0;
+  online += Number(d.tipoVenda?.online)||0;
+ });
+ const total = presencial+online;
+ if(total===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:13px;">Nenhum dado de tipo de atendimento encontrado ainda.</p>';
+  return;
+ }
+ const pctPresencial = (presencial/total)*100;
+ const pctOnline = (online/total)*100;
+ el.innerHTML = `
+  <div>
+   <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+    <span style="color:#dce5f2;">🏪 Presencial</span>
+    <strong style="color:#f6f9fd;">${presencial} atendimento${presencial===1?'':'s'} (${pctPresencial.toFixed(0)}%)</strong>
+   </div>
+   <div style="background:#0b1728;border-radius:999px;height:12px;overflow:hidden;">
+    <div style="height:100%;width:${pctPresencial.toFixed(1)}%;background:linear-gradient(90deg,#27d7a0,#0ea97a);"></div>
+   </div>
+  </div>
+  <div>
+   <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+    <span style="color:#dce5f2;">💻 Online</span>
+    <strong style="color:#f6f9fd;">${online} atendimento${online===1?'':'s'} (${pctOnline.toFixed(0)}%)</strong>
+   </div>
+   <div style="background:#0b1728;border-radius:999px;height:12px;overflow:hidden;">
+    <div style="height:100%;width:${pctOnline.toFixed(1)}%;background:linear-gradient(90deg,#4f9cff,#2f78e0);"></div>
+   </div>
+  </div>
+  <div style="font-size:11px;color:#93a3ba;margin-top:4px;">Total de ${total} atendimento${total===1?'':'s'} com esse dado registrado no mês.</div>
+ `;
+}
+
+function renderProdutosRanking(){
+ const el = document.getElementById('infoProdutosRanking');
+ if(!el) return;
+ const totais = {};
+ daysData.forEach(d=>{
+  Object.entries(d.produtos||{}).forEach(([nome,info])=>{
+   if(!totais[nome]) totais[nome] = {qtd:0, valor:0};
+   totais[nome].qtd += Number(info.qtd)||0;
+   totais[nome].valor += Number(info.valor)||0;
+  });
+ });
+ const ranked = Object.entries(totais).sort((a,b)=>b[1].qtd-a[1].qtd);
+ if(ranked.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:13px;">Nenhum dado de produto encontrado ainda.</p>';
+  return;
+ }
+ const maxQtd = ranked[0][1].qtd || 1;
+ const medalhas = ['🥇','🥈','🥉'];
+ el.innerHTML = ranked.map(([nome,info],i)=>{
+  const pct = maxQtd>0 ? (info.qtd/maxQtd)*100 : 0;
+  const posicao = medalhas[i] || (i+1)+'º';
+  return `
+   <div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+     <span style="color:#dce5f2;"><span style="display:inline-block;min-width:26px;color:#93a3ba;font-weight:800;">${posicao}</span> ${nome}</span>
+     <span style="text-align:right;">
+      <strong style="color:#f6f9fd;">${info.qtd} un.</strong>
+      <span style="color:#93a3ba;font-size:11px;display:block;">${money(info.valor)}</span>
+     </span>
+    </div>
+    <div style="background:#0b1728;border-radius:999px;height:10px;overflow:hidden;">
+     <div style="height:100%;width:${Math.max(pct,3).toFixed(1)}%;background:linear-gradient(90deg,#fbbf24,#f59e0b);"></div>
+    </div>
+   </div>`;
+ }).join('');
+}
+
 function buscarPosicaoDia(){
  const input = document.getElementById('buscaDiaInput');
  const resultado = document.getElementById('resultadoBuscaDia');
@@ -2234,6 +2329,34 @@ function exportarInfoComoTxt(){
  listaDiasSemana.forEach(item=>{
   txt += item.nome+': '+money(item.soma)+' ('+item.qtd+' dia'+(item.qtd===1?'':'s')+' somados)\n';
  });
+ txt += '\n';
+
+ let totalPresencial=0, totalOnline=0;
+ daysData.forEach(d=>{
+  totalPresencial += Number(d.tipoVenda?.presencial)||0;
+  totalOnline += Number(d.tipoVenda?.online)||0;
+ });
+ txt += '--- PRESENCIAL x ONLINE ---\n';
+ txt += 'Presencial: '+totalPresencial+' atendimento(s)\n';
+ txt += 'Online: '+totalOnline+' atendimento(s)\n\n';
+
+ const totaisProdutos = {};
+ daysData.forEach(d=>{
+  Object.entries(d.produtos||{}).forEach(([nome,info])=>{
+   if(!totaisProdutos[nome]) totaisProdutos[nome] = {qtd:0, valor:0};
+   totaisProdutos[nome].qtd += Number(info.qtd)||0;
+   totaisProdutos[nome].valor += Number(info.valor)||0;
+  });
+ });
+ const rankingProdutos = Object.entries(totaisProdutos).sort((a,b)=>b[1].qtd-a[1].qtd);
+ txt += '--- PRODUTOS MAIS VENDIDOS ---\n';
+ if(rankingProdutos.length===0){
+  txt += '(sem dados de produto no período)\n';
+ } else {
+  rankingProdutos.forEach(([nome,info],i)=>{
+   txt += (i+1)+'º '+nome+': '+info.qtd+' un. — '+money(info.valor)+'\n';
+  });
+ }
  txt += '\n========================================\n';
 
  const nomeArquivo = 'biobel-resumo-'+new Date().toISOString().slice(0,10)+'.txt';
@@ -2508,6 +2631,48 @@ function extractSellerDetalhes(rows){
  return detalhes;
 }
 
+function extractTipoVendaTotais(rows){
+ // Conta quantos atendimentos foram presenciais e quantos online, olhando a coluna "tipo de venda" (G).
+ const totais = {presencial:0, online:0};
+ for(let r=0;r<rows.length;r++){
+  const rownum = rows[r]?.[0];
+  const label = String(rownum??'').trim().toLowerCase();
+  if(label==='total') break;
+  if(typeof rownum!=='number') continue;
+  const tipo = rows[r]?.[6];
+  if(!tipo || typeof tipo!=='string') continue;
+  const t = tipo.trim().toLowerCase();
+  if(t==='presencial') totais.presencial++;
+  else if(t==='online') totais.online++;
+ }
+ return totais;
+}
+
+function extractProdutosVendidos(rows){
+ // Soma a quantidade e o valor de cada produto vendido, olhando as colunas
+ // "produto que foram vendidos" (H) e "qt de produtos" (I).
+ const produtos = {};
+ for(let r=0;r<rows.length;r++){
+  const rownum = rows[r]?.[0];
+  const label = String(rownum??'').trim().toLowerCase();
+  if(label==='total') break;
+  if(typeof rownum!=='number') continue;
+  const produto = rows[r]?.[7];
+  if(!produto || typeof produto!=='string' || !produto.trim()) continue;
+  const nome = produto.trim();
+  const qt = rows[r]?.[8];
+  let valorVenda = 0;
+  for(const c of [1,2,3,4]){
+   const v = rows[r]?.[c];
+   if(typeof v==='number') valorVenda += v;
+  }
+  if(!produtos[nome]) produtos[nome] = {qtd:0, valor:0};
+  produtos[nome].qtd += (typeof qt==='number' ? qt : 1);
+  produtos[nome].valor += valorVenda;
+ }
+ return produtos;
+}
+
 function countTransactions(rows){
  // Conta quantas linhas de venda existem (uma linha = um atendimento/venda), até achar a linha "total".
  let qtd = 0;
@@ -2584,8 +2749,10 @@ async function loadGoogleSheet(){
    const vendedoras=extractSellerTotals(rows);
    const vendedorasDetalhe=extractSellerDetalhes(rows);
    const qtdVendas=countTransactions(rows);
+   const tipoVenda=extractTipoVendaTotais(rows);
+   const produtos=extractProdutosVendidos(rows);
    daysData=daysData.filter(x=>x.dia!==sheetName);
-   daysData.push({dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas,vendedorasDetalhe});
+   daysData.push({dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos});
    found++;
   }
   render();
@@ -2657,7 +2824,9 @@ document.getElementById('fileInput').addEventListener('change',async e=>{
    const vendedoras=extractSellerTotals(rows);
    const vendedorasDetalhe=extractSellerDetalhes(rows);
    const qtdVendas=countTransactions(rows);
-   const item={dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas,vendedorasDetalhe};
+   const tipoVenda=extractTipoVendaTotais(rows);
+   const produtos=extractProdutosVendidos(rows);
+   const item={dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos};
    daysData=daysData.filter(x=>x.dia!==sheetName);
    daysData.push(item);
   }
