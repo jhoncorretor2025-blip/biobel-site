@@ -673,7 +673,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
  <div class="adv-card">
   <div class="adv-card-title">
    <h3>⏰ Horários de pico</h3>
-   <span>em qual horário do dia mais vende, somando todo o histórico</span>
+   <span>em qual horário do dia mais vende, dentro do funcionamento normal da loja</span>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
    <div class="adv-kpi green">
@@ -687,8 +687,8 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <div class="sub" id="infoHorarioFracoSub">entre os horários com pelo menos 1 venda</div>
    </div>
   </div>
-  <div id="infoHorariosAvisoForaExpediente" style="display:none;background:#3a2a0b;color:#f5c542;font-size:11.5px;font-weight:600;padding:8px 12px;border-radius:8px;margin-bottom:12px;"></div>
   <div id="infoHorariosLista" style="display:flex;flex-direction:column;gap:8px;"></div>
+  <div id="infoHorariosForaExpediente" style="display:none;margin-top:18px;padding-top:16px;border-top:1px dashed #3a2a0b;"></div>
  </div>
 
 </section>
@@ -2231,7 +2231,7 @@ function renderHorariosPico(){
  const elFraco = document.getElementById('infoHorarioFraco');
  const elFracoSub = document.getElementById('infoHorarioFracoSub');
  const elLista = document.getElementById('infoHorariosLista');
- const elAviso = document.getElementById('infoHorariosAvisoForaExpediente');
+ const elForaExpediente = document.getElementById('infoHorariosForaExpediente');
  if(!elLista) return;
 
  const horarioFunc = getHorarioFuncionamento();
@@ -2241,24 +2241,38 @@ function renderHorariosPico(){
  const horaFechamento = Math.max(horaParaNumero(horarioFunc.fechamentoSemana), horaParaNumero(horarioFunc.fechamentoSabado));
 
  const totalPorHora = {};
- let horariosForaDoExpediente = 0;
+ const foraDoExpedienteLista = []; // guarda {dia, hora, qtd} de cada ocorrência fora do horário, pra mostrar separado
  daysData.forEach(d=>{
   Object.entries(d.horarios||{}).forEach(([hora,qtd])=>{
    const h = Number(hora);
    if(horaAbertura!==null && horaFechamento!==null && (h<horaAbertura || h>=horaFechamento)){
-    horariosForaDoExpediente += (Number(qtd)||0);
-    return; // ignora horário fora do funcionamento (provável erro de digitação na planilha)
+    foraDoExpedienteLista.push({dia:d.dia, hora:h, qtd:Number(qtd)||0});
+    return; // não entra na conta de horário de pico — fica só na seção separada abaixo
    }
    totalPorHora[hora] = (totalPorHora[hora]||0) + (Number(qtd)||0);
   });
  });
 
- if(elAviso){
-  if(horariosForaDoExpediente>0){
-   elAviso.style.display = 'block';
-   elAviso.textContent = `⚠️ ${horariosForaDoExpediente} venda${horariosForaDoExpediente===1?'':'s'} com horário fora do funcionamento da loja (${horarioFunc.abertura} às ${horarioFunc.fechamentoSemana}/${horarioFunc.fechamentoSabado}) foram ignoradas aqui — provavelmente erro de digitação na hora, na planilha.`;
+ if(elForaExpediente){
+  if(foraDoExpedienteLista.length>0){
+   foraDoExpedienteLista.sort((a,b)=> a.dia.localeCompare(b.dia) || a.hora-b.hora);
+   const totalQtdFora = foraDoExpedienteLista.reduce((s,item)=>s+item.qtd,0);
+   elForaExpediente.style.display = 'block';
+   elForaExpediente.innerHTML = `
+    <div style="font-size:12px;font-weight:800;color:#f5c542;margin-bottom:8px;">
+     🕐 Vendas fora do horário normal da loja (${totalQtdFora} no total) — separadas, não entram nos números de pico acima:
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px;">
+     ${foraDoExpedienteLista.map(item=>`
+      <div style="font-size:12px;color:#dce5f2;display:flex;justify-content:space-between;background:#0b1728;border-radius:6px;padding:5px 10px;">
+       <span>📅 Dia ${diaComAno(item.dia)} — às ${String(item.hora).padStart(2,'0')}h</span>
+       <strong>${item.qtd} venda${item.qtd===1?'':'s'}</strong>
+      </div>`).join('')}
+    </div>
+    <div style="font-size:11px;color:#93a3ba;margin-top:8px;">💡 Pode ser hora extra de verdade, ou erro de digitação da hora na planilha — vale conferir.</div>
+   `;
   } else {
-   elAviso.style.display = 'none';
+   elForaExpediente.style.display = 'none';
   }
  }
 
