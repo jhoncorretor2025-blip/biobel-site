@@ -478,6 +478,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <option value="">Mês atual (ao vivo)</option>
   </select>
   <span id="avisoMesPassado" style="display:none;background:#3a2a0b;color:#f5c542;font-size:11px;font-weight:800;padding:6px 10px;border-radius:8px;">📌 Visualizando dados arquivados — não atualiza sozinho</span>
+  <button onclick="exportarInfoComoTxt()" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" title="Copia e baixa um resumo em texto, pronto pra colar em outras IAs">📄 Exportar TXT</button>
  </div>
 
  <div class="adv-card">
@@ -2152,6 +2153,108 @@ function renderTopDays(){
     </div>
    </div>`;
  }).join('');
+}
+
+function exportarInfoComoTxt(){
+ if(daysData.length===0){
+  mostrarToast('⚠️ Não há dados carregados pra exportar ainda.');
+  return;
+ }
+
+ const totalSales = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const metaMensal = getSalesGoal();
+ const pct = metaMensal>0 ? (totalSales/metaMensal)*100 : 0;
+
+ const dinheiro = daysData.reduce((s,d)=>s+(Number(d.dinheiro)||0),0);
+ const debito = daysData.reduce((s,d)=>s+(Number(d.debito)||0),0);
+ const credito = daysData.reduce((s,d)=>s+(Number(d.credito)||0),0);
+ const pix = daysData.reduce((s,d)=>s+(Number(d.pix)||0),0);
+
+ const totaisVend = {}, qtdsVend = {};
+ daysData.forEach(d=>{
+  Object.entries(d.vendedoras||{}).forEach(([nome,valor])=>{ totaisVend[nome]=(totaisVend[nome]||0)+(Number(valor)||0); });
+  Object.entries(d.vendedorasDetalhe||{}).forEach(([nome,info])=>{ qtdsVend[nome]=(qtdsVend[nome]||0)+(Number(info.qtd)||0); });
+ });
+ const rankingVend = Object.entries(totaisVend).sort((a,b)=>b[1]-a[1]);
+
+ const rankingDias = [...daysData].sort((a,b)=>(Number(b.sales)||0)-(Number(a.sales)||0));
+
+ const media = totalSales/daysData.length;
+ const ordenadoSales = [...daysData].sort((a,b)=>(Number(a.sales)||0)-(Number(b.sales)||0));
+ const menorDia = ordenadoSales[0], maiorDia = ordenadoSales[ordenadoSales.length-1];
+ const metaDiaria = getDailyGoal();
+ const bateram = daysData.filter(d=>(Number(d.sales)||0)>=metaDiaria).length;
+
+ const porDiaSemana = calcularMediaPorDiaSemana();
+ const nomesDiasSemana = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+ const listaDiasSemana = Object.keys(porDiaSemana)
+  .map(dow=>({nome:nomesDiasSemana[Number(dow)], soma:porDiaSemana[dow].soma, qtd:porDiaSemana[dow].qtd}))
+  .sort((a,b)=>b.soma-a.soma);
+
+ let txt = '';
+ txt += '===== RESUMO FINANCEIRO — BIOBEL =====\n';
+ txt += 'Gerado em: '+new Date().toLocaleString('pt-BR')+'\n\n';
+
+ txt += '--- META DO MÊS ---\n';
+ txt += 'Total vendido até agora: '+money(totalSales)+'\n';
+ txt += 'Meta do mês: '+money(metaMensal)+'\n';
+ txt += 'Percentual atingido: '+pct.toFixed(1)+'%\n\n';
+
+ txt += '--- FORMAS DE PAGAMENTO (acumulado no mês) ---\n';
+ txt += 'Dinheiro: '+money(dinheiro)+'\n';
+ txt += 'Débito: '+money(debito)+'\n';
+ txt += 'Crédito: '+money(credito)+'\n';
+ txt += 'Pix: '+money(pix)+'\n\n';
+
+ txt += '--- RANKING DE VENDEDORAS ---\n';
+ if(rankingVend.length===0){
+  txt += '(sem dados de vendedora no período)\n';
+ } else {
+  rankingVend.forEach(([nome,valor],i)=>{
+   const qtd = qtdsVend[nome]||0;
+   txt += (i+1)+'º '+nome+': '+money(valor)+' ('+qtd+' venda'+(qtd===1?'':'s')+')\n';
+  });
+ }
+ txt += '\n';
+
+ txt += '--- DIAS QUE MAIS VENDERAM ---\n';
+ rankingDias.forEach((d,i)=>{
+  const dow = nomeDiaSemanaAbrev(d.dia);
+  txt += (i+1)+'º Dia '+diaComAno(d.dia)+(dow?' ('+dow+')':'')+': '+money(d.sales)+'\n';
+ });
+ txt += '\n';
+
+ txt += '--- MAIS NÚMEROS DO MÊS ---\n';
+ txt += 'Média de vendas por dia: '+money(media)+'\n';
+ txt += 'Maior venda do mês: '+money(maiorDia.sales)+' (dia '+diaComAno(maiorDia.dia)+')\n';
+ txt += 'Menor venda do mês: '+money(menorDia.sales)+' (dia '+diaComAno(menorDia.dia)+')\n';
+ txt += 'Dias que bateram a meta diária de '+money(metaDiaria)+': '+bateram+' de '+daysData.length+'\n\n';
+
+ txt += '--- MELHORES E PIORES DIAS DA SEMANA (soma total) ---\n';
+ listaDiasSemana.forEach(item=>{
+  txt += item.nome+': '+money(item.soma)+' ('+item.qtd+' dia'+(item.qtd===1?'':'s')+' somados)\n';
+ });
+ txt += '\n========================================\n';
+
+ const nomeArquivo = 'biobel-resumo-'+new Date().toISOString().slice(0,10)+'.txt';
+
+ const copiarPromise = (navigator.clipboard && navigator.clipboard.writeText)
+  ? navigator.clipboard.writeText(txt)
+  : Promise.reject(new Error('clipboard indisponível'));
+
+ copiarPromise
+  .then(()=>{ mostrarToast('✅ Copiado! Agora é só colar na sua outra IA.'); })
+  .catch(()=>{ mostrarToast('📄 Não deu pra copiar automaticamente — baixando o arquivo TXT.'); });
+
+ const blob = new Blob([txt], {type:'text/plain;charset=utf-8'});
+ const url = URL.createObjectURL(blob);
+ const a = document.createElement('a');
+ a.href = url;
+ a.download = nomeArquivo;
+ document.body.appendChild(a);
+ a.click();
+ document.body.removeChild(a);
+ URL.revokeObjectURL(url);
 }
 
 function buildReceipt(type, day){
