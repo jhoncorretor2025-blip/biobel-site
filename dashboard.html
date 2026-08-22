@@ -504,6 +504,16 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <span>Faltam <b id="infoGoalRemaining" style="color:#dce5f2">R$ 0,00</b> para bater a meta</span>
    <a href="#" onclick="showTab('config');return false;" class="no-print" style="color:var(--green);text-decoration:underline;">Alterar meta em Configuração →</a>
   </div>
+  <div id="infoGoalDetalheWrap" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);grid-template-columns:1fr 1fr;gap:14px;">
+   <div style="background:#0b1728;border-radius:12px;padding:10px 14px;">
+    <div style="font-size:10.5px;color:#93a3ba;font-weight:800;letter-spacing:.05em;text-transform:uppercase;">📅 Dias úteis restantes</div>
+    <div style="font-size:20px;font-weight:900;color:#f6f9fd;margin-top:4px;" id="infoDiasRestantesMeta">0</div>
+   </div>
+   <div style="background:#0b1728;border-radius:12px;padding:10px 14px;">
+    <div style="font-size:10.5px;color:#93a3ba;font-weight:800;letter-spacing:.05em;text-transform:uppercase;">📊 Precisa vender, em média</div>
+    <div style="font-size:20px;font-weight:900;color:#27d7a0;margin-top:4px;" id="infoMediaNecessariaMeta">R$ 0,00 <span style="font-size:11px;color:#93a3ba;font-weight:700;">/dia</span></div>
+   </div>
+  </div>
  </div>
 
  <div class="adv-card">
@@ -1701,6 +1711,18 @@ function diasUteisDoMes(ano, mesIndex){
  }
  return uteis;
 }
+function diasUteisRestantesNoMes(){
+ // Conta quantos dias úteis (seg-sáb) ainda restam no mês, contando hoje até o último dia.
+ const hoje = new Date();
+ const ano = hoje.getFullYear(), mes = hoje.getMonth();
+ const ultimoDia = new Date(ano, mes+1, 0).getDate();
+ let restantes = 0;
+ for(let d=hoje.getDate(); d<=ultimoDia; d++){
+  const diaSemana = new Date(ano, mes, d).getDay();
+  if(diaSemana !== 0) restantes++;
+ }
+ return restantes;
+}
 function calcularMetaDiariaAutomatica(){
  const hoje = new Date();
  const uteis = diasUteisDoMes(hoje.getFullYear(), hoje.getMonth());
@@ -1783,6 +1805,19 @@ function renderInfoTab(){
  document.getElementById('infoGoalBar').style.width = pct.toFixed(1)+'%';
  document.getElementById('infoGoalPct').textContent = pct.toFixed(1)+'% da meta';
  document.getElementById('infoGoalRemaining').textContent = money(remaining);
+
+ const wrapDetalhe = document.getElementById('infoGoalDetalheWrap');
+ if(wrapDetalhe){
+  if(remaining>0){
+   const diasRestantes = diasUteisRestantesNoMes();
+   const mediaNecessaria = diasRestantes>0 ? remaining/diasRestantes : remaining;
+   document.getElementById('infoDiasRestantesMeta').textContent = diasRestantes+' dia'+(diasRestantes===1?'':'s');
+   document.getElementById('infoMediaNecessariaMeta').innerHTML = money(mediaNecessaria)+' <span style="font-size:11px;color:#93a3ba;font-weight:700;">/dia</span>';
+   wrapDetalhe.style.display = 'grid';
+  } else {
+   wrapDetalhe.style.display = 'none';
+  }
+ }
 
  const dinheiro = daysData.reduce((s,d)=>s+(Number(d.dinheiro)||0),0);
  const debito = daysData.reduce((s,d)=>s+(Number(d.debito)||0),0);
