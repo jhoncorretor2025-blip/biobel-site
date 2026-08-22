@@ -585,9 +585,9 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px;">
    <div class="adv-kpi blue">
-    <div class="label">📆 Melhor Dia da Semana (em média)</div>
+    <div class="label">📆 Melhor Dia da Semana (soma total)</div>
     <div class="value" id="infoMelhorDiaSemana">—</div>
-    <div class="sub" id="infoMelhorDiaSemanaSub">baseado na média de todos os dias lançados</div>
+    <div class="sub" id="infoMelhorDiaSemanaSub">somando todas as ocorrências desse dia no histórico</div>
    </div>
    <div class="adv-kpi green">
     <div class="label">⚖️ Comparativo até o Mesmo Dia (mês passado)</div>
@@ -600,7 +600,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
  <div class="adv-card">
   <div class="adv-card-title">
    <h3>📅 Melhores e piores dias da semana</h3>
-   <span>média de vendas por dia da semana, considerando todo o histórico</span>
+   <span>soma total de vendas por dia da semana (todas as sextas somadas, todas as quintas somadas, etc.)</span>
   </div>
   <div class="adv-content2" style="margin-top:0;">
    <div>
@@ -1893,7 +1893,7 @@ function renderMelhoresPioresDiasSemana(porDiaSemana){
  const lista = Object.keys(porDiaSemana).map(dow=>({
   dow: Number(dow),
   nome: nomesDias[Number(dow)],
-  media: porDiaSemana[dow].soma/porDiaSemana[dow].qtd,
+  soma: porDiaSemana[dow].soma,
   qtd: porDiaSemana[dow].qtd
  }));
 
@@ -1903,18 +1903,18 @@ function renderMelhoresPioresDiasSemana(porDiaSemana){
   return;
  }
 
- lista.sort((a,b)=>b.media-a.media);
+ lista.sort((a,b)=>b.soma-a.soma);
  const melhores = lista.slice(0,3);
  const piores = lista.slice(-3).reverse();
- const maiorMedia = melhores[0]?.media || 1;
+ const maiorSoma = melhores[0]?.soma || 1;
 
  function linhaHtml(item, cor){
-  const pct = maiorMedia>0 ? (item.media/maiorMedia)*100 : 0;
+  const pct = maiorSoma>0 ? (item.soma/maiorSoma)*100 : 0;
   return `
    <div>
     <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
-     <span style="color:#dce5f2;">${item.nome} <span style="color:#93a3ba;font-size:11px;">(${item.qtd} dia${item.qtd===1?'':'s'})</span></span>
-     <strong style="color:#f6f9fd;">${money(item.media)}</strong>
+     <span style="color:#dce5f2;">${item.nome} <span style="color:#93a3ba;font-size:11px;">(${item.qtd} dia${item.qtd===1?'':'s'} somados)</span></span>
+     <strong style="color:#f6f9fd;">${money(item.soma)}</strong>
     </div>
     <div style="background:#0b1728;border-radius:999px;height:10px;overflow:hidden;">
      <div style="height:100%;width:${Math.max(pct,3).toFixed(1)}%;background:${cor};"></div>
@@ -1960,19 +1960,20 @@ function renderMaisNumerosDoMes(){
  if(elDiasMeta) elDiasMeta.textContent = bateram+' de '+daysData.length;
  if(elDiasMetaSub) elDiasMetaSub.textContent = 'meta diária de '+money(meta)+' considerada';
 
- // Melhor dia da semana (em média)
+ // Melhor dia da semana (soma total, mesma lógica do card detalhado abaixo)
  const nomesDias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
  const porDiaSemana = calcularMediaPorDiaSemana();
- let melhorDow = null, melhorMedia = -1;
+ let melhorDow = null, melhorSoma = -1;
  Object.keys(porDiaSemana).forEach(dow=>{
-  const m = porDiaSemana[dow].soma/porDiaSemana[dow].qtd;
-  if(m>melhorMedia){melhorMedia=m; melhorDow=Number(dow);}
+  const s = porDiaSemana[dow].soma;
+  if(s>melhorSoma){melhorSoma=s; melhorDow=Number(dow);}
  });
  const elDow=document.getElementById('infoMelhorDiaSemana');
  const elDowSub=document.getElementById('infoMelhorDiaSemanaSub');
  if(melhorDow!==null){
+  const qtdMelhorDow = porDiaSemana[melhorDow].qtd;
   if(elDow) elDow.textContent = nomesDias[melhorDow];
-  if(elDowSub) elDowSub.textContent = 'média de '+money(melhorMedia)+' nesse dia da semana';
+  if(elDowSub) elDowSub.textContent = money(melhorSoma)+' somando '+qtdMelhorDow+' dia'+(qtdMelhorDow===1?'':'s');
  }
  renderMelhoresPioresDiasSemana(porDiaSemana);
 
