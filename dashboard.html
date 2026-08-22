@@ -1712,12 +1712,13 @@ function diasUteisDoMes(ano, mesIndex){
  return uteis;
 }
 function diasUteisRestantesNoMes(){
- // Conta quantos dias úteis (seg-sáb) ainda restam no mês, contando hoje até o último dia.
+ // Conta quantos dias úteis (seg-sáb) ainda restam no mês, a PARTIR DE AMANHÃ até o último dia.
+ // Hoje não entra na conta, porque hoje já está em andamento — "restante" é o que ainda vem pela frente.
  const hoje = new Date();
  const ano = hoje.getFullYear(), mes = hoje.getMonth();
  const ultimoDia = new Date(ano, mes+1, 0).getDate();
  let restantes = 0;
- for(let d=hoje.getDate(); d<=ultimoDia; d++){
+ for(let d=hoje.getDate()+1; d<=ultimoDia; d++){
   const diaSemana = new Date(ano, mes, d).getDay();
   if(diaSemana !== 0) restantes++;
  }
