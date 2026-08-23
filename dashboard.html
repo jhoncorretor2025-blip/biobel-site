@@ -939,6 +939,20 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
  <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6">
   <div class="mb-6">
+   <h2 class="text-xl font-bold">📧 E-mail automático pra contadora</h2>
+   <p class="text-sm text-slate-400 mt-1">Quando o painel perceber que o mês virou (ex: você abrir o painel já em setembro, com dados de agosto fechados), ele prepara sozinho um rascunho de e-mail com o resumo do mês anterior — endereçado pra esse e-mail, com o assunto e o corpo já prontos. Você só confirma e clica em "Enviar" no seu app de e-mail.</p>
+  </div>
+  <label class="block text-sm font-semibold mb-2" for="emailContadora">E-mail da contadora</label>
+  <input id="emailContadora" type="email" placeholder="contadora@exemplo.com" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500">
+  <button onclick="saveEmailContadora()" class="mt-4 w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-xl font-semibold text-sm">Salvar e-mail</button>
+  <div id="emailContadoraStatus" class="mt-3 text-sm text-slate-400"></div>
+  <div class="mt-4 text-xs text-slate-500 leading-relaxed">
+   <strong class="text-slate-300">Importante:</strong> isso só funciona quando alguém abre o painel depois que o mês vira (não é um envio 100% silencioso sem ninguém tocar em nada, já que o site não tem um "servidor" rodando sozinho o tempo todo). Mas como o painel costuma ser aberto todo dia, na prática funciona certinho.
+  </div>
+ </div>
+
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6">
+  <div class="mb-6">
    <h2 class="text-xl font-bold">🕘 Horário de funcionamento</h2>
    <p class="text-sm text-slate-400 mt-1">Usado pra filtrar horários errados na aba "Informação Geral" (ex: uma venda digitada com hora antes da loja abrir). Domingo já é considerado sempre fechado.</p>
   </div>
@@ -1378,6 +1392,8 @@ function showTab(tab){
   initDailyGoalUI();
   renderPlanilhasSalvas();
   initHorarioFuncionamentoUI();
+  const emailInput = document.getElementById('emailContadora');
+  if(emailInput) emailInput.value = getEmailContadora();
  } else {
   dash.classList.remove('hidden');
   b1.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
@@ -1873,6 +1889,102 @@ function getDailyGoal(){
  }
  return calcularMetaDiariaAutomatica();
 }
+function getEmailContadora(){
+ return localStorage.getItem('biobel_email_contadora') || '';
+}
+function saveEmailContadora(){
+ const val = document.getElementById('emailContadora').value.trim();
+ const statusEl = document.getElementById('emailContadoraStatus');
+ if(!val || !val.includes('@')){
+  statusEl.innerHTML = '<span class="text-rose-400">Digite um e-mail válido.</span>';
+  return;
+ }
+ localStorage.setItem('biobel_email_contadora', val);
+ statusEl.innerHTML = '<span class="text-emerald-400">E-mail salvo! O painel vai avisar automaticamente quando o mês virar.</span>';
+ mostrarToast('✅ E-mail da contadora salvo com sucesso!');
+}
+function getMesesEmailEnviados(){
+ try{ return JSON.parse(localStorage.getItem('biobel_meses_email_enviados')||'[]'); }
+ catch(e){ return []; }
+}
+function marcarMesEmailPreparado(mes){
+ const lista = getMesesEmailEnviados();
+ if(!lista.includes(mes)) lista.push(mes);
+ localStorage.setItem('biobel_meses_email_enviados', JSON.stringify(lista));
+}
+function construirResumoEmailMes(diasDoMes, nomeMesTxt){
+ const totalSales = diasDoMes.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const dinheiro = diasDoMes.reduce((s,d)=>s+(Number(d.dinheiro)||0),0);
+ const debito = diasDoMes.reduce((s,d)=>s+(Number(d.debito)||0),0);
+ const credito = diasDoMes.reduce((s,d)=>s+(Number(d.credito)||0),0);
+ const pix = diasDoMes.reduce((s,d)=>s+(Number(d.pix)||0),0);
+ const withdrawals = diasDoMes.reduce((s,d)=>s+(Number(d.withdrawals)||0),0);
+
+ const totaisVend = {};
+ diasDoMes.forEach(d=>{
+  Object.entries(d.vendedoras||{}).forEach(([nome,valor])=>{
+   totaisVend[nome] = (totaisVend[nome]||0) + (Number(valor)||0);
+  });
+ });
+ const rankingVend = Object.entries(totaisVend).sort((a,b)=>b[1]-a[1]);
+
+ let txt = `Olá! Segue o resumo do fechamento de caixa da Biobel — ${nomeMesTxt}.\n\n`;
+ txt += `Dias lançados no mês: ${diasDoMes.length}\n`;
+ txt += `Faturamento total: ${money(totalSales)}\n\n`;
+ txt += `FORMAS DE PAGAMENTO\n`;
+ txt += `Dinheiro: ${money(dinheiro)}\n`;
+ txt += `Débito: ${money(debito)}\n`;
+ txt += `Crédito: ${money(credito)}\n`;
+ txt += `Pix: ${money(pix)}\n\n`;
+ txt += `Retiradas/despesas do mês: ${money(withdrawals)}\n`;
+ if(rankingVend.length){
+  txt += `\nVENDAS POR VENDEDORA\n`;
+  rankingVend.forEach(([nome,valor],i)=>{
+   txt += `${i+1}º ${nome}: ${money(valor)}\n`;
+  });
+ }
+ txt += `\n— Mensagem gerada automaticamente pelo painel financeiro da Biobel.`;
+ return txt;
+}
+function verificarEnvioEmailMensal(){
+ const email = getEmailContadora();
+ if(!email) return;
+ if(daysData.length===0) return;
+
+ const hoje = new Date();
+ const mesRealAtual = String(hoje.getMonth()+1).padStart(2,'0');
+ const nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+ const enviados = getMesesEmailEnviados();
+
+ const mesesNosDados = [...new Set(daysData.map(d=>String(d.dia).split('.')[1]).filter(Boolean))];
+
+ mesesNosDados.forEach(mesNum=>{
+  if(mesNum === mesRealAtual) return; // mês ainda em andamento, não fechado ainda
+  if(enviados.includes(mesNum)) return; // já preparamos esse antes
+
+  let arquivo = {};
+  try{ arquivo = JSON.parse(localStorage.getItem('biobel_arquivo_meses')||'{}'); }catch(e){}
+  const diasDoMes = (arquivo[mesNum] && arquivo[mesNum].length) ? arquivo[mesNum] : daysData.filter(d=>String(d.dia).split('.')[1]===mesNum);
+  if(!diasDoMes || diasDoMes.length===0) return;
+
+  const nomeMesTxt = (nomesMeses[Number(mesNum)-1]||mesNum)+' de 2026';
+  const corpoEmail = construirResumoEmailMes(diasDoMes, nomeMesTxt);
+  const assunto = 'Fechamento de Caixa Biobel — '+nomeMesTxt;
+  const link = 'mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent(assunto)+'&body='+encodeURIComponent(corpoEmail);
+
+  marcarMesEmailPreparado(mesNum);
+
+  const a = document.createElement('a');
+  a.href = link;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  mostrarToast('📧 E-mail de '+nomeMesTxt+' preparado pra '+email+' — confirme e clique em Enviar no seu app de e-mail.');
+ });
+}
+
 function saveDailyGoal(){
  const val = parseMoneyInput(document.getElementById('dailyGoalInput').value);
  const statusEl = document.getElementById('dailyGoalStatus');
@@ -3364,6 +3476,7 @@ async function loadGoogleSheet(){
   }
   render();
   setGoogleStatus(`conectado. ${found} dia(s) atualizado(s) às ${new Date().toLocaleTimeString('pt-BR')}.`,true);
+  verificarEnvioEmailMensal();
  }catch(err){
   console.error(err);
   setGoogleStatus('não foi possível ler a planilha. Verifique se ela está acessível para leitura sem login e se o navegador permite o acesso.');
