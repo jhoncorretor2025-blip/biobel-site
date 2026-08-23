@@ -882,15 +882,23 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
   <div class="mt-6 pt-6 border-t border-slate-800">
    <h3 class="font-bold text-slate-200 mb-1">📂 Planilhas salvas (troca rápida entre meses)</h3>
-   <p class="text-xs text-slate-500 mb-3">Salve o link de cada mês aqui uma vez. Depois é só escolher no menu abaixo pra trocar, sem precisar colar o link de novo toda vez.</p>
+   <p class="text-xs text-slate-500 mb-4">Adicione o link de cada mês aqui embaixo. Depois é só escolher no menu pra trocar, sem precisar mexer no campo de cima nunca mais.</p>
+
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:14px;padding:16px;margin-bottom:16px;">
+    <div class="text-sm font-semibold text-slate-200 mb-3">➕ Adicionar uma nova planilha</div>
+    <label class="block text-xs text-slate-400 font-semibold mb-1" for="novoMesNome">Nome do mês</label>
+    <input id="novoMesNome" type="text" placeholder="Ex: Julho 2026" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-500 mb-3" onkeydown="if(event.key==='Enter'){document.getElementById('novoMesLink').focus();}">
+    <label class="block text-xs text-slate-400 font-semibold mb-1" for="novoMesLink">Link do Google Sheets desse mês</label>
+    <input id="novoMesLink" type="url" placeholder="Cole aqui o link da planilha desse mês" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-500 mb-3" onkeydown="if(event.key==='Enter'){adicionarNovaPlanilhaMes();}">
+    <button onclick="adicionarNovaPlanilhaMes()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Adicionar essa planilha</button>
+    <div id="novoMesStatus" class="mt-2 text-xs text-slate-400"></div>
+   </div>
+
+   <label class="block text-xs text-slate-400 font-semibold mb-1" for="planilhaSalvaSelect">Trocar para uma planilha já salva</label>
    <select id="planilhaSalvaSelect" aria-label="Selecionar planilha salva" onchange="selecionarPlanilhaSalva()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500 mb-3">
     <option value="">— Nenhuma planilha salva ainda —</option>
    </select>
-   <div id="listaPlanilhasSalvas" class="space-y-2 mb-4"></div>
-   <div class="flex gap-2">
-    <input id="novaPlanilhaNome" type="text" placeholder="Nome (ex: Agosto 2026)" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-500">
-    <button onclick="salvarPlanilhaAtual()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar planilha atual</button>
-   </div>
+   <div id="listaPlanilhasSalvas" class="space-y-2"></div>
   </div>
  </div>
 
@@ -2980,19 +2988,38 @@ function getPlanilhasSalvas(){
 function salvarListaPlanilhas(lista){
  localStorage.setItem('biobel_planilhas_salvas', JSON.stringify(lista));
 }
-function salvarPlanilhaAtual(){
- const nomeInput = document.getElementById('novaPlanilhaNome');
+function adicionarNovaPlanilhaMes(){
+ const nomeInput = document.getElementById('novoMesNome');
+ const linkInput = document.getElementById('novoMesLink');
+ const statusEl = document.getElementById('novoMesStatus');
  const nome = nomeInput.value.trim();
- const url = document.getElementById('googleSheetUrl').value.trim();
- const id = extractSpreadsheetId(url);
- if(!nome){ alert('Digite um nome pra essa planilha (ex: Agosto 2026).'); return; }
- if(!id){ alert('O link da planilha atual parece inválido. Confira antes de salvar.'); return; }
+ const link = linkInput.value.trim();
+
+ if(!nome){
+  statusEl.innerHTML = '<span class="text-rose-400">Digite o nome do mês (ex: Julho 2026).</span>';
+  return;
+ }
+ if(!link){
+  statusEl.innerHTML = '<span class="text-rose-400">Cole o link da planilha desse mês.</span>';
+  return;
+ }
+ const id = extractSpreadsheetId(link);
+ if(!id){
+  statusEl.innerHTML = '<span class="text-rose-400">Esse link não parece ser um link válido do Google Sheets. Confira se copiou certinho (deve começar com "https://docs.google.com/spreadsheets/...").</span>';
+  return;
+ }
  const lista = getPlanilhasSalvas();
- lista.push({nome, url});
+ if(lista.some(p=>p.nome.trim().toLowerCase()===nome.toLowerCase())){
+  statusEl.innerHTML = '<span class="text-rose-400">Já existe uma planilha salva com esse nome. Escolha outro nome ou remova a antiga na lista abaixo.</span>';
+  return;
+ }
+ lista.push({nome, url:link});
  salvarListaPlanilhas(lista);
- nomeInput.value='';
+ nomeInput.value = '';
+ linkInput.value = '';
+ statusEl.innerHTML = '<span class="text-emerald-400">✅ "'+nome+'" adicionada! Escolha ela no menu abaixo quando quiser ver os dados dela.</span>';
  renderPlanilhasSalvas();
- mostrarToast('✅ Planilha "'+nome+'" salva na lista!');
+ mostrarToast('✅ Planilha "'+nome+'" adicionada com sucesso!');
 }
 function selecionarPlanilhaSalva(){
  const select = document.getElementById('planilhaSalvaSelect');
