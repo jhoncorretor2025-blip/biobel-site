@@ -992,6 +992,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <p class="no-print text-xs text-slate-500 mb-1">Não achou o dia de hoje na lista? <a href="#" onclick="loadGoogleSheet();return false;" class="text-emerald-400 underline">Clique aqui para atualizar</a>.</p>
   <p class="no-print text-xs text-slate-500 mb-6">🖨️ O recibo é formatado para impressora de recibo (58/80mm). Numa impressora comum (A4), pode sair pequeno no canto da folha.</p>
   <div id="simpleGoalBanner" class="meta-dia-banner"></div>
+  <div id="bannerEnviarContadora" class="no-print" style="display:none;"></div>
   <div class="space-y-3">
    <div class="rounded-xl border border-slate-800 bg-slate-950 px-4 py-4">
     <div class="flex items-center justify-between caixa-row">
@@ -1038,6 +1039,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <p class="no-print text-xs text-slate-500 mb-1">Não achou o dia de hoje na lista? <a href="#" onclick="loadGoogleSheet();return false;" class="text-emerald-400 underline">Clique aqui para atualizar</a>.</p>
   <p class="no-print text-xs text-slate-500 mb-6">🖨️ O recibo é formatado para impressora de recibo (58/80mm). Numa impressora comum (A4), pode sair pequeno no canto da folha.</p>
   <div id="completeGoalBanner" class="meta-dia-banner"></div>
+  <div id="bannerEnviarContadoraCompleto" class="no-print" style="display:none;"></div>
   <div class="space-y-3">
    <div class="rounded-xl border border-slate-800 bg-slate-950 px-4 py-4">
     <div class="flex items-center justify-between caixa-row">
@@ -1366,6 +1368,7 @@ function showTab(tab){
   const sel=document.getElementById('simpleDaySelect');
   sel.innerHTML=daysData.map(d=>`<option value="${d.dia}">${d.dia}</option>`).join('');
   if(daysData.length) { sel.value=daysData[daysData.length-1].dia; updateSimpleDay(sel.value); }
+  renderBannerEnviarContadora();
  } else if(tab==='caixaCompleto'){
   caixaCompleto.classList.remove('hidden');
   b5.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
@@ -1373,6 +1376,7 @@ function showTab(tab){
   const sel=document.getElementById('completeDaySelect');
   sel.innerHTML=daysData.map(d=>`<option value="${d.dia}">${d.dia}</option>`).join('');
   if(daysData.length) { sel.value=daysData[daysData.length-1].dia; updateCompleteDay(sel.value); }
+  renderBannerEnviarContadora();
  } else if(tab==='equipe'){
   equipe.classList.remove('hidden');
   b6.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
@@ -1946,6 +1950,54 @@ function construirResumoEmailMes(diasDoMes, nomeMesTxt){
  txt += `\n— Mensagem gerada automaticamente pelo painel financeiro da Biobel.`;
  return txt;
 }
+function renderBannerEnviarContadora(){
+ const email = getEmailContadora();
+ const hoje = new Date();
+ const diaHoje = hoje.getDate();
+ const mostrarBotao = diaHoje >= 28;
+ const nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+ const nomeMesAtual = nomesMeses[hoje.getMonth()]+' de 2026';
+
+ const alvos = [document.getElementById('bannerEnviarContadora'), document.getElementById('bannerEnviarContadoraCompleto')];
+ alvos.forEach(el=>{
+  if(!el) return;
+  if(!mostrarBotao){
+   el.style.display = 'none';
+   el.innerHTML = '';
+   return;
+  }
+  el.style.display = 'block';
+  if(!email){
+   el.innerHTML = `<div style="background:#3a2a0b;border:1px solid #5c4310;border-radius:14px;padding:14px 16px;margin-bottom:16px;font-size:12.5px;color:#f5c542;">
+     📅 Já estamos perto do fim do mês! Configure o e-mail da contadora em <a href="#" onclick="showTab('config');return false;" style="color:#f5c542;text-decoration:underline;font-weight:700;">⚙️ Configuração</a> pra liberar o envio rápido do relatório completo.
+    </div>`;
+  } else {
+   el.innerHTML = `<button onclick="enviarRelatorioContadoraAgora()" style="display:block;width:100%;background:linear-gradient(90deg,#0ea97a,#27d7a0);color:#04241a;border:none;border-radius:14px;padding:16px;font-weight:900;font-size:15px;cursor:pointer;margin-bottom:16px;box-shadow:0 6px 18px rgba(39,215,160,.25);">
+     📧 Enviar Relatório Completo de ${nomeMesAtual} para a Contadora
+    </button>`;
+  }
+ });
+}
+function enviarRelatorioContadoraAgora(){
+ const email = getEmailContadora();
+ if(!email || daysData.length===0) return;
+ const hoje = new Date();
+ const nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+ const nomeMesTxt = nomesMeses[hoje.getMonth()]+' de 2026';
+ const corpoEmail = construirResumoEmailMes(daysData, nomeMesTxt+' (até o dia '+hoje.getDate()+')');
+ const assunto = 'Fechamento de Caixa Biobel — '+nomeMesTxt;
+ const link = 'mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent(assunto)+'&body='+encodeURIComponent(corpoEmail);
+
+ const a = document.createElement('a');
+ a.href = link;
+ a.style.display = 'none';
+ document.body.appendChild(a);
+ a.click();
+ document.body.removeChild(a);
+
+ mostrarToast('📧 Relatório preparado pra '+email+' — confirme e clique em Enviar no seu app de e-mail.');
+}
+
 function verificarEnvioEmailMensal(){
  const email = getEmailContadora();
  if(!email) return;
