@@ -287,15 +287,15 @@ body.light-mode .meta-dia-banner{background:linear-gradient(90deg, rgba(14,169,1
 .conn-badge.conn-connecting{background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.35);animation:connPulse 1.4s ease-in-out infinite;}
 @keyframes connPulse{0%,100%{opacity:1}50%{opacity:.55}}
 
-/* Menu de atalhos rápidos da Configuração — pula direto pra seção, sem esconder nada */
-html{scroll-behavior:smooth;}
-.config-anchor{scroll-margin-top:110px;}
+/* Abas internas da Configuração — clica no chip e só a seção escolhida aparece */
 .config-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;position:sticky;top:64px;z-index:15;background:#07111f;padding:10px 0;}
-.config-chip{background:#0b1728;border:1px solid #1c2c42;color:#93a3ba;font-size:12.5px;font-weight:700;padding:8px 14px;border-radius:999px;text-decoration:none;white-space:nowrap;transition:background .15s,color .15s,border-color .15s;}
+.config-chip{background:#0b1728;border:1px solid #1c2c42;color:#93a3ba;font-size:12.5px;font-weight:700;padding:8px 14px;border-radius:999px;white-space:nowrap;cursor:pointer;transition:background .15s,color .15s,border-color .15s;}
 .config-chip:hover{background:#12233b;color:#dce5f2;border-color:#27d7a0;}
+.config-chip.active{background:#0ea97a;color:#04241a;border-color:#0ea97a;}
 body.light-mode .config-chips{background:#f4f6f9;}
 body.light-mode .config-chip{background:#eef1f5;border-color:#dde3ea;color:#5b6b80;}
 body.light-mode .config-chip:hover{background:#e6eaf0;color:#0f172a;}
+body.light-mode .config-chip.active{background:#0ea97a;color:#fff;border-color:#0ea97a;}
 </style>
 
 </head>
@@ -869,14 +869,14 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 </section>
 
 <section id="configTab" class="hidden max-w-3xl mx-auto p-4 md:p-6" role="tabpanel" aria-labelledby="tabConfig">
- <nav class="config-chips no-print" aria-label="Atalhos da Configuração">
-  <a href="#configSecaoConexao" class="config-chip">🔗 Conexão</a>
-  <a href="#configSecaoPlanilhas" class="config-chip">📂 Planilhas</a>
-  <a href="#configSecaoMetas" class="config-chip">🎯 Metas</a>
-  <a href="#configSecaoEmail" class="config-chip">📧 E-mail</a>
-  <a href="#configSecaoHorarios" class="config-chip">🕘 Horários</a>
+ <nav class="config-chips no-print" aria-label="Atalhos da Configuração" role="tablist">
+  <button type="button" id="chipConexao" onclick="mostrarSecaoConfig('Conexao')" class="config-chip" role="tab" aria-selected="true">🔗 Conexão</button>
+  <button type="button" id="chipPlanilhas" onclick="mostrarSecaoConfig('Planilhas')" class="config-chip" role="tab" aria-selected="false">📂 Planilhas</button>
+  <button type="button" id="chipMetas" onclick="mostrarSecaoConfig('Metas')" class="config-chip" role="tab" aria-selected="false">🎯 Metas</button>
+  <button type="button" id="chipEmail" onclick="mostrarSecaoConfig('Email')" class="config-chip" role="tab" aria-selected="false">📧 E-mail</button>
+  <button type="button" id="chipHorarios" onclick="mostrarSecaoConfig('Horarios')" class="config-chip" role="tab" aria-selected="false">🕘 Horários</button>
  </nav>
- <div id="configSecaoConexao" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 config-anchor">
+ <div id="configSecaoConexao" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
   <div class="mb-6">
    <h2 class="text-xl font-bold">Configuração — Google Sheets</h2>
    <p class="text-sm text-slate-400 mt-1">Cole o link da sua planilha Google. O dashboard poderá atualizar os dados automaticamente.</p>
@@ -896,8 +896,9 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <div class="mt-5 text-xs text-slate-500 leading-relaxed">
    <strong class="text-slate-300">Importante:</strong> para leitura direta pelo navegador, a planilha precisa permitir acesso de leitura sem login (por exemplo, “Qualquer pessoa com o link — Leitor” ou estar publicada). Se a planilha estiver privada, será necessário usar uma integração/proxy autenticado.
   </div>
+ </div>
 
-  <div class="mt-6 pt-6 border-t border-slate-800 config-anchor" id="configSecaoPlanilhas">
+ <div id="configSecaoPlanilhas" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6" style="display:none;">
    <h3 class="font-bold text-slate-200 mb-1">📂 Planilhas salvas (troca rápida entre meses)</h3>
    <p class="text-xs text-slate-500 mb-4">Adicione o link de cada mês aqui embaixo. Depois é só escolher no menu pra trocar, sem precisar mexer no campo de cima nunca mais.</p>
 
@@ -916,10 +917,9 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <option value="">— Nenhuma planilha salva ainda —</option>
    </select>
    <div id="listaPlanilhasSalvas" class="space-y-2"></div>
-  </div>
  </div>
 
- <div id="configSecaoMetas" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6 config-anchor">
+ <div id="configSecaoMetas" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6" style="display:none;">
   <div class="mb-6">
    <h2 class="text-xl font-bold">Meta de vendas do mês</h2>
    <p class="text-sm text-slate-400 mt-1">Esse valor é usado na aba "Informação Geral" para calcular a porcentagem da meta batida. Padrão: R$ 45.000,00.</p>
@@ -954,7 +954,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
  </div>
 
- <div id="configSecaoEmail" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6 config-anchor">
+ <div id="configSecaoEmail" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6" style="display:none;">
   <div class="mb-6">
    <h2 class="text-xl font-bold">📧 E-mail automático pra contadora</h2>
    <p class="text-sm text-slate-400 mt-1">Quando o painel perceber que o mês virou (ex: você abrir o painel já em setembro, com dados de agosto fechados), ele prepara sozinho um rascunho de e-mail com o resumo do mês anterior — endereçado pra esse e-mail, com o assunto e o corpo já prontos. Você só confirma e clica em "Enviar" no seu app de e-mail.</p>
@@ -968,7 +968,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
  </div>
 
- <div id="configSecaoHorarios" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6 config-anchor">
+ <div id="configSecaoHorarios" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6" style="display:none;">
   <div class="mb-6">
    <h2 class="text-xl font-bold">🕘 Horário de funcionamento</h2>
    <p class="text-sm text-slate-400 mt-1">Usado pra filtrar horários errados na aba "Informação Geral" (ex: uma venda digitada com hora antes da loja abrir). Domingo já é considerado sempre fechado.</p>
@@ -1415,6 +1415,9 @@ function showTab(tab){
   initHorarioFuncionamentoUI();
   const emailInput = document.getElementById('emailContadora');
   if(emailInput) emailInput.value = getEmailContadora();
+  let secaoLembrada = 'Conexao';
+  try{ secaoLembrada = localStorage.getItem('biobel_config_secao_ativa') || 'Conexao'; }catch(e){}
+  mostrarSecaoConfig(secaoLembrada);
  } else {
   dash.classList.remove('hidden');
   b1.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
@@ -3151,6 +3154,21 @@ function extractSpreadsheetId(url){
  const m=String(url||'').match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
  return m?m[1]:'';
 }
+function mostrarSecaoConfig(secao){
+ const secoes = ['Conexao','Planilhas','Metas','Email','Horarios'];
+ secoes.forEach(s=>{
+  const el = document.getElementById('configSecao'+s);
+  const chip = document.getElementById('chip'+s);
+  const ativo = s===secao;
+  if(el) el.style.display = ativo ? 'block' : 'none';
+  if(chip){
+   chip.classList.toggle('active', ativo);
+   chip.setAttribute('aria-selected', ativo ? 'true' : 'false');
+  }
+ });
+ try{ localStorage.setItem('biobel_config_secao_ativa', secao); }catch(e){}
+}
+
 function saveGoogleConfig(){
  const url=document.getElementById('googleSheetUrl').value.trim();
  const id=extractSpreadsheetId(url);
