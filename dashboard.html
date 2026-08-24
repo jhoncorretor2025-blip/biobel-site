@@ -499,6 +499,14 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 <section id="infoTab" class="hidden max-w-5xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabInfo">
 
  <div class="adv-card no-print" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+  <span style="font-size:12px;color:#93a3ba;font-weight:800;">📂 Planilha conectada:</span>
+  <select id="seletorPlanilhaInfoGeral" aria-label="Selecionar planilha salva pra ler" style="background:#0b1728;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12px;flex:1;min-width:160px;">
+   <option value="">— Escolher planilha salva —</option>
+  </select>
+  <button id="btnLerPlanilhaInfoGeral" onclick="lerPlanilhaSelecionadaInfoGeral()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">📥 Ler planilha selecionada</button>
+ </div>
+
+ <div class="adv-card no-print" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
   <span style="font-size:12px;color:#93a3ba;font-weight:800;">📅 Ver dados de:</span>
   <select id="seletorMes" aria-label="Selecionar mês do histórico" onchange="visualizarMes(this.value)" style="background:#0b1728;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12px;flex:1;min-width:160px;">
    <option value="">Mês atual (ao vivo)</option>
@@ -506,6 +514,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span id="avisoMesPassado" style="display:none;background:#3a2a0b;color:#f5c542;font-size:11px;font-weight:800;padding:6px 10px;border-radius:8px;">📌 Visualizando dados arquivados — não atualiza sozinho</span>
   <button onclick="exportarInfoComoTxt()" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" title="Copia e baixa um resumo em texto, pronto pra colar em outras IAs">📄 Exportar TXT</button>
  </div>
+ <p class="no-print" style="font-size:11px;color:#93a3ba;margin-top:-10px;">💡 "Planilha conectada" troca entre os links salvos (ex: Julho, Agosto). "Ver dados de" mostra meses já arquivados aqui no painel — são coisas diferentes.</p>
 
  <div class="adv-card">
   <div class="adv-card-title">
@@ -3259,11 +3268,18 @@ function removerPlanilhaSalva(index){
 function renderPlanilhasSalvas(){
  const select = document.getElementById('planilhaSalvaSelect');
  const listaEl = document.getElementById('listaPlanilhasSalvas');
- if(!select || !listaEl) return;
+ const selectInfo = document.getElementById('seletorPlanilhaInfoGeral');
  const lista = getPlanilhasSalvas();
  const urlAtual = getGoogleUrl();
- select.innerHTML = '<option value="">— Escolher planilha salva —</option>' +
-  lista.map(p=>`<option value="${p.url}" ${p.url===urlAtual?'selected':''}>${p.nome}</option>`).join('');
+ if(select){
+  select.innerHTML = '<option value="">— Escolher planilha salva —</option>' +
+   lista.map(p=>`<option value="${p.url}" ${p.url===urlAtual?'selected':''}>${p.nome}</option>`).join('');
+ }
+ if(selectInfo){
+  selectInfo.innerHTML = '<option value="">— Escolher planilha salva —</option>' +
+   lista.map(p=>`<option value="${p.url}" ${p.url===urlAtual?'selected':''}>${p.nome}</option>`).join('');
+ }
+ if(!listaEl) return;
  if(lista.length===0){
   listaEl.innerHTML = '';
   return;
@@ -3273,6 +3289,41 @@ function renderPlanilhasSalvas(){
    <span style="color:#dce5f2;font-weight:600;">${p.nome}</span>
    <button onclick="removerPlanilhaSalva(${i})" title="Remover da lista" class="no-print text-rose-400 hover:text-rose-300">🗑</button>
   </div>`).join('');
+}
+
+async function lerPlanilhaSelecionadaInfoGeral(){
+ const select = document.getElementById('seletorPlanilhaInfoGeral');
+ const btn = document.getElementById('btnLerPlanilhaInfoGeral');
+ const url = select.value;
+ if(!url){
+  mostrarToast('⚠️ Escolha uma planilha na lista antes de clicar.');
+  return;
+ }
+ const nomeSelecionado = select.options[select.selectedIndex]?.textContent || '';
+ document.getElementById('googleSheetUrl').value = url;
+ localStorage.setItem('biobel_google_sheet_url', url);
+
+ const textoOriginal = btn.textContent;
+ btn.disabled = true;
+ btn.style.opacity = '0.65';
+ btn.textContent = '⏳ Lendo...';
+
+ await loadGoogleSheet();
+
+ // loadGoogleSheet trata o próprio erro por dentro (não rejeita a Promise),
+ // então a forma confiável de saber se deu certo é olhar o badge de conexão que ela mesma atualiza.
+ const badge = document.getElementById('connBadge');
+ const deuCerto = badge && badge.className.includes('conn-ok');
+ if(deuCerto){
+  mostrarToast('✅ Planilha "'+nomeSelecionado+'" lida com sucesso!');
+ } else {
+  mostrarToast('🔴 Não consegui ler "'+nomeSelecionado+'" agora. Tente de novo em alguns segundos.');
+ }
+
+ btn.disabled = false;
+ btn.style.opacity = '';
+ btn.textContent = textoOriginal;
+ atualizarNomePlanilhaAtiva();
 }
 
 function findPaymentTotals(rows){
