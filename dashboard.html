@@ -1017,28 +1017,38 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <p class="text-xs text-slate-500 mt-2">💡 Digite só os números — o valor se forma da direita pra esquerda, tipo caixa eletrônico (ex: para R$ 50.000,00, digite <code>5000000</code>).</p>
   <button onclick="saveSalesGoal()" class="mt-4 w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-xl font-semibold text-sm">Salvar meta</button>
   <div id="goalStatus" class="mt-3 text-sm text-slate-400"></div>
- </div>
 
- <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6">
-  <div class="mb-6">
-   <h2 class="text-xl font-bold">🎯 Meta de vendas do dia</h2>
-   <p class="text-sm text-slate-400 mt-1">Por padrão, é calculada <strong class="text-slate-300">automaticamente</strong> dividindo a meta do mês pelos dias úteis (segunda a sábado, sem domingo) do mês atual — você não precisa saber quantos dias úteis tem o mês, o painel calcula sozinho.</p>
+  <div class="mt-6 pt-6 border-t border-slate-800">
+   <h3 class="font-bold text-slate-200 mb-1">🎯 Meta de vendas do dia</h3>
+   <p class="text-sm text-slate-400 mt-1 mb-4">Por padrão, é calculada <strong class="text-slate-300">automaticamente</strong> dividindo a meta do mês pelos dias úteis (segunda a sábado, sem domingo) do mês atual — você não precisa saber quantos dias úteis tem o mês, o painel calcula sozinho.</p>
+   <div id="dailyGoalAutoInfo" class="rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-sm mb-4">
+    <div class="text-slate-300 text-xs font-semibold uppercase tracking-wide">Cálculo automático de hoje</div>
+    <div class="text-2xl font-bold text-emerald-400 mt-1" id="dailyGoalAutoValue">R$ 0,00 / dia</div>
+    <div class="text-xs text-slate-500 mt-1" id="dailyGoalAutoFormula"></div>
+   </div>
+   <label class="flex items-center gap-2 text-sm font-semibold mb-3 cursor-pointer">
+    <input type="checkbox" id="dailyGoalManualToggle" onchange="toggleDailyGoalManual()" style="width:16px;height:16px;accent-color:#27d7a0;">
+    Definir um valor manual diferente (em vez do cálculo automático)
+   </label>
+   <div id="dailyGoalManualWrap" style="display:none;">
+    <label class="block text-sm font-semibold mb-2" for="dailyGoalInput">Valor da meta diária manual (R$)</label>
+    <input id="dailyGoalInput" type="text" inputmode="decimal" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500" placeholder="R$ 0,00">
+    <p class="text-xs text-slate-500 mt-2">💡 Digite só os números — o valor se forma da direita pra esquerda, tipo caixa eletrônico.</p>
+    <button onclick="saveDailyGoal()" class="mt-4 w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-xl font-semibold text-sm">Salvar meta diária manual</button>
+    <div id="dailyGoalStatus" class="mt-3 text-sm text-slate-400"></div>
+   </div>
   </div>
-  <div id="dailyGoalAutoInfo" class="rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-sm mb-4">
-   <div class="text-slate-300 text-xs font-semibold uppercase tracking-wide">Cálculo automático de hoje</div>
-   <div class="text-2xl font-bold text-emerald-400 mt-1" id="dailyGoalAutoValue">R$ 0,00 / dia</div>
-   <div class="text-xs text-slate-500 mt-1" id="dailyGoalAutoFormula"></div>
-  </div>
-  <label class="flex items-center gap-2 text-sm font-semibold mb-3 cursor-pointer">
-   <input type="checkbox" id="dailyGoalManualToggle" onchange="toggleDailyGoalManual()" style="width:16px;height:16px;accent-color:#27d7a0;">
-   Definir um valor manual diferente (em vez do cálculo automático)
-  </label>
-  <div id="dailyGoalManualWrap" style="display:none;">
-   <label class="block text-sm font-semibold mb-2" for="dailyGoalInput">Valor da meta diária manual (R$)</label>
-   <input id="dailyGoalInput" type="text" inputmode="decimal" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500" placeholder="R$ 0,00">
-   <p class="text-xs text-slate-500 mt-2">💡 Digite só os números — o valor se forma da direita pra esquerda, tipo caixa eletrônico.</p>
-   <button onclick="saveDailyGoal()" class="mt-4 w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-xl font-semibold text-sm">Salvar meta diária manual</button>
-   <div id="dailyGoalStatus" class="mt-3 text-sm text-slate-400"></div>
+
+  <div class="mt-6 pt-6 border-t border-slate-800">
+   <h3 class="font-bold text-slate-200 mb-1">👥 Meta individual por vendedora (opcional)</h3>
+   <p class="text-sm text-slate-400 mt-1 mb-4">Se quiser acompanhar uma cota própria pra cada vendedora, cadastre aqui. Deixe em branco pra quem não tiver meta individual — o painel mostra só o ranking normal nesse caso.</p>
+   <div id="listaMetasVendedoras" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;"></div>
+   <div style="display:flex;gap:8px;">
+    <input id="novaMetaVendedoraNome" type="text" placeholder="Nome da vendedora" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 12px;color:#dce5f2;font-size:13px;">
+    <input id="novaMetaVendedoraValor" type="text" inputmode="decimal" placeholder="R$ 0,00" style="width:130px;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="adicionarMetaVendedora()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">➕ Adicionar</button>
+   </div>
+   <div id="metaVendedoraStatus" class="mt-2 text-xs text-slate-400"></div>
   </div>
  </div>
 
@@ -1504,6 +1514,7 @@ function showTab(tab){
   const goalInput=document.getElementById('salesGoalInput');
   if(goalInput) goalInput.value = money(getSalesGoal());
   initDailyGoalUI();
+  renderListaMetasVendedoras();
   renderPlanilhasSalvas();
   initHorarioFuncionamentoUI();
   initAppsScriptUrlUI();
@@ -2162,6 +2173,66 @@ function saveDailyGoal(){
  localStorage.setItem('biobel_daily_goal_manual', 'yes');
  statusEl.innerHTML = '<span class="text-emerald-400">Meta diária manual salva: ' + money(val) + '</span>';
  mostrarToast('✅ Meta diária salva com sucesso!');
+}
+
+/* ===== Meta individual por vendedora (opcional) ===== */
+function getMetasVendedoras(){
+ try{ return JSON.parse(localStorage.getItem('biobel_metas_vendedoras')||'{}'); }
+ catch(e){ return {}; }
+}
+function salvarMetasVendedoras(metas){
+ localStorage.setItem('biobel_metas_vendedoras', JSON.stringify(metas));
+}
+function adicionarMetaVendedora(){
+ const nomeInput = document.getElementById('novaMetaVendedoraNome');
+ const valorInput = document.getElementById('novaMetaVendedoraValor');
+ const statusEl = document.getElementById('metaVendedoraStatus');
+ const nome = nomeInput.value.trim();
+ const valor = parseMoneyInput(valorInput.value);
+ if(!nome){
+  statusEl.innerHTML = '<span class="text-rose-400">Digite o nome da vendedora.</span>';
+  return;
+ }
+ if(isNaN(valor) || valor<=0){
+  statusEl.innerHTML = '<span class="text-rose-400">Digite um valor de meta válido.</span>';
+  return;
+ }
+ const metas = getMetasVendedoras();
+ metas[normalizarNome(nome)] = valor;
+ salvarMetasVendedoras(metas);
+ nomeInput.value = '';
+ valorInput.value = '';
+ statusEl.innerHTML = '<span class="text-emerald-400">Meta de '+nome+' salva!</span>';
+ mostrarToast('✅ Meta de '+nome+' salva com sucesso!');
+ renderListaMetasVendedoras();
+}
+function removerMetaVendedora(nome){
+ confirmarBiobel('Remover a meta individual de "'+nome+'"?', ()=>{
+  const metas = getMetasVendedoras();
+  delete metas[nome];
+  salvarMetasVendedoras(metas);
+  renderListaMetasVendedoras();
+  mostrarToast('🗑️ Meta removida.');
+ });
+}
+function renderListaMetasVendedoras(){
+ const el = document.getElementById('listaMetasVendedoras');
+ if(!el) return;
+ const metas = getMetasVendedoras();
+ const nomes = Object.keys(metas);
+ if(nomes.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhuma meta individual cadastrada ainda.</p>';
+  return;
+ }
+ el.innerHTML = nomes.map(nome=>`
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 14px;">
+   <span style="color:#dce5f2;font-size:13px;font-weight:700;">${nome}</span>
+   <div style="display:flex;align-items:center;gap:10px;">
+    <span style="color:#27d7a0;font-size:13px;font-weight:800;">${money(metas[nome])}</span>
+    <button onclick="removerMetaVendedora('${nome}')" aria-label="Remover meta de ${nome}" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;">🗑️</button>
+   </div>
+  </div>
+ `).join('');
 }
 
 function getHorarioFuncionamento(){
@@ -2999,10 +3070,25 @@ function renderSellerRanking(){
  }
  const max = ranked[0][1];
  const medalhas = ['🥇','🥈','🥉'];
+ const metasIndividuais = getMetasVendedoras();
  el.innerHTML = ranked.map(([nome,valor],i)=>{
   const pct = max>0 ? (valor/max)*100 : 0;
   const posicao = medalhas[i] || (i+1)+'º';
   const qtd = qtds[nome]||0;
+  const metaInd = metasIndividuais[nome];
+  let linhaMeta = '';
+  if(metaInd){
+   const pctMeta = Math.min(100, (valor/metaInd)*100);
+   const bateu = valor>=metaInd;
+   linhaMeta = `
+    <div style="display:flex;justify-content:space-between;font-size:10.5px;color:#93a3ba;margin-top:4px;">
+     <span>🎯 Meta individual: ${money(metaInd)}</span>
+     <span style="color:${bateu?'#27d7a0':'#93a3ba'};font-weight:800;">${bateu?'✅ ':''}${pctMeta.toFixed(0)}%</span>
+    </div>
+    <div style="background:#0b1728;border-radius:999px;height:5px;overflow:hidden;margin-top:3px;">
+     <div style="height:100%;width:${pctMeta.toFixed(1)}%;background:${bateu?'linear-gradient(90deg,#fbbf24,#f59e0b)':'#3a4a63'};"></div>
+    </div>`;
+  }
   return `
    <div>
     <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
@@ -3015,6 +3101,7 @@ function renderSellerRanking(){
     <div style="background:#0b1728;border-radius:999px;height:10px;overflow:hidden;">
      <div style="height:100%;width:${pct.toFixed(1)}%;background:linear-gradient(90deg,#27d7a0,#0ea97a);"></div>
     </div>
+    ${linhaMeta}
    </div>`;
  }).join('');
  renderSellerCruzamento();
