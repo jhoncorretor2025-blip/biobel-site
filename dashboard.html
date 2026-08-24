@@ -286,6 +286,16 @@ body.light-mode .meta-dia-banner{background:linear-gradient(90deg, rgba(14,169,1
 .conn-badge.conn-error{background:rgba(251,113,133,.12);color:#fb7185;border:1px solid rgba(251,113,133,.35);}
 .conn-badge.conn-connecting{background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.35);animation:connPulse 1.4s ease-in-out infinite;}
 @keyframes connPulse{0%,100%{opacity:1}50%{opacity:.55}}
+
+/* Menu de atalhos rápidos da Configuração — pula direto pra seção, sem esconder nada */
+html{scroll-behavior:smooth;}
+.config-anchor{scroll-margin-top:110px;}
+.config-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;position:sticky;top:64px;z-index:15;background:#07111f;padding:10px 0;}
+.config-chip{background:#0b1728;border:1px solid #1c2c42;color:#93a3ba;font-size:12.5px;font-weight:700;padding:8px 14px;border-radius:999px;text-decoration:none;white-space:nowrap;transition:background .15s,color .15s,border-color .15s;}
+.config-chip:hover{background:#12233b;color:#dce5f2;border-color:#27d7a0;}
+body.light-mode .config-chips{background:#f4f6f9;}
+body.light-mode .config-chip{background:#eef1f5;border-color:#dde3ea;color:#5b6b80;}
+body.light-mode .config-chip:hover{background:#e6eaf0;color:#0f172a;}
 </style>
 
 </head>
@@ -859,7 +869,14 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 </section>
 
 <section id="configTab" class="hidden max-w-3xl mx-auto p-4 md:p-6" role="tabpanel" aria-labelledby="tabConfig">
- <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
+ <nav class="config-chips no-print" aria-label="Atalhos da Configuração">
+  <a href="#configSecaoConexao" class="config-chip">🔗 Conexão</a>
+  <a href="#configSecaoPlanilhas" class="config-chip">📂 Planilhas</a>
+  <a href="#configSecaoMetas" class="config-chip">🎯 Metas</a>
+  <a href="#configSecaoEmail" class="config-chip">📧 E-mail</a>
+  <a href="#configSecaoHorarios" class="config-chip">🕘 Horários</a>
+ </nav>
+ <div id="configSecaoConexao" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 config-anchor">
   <div class="mb-6">
    <h2 class="text-xl font-bold">Configuração — Google Sheets</h2>
    <p class="text-sm text-slate-400 mt-1">Cole o link da sua planilha Google. O dashboard poderá atualizar os dados automaticamente.</p>
@@ -880,7 +897,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <strong class="text-slate-300">Importante:</strong> para leitura direta pelo navegador, a planilha precisa permitir acesso de leitura sem login (por exemplo, “Qualquer pessoa com o link — Leitor” ou estar publicada). Se a planilha estiver privada, será necessário usar uma integração/proxy autenticado.
   </div>
 
-  <div class="mt-6 pt-6 border-t border-slate-800">
+  <div class="mt-6 pt-6 border-t border-slate-800 config-anchor" id="configSecaoPlanilhas">
    <h3 class="font-bold text-slate-200 mb-1">📂 Planilhas salvas (troca rápida entre meses)</h3>
    <p class="text-xs text-slate-500 mb-4">Adicione o link de cada mês aqui embaixo. Depois é só escolher no menu pra trocar, sem precisar mexer no campo de cima nunca mais.</p>
 
@@ -902,7 +919,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
  </div>
 
- <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6">
+ <div id="configSecaoMetas" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6 config-anchor">
   <div class="mb-6">
    <h2 class="text-xl font-bold">Meta de vendas do mês</h2>
    <p class="text-sm text-slate-400 mt-1">Esse valor é usado na aba "Informação Geral" para calcular a porcentagem da meta batida. Padrão: R$ 45.000,00.</p>
@@ -937,7 +954,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
  </div>
 
- <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6">
+ <div id="configSecaoEmail" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6 config-anchor">
   <div class="mb-6">
    <h2 class="text-xl font-bold">📧 E-mail automático pra contadora</h2>
    <p class="text-sm text-slate-400 mt-1">Quando o painel perceber que o mês virou (ex: você abrir o painel já em setembro, com dados de agosto fechados), ele prepara sozinho um rascunho de e-mail com o resumo do mês anterior — endereçado pra esse e-mail, com o assunto e o corpo já prontos. Você só confirma e clica em "Enviar" no seu app de e-mail.</p>
@@ -951,7 +968,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
  </div>
 
- <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6">
+ <div id="configSecaoHorarios" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6 config-anchor">
   <div class="mb-6">
    <h2 class="text-xl font-bold">🕘 Horário de funcionamento</h2>
    <p class="text-sm text-slate-400 mt-1">Usado pra filtrar horários errados na aba "Informação Geral" (ex: uma venda digitada com hora antes da loja abrir). Domingo já é considerado sempre fechado.</p>
