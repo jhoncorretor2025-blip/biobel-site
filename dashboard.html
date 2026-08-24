@@ -321,7 +321,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
 <header class="border-b border-slate-800 bg-slate-900/95 sticky top-0 z-20 backdrop-blur">
  <div class="max-w-7xl mx-auto px-4 pt-2 flex justify-end items-center gap-4">
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v0.2</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v1.0</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -906,6 +906,15 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <div class="mt-5 text-xs text-slate-500 leading-relaxed">
    <strong class="text-slate-300">Importante:</strong> para leitura direta pelo navegador, a planilha precisa permitir acesso de leitura sem login (por exemplo, “Qualquer pessoa com o link — Leitor” ou estar publicada). Se a planilha estiver privada, será necessário usar uma integração/proxy autenticado.
   </div>
+
+  <div class="mt-6 pt-6 border-t border-slate-800">
+   <h3 class="font-bold text-slate-200 mb-1">🌉 Ponte robusta (evita "Erro de conexão")</h3>
+   <p class="text-xs text-slate-500 mb-3">Se você configurou o Google Apps Script (mais confiável que a leitura direta, porque roda dentro do próprio Google), cole aqui a URL que ele te deu depois de publicar. Deixe vazio se ainda não configurou — o painel continua funcionando do jeito de sempre.</p>
+   <label class="block text-xs text-slate-400 font-semibold mb-1" for="appsScriptUrl">URL do Apps Script (opcional)</label>
+   <input id="appsScriptUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500 mb-3">
+   <button onclick="saveAppsScriptUrl()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">Salvar URL da ponte</button>
+   <div id="appsScriptUrlStatus" class="mt-2 text-xs text-slate-400"></div>
+  </div>
  </div>
 
  <div id="configSecaoPlanilhas" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6" style="display:none;">
@@ -1423,6 +1432,7 @@ function showTab(tab){
   initDailyGoalUI();
   renderPlanilhasSalvas();
   initHorarioFuncionamentoUI();
+  initAppsScriptUrlUI();
   const emailInput = document.getElementById('emailContadora');
   if(emailInput) emailInput.value = getEmailContadora();
   let secaoLembrada = 'Conexao';
@@ -3595,6 +3605,59 @@ function setRefreshButtonsLoading(loading){
   }
  });
 }
+function processarLinhasDoDia(sheetName, rows){
+ const colM=12;
+ let initial=0,closing=0,withdrawals=0;
+ for(let r=0;r<rows.length;r++){
+  const label=String(rows[r]?.[colM]??'').toLowerCase();
+  if(label.includes('inicio do caixa')){
+   for(let rr=r+1;rr<Math.min(r+8,rows.length);rr++){const v=rows[rr]?.[colM]; if(typeof v==='number'){initial=v;break;}}
+  }
+  if(label.includes('retirada do caixa')){
+   for(let rr=r+1;rr<Math.min(r+8,rows.length);rr++){const v=rows[rr]?.[colM]; if(typeof v==='number'){withdrawals=v;break;} if(String(v??'').toLowerCase().includes('fechamento')) break;}
+  }
+  if(label.includes('fechamento do caixa')){
+   for(let rr=r+1;rr<Math.min(r+8,rows.length);rr++){const v=rows[rr]?.[colM]; if(typeof v==='number'){closing=v;break;}}
+   if(!closing && typeof rows[r+1]?.[0]==='number') closing=rows[r+1][0];
+  }
+ }
+ const sales=typeof rows[1]?.[15]==='number'?rows[1][15]:0;
+ const {dinheiro,debito,credito,pix}=findPaymentTotals(rows);
+ const vendedoras=extractSellerTotals(rows);
+ const vendedorasDetalhe=extractSellerDetalhes(rows);
+ const qtdVendas=countTransactions(rows);
+ const tipoVenda=extractTipoVendaTotais(rows);
+ const produtos=extractProdutosVendidos(rows);
+ const horarios=extractHorariosPico(rows);
+ const {porTurno,porTurnoVend}=extractTurnos(rows);
+ const genero=extractGeneroTotais(rows);
+ return {dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos,horarios,porTurno,porTurnoVend,genero};
+}
+
+function getAppsScriptProxyUrl(){
+ return (localStorage.getItem('biobel_apps_script_url')||'').trim();
+}
+function saveAppsScriptUrl(){
+ const val = document.getElementById('appsScriptUrl').value.trim();
+ const statusEl = document.getElementById('appsScriptUrlStatus');
+ if(val && !val.startsWith('https://script.google.com/')){
+  statusEl.innerHTML = '<span class="text-rose-400">Essa URL não parece ser do Google Apps Script. Confira se copiou certinho.</span>';
+  return;
+ }
+ localStorage.setItem('biobel_apps_script_url', val);
+ if(val){
+  statusEl.innerHTML = '<span class="text-emerald-400">✅ Ponte configurada! A próxima leitura já vai usar ela.</span>';
+  mostrarToast('✅ URL da ponte salva! Agora as leituras passam por ela.');
+ } else {
+  statusEl.innerHTML = '<span class="text-slate-400">Ponte removida — voltando pro jeito de leitura de sempre.</span>';
+  mostrarToast('Ponte desativada, voltando pro modo padrão.');
+ }
+}
+function initAppsScriptUrlUI(){
+ const el = document.getElementById('appsScriptUrl');
+ if(el) el.value = getAppsScriptProxyUrl();
+}
+
 let carregandoPlanilha = false; // evita duas leituras da planilha rodando ao mesmo tempo (ex: atualização automática + clique manual), que podiam misturar dados de meses diferentes
 async function loadGoogleSheet(){
  if(carregandoPlanilha){
@@ -3605,48 +3668,41 @@ async function loadGoogleSheet(){
  const url=getGoogleUrl();
  const id=extractSpreadsheetId(url);
  if(!id){ carregandoPlanilha=false; return setGoogleStatus('link inválido.'); }
- const exportUrl=`https://docs.google.com/spreadsheets/d/${id}/export?format=xlsx`;
  setGoogleStatus('conectando à planilha...', false, 'connecting');
  setRefreshButtonsLoading(true);
  try{
-  const response=await fetch(exportUrl,{cache:'no-store'});
-  if(!response.ok) throw new Error(`HTTP ${response.status}`);
-  const buf=await response.arrayBuffer();
-  const wb=XLSX.read(buf,{type:'array'});
+  const proxyUrl = getAppsScriptProxyUrl();
   let found=0;
   daysData=[]; // limpa tudo antes de recarregar — evita somar dias de uma planilha antiga (ex: mês trocado) com a nova
-  for(const sheetName of wb.SheetNames){
-   if(!/^\d{2}\.\d{2}$/.test(sheetName)) continue;
-   const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{header:1,defval:null,raw:true});
-   const colM=12;
-   let initial=0,closing=0,withdrawals=0;
-   for(let r=0;r<rows.length;r++){
-    const label=String(rows[r]?.[colM]??'').toLowerCase();
-    if(label.includes('inicio do caixa')){
-     for(let rr=r+1;rr<Math.min(r+8,rows.length);rr++){const v=rows[rr]?.[colM]; if(typeof v==='number'){initial=v;break;}}
-    }
-    if(label.includes('retirada do caixa')){
-     for(let rr=r+1;rr<Math.min(r+8,rows.length);rr++){const v=rows[rr]?.[colM]; if(typeof v==='number'){withdrawals=v;break;} if(String(v??'').toLowerCase().includes('fechamento')) break;}
-    }
-    if(label.includes('fechamento do caixa')){
-     for(let rr=r+1;rr<Math.min(r+8,rows.length);rr++){const v=rows[rr]?.[colM]; if(typeof v==='number'){closing=v;break;}}
-     if(!closing && typeof rows[r+1]?.[0]==='number') closing=rows[r+1][0];
-    }
+
+  if(proxyUrl){
+   // Caminho novo: passa pela "ponte" do Google Apps Script — roda dentro do Google,
+   // não esbarra no bloqueio de navegador (CORS) que às vezes acontecia no caminho antigo.
+   const chamadaUrl = proxyUrl + (proxyUrl.includes('?')?'&':'?') + 'id=' + encodeURIComponent(id);
+   const resp = await fetch(chamadaUrl, {cache:'no-store'});
+   if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
+   const data = await resp.json();
+   if(data.error) throw new Error(data.error);
+   for(const sheetName in (data.sheets||{})){
+    daysData.push(processarLinhasDoDia(sheetName, data.sheets[sheetName]));
+    found++;
    }
-   const sales=typeof rows[1]?.[15]==='number'?rows[1][15]:0;
-   const {dinheiro,debito,credito,pix}=findPaymentTotals(rows);
-   const vendedoras=extractSellerTotals(rows);
-   const vendedorasDetalhe=extractSellerDetalhes(rows);
-   const qtdVendas=countTransactions(rows);
-   const tipoVenda=extractTipoVendaTotais(rows);
-   const produtos=extractProdutosVendidos(rows);
-   const horarios=extractHorariosPico(rows);
-   const {porTurno,porTurnoVend}=extractTurnos(rows);
-   const genero=extractGeneroTotais(rows);
-   daysData=daysData.filter(x=>x.dia!==sheetName);
-   daysData.push({dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos,horarios,porTurno,porTurnoVend,genero});
-   found++;
+  } else {
+   // Caminho antigo (ainda funciona, mas pode falhar por bloqueio de navegador às vezes):
+   // baixa o .xlsx direto do Google e lê com a biblioteca XLSX.js.
+   const exportUrl=`https://docs.google.com/spreadsheets/d/${id}/export?format=xlsx`;
+   const response=await fetch(exportUrl,{cache:'no-store'});
+   if(!response.ok) throw new Error(`HTTP ${response.status}`);
+   const buf=await response.arrayBuffer();
+   const wb=XLSX.read(buf,{type:'array'});
+   for(const sheetName of wb.SheetNames){
+    if(!/^\d{2}\.\d{2}$/.test(sheetName)) continue;
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{header:1,defval:null,raw:true});
+    daysData.push(processarLinhasDoDia(sheetName, rows));
+    found++;
+   }
   }
+
   render();
   setGoogleStatus(`conectado. ${found} dia(s) atualizado(s) às ${new Date().toLocaleTimeString('pt-BR')}.`,true);
   verificarEnvioEmailMensal();
