@@ -1092,6 +1092,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <span class="no-print" style="width:1px;height:24px;background:#1c2c42;display:inline-block;"></span>
     <button id="btnRefreshSimple" onclick="loadGoogleSheet()" class="no-print bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🔄 Atualizar</button>
     <button onclick="printSimpleDay()" class="no-print bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🖨 Imprimir</button>
+    <button onclick="exportarDiaComoTxt('simple')" class="no-print bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" title="Copia o resumo desse dia em texto">📄 TXT</button>
    </div>
   </div>
   <p class="no-print text-xs text-slate-500 mb-1">Não achou o dia de hoje na lista? <a href="#" onclick="loadGoogleSheet();return false;" class="text-emerald-400 underline">Clique aqui para atualizar</a>.</p>
@@ -1139,6 +1140,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <button id="btnRefreshCompleto" onclick="loadGoogleSheet()" class="no-print bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🔄 Atualizar</button>
     <button id="btnToggleLegendCompleto" onclick="toggleLegend()" class="no-print bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🙈 Esconder explicações</button>
     <button onclick="printCompleteDay()" class="no-print bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🖨 Imprimir</button>
+    <button onclick="exportarDiaComoTxt('completo')" class="no-print bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" title="Copia o resumo desse dia em texto">📄 TXT</button>
    </div>
   </div>
   <p class="no-print text-xs text-slate-500 mb-1">Não achou o dia de hoje na lista? <a href="#" onclick="loadGoogleSheet();return false;" class="text-emerald-400 underline">Clique aqui para atualizar</a>.</p>
@@ -3099,6 +3101,51 @@ function renderTopDays(){
  }).join('');
 }
 
+function exportarDiaComoTxt(tipo){
+ const selectId = tipo==='completo' ? 'completeDaySelect' : 'simpleDaySelect';
+ const select = document.getElementById(selectId);
+ const diaSelecionado = select ? select.value : null;
+ const d = daysData.find(x=>x.dia===diaSelecionado) || daysData[daysData.length-1];
+ if(!d){
+  mostrarToast('⚠️ Não há dados carregados pra exportar ainda.');
+  return;
+ }
+
+ const dow = nomeDiaSemanaAbrev(d.dia);
+ let txt = '===== FECHAMENTO DE CAIXA — BIOBEL =====\n';
+ txt += 'Dia: '+diaComAno(d.dia)+(dow?' ('+dow+')':'')+'\n';
+ txt += 'Gerado em: '+new Date().toLocaleString('pt-BR')+'\n\n';
+ txt += 'Saldo inicial (caixa): '+money(d.initial)+'\n';
+ txt += 'Vendas do dia: '+money(d.sales)+'\n';
+ if(tipo==='completo'){
+  txt += '  Dinheiro: '+money(d.dinheiro)+'\n';
+  txt += '  Débito: '+money(d.debito)+'\n';
+  txt += '  Crédito: '+money(d.credito)+'\n';
+  txt += '  Pix: '+money(d.pix)+'\n';
+ }
+ txt += 'Retiradas/despesas do dia: '+money(d.withdrawals)+'\n';
+ txt += 'Fechamento do caixa: '+money(d.closing)+'\n';
+ txt += '\n========================================\n';
+
+ const copiarPromise = (navigator.clipboard && navigator.clipboard.writeText)
+  ? navigator.clipboard.writeText(txt)
+  : Promise.reject(new Error('clipboard indisponível'));
+
+ copiarPromise
+  .then(()=>{ mostrarToast('✅ Copiado! Agora é só colar na sua outra IA.'); })
+  .catch(()=>{ mostrarToast('📄 Não deu pra copiar automaticamente — baixando o arquivo TXT.'); });
+
+ const blob = new Blob([txt], {type:'text/plain;charset=utf-8'});
+ const url = URL.createObjectURL(blob);
+ const a = document.createElement('a');
+ a.href = url;
+ a.download = 'biobel-dia-'+d.dia.replace(/\./g,'-')+'.txt';
+ document.body.appendChild(a);
+ a.click();
+ document.body.removeChild(a);
+ URL.revokeObjectURL(url);
+}
+
 function exportarInfoComoTxt(){
  if(daysData.length===0){
   mostrarToast('⚠️ Não há dados carregados pra exportar ainda.');
@@ -4184,6 +4231,27 @@ document.addEventListener('keydown', e=>{
   e.preventDefault();
   loadGoogleSheet();
   mostrarToast('🔄 Atualizando planilha... (atalho Alt+A)');
+ }
+ // Alt+P imprime o que fizer sentido na aba que estiver aberta no momento.
+ if(e.altKey && (e.key==='p' || e.key==='P')){
+  e.preventDefault();
+  const mapaImpressao = [
+   ['dashboardTab', printMonthly],
+   ['caixaTab', printSimpleDay],
+   ['caixaCompletoTab', printCompleteDay],
+   ['equipeTab', printEquipeWeek]
+  ];
+  for(const [id, fn] of mapaImpressao){
+   const el = document.getElementById(id);
+   if(el && !el.classList.contains('hidden')){ fn(); return; }
+  }
+ }
+ // Alt+1 a Alt+6 trocam de aba rapidamente (evita Ctrl+número, que o navegador já usa pra trocar de aba dele mesmo).
+ if(e.altKey && ['1','2','3','4','5','6'].includes(e.key)){
+  e.preventDefault();
+  const abas = ['dashboard','info','caixa','caixaCompleto','equipe','config'];
+  const alvo = abas[Number(e.key)-1];
+  if(alvo) showTab(alvo);
  }
 });
 
