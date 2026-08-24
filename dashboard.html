@@ -321,7 +321,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
 <header class="border-b border-slate-800 bg-slate-900/95 sticky top-0 z-20 backdrop-blur">
  <div class="max-w-7xl mx-auto px-4 pt-2 flex justify-end items-center gap-4">
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v1.0</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v1.1</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -3607,7 +3607,7 @@ function setRefreshButtonsLoading(loading){
 }
 function processarLinhasDoDia(sheetName, rows){
  const colM=12;
- let initial=0,closing=0,withdrawals=0;
+ let initial=0,closing=0,withdrawals=0,sales=0;
  for(let r=0;r<rows.length;r++){
   const label=String(rows[r]?.[colM]??'').toLowerCase();
   if(label.includes('inicio do caixa')){
@@ -3620,8 +3620,23 @@ function processarLinhasDoDia(sheetName, rows){
    for(let rr=r+1;rr<Math.min(r+8,rows.length);rr++){const v=rows[rr]?.[colM]; if(typeof v==='number'){closing=v;break;}}
    if(!closing && typeof rows[r+1]?.[0]==='number') closing=rows[r+1][0];
   }
+  // Busca "entrada do dia" por rótulo em vez de posição fixa — mais confiável entre
+  // diferentes formas de ler a planilha (leitura direta ou pela ponte do Apps Script).
+  if(sales===0){
+   for(let c=0;c<(rows[r]?.length||0);c++){
+    const cel = rows[r][c];
+    if(typeof cel==='string' && cel.toLowerCase().includes('entrada do dia')){
+     for(let cc=c+1; cc<Math.min(c+3,rows[r].length); cc++){
+      const v=rows[r][cc];
+      if(typeof v==='number'){ sales=v; break; }
+     }
+     break;
+    }
+   }
+  }
  }
- const sales=typeof rows[1]?.[15]==='number'?rows[1][15]:0;
+ // Se por algum motivo não achou o rótulo, cai pra posição fixa antiga como último recurso.
+ if(sales===0 && typeof rows[1]?.[15]==='number') sales=rows[1][15];
  const {dinheiro,debito,credito,pix}=findPaymentTotals(rows);
  const vendedoras=extractSellerTotals(rows);
  const vendedorasDetalhe=extractSellerDetalhes(rows);
@@ -3751,7 +3766,7 @@ document.getElementById('fileInput').addEventListener('change',async e=>{
   for(const sheetName of validSheets){
    const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{header:1,defval:null,raw:true});
    const colM=12;
-   let initial=0,closing=0,withdrawals=0;
+   let initial=0,closing=0,withdrawals=0,sales=0;
    for(let r=0;r<rows.length;r++){
     const label=String(rows[r][colM]??'').toLowerCase();
     if(label.includes('inicio do caixa')){
@@ -3768,8 +3783,20 @@ document.getElementById('fileInput').addEventListener('change',async e=>{
      for(let rr=r+1;rr<Math.min(r+6,rows.length);rr++) if(typeof rows[rr][colM]==='number'){closing=rows[rr][colM];break;}
      if(!closing && typeof rows[r+1]?.[0]==='number') closing=rows[r+1][0];
     }
+    if(sales===0){
+     for(let c=0;c<(rows[r]?.length||0);c++){
+      const cel = rows[r][c];
+      if(typeof cel==='string' && cel.toLowerCase().includes('entrada do dia')){
+       for(let cc=c+1; cc<Math.min(c+3,rows[r].length); cc++){
+        const v=rows[r][cc];
+        if(typeof v==='number'){ sales=v; break; }
+       }
+       break;
+      }
+     }
+    }
    }
-   const sales=typeof rows[1]?.[15]==='number'?rows[1][15]:0;
+   if(sales===0 && typeof rows[1]?.[15]==='number') sales=rows[1][15];
    const {dinheiro,debito,credito,pix}=findPaymentTotals(rows);
    const vendedoras=extractSellerTotals(rows);
    const vendedorasDetalhe=extractSellerDetalhes(rows);
