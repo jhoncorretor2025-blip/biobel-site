@@ -321,7 +321,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
 <header class="border-b border-slate-800 bg-slate-900/95 sticky top-0 z-20 backdrop-blur">
  <div class="max-w-7xl mx-auto px-4 pt-2 flex justify-end items-center gap-4">
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v0.1</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v0.2</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -506,17 +506,10 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </select>
   <button id="btnLerPlanilhaInfoGeral" onclick="lerPlanilhaSelecionadaInfoGeral()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">📥 Ler planilha selecionada</button>
   <button id="btnVoltarPadraoInfoGeral" onclick="voltarPlanilhaPadrao()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" title="Volta pra planilha principal, marcada como padrão">🏠 Planilha padrão</button>
- </div>
-
- <div class="adv-card no-print" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-  <span style="font-size:12px;color:#93a3ba;font-weight:800;">📅 Ver dados de:</span>
-  <select id="seletorMes" aria-label="Selecionar mês do histórico" onchange="visualizarMes(this.value)" style="background:#0b1728;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12px;flex:1;min-width:160px;">
-   <option value="">Mês atual (ao vivo)</option>
-  </select>
-  <span id="avisoMesPassado" style="display:none;background:#3a2a0b;color:#f5c542;font-size:11px;font-weight:800;padding:6px 10px;border-radius:8px;">📌 Visualizando dados arquivados — não atualiza sozinho</span>
   <button onclick="exportarInfoComoTxt()" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" title="Copia e baixa um resumo em texto, pronto pra colar em outras IAs">📄 Exportar TXT</button>
  </div>
- <p class="no-print" style="font-size:11px;color:#93a3ba;margin-top:-10px;">💡 "Planilha conectada" troca entre os links salvos (ex: Julho, Agosto). "Ver dados de" mostra meses já arquivados aqui no painel — são coisas diferentes.</p>
+ <select id="seletorMes" style="display:none;"><option value="">Mês atual (ao vivo)</option></select>
+ <span id="avisoMesPassado" style="display:none;"></span>
 
  <div class="adv-card">
   <div class="adv-card-title">
