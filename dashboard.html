@@ -321,7 +321,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
 <header class="border-b border-slate-800 bg-slate-900/95 sticky top-0 z-20 backdrop-blur">
  <div class="max-w-7xl mx-auto px-4 pt-2 flex justify-end items-center gap-4">
-  <span id="versaoSistema" class="no-print" style="font-size:10px;color:#5b6b80;font-weight:600;" title="Se essa data/hora não bater com a última atualização que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">🔧 v2026.08.24-18:32</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v0.1</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -505,6 +505,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <option value="">— Escolher planilha salva —</option>
   </select>
   <button id="btnLerPlanilhaInfoGeral" onclick="lerPlanilhaSelecionadaInfoGeral()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">📥 Ler planilha selecionada</button>
+  <button id="btnVoltarPadraoInfoGeral" onclick="voltarPlanilhaPadrao()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" title="Volta pra planilha principal, marcada como padrão">🏠 Planilha padrão</button>
  </div>
 
  <div class="adv-card no-print" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
@@ -3325,6 +3326,33 @@ async function lerPlanilhaSelecionadaInfoGeral(){
  btn.style.opacity = '';
  btn.textContent = textoOriginal;
  atualizarNomePlanilhaAtiva();
+}
+
+async function voltarPlanilhaPadrao(){
+ const btn = document.getElementById('btnVoltarPadraoInfoGeral');
+ document.getElementById('googleSheetUrl').value = DEFAULT_GOOGLE_URL;
+ localStorage.setItem('biobel_google_sheet_url', DEFAULT_GOOGLE_URL);
+
+ const textoOriginal = btn.textContent;
+ btn.disabled = true;
+ btn.style.opacity = '0.65';
+ btn.textContent = '⏳ Lendo...';
+
+ await loadGoogleSheet();
+
+ const badge = document.getElementById('connBadge');
+ const deuCerto = badge && badge.className.includes('conn-ok');
+ if(deuCerto){
+  mostrarToast('✅ Voltou pra planilha padrão com sucesso!');
+ } else {
+  mostrarToast('🔴 Não consegui ler a planilha padrão agora. Tente de novo em alguns segundos.');
+ }
+
+ btn.disabled = false;
+ btn.style.opacity = '';
+ btn.textContent = textoOriginal;
+ atualizarNomePlanilhaAtiva();
+ renderPlanilhasSalvas();
 }
 
 function findPaymentTotals(rows){
