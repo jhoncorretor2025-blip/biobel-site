@@ -296,6 +296,21 @@ body.light-mode .config-chips{background:#f4f6f9;}
 body.light-mode .config-chip{background:#eef1f5;border-color:#dde3ea;color:#5b6b80;}
 body.light-mode .config-chip:hover{background:#e6eaf0;color:#0f172a;}
 body.light-mode .config-chip.active{background:#0ea97a;color:#fff;border-color:#0ea97a;}
+.info-resumo-rapido{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;background:linear-gradient(180deg,#0d1a2c,#0a1525);border:1px solid #1e2c42;border-radius:16px;padding:14px 16px;margin-bottom:14px;}
+.info-resumo-rapido .item{text-align:center;}
+.info-resumo-rapido .item .lbl{font-size:9.5px;color:#93a3ba;font-weight:800;text-transform:uppercase;letter-spacing:.05em;}
+.info-resumo-rapido .item .val{font-size:15px;font-weight:900;color:#f6f9fd;margin-top:3px;}
+@media(max-width:640px){.info-resumo-rapido{grid-template-columns:repeat(2,1fr);}}
+body.light-mode .info-resumo-rapido{background:#eef1f5;border-color:#dde3ea;}
+body.light-mode .info-resumo-rapido .val{color:#0f172a;}
+.card-analise-avancada{border-color:#3a2a5c!important;background:linear-gradient(180deg,#160f2b 0%,#0d1a2c 55%)!important;}
+.card-analise-avancada .adv-card-title h3{color:#c9b6ff!important;}
+.mobile-action-bar{display:none;}
+@media(max-width:760px){
+ .mobile-action-bar{display:flex;position:sticky;bottom:0;left:0;right:0;z-index:30;background:#0b1728;border-top:1px solid #1e2c42;padding:8px 10px;gap:8px;margin:16px -16px -16px;box-shadow:0 -6px 16px rgba(0,0,0,.3);}
+ .mobile-action-bar button{flex:1;border:0;border-radius:10px;padding:11px 8px;font-size:12px;font-weight:800;cursor:pointer;}
+ body.light-mode .mobile-action-bar{background:#f4f6f9;border-color:#dde3ea;}
+}
 </style>
 
 </head>
@@ -511,6 +526,24 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
  <select id="seletorMes" style="display:none;"><option value="">Mês atual (ao vivo)</option></select>
  <span id="avisoMesPassado" style="display:none;"></span>
 
+ <div id="infoAlertaDiasFaltando" class="no-print" style="display:none;"></div>
+
+ <div class="info-resumo-rapido no-print">
+  <div class="item"><div class="lbl">Faturamento</div><div class="val" id="resumoFaturamento">R$ 0,00</div></div>
+  <div class="item"><div class="lbl">% da Meta</div><div class="val" id="resumoPctMeta">0%</div></div>
+  <div class="item"><div class="lbl">Melhor Vendedora</div><div class="val" id="resumoMelhorVendedora">—</div></div>
+  <div class="item"><div class="lbl">Melhor Dia</div><div class="val" id="resumoMelhorDia">—</div></div>
+ </div>
+
+ <div class="config-chips no-print" style="position:static;top:auto;background:transparent;padding:0 0 4px;margin-bottom:14px;">
+  <button type="button" id="chipInfoFinanceiro" onclick="mostrarSecaoInfo('Financeiro')" class="config-chip active" role="tab" aria-selected="true">💰 Financeiro</button>
+  <button type="button" id="chipInfoVendedoras" onclick="mostrarSecaoInfo('Vendedoras')" class="config-chip" role="tab" aria-selected="false">👥 Vendedoras</button>
+  <button type="button" id="chipInfoDias" onclick="mostrarSecaoInfo('Dias')" class="config-chip" role="tab" aria-selected="false">📅 Dias</button>
+  <button type="button" id="chipInfoAvancado" onclick="mostrarSecaoInfo('Avancado')" class="config-chip" role="tab" aria-selected="false">🔍 Análises avançadas</button>
+ </div>
+
+ <div id="infoSecaoFinanceiro">
+
  <div class="adv-card">
   <div class="adv-card-title">
    <h3>🎯 Meta do mês</h3>
@@ -599,6 +632,25 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
  <div class="adv-card">
   <div class="adv-card-title">
+   <h3>💸 Caixa físico</h3>
+   <span>despesas do mês e quanto tem na gaveta agora</span>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+   <div class="adv-kpi red">
+    <div class="label">💸 Retiradas/Despesas do Mês</div>
+    <div class="value" id="infoDespesasMes">R$ 0,00</div>
+    <div class="sub" id="infoDespesasMesSub">somando todos os dias lançados</div>
+   </div>
+   <div class="adv-kpi green">
+    <div class="label">🔒 Saldo Atual da Gaveta</div>
+    <div class="value" id="infoSaldoGaveta">R$ 0,00</div>
+    <div class="sub" id="infoSaldoGavetaSub">referente ao último fechamento lançado</div>
+   </div>
+  </div>
+ </div>
+
+ <div class="adv-card">
+  <div class="adv-card-title">
    <h3>📈 Mais números do mês</h3>
    <span>médias, recordes e comparação justa</span>
   </div>
@@ -655,6 +707,10 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
  </div>
 
+ </div>
+ <!-- fim infoSecaoFinanceiro -->
+
+ <div id="infoSecaoVendedoras" style="display:none;">
  <div class="adv-content2">
   <div class="adv-card">
    <div class="adv-card-title">
@@ -667,7 +723,11 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <div id="infoSellerCruzamento" style="display:flex;flex-direction:column;gap:12px;"></div>
    </div>
   </div>
+ </div>
+ </div>
+ <!-- fim infoSecaoVendedoras -->
 
+ <div id="infoSecaoDias" style="display:none;">
   <div class="adv-card">
    <div class="adv-card-title">
     <h3>📅 Dias que mais venderam</h3>
@@ -681,9 +741,11 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <div id="infoTopDays" style="display:flex;flex-direction:column;gap:10px;"></div>
   </div>
  </div>
+ <!-- fim infoSecaoDias -->
 
+ <div id="infoSecaoAvancado" style="display:none;">
  <div class="adv-content2">
-  <div class="adv-card">
+  <div class="adv-card card-analise-avancada">
    <div class="adv-card-title">
     <h3>🏬 Presencial x Online</h3>
     <span>quantos atendimentos de cada tipo</span>
@@ -691,7 +753,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <div id="infoTipoVenda" style="display:flex;flex-direction:column;gap:14px;"></div>
   </div>
 
-  <div class="adv-card">
+  <div class="adv-card card-analise-avancada">
    <div class="adv-card-title">
     <h3>🛍️ Produtos mais vendidos</h3>
     <span>por quantidade, no mês</span>
@@ -700,7 +762,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
  </div>
 
- <div class="adv-card">
+ <div class="adv-card card-analise-avancada">
   <div class="adv-card-title">
    <h3>⏰ Horários de pico</h3>
    <span>em qual horário do dia mais vende, dentro do funcionamento normal da loja</span>
@@ -721,7 +783,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <div id="infoHorariosForaExpediente" style="display:none;margin-top:18px;padding-top:16px;border-top:1px dashed #3a2a0b;"></div>
  </div>
 
- <div class="adv-card">
+ <div class="adv-card card-analise-avancada">
   <div class="adv-card-title">
    <h3>🌅 Vendas por turno</h3>
    <span>manhã x meio-dia x tarde, e quem mais vendeu em cada um</span>
@@ -730,13 +792,20 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <div id="infoTurnosCruzamento" style="display:flex;flex-direction:column;gap:14px;"></div>
  </div>
 
- <div class="adv-card">
+ <div class="adv-card card-analise-avancada">
   <div class="adv-card-title">
    <h3>🚻 Perfil de clientes</h3>
    <span>vendas para mulheres x homens, somando todo o histórico</span>
   </div>
   <div id="infoGeneroResumo" style="display:flex;flex-direction:column;gap:14px;"></div>
   <p class="simple-legend" style="font-size:11px;color:#93a3ba;margin-top:12px;">💡 Esse dado depende de quem lança a venda preencher certinho o campo "gênero" na planilha — se a maioria aparecer sempre igual, vale checar com a equipe se estão preenchendo esse campo.</p>
+ </div>
+ </div>
+ <!-- fim infoSecaoAvancado -->
+
+ <div class="mobile-action-bar no-print">
+  <button onclick="loadGoogleSheet()" style="background:#2f78e0;color:#fff;">🔄 Atualizar</button>
+  <button onclick="exportarInfoComoTxt()" style="background:#0ea97a;color:#04241a;">📄 Exportar TXT</button>
  </div>
 
 </section>
@@ -1423,6 +1492,9 @@ function showTab(tab){
   b4.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
   b4.setAttribute('aria-selected','true');
   renderInfoTab();
+  let secaoInfoLembrada = 'Financeiro';
+  try{ secaoInfoLembrada = localStorage.getItem('biobel_info_secao_ativa') || 'Financeiro'; }catch(e){}
+  mostrarSecaoInfo(secaoInfoLembrada);
  } else if(tab==='config'){
   config.classList.remove('hidden');
   b3.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
@@ -2173,6 +2245,110 @@ function updateGoalBanner(bannerId, sales){
  }
 }
 
+function mostrarSecaoInfo(secao){
+ const secoes = ['Financeiro','Vendedoras','Dias','Avancado'];
+ secoes.forEach(s=>{
+  const el = document.getElementById('infoSecao'+s);
+  const chip = document.getElementById('chipInfo'+s);
+  const ativo = s===secao;
+  if(el) el.style.display = ativo ? 'block' : 'none';
+  if(chip){
+   chip.classList.toggle('active', ativo);
+   chip.setAttribute('aria-selected', ativo ? 'true' : 'false');
+  }
+ });
+ try{ localStorage.setItem('biobel_info_secao_ativa', secao); }catch(e){}
+}
+
+function renderResumoRapido(totalSales, pct){
+ const elFat = document.getElementById('resumoFaturamento');
+ const elPct = document.getElementById('resumoPctMeta');
+ const elVend = document.getElementById('resumoMelhorVendedora');
+ const elDia = document.getElementById('resumoMelhorDia');
+ if(elFat) elFat.textContent = money(totalSales);
+ if(elPct) elPct.textContent = pct.toFixed(0)+'%';
+
+ if(elVend){
+  const totais = {};
+  daysData.forEach(d=>{
+   Object.entries(d.vendedoras||{}).forEach(([nome,valor])=>{ totais[nome]=(totais[nome]||0)+(Number(valor)||0); });
+  });
+  const ranked = Object.entries(totais).sort((a,b)=>b[1]-a[1]);
+  elVend.textContent = ranked.length ? ranked[0][0] : '—';
+ }
+ if(elDia){
+  if(daysData.length===0){ elDia.textContent = '—'; }
+  else{
+   const melhor = [...daysData].sort((a,b)=>(Number(b.sales)||0)-(Number(a.sales)||0))[0];
+   elDia.textContent = melhor ? diaComAno(melhor.dia) : '—';
+  }
+ }
+}
+
+function renderCaixaFisico(){
+ const elDesp = document.getElementById('infoDespesasMes');
+ const elDespSub = document.getElementById('infoDespesasMesSub');
+ const elSaldo = document.getElementById('infoSaldoGaveta');
+ const elSaldoSub = document.getElementById('infoSaldoGavetaSub');
+ if(!elDesp || !elSaldo) return;
+
+ const despesas = daysData.reduce((s,d)=>s+(Number(d.withdrawals)||0),0);
+ elDesp.textContent = money(despesas);
+ if(elDespSub) elDespSub.textContent = daysData.length+' dia'+(daysData.length===1?'':'s')+' lançado'+(daysData.length===1?'':'s')+' no período';
+
+ if(daysData.length===0){
+  elSaldo.textContent = 'R$ 0,00';
+  if(elSaldoSub) elSaldoSub.textContent = 'sem dados lançados ainda';
+  return;
+ }
+ const ordenadoPorData = [...daysData].sort((a,b)=>{
+  const [da,ma] = String(a.dia).split('.').map(Number);
+  const [db,mb] = String(b.dia).split('.').map(Number);
+  return (mb*100+db) - (ma*100+da);
+ });
+ const ultimo = ordenadoPorData[0];
+ elSaldo.textContent = money(ultimo.closing||0);
+ if(elSaldoSub) elSaldoSub.textContent = 'referente ao dia '+diaComAno(ultimo.dia)+' (último lançado)';
+}
+
+function renderAlertaDiasFaltando(){
+ const el = document.getElementById('infoAlertaDiasFaltando');
+ if(!el) return;
+ if(daysData.length<2){ el.style.display='none'; return; }
+
+ const diasNumeros = daysData
+  .map(d=>{
+   const [dia,mes] = String(d.dia).split('.').map(Number);
+   return {dia, mes, chave:d.dia};
+  })
+  .filter(d=>d.dia && d.mes)
+  .sort((a,b)=>a.dia-b.dia);
+
+ const mesRef = diasNumeros[0].mes;
+ const primeiroDia = diasNumeros[0].dia;
+ const ultimoDia = diasNumeros[diasNumeros.length-1].dia;
+ const diasComDado = new Set(diasNumeros.map(d=>d.dia));
+
+ const faltando = [];
+ for(let d=primeiroDia; d<=ultimoDia; d++){
+  if(diasComDado.has(d)) continue;
+  const dataObj = new Date(2026, mesRef-1, d);
+  if(dataObj.getDay()===0) continue; // domingo — loja fechada, não conta como falta
+  faltando.push(String(d).padStart(2,'0')+'.'+String(mesRef).padStart(2,'0'));
+ }
+
+ if(faltando.length===0){
+  el.style.display='none';
+  return;
+ }
+ el.style.display='block';
+ const mostrarAte = 6;
+ const listaTexto = faltando.slice(0,mostrarAte).join(', ') + (faltando.length>mostrarAte ? ' e mais '+(faltando.length-mostrarAte) : '');
+ el.innerHTML = `<div style="background:#3a2a0b;border:1px solid #5c4310;border-radius:14px;padding:12px 16px;margin-bottom:14px;font-size:12.5px;color:#f5c542;">
+   ⚠️ <strong>${faltando.length} dia${faltando.length===1?'':'s'} sem lançamento</strong> entre ${diaComAno(diasNumeros[0].chave)} e ${diaComAno(diasNumeros[diasNumeros.length-1].chave)}: ${listaTexto}. Confira se esqueceu de preencher algum dia na planilha.
+  </div>`;
+}
+
 function renderInfoTab(){
  const totalSales = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
  const goal = getSalesGoal();
@@ -2218,11 +2394,14 @@ function renderInfoTab(){
  renderTopDays();
  renderNovasMetricas();
  renderMaisNumerosDoMes();
+ renderCaixaFisico();
  renderTipoVenda();
  renderProdutosRanking();
  renderHorariosPico();
  renderTurnos();
  renderGenero();
+ renderResumoRapido(totalSales, pct);
+ renderAlertaDiasFaltando();
 }
 
 function montarSeletorMeses(){
