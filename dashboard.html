@@ -393,6 +393,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
  <div class="flex gap-2 border-b border-slate-800" role="tablist" aria-label="Navegação do painel">
   <button id="tabDashboard" data-tab="dashboard" role="tab" aria-selected="true" aria-controls="dashboardTab" onclick="showTab('dashboard')" class="tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm">📊 Dashboard</button>
   <button id="tabInfo" data-tab="info" role="tab" aria-selected="false" aria-controls="infoTab" onclick="showTab('info')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">🎯 Informação Geral</button>
+  <button id="tabAlertas" data-tab="alertas" role="tab" aria-selected="false" aria-controls="alertasTab" onclick="showTab('alertas')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">🚨 Alertas <span id="badgeContadorAlertas" style="display:none;background:#fb7185;color:#3a0f16;font-size:10px;font-weight:900;padding:1px 6px;border-radius:999px;margin-left:2px;">0</span></button>
   <button id="tabCaixa" data-tab="caixa" role="tab" aria-selected="false" aria-controls="caixaTab" onclick="showTab('caixa')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">🧾 Caixa simples</button>
   <button id="tabCaixaCompleto" data-tab="caixaCompleto" role="tab" aria-selected="false" aria-controls="caixaCompletoTab" onclick="showTab('caixaCompleto')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">📖 Caixa completo</button>
   <button id="tabEquipe" data-tab="equipe" role="tab" aria-selected="false" aria-controls="equipeTab" onclick="showTab('equipe')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">👩‍💼 Equipe</button>
@@ -922,6 +923,26 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <button onclick="exportarInfoComoTxt()" style="background:#0ea97a;color:#04241a;">📄 Exportar TXT</button>
  </div>
 
+</section>
+
+<section id="alertasTab" class="hidden max-w-5xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabAlertas">
+ <div class="adv-card">
+  <div class="adv-card-title">
+   <h3>🚨 Central de Alertas & Decisões</h3>
+   <span>tudo que merece atenção, junto num lugar só — pra decidir rápido o que melhorar</span>
+  </div>
+  <div id="resumoAlertasTopo" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:8px;"></div>
+ </div>
+
+ <div id="listaAlertasCentral" style="display:flex;flex-direction:column;gap:14px;"></div>
+
+ <div id="alertasEmDiaCard" style="display:none;" class="adv-card">
+  <div style="text-align:center;padding:20px 0;">
+   <div style="font-size:40px;">✅</div>
+   <div style="font-size:15px;font-weight:800;color:#27d7a0;margin-top:8px;">Tudo em dia!</div>
+   <div style="font-size:12.5px;color:#93a3ba;margin-top:4px;">Não encontrei nenhum ponto de atenção com os dados carregados agora.</div>
+  </div>
+ </div>
 </section>
 
 <section id="equipeTab" class="hidden max-w-5xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabEquipe">
@@ -1915,14 +1936,16 @@ function showTab(tab){
  const caixaCompleto=document.getElementById('caixaCompletoTab');
  const equipe=document.getElementById('equipeTab');
  const config=document.getElementById('configTab');
+ const alertas=document.getElementById('alertasTab');
  const b1=document.getElementById('tabDashboard');
  const b4=document.getElementById('tabInfo');
  const b2=document.getElementById('tabCaixa');
  const b5=document.getElementById('tabCaixaCompleto');
  const b6=document.getElementById('tabEquipe');
  const b3=document.getElementById('tabConfig');
- [dash,info,caixa,caixaCompleto,equipe,config].forEach(x=>x.classList.add('hidden'));
- [b1,b4,b2,b5,b6,b3].forEach(x=>{x.className='tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm';x.setAttribute('aria-selected','false');});
+ const b7=document.getElementById('tabAlertas');
+ [dash,info,caixa,caixaCompleto,equipe,config,alertas].forEach(x=>x.classList.add('hidden'));
+ [b1,b4,b2,b5,b6,b3,b7].forEach(x=>{x.className='tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm';x.setAttribute('aria-selected','false');});
 
  // Sincroniza o menu lateral (sidebar) com a mesma aba selecionada.
  document.querySelectorAll('.adv-nav button[data-tab]').forEach(btn=>{
@@ -1950,6 +1973,11 @@ function showTab(tab){
   b6.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
   b6.setAttribute('aria-selected','true');
   initEquipeTab();
+ } else if(tab==='alertas'){
+  alertas.classList.remove('hidden');
+  b7.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
+  b7.setAttribute('aria-selected','true');
+  renderCentralDeAlertas();
  } else if(tab==='info'){
   info.classList.remove('hidden');
   b4.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
@@ -3434,6 +3462,191 @@ function renderRecordeDoMes(){
 }
 
 /* ===== Alerta de diferença grande entre o caixa esperado (só dinheiro físico) e o fechamento contado ===== */
+/* ===== Central de Alertas & Decisões — reúne todos os pontos de atenção do sistema num só lugar ===== */
+function renderCentralDeAlertas(){
+ const elResumo = document.getElementById('resumoAlertasTopo');
+ const elLista = document.getElementById('listaAlertasCentral');
+ const elVazio = document.getElementById('alertasEmDiaCard');
+ const elBadge = document.getElementById('badgeContadorAlertas');
+ if(!elLista) return;
+
+ if(daysData.length===0){
+  elResumo.innerHTML = '';
+  elLista.innerHTML = '';
+  elVazio.style.display = 'block';
+  elVazio.querySelector('div:last-child').textContent = 'Ainda não há dados carregados pra analisar.';
+  if(elBadge) elBadge.style.display = 'none';
+  return;
+ }
+
+ const alertas = [];
+
+ // 1) Divergência de caixa real (crítico) — só dinheiro físico, não o total de vendas com cartão/Pix.
+ const LIMITE_DIFERENCA = 20;
+ const diferencasCaixa = daysData.map(d=>{
+  const esperado = (Number(d.initial)||0) + (Number(d.dinheiro)||0) - (Number(d.withdrawals)||0);
+  return {dia:d.dia, diff:(Number(d.closing)||0)-esperado};
+ }).filter(x=>Math.abs(x.diff)>=LIMITE_DIFERENCA);
+ if(diferencasCaixa.length>0){
+  const piorDia = [...diferencasCaixa].sort((a,b)=>a.diff-b.diff)[0];
+  alertas.push({
+   severidade:'critico', emoji:'💰', titulo:'Divergência de caixa real',
+   descricao:`${diferencasCaixa.length} dia${diferencasCaixa.length===1?'':'s'} com diferença acima de ${money(LIMITE_DIFERENCA)} entre o dinheiro físico esperado e o fechamento contado. Pior caso: dia ${diaComAno(piorDia.dia)} (${money(piorDia.diff)}).`,
+   aba:'info', secao:'Financeiro'
+  });
+ }
+
+ // 2) Dia(s) abaixo da meta diária (atenção)
+ const metaDiaria = getDailyGoal();
+ if(metaDiaria>0){
+  const abaixoDaMeta = daysData.filter(d=>(Number(d.sales)||0) < metaDiaria);
+  if(abaixoDaMeta.length>0){
+   alertas.push({
+    severidade:'atencao', emoji:'📉', titulo:'Dias abaixo da meta diária',
+    descricao:`${abaixoDaMeta.length} de ${daysData.length} dia${daysData.length===1?'':'s'} ficaram abaixo da meta de ${money(metaDiaria)}/dia.`,
+    aba:'info', secao:'Financeiro'
+   });
+  }
+ }
+
+ // 3) Vendas fora do padrão (atenção) — possível erro de digitação
+ const todasVendas = [];
+ daysData.forEach(d=>{ (d.vendasIndividuais||[]).forEach(v=>todasVendas.push({valor:v, dia:d.dia})); });
+ if(todasVendas.length>=5){
+  const mediaVendas = todasVendas.reduce((s,v)=>s+v.valor,0)/todasVendas.length;
+  const limiteVenda = mediaVendas*5;
+  const suspeitas = todasVendas.filter(v=>v.valor>limiteVenda && v.valor>100);
+  if(suspeitas.length>0){
+   alertas.push({
+    severidade:'atencao', emoji:'🔎', titulo:'Vendas fora do padrão',
+    descricao:`${suspeitas.length} venda${suspeitas.length===1?'':'s'} bem acima da média (${money(mediaVendas)}) — pode ser erro de digitação na planilha, vale conferir.`,
+    aba:'info', secao:'Financeiro'
+   });
+  }
+ }
+
+ // 4) Dias sem lançamento (atenção) — "campo não preenchido"
+ if(daysData.length>=2){
+  const diasNumeros = daysData.map(d=>{
+   const [dia,mes] = String(d.dia).split('.').map(Number);
+   return {dia, mes, chave:d.dia};
+  }).filter(d=>d.dia && d.mes).sort((a,b)=>a.dia-b.dia);
+  if(diasNumeros.length>=2){
+   const mesRef = diasNumeros[0].mes;
+   const diasComDado = new Set(diasNumeros.map(d=>d.dia));
+   const faltando = [];
+   for(let d=diasNumeros[0].dia; d<=diasNumeros[diasNumeros.length-1].dia; d++){
+    if(diasComDado.has(d)) continue;
+    if(new Date(2026, mesRef-1, d).getDay()===0) continue; // domingo, loja fechada
+    faltando.push(d);
+   }
+   if(faltando.length>0){
+    alertas.push({
+     severidade:'atencao', emoji:'📅', titulo:'Dias sem lançamento na planilha',
+     descricao:`${faltando.length} dia${faltando.length===1?'':'s'} útil${faltando.length===1?'':'eis'} sem nenhum dado lançado, dentro do período já em andamento.`,
+     aba:'info', secao:'Financeiro'
+    });
+   }
+  }
+ }
+
+ // 5) Dados de turno incompletos (informativo)
+ const totalComTurnoGeral = daysData.reduce((s,d)=>s+(Number(d.totalComTurno)||0),0);
+ const totalVendasGeral = daysData.reduce((s,d)=>s+(Number(d.qtdVendas)||0),0);
+ if(totalVendasGeral>0 && totalComTurnoGeral<totalVendasGeral){
+  const pctPreenchido = (totalComTurnoGeral/totalVendasGeral*100).toFixed(0);
+  alertas.push({
+   severidade:'informativo', emoji:'📋', titulo:'Campo "turno" não preenchido em todas as vendas',
+   descricao:`Só ${totalComTurnoGeral} de ${totalVendasGeral} vendas (${pctPreenchido}%) têm o turno de atendimento preenchido — o restante não entra nas análises por turno.`,
+   aba:'info', secao:'Avancado'
+  });
+ }
+
+ // 6) Categoria de produto genérica/guarda-chuva (informativo)
+ const totaisProdutos = {};
+ daysData.forEach(d=>{
+  Object.entries(d.produtos||{}).forEach(([nome,info])=>{
+   if(!totaisProdutos[nome]) totaisProdutos[nome] = {qtd:0};
+   totaisProdutos[nome].qtd += Number(info.qtd)||0;
+  });
+ });
+ const totalQtdProdutos = Object.values(totaisProdutos).reduce((s,i)=>s+i.qtd,0);
+ const categoriaGenericaEncontrada = Object.entries(totaisProdutos).find(([nome,info])=>{
+  const pct = totalQtdProdutos>0 ? info.qtd/totalQtdProdutos : 0;
+  const generico = nome.length>25 || nome.includes('/') || (nome.match(/ e /gi)||[]).length>=2;
+  return pct>0.20 && generico;
+ });
+ if(categoriaGenericaEncontrada){
+  alertas.push({
+   severidade:'informativo', emoji:'🏷️', titulo:'Categoria de produto muito genérica',
+   descricao:`"${categoriaGenericaEncontrada[0]}" junta vários itens numa coisa só (${categoriaGenericaEncontrada[1].qtd} unidades). Separar em produtos específicos ajudaria na reposição de estoque.`,
+   aba:'info', secao:'Avancado'
+  });
+ }
+
+ // Ordena por severidade: crítico primeiro, depois atenção, depois informativo.
+ const ordemSeveridade = {critico:0, atencao:1, informativo:2};
+ alertas.sort((a,b)=>ordemSeveridade[a.severidade]-ordemSeveridade[b.severidade]);
+
+ // Contador no topo da aba (badge vermelho ao lado do nome "Alertas")
+ if(elBadge){
+  if(alertas.length>0){ elBadge.style.display='inline-block'; elBadge.textContent=String(alertas.length); }
+  else { elBadge.style.display='none'; }
+ }
+
+ // Resumo por severidade
+ const qtdCritico = alertas.filter(a=>a.severidade==='critico').length;
+ const qtdAtencao = alertas.filter(a=>a.severidade==='atencao').length;
+ const qtdInformativo = alertas.filter(a=>a.severidade==='informativo').length;
+ elResumo.innerHTML = `
+  <div style="background:rgba(251,113,133,.08);border:1px solid rgba(251,113,133,.3);border-radius:12px;padding:12px;text-align:center;">
+   <div style="font-size:22px;font-weight:900;color:#fb7185;">${qtdCritico}</div>
+   <div style="font-size:10px;color:#93a3ba;font-weight:800;text-transform:uppercase;">🔴 Crítico</div>
+  </div>
+  <div style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:12px;padding:12px;text-align:center;">
+   <div style="font-size:22px;font-weight:900;color:#fbbf24;">${qtdAtencao}</div>
+   <div style="font-size:10px;color:#93a3ba;font-weight:800;text-transform:uppercase;">🟡 Atenção</div>
+  </div>
+  <div style="background:rgba(79,156,255,.08);border:1px solid rgba(79,156,255,.3);border-radius:12px;padding:12px;text-align:center;">
+   <div style="font-size:22px;font-weight:900;color:#4f9cff;">${qtdInformativo}</div>
+   <div style="font-size:10px;color:#93a3ba;font-weight:800;text-transform:uppercase;">🔵 Informativo</div>
+  </div>
+ `;
+
+ if(alertas.length===0){
+  elLista.innerHTML = '';
+  elVazio.style.display = 'block';
+  elVazio.querySelector('div:last-child').textContent = 'Não encontrei nenhum ponto de atenção com os dados carregados agora.';
+  return;
+ }
+ elVazio.style.display = 'none';
+
+ const coresSeveridade = {
+  critico: {borda:'rgba(251,113,133,.4)', fundo:'rgba(251,113,133,.06)', texto:'#fb7185', label:'🔴 CRÍTICO'},
+  atencao: {borda:'rgba(251,191,36,.4)', fundo:'rgba(251,191,36,.06)', texto:'#fbbf24', label:'🟡 ATENÇÃO'},
+  informativo: {borda:'rgba(79,156,255,.4)', fundo:'rgba(79,156,255,.06)', texto:'#4f9cff', label:'🔵 INFORMATIVO'}
+ };
+
+ elLista.innerHTML = alertas.map(a=>{
+  const cor = coresSeveridade[a.severidade];
+  return `
+   <div class="adv-card" style="border-color:${cor.borda};background:${cor.fundo};">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+     <div style="flex:1;min-width:220px;">
+      <div style="font-size:10px;font-weight:900;color:${cor.texto};letter-spacing:.05em;">${cor.label}</div>
+      <div style="font-size:15px;font-weight:800;color:#f6f9fd;margin-top:4px;">${a.emoji} ${a.titulo}</div>
+      <div style="font-size:12.5px;color:#93a3ba;margin-top:6px;">${a.descricao}</div>
+     </div>
+     <button onclick="irParaAlertaDetalhe('${a.aba}','${a.secao}')" style="background:${cor.texto};color:#0a1120;border:none;border-radius:10px;padding:8px 16px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;">Ver detalhes →</button>
+    </div>
+   </div>`;
+ }).join('');
+}
+function irParaAlertaDetalhe(aba, secao){
+ showTab(aba);
+ if(secao) setTimeout(()=>mostrarSecaoInfo(secao), 50);
+}
+
 function renderAlertaDiferencaFechamento(){
  const el = document.getElementById('infoAlertaDiferencaFechamento');
  if(!el || daysData.length===0){ if(el) el.style.display='none'; return; }
@@ -6206,6 +6419,7 @@ function updateAdvancedSelected(day){
 // continuam usando suas funções originais.
 render = function(){
   renderAdvancedDashboard();
+  renderCentralDeAlertas();
   const infoTab = document.getElementById('infoTab');
   if(infoTab && !infoTab.classList.contains('hidden')) renderInfoTab();
 
@@ -6265,10 +6479,10 @@ document.addEventListener('keydown', e=>{
    if(el && !el.classList.contains('hidden')){ fn(); return; }
   }
  }
- // Alt+1 a Alt+6 trocam de aba rapidamente (evita Ctrl+número, que o navegador já usa pra trocar de aba dele mesmo).
- if(e.altKey && ['1','2','3','4','5','6'].includes(e.key)){
+ // Alt+1 a Alt+7 trocam de aba rapidamente (evita Ctrl+número, que o navegador já usa pra trocar de aba dele mesmo).
+ if(e.altKey && ['1','2','3','4','5','6','7'].includes(e.key)){
   e.preventDefault();
-  const abas = ['dashboard','info','caixa','caixaCompleto','equipe','config'];
+  const abas = ['dashboard','info','alertas','caixa','caixaCompleto','equipe','config'];
   const alvo = abas[Number(e.key)-1];
   if(alvo) showTab(alvo);
  }
