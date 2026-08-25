@@ -735,6 +735,18 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    </div>
   </div>
  </div>
+
+ <div class="adv-card">
+  <div class="adv-card-title">
+   <h3>⚖️ Comparar duas vendedoras</h3>
+   <span>lado a lado, pra conversas de feedback baseadas em dado real</span>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+   <select id="compararVend1" aria-label="Escolher primeira vendedora" onchange="renderCompararVendedoras()" style="background:#0b1728;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12px;"><option value="">— Escolher —</option></select>
+   <select id="compararVend2" aria-label="Escolher segunda vendedora" onchange="renderCompararVendedoras()" style="background:#0b1728;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12px;"><option value="">— Escolher —</option></select>
+  </div>
+  <div id="resultadoCompararVendedoras"></div>
+ </div>
  </div>
  <!-- fim infoSecaoVendedoras -->
 
@@ -769,6 +781,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <h3>🛍️ Produtos mais vendidos</h3>
     <span>por quantidade, no mês</span>
    </div>
+   <div style="max-width:220px;margin:0 auto 16px;"><canvas id="graficoProdutosPizza" role="img" aria-label="Gráfico de pizza com os produtos mais vendidos"></canvas></div>
    <div id="infoProdutosRanking" style="display:flex;flex-direction:column;gap:10px;"></div>
   </div>
  </div>
@@ -1271,6 +1284,12 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <div id="completeClosingData" style="font-size:11px;color:#93a3ba;text-align:right;margin-top:4px;"></div>
     <p class="simple-legend text-xs text-slate-500 mt-1">Quanto tinha na gaveta quando a loja <strong class="text-slate-400">fechou</strong> — o valor final, contado na hora de fechar.</p>
    </div>
+   <div class="rounded-xl border border-slate-800 bg-slate-950 px-4 py-4 no-print">
+    <label class="text-slate-300 text-sm font-semibold mb-2 block" for="observacaoDiaInput">📝 Observações do dia (opcional)</label>
+    <textarea id="observacaoDiaInput" rows="2" placeholder="Ex: loja fechou 1h mais cedo por manutenção..." style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 12px;color:#dce5f2;font-size:13px;resize:vertical;"></textarea>
+    <button onclick="salvarObservacaoDia()" class="mt-2 bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl font-semibold text-sm">💾 Salvar observação</button>
+    <div id="observacaoDiaStatus" class="mt-2 text-xs text-slate-500"></div>
+   </div>
   </div>
  </div>
 </section>
@@ -1330,6 +1349,7 @@ let daysData = [...embeddedData];
 let mesVisualizadoPassado = null; // null = mes atual (ao vivo). Se preenchido (ex: '07'), esta vendo um mes arquivado.
 let daysDataOriginal = null; // guarda os dados ao vivo enquanto a pessoa esta vendo um mes passado, pra poder voltar
 let chart = null;
+let chartProdutosPizza = null;
 
 function money(v) {
  return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(v)||0);
@@ -1583,7 +1603,35 @@ function updateCompleteDay(day){
  updateGoalBanner('completeGoalBanner', Number(d.sales)||0);
  atualizarBadgeDia('completo', d.dia);
  flashCard('valoresCompletoWrap');
+ carregarObservacaoDia(d.dia);
 }
+/* ===== Observações livres por dia (opcional) ===== */
+function getObservacoesDias(){
+ try{ return JSON.parse(localStorage.getItem('biobel_observacoes_dias')||'{}'); }
+ catch(e){ return {}; }
+}
+function carregarObservacaoDia(dia){
+ const input = document.getElementById('observacaoDiaInput');
+ if(!input) return;
+ const obs = getObservacoesDias();
+ input.value = obs[dia] || '';
+ input.dataset.diaAtual = dia;
+ const statusEl = document.getElementById('observacaoDiaStatus');
+ if(statusEl) statusEl.textContent = '';
+}
+function salvarObservacaoDia(){
+ const input = document.getElementById('observacaoDiaInput');
+ const statusEl = document.getElementById('observacaoDiaStatus');
+ if(!input || !input.dataset.diaAtual) return;
+ const obs = getObservacoesDias();
+ const texto = input.value.trim();
+ if(texto){ obs[input.dataset.diaAtual] = texto; }
+ else { delete obs[input.dataset.diaAtual]; }
+ localStorage.setItem('biobel_observacoes_dias', JSON.stringify(obs));
+ if(statusEl) statusEl.innerHTML = '<span style="color:#27d7a0;">✅ Observação salva pro dia '+diaComAno(input.dataset.diaAtual)+'.</span>';
+ mostrarToast('✅ Observação salva!');
+}
+
 function showTab(tab){
  const titulosAba = {
   dashboard: 'Dashboard — Biobel',
@@ -3120,8 +3168,10 @@ function renderProdutosRanking(){
   });
  });
  const ranked = Object.entries(totais).sort((a,b)=>b[1].qtd-a[1].qtd);
+ const canvasPizza = document.getElementById('graficoProdutosPizza');
  if(ranked.length===0){
   el.innerHTML = '<p style="color:#93a3ba;font-size:13px;">Nenhum dado de produto encontrado ainda.</p>';
+  if(chartProdutosPizza){ chartProdutosPizza.destroy(); chartProdutosPizza=null; }
   return;
  }
  const maxQtd = ranked[0][1].qtd || 1;
@@ -3143,6 +3193,22 @@ function renderProdutosRanking(){
     </div>
    </div>`;
  }).join('');
+
+ if(canvasPizza && typeof Chart!=='undefined'){
+  const top8 = ranked.slice(0,8);
+  const outros = ranked.slice(8).reduce((s,[,info])=>s+info.qtd,0);
+  const labels = top8.map(([nome])=>nome).concat(outros>0?['Outros']:[]);
+  const valores = top8.map(([,info])=>info.qtd).concat(outros>0?[outros]:[]);
+  const cores = ['#fbbf24','#4f9cff','#27d7a0','#fb7185','#c9b6ff','#f59e0b','#2f78e0','#0ea97a','#93a3ba'];
+  if(chartProdutosPizza) chartProdutosPizza.destroy();
+  chartProdutosPizza = new Chart(canvasPizza, {
+   type: 'pie',
+   data: { labels, datasets: [{ data: valores, backgroundColor: cores, borderColor:'#0b1728', borderWidth:2 }] },
+   options: {
+    plugins: { legend: { position:'bottom', labels:{ color:'#93a3ba', font:{size:10}, boxWidth:10 } } }
+   }
+  });
+ }
 }
 
 function renderHorariosPico(){
@@ -3457,6 +3523,84 @@ function renderSellerRanking(){
    </div>`;
  }).join('');
  renderSellerCruzamento();
+ popularSelectsCompararVendedoras(ranked.map(r=>r[0]));
+}
+
+function popularSelectsCompararVendedoras(nomes){
+ const sel1 = document.getElementById('compararVend1');
+ const sel2 = document.getElementById('compararVend2');
+ if(!sel1 || !sel2) return;
+ const valorAtual1 = sel1.value, valorAtual2 = sel2.value;
+ const opcoes = '<option value="">— Escolher —</option>' + nomes.map(n=>`<option value="${n}">${n}</option>`).join('');
+ sel1.innerHTML = opcoes;
+ sel2.innerHTML = opcoes;
+ sel1.value = valorAtual1;
+ sel2.value = valorAtual2;
+}
+
+function renderCompararVendedoras(){
+ const el = document.getElementById('resultadoCompararVendedoras');
+ if(!el) return;
+ const nome1 = document.getElementById('compararVend1')?.value;
+ const nome2 = document.getElementById('compararVend2')?.value;
+ if(!nome1 || !nome2){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Escolha as duas vendedoras acima pra ver a comparação.</p>';
+  return;
+ }
+ if(nome1===nome2){
+  el.innerHTML = '<p style="color:#fbbf24;font-size:12.5px;">Escolha duas vendedoras diferentes pra comparar.</p>';
+  return;
+ }
+
+ function coletar(nome){
+  let total=0, qtd=0, dinheiro=0, debito=0, credito=0, pix=0;
+  daysData.forEach(d=>{
+   const detalhe = (d.vendedorasDetalhe||{})[nome];
+   if(detalhe){
+    total += Number(detalhe.total)||0;
+    qtd += Number(detalhe.qtd)||0;
+    dinheiro += Number(detalhe.dinheiro)||0;
+    debito += Number(detalhe.debito)||0;
+    credito += Number(detalhe.credito)||0;
+    pix += Number(detalhe.pix)||0;
+   }
+  });
+  const formas = {dinheiro,debito,credito,pix};
+  const preferida = Object.entries(formas).sort((a,b)=>b[1]-a[1])[0];
+  const nomesForma = {dinheiro:'💵 Dinheiro',debito:'💳 Débito',credito:'💳 Crédito',pix:'📲 Pix'};
+  return {
+   total, qtd,
+   ticketMedio: qtd>0 ? total/qtd : 0,
+   formaPreferida: preferida[1]>0 ? nomesForma[preferida[0]] : '—'
+  };
+ }
+
+ const a = coletar(nome1);
+ const b = coletar(nome2);
+
+ function linha(label, valA, valB, formatador){
+  const fmt = formatador || (v=>v);
+  const aMaior = typeof valA==='number' && typeof valB==='number' && valA>valB;
+  const bMaior = typeof valA==='number' && typeof valB==='number' && valB>valA;
+  return `
+   <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #1a2740;">
+    <div style="text-align:right;font-weight:800;font-size:13px;color:${aMaior?'#27d7a0':'#dce5f2'};">${fmt(valA)}</div>
+    <div style="font-size:10.5px;color:#93a3ba;text-align:center;white-space:nowrap;">${label}</div>
+    <div style="text-align:left;font-weight:800;font-size:13px;color:${bMaior?'#27d7a0':'#dce5f2'};">${fmt(valB)}</div>
+   </div>`;
+ }
+
+ el.innerHTML = `
+  <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;margin-bottom:8px;">
+   <div style="text-align:right;font-weight:900;font-size:13px;color:#f6f9fd;">${nome1}</div>
+   <div></div>
+   <div style="text-align:left;font-weight:900;font-size:13px;color:#f6f9fd;">${nome2}</div>
+  </div>
+  ${linha('Total vendido', a.total, b.total, money)}
+  ${linha('Quantidade de vendas', a.qtd, b.qtd)}
+  ${linha('Ticket médio', a.ticketMedio, b.ticketMedio, money)}
+  ${linha('Forma preferida', a.formaPreferida, b.formaPreferida)}
+ `;
 }
 
 function renderSellerCruzamento(){
