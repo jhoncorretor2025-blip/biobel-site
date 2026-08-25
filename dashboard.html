@@ -414,6 +414,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
         <div class="k" style="color:#93a3ba;font-size:11px;">Última atualização</div>
         <div id="advLastUpdate" style="font-size:12px;margin-top:4px;color:#dce5f2;">—</div>
         <button id="btnRefreshSidebar" class="adv-btn green" style="width:100%;margin-top:10px;" onclick="loadGoogleSheet()">↻ Atualizar agora</button>
+        <button class="adv-btn" style="width:100%;margin-top:8px;background:#1c2c42;color:#dce5f2;" onclick="ativarModoApresentacao()" title="Deixa o painel em tela cheia, com fontes maiores e alternando entre telas — pensado pra ficar numa TV da loja">📺 Modo Apresentação</button>
       </div>
     </aside>
 
@@ -538,6 +539,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
  <div id="infoAlertaVendasForaPadrao" class="no-print" style="display:none;"></div>
  <div id="infoAlertaDiferencaFechamento" class="no-print" style="display:none;"></div>
  <div id="infoRecordeMes" class="no-print" style="display:none;"></div>
+ <div id="infoMetasLongoPrazo" style="display:none;"></div>
 
  <div class="info-resumo-rapido no-print">
   <div class="item"><div class="lbl">Faturamento</div><div class="val" id="resumoFaturamento" aria-live="polite">R$ 0,00</div></div>
@@ -1101,6 +1103,17 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
 
   <div class="mt-6 pt-6 border-t border-slate-800">
+   <h3 class="font-bold text-slate-200 mb-1">📆 Metas de médio/longo prazo (opcional)</h3>
+   <p class="text-sm text-slate-400 mt-1 mb-4">Além da meta mensal, dá pra acompanhar uma visão mais ampla — útil pra planejamento. Calculada somando os meses já arquivados dentro do trimestre/ano, mais o mês atual em andamento.</p>
+   <label class="block text-sm font-semibold mb-2" for="metaTrimestralInput">Meta do trimestre (R$)</label>
+   <input id="metaTrimestralInput" type="text" inputmode="decimal" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500 mb-3" placeholder="R$ 0,00">
+   <label class="block text-sm font-semibold mb-2" for="metaAnualInput">Meta do ano (R$)</label>
+   <input id="metaAnualInput" type="text" inputmode="decimal" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500" placeholder="R$ 0,00">
+   <button onclick="saveMetasLongoPrazo()" class="mt-4 w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-xl font-semibold text-sm">Salvar metas de médio/longo prazo</button>
+   <div id="metasLongoPrazoStatus" class="mt-3 text-sm text-slate-400"></div>
+  </div>
+
+  <div class="mt-6 pt-6 border-t border-slate-800">
    <h3 class="font-bold text-slate-200 mb-1">👥 Meta individual por vendedora (opcional)</h3>
    <p class="text-sm text-slate-400 mt-1 mb-4">Se quiser acompanhar uma cota própria pra cada vendedora, cadastre aqui. Deixe em branco pra quem não tiver meta individual — o painel mostra só o ranking normal nesse caso.</p>
    <div id="listaMetasVendedoras" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;"></div>
@@ -1322,6 +1335,11 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
 <div id="printReceipt" class="print-receipt"></div>
 
+<div id="modoApresentacaoOverlay" class="no-print" style="display:none;position:fixed;inset:0;z-index:9999;background:#07111f;padding:40px;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+ <button onclick="sairModoApresentacao()" aria-label="Sair do modo apresentação" style="position:absolute;top:24px;right:24px;background:#1c2c42;color:#dce5f2;border:none;border-radius:10px;padding:10px 16px;font-size:14px;font-weight:800;cursor:pointer;">✕ Sair (Esc)</button>
+ <div id="apresentacaoConteudo" style="width:100%;max-width:900px;"></div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script>
@@ -1537,6 +1555,93 @@ function drawChart() {
 }
 document.getElementById('daySelect').addEventListener('change',e=>updateSelected(e.target.value));
 
+/* ===== Modo Apresentação / TV ===== */
+let apresentacaoIntervalo = null;
+let apresentacaoSlideAtual = 0;
+
+function gerarSlidesApresentacao(){
+ const slides = [];
+ const totalSales = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const goal = getSalesGoal();
+ const pct = goal>0 ? Math.min(100,(totalSales/goal)*100) : 0;
+
+ // Slide 1: faturamento e meta
+ slides.push(`
+  <div style="font-size:20px;color:#93a3ba;font-weight:800;margin-bottom:20px;">📊 FATURAMENTO DO MÊS</div>
+  <div style="font-size:64px;font-weight:900;color:#27d7a0;">${money(totalSales)}</div>
+  <div style="font-size:20px;color:#93a3ba;margin-top:10px;">de uma meta de ${money(goal)}</div>
+  <div style="background:#0b1728;border-radius:999px;height:36px;overflow:hidden;margin-top:30px;position:relative;">
+   <div style="height:100%;width:${pct.toFixed(1)}%;background:linear-gradient(90deg,#27d7a0,#0ea97a);"></div>
+   <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff;">${pct.toFixed(0)}%</div>
+  </div>`);
+
+ // Slide 2: ranking de vendedoras
+ const totaisVend = {};
+ daysData.forEach(d=>{
+  Object.entries(d.vendedoras||{}).forEach(([nome,valor])=>{ totaisVend[nome]=(totaisVend[nome]||0)+(Number(valor)||0); });
+ });
+ const rankingVend = Object.entries(totaisVend).sort((a,b)=>b[1]-a[1]).slice(0,3);
+ if(rankingVend.length>0){
+  const medalhas=['🥇','🥈','🥉'];
+  slides.push(`
+   <div style="font-size:20px;color:#93a3ba;font-weight:800;margin-bottom:24px;">🏆 RANKING DE VENDEDORAS</div>
+   ${rankingVend.map(([nome,valor],i)=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:24px;padding:16px 0;border-bottom:1px solid #1e2c42;">
+     <span style="color:#dce5f2;font-weight:800;">${medalhas[i]} ${nome}</span>
+     <span style="color:#27d7a0;font-weight:900;">${money(valor)}</span>
+    </div>`).join('')}`);
+ }
+
+ // Slide 3: dias que mais venderam
+ const rankingDias = [...daysData].sort((a,b)=>(Number(b.sales)||0)-(Number(a.sales)||0)).slice(0,3);
+ if(rankingDias.length>0){
+  const medalhas=['🥇','🥈','🥉'];
+  slides.push(`
+   <div style="font-size:20px;color:#93a3ba;font-weight:800;margin-bottom:24px;">📅 MELHORES DIAS DO MÊS</div>
+   ${rankingDias.map((d,i)=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:24px;padding:16px 0;border-bottom:1px solid #1e2c42;">
+     <span style="color:#dce5f2;font-weight:800;">${medalhas[i]} Dia ${diaComAno(d.dia)}</span>
+     <span style="color:#4f9cff;font-weight:900;">${money(d.sales)}</span>
+    </div>`).join('')}`);
+ }
+
+ return slides.length>0 ? slides : ['<div style="font-size:24px;color:#93a3ba;">Ainda sem dados suficientes pra mostrar aqui.</div>'];
+}
+
+function mostrarSlideApresentacao(){
+ const slides = gerarSlidesApresentacao();
+ apresentacaoSlideAtual = apresentacaoSlideAtual % slides.length;
+ const el = document.getElementById('apresentacaoConteudo');
+ if(el) el.innerHTML = slides[apresentacaoSlideAtual];
+ apresentacaoSlideAtual++;
+}
+
+function ativarModoApresentacao(){
+ const overlay = document.getElementById('modoApresentacaoOverlay');
+ if(!overlay) return;
+ overlay.style.display = 'flex';
+ apresentacaoSlideAtual = 0;
+ mostrarSlideApresentacao();
+ if(document.documentElement.requestFullscreen){
+  document.documentElement.requestFullscreen().catch(()=>{});
+ }
+ apresentacaoIntervalo = setInterval(mostrarSlideApresentacao, 8000);
+}
+function sairModoApresentacao(){
+ const overlay = document.getElementById('modoApresentacaoOverlay');
+ if(overlay) overlay.style.display = 'none';
+ if(apresentacaoIntervalo){ clearInterval(apresentacaoIntervalo); apresentacaoIntervalo=null; }
+ if(document.fullscreenElement && document.exitFullscreen){
+  document.exitFullscreen().catch(()=>{});
+ }
+}
+document.addEventListener('keydown', e=>{
+ if(e.key==='Escape'){
+  const overlay = document.getElementById('modoApresentacaoOverlay');
+  if(overlay && overlay.style.display!=='none') sairModoApresentacao();
+ }
+});
+
 function ehHoje(diaStr){
  const partes = String(diaStr||'').split('.').map(Number);
  if(partes.length<2) return false;
@@ -1733,6 +1838,7 @@ function showTab(tab){
   initNotificacoesUI();
   const metaQtdInput = document.getElementById('metaQtdVendasInput');
   if(metaQtdInput){ const v=getMetaQtdVendas(); metaQtdInput.value = v>0 ? v : ''; }
+  initMetasLongoPrazoUI();
   renderPlanilhasSalvas();
   initHorarioFuncionamentoUI();
   initAppsScriptUrlUI();
@@ -2794,6 +2900,86 @@ function saveMetaQtdVendas(){
  renderLogAlteracoes();
 }
 
+/* ===== Metas trimestral e anual (opcional) ===== */
+function getMetaTrimestral(){
+ const v = parseFloat(localStorage.getItem('biobel_meta_trimestral')||'0');
+ return isNaN(v) ? 0 : v;
+}
+function getMetaAnual(){
+ const v = parseFloat(localStorage.getItem('biobel_meta_anual')||'0');
+ return isNaN(v) ? 0 : v;
+}
+function saveMetasLongoPrazo(){
+ const valTri = parseMoneyInput(document.getElementById('metaTrimestralInput').value);
+ const valAno = parseMoneyInput(document.getElementById('metaAnualInput').value);
+ const statusEl = document.getElementById('metasLongoPrazoStatus');
+ const triFinal = isNaN(valTri) ? 0 : valTri;
+ const anoFinal = isNaN(valAno) ? 0 : valAno;
+ localStorage.setItem('biobel_meta_trimestral', String(triFinal));
+ localStorage.setItem('biobel_meta_anual', String(anoFinal));
+ statusEl.innerHTML = '<span class="text-emerald-400">Metas salvas!</span>';
+ mostrarToast('✅ Metas de médio/longo prazo salvas!');
+ registrarAlteracao('Metas trimestral/anual alteradas');
+ renderLogAlteracoes();
+}
+function initMetasLongoPrazoUI(){
+ const triInput = document.getElementById('metaTrimestralInput');
+ const anoInput = document.getElementById('metaAnualInput');
+ if(triInput){ const v=getMetaTrimestral(); triInput.value = v>0 ? money(v) : ''; }
+ if(anoInput){ const v=getMetaAnual(); anoInput.value = v>0 ? money(v) : ''; }
+}
+function renderMetasLongoPrazo(){
+ const el = document.getElementById('infoMetasLongoPrazo');
+ if(!el) return;
+ const metaTri = getMetaTrimestral();
+ const metaAno = getMetaAnual();
+ if(metaTri<=0 && metaAno<=0){ el.style.display='none'; return; }
+ if(daysData.length===0){ el.style.display='none'; return; }
+
+ let historico = {};
+ try{ historico = JSON.parse(localStorage.getItem('biobel_historico_meses')||'{}'); }catch(e){}
+ const mesAtualNum = Number(daysData[0]?.dia?.split('.')[1]) || (new Date().getMonth()+1);
+ const totalMesAtual = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const trimestreAtual = Math.ceil(mesAtualNum/3); // 1,2,3,4
+ const mesesDoTrimestre = [1,2,3].map(i=>(trimestreAtual-1)*3+i);
+
+ let somaTrimestre = 0, somaAno = 0;
+ for(let m=1; m<=12; m++){
+  const key = String(m).padStart(2,'0');
+  const valor = (m===mesAtualNum) ? totalMesAtual : (Number(historico[key])||0);
+  somaAno += valor;
+  if(mesesDoTrimestre.includes(m)) somaTrimestre += valor;
+ }
+
+ function cardHtml(label, atual, meta){
+  if(meta<=0) return '';
+  const pct = Math.min(100, (atual/meta)*100);
+  const bateu = atual>=meta;
+  return `
+   <div class="adv-kpi ${bateu?'green':'blue'}" style="flex:1;min-width:200px;">
+    <div class="label">${label}</div>
+    <div class="value">${money(atual)} <span style="font-size:12px;color:#93a3ba;font-weight:700;">/ ${money(meta)}</span></div>
+    <div class="sub">${pct.toFixed(0)}%${bateu?' ✅':''}</div>
+    <div style="background:#0b1728;border-radius:999px;height:8px;overflow:hidden;margin-top:8px;">
+     <div style="height:100%;width:${pct.toFixed(1)}%;background:linear-gradient(90deg,#27d7a0,#0ea97a);"></div>
+    </div>
+   </div>`;
+ }
+
+ const nomesTrimestre = {1:'1º',2:'2º',3:'3º',4:'4º'};
+ el.style.display = 'block';
+ el.innerHTML = `<div class="adv-card">
+   <div class="adv-card-title">
+    <h3>📆 Metas de médio/longo prazo</h3>
+    <span>${nomesTrimestre[trimestreAtual]} trimestre e ano de 2026 — soma dos meses já arquivados + mês atual</span>
+   </div>
+   <div style="display:flex;gap:14px;flex-wrap:wrap;">
+    ${cardHtml('Meta do trimestre', somaTrimestre, metaTri)}
+    ${cardHtml('Meta do ano', somaAno, metaAno)}
+   </div>
+  </div>`;
+}
+
 /* ===== Alerta de venda fora do padrão (possível erro de digitação) ===== */
 function renderAlertaVendasForaPadrao(){
  const el = document.getElementById('infoAlertaVendasForaPadrao');
@@ -2971,6 +3157,7 @@ function renderInfoTab(){
  renderAlertaVendasForaPadrao();
  renderAlertaDiferencaFechamento();
  renderRecordeDoMes();
+ renderMetasLongoPrazo();
 }
 
 function montarSeletorMeses(){
