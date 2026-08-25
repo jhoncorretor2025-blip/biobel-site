@@ -306,6 +306,10 @@ body.light-mode .info-resumo-rapido .val{color:#0f172a;}
 .card-analise-avancada{border-color:#3a2a5c!important;background:linear-gradient(180deg,#160f2b 0%,#0d1a2c 55%)!important;}
 .card-analise-avancada .adv-card-title h3{color:#c9b6ff!important;}
 .mobile-action-bar{display:none;}
+@keyframes flashTrocaDia{0%{background-color:rgba(39,215,160,.25);}100%{background-color:transparent;}}
+.flash-troca-dia{animation:flashTrocaDia .6s ease-out;border-radius:12px;}
+.badge-dia-hoje{display:inline-flex;align-items:center;gap:5px;background:rgba(39,215,160,.12);color:#27d7a0;border:1px solid rgba(39,215,160,.35);font-size:11.5px;font-weight:800;padding:5px 10px;border-radius:999px;}
+.badge-dia-outro{display:inline-flex;align-items:center;gap:5px;background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.35);font-size:11.5px;font-weight:800;padding:5px 10px;border-radius:999px;}
 @media(max-width:760px){
  .mobile-action-bar{display:flex;position:sticky;bottom:0;left:0;right:0;z-index:30;background:#0b1728;border-top:1px solid #1e2c42;padding:8px 10px;gap:8px;margin:16px -16px -16px;box-shadow:0 -6px 16px rgba(0,0,0,.3);}
  .mobile-action-bar button{flex:1;border:0;border-radius:10px;padding:11px 8px;font-size:12px;font-weight:800;cursor:pointer;}
@@ -1106,42 +1110,45 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <h2 class="text-xl font-bold">Caixa simples</h2>
     <p class="text-sm text-slate-400 mt-1">Somente os valores principais do caixa do dia.</p>
    </div>
-   <div class="flex items-center gap-2">
+   <div class="flex items-center gap-2 flex-wrap">
     <select id="simpleDaySelect" aria-label="Selecionar dia (Caixa Simples)" class="no-print bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm"></select>
+    <button id="btnIrHojeSimple" onclick="irParaHoje('simple')" class="no-print bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" style="display:none;" title="Voltar pro dia de hoje">📍 Hoje</button>
     <span class="no-print" style="width:1px;height:24px;background:#1c2c42;display:inline-block;"></span>
     <button id="btnRefreshSimple" onclick="loadGoogleSheet()" class="no-print bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🔄 Atualizar</button>
     <button onclick="printSimpleDay()" class="no-print bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🖨 Imprimir</button>
     <button onclick="exportarDiaComoTxt('simple')" class="no-print bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" title="Copia o resumo desse dia em texto">📄 TXT</button>
    </div>
   </div>
+  <div id="badgeDiaSimple" class="no-print" style="display:none;margin-bottom:10px;"></div>
   <p class="no-print text-xs text-slate-500 mb-1">Não achou o dia de hoje na lista? <a href="#" onclick="loadGoogleSheet();return false;" class="text-emerald-400 underline">Clique aqui para atualizar</a>.</p>
   <p class="no-print text-xs text-slate-500 mb-6">🖨️ O recibo é formatado para impressora de recibo (58/80mm). Numa impressora comum (A4), pode sair pequeno no canto da folha.</p>
   <div id="simpleGoalBanner" class="meta-dia-banner"></div>
   <div id="bannerEnviarContadora" class="no-print" style="display:none;"></div>
-  <div class="space-y-3">
+  <div class="space-y-3" id="valoresSimpleWrap">
    <div class="rounded-xl border border-slate-800 bg-slate-950 px-4 py-4">
     <div class="flex items-center justify-between caixa-row">
      <span class="text-slate-300">🌅 Valor de início do caixa</span>
-     <strong id="simpleInitial" class="text-xl">R$ 0,00</strong>
+     <strong id="simpleInitial" class="text-xl" aria-live="polite">R$ 0,00</strong>
     </div>
    </div>
    <div class="rounded-xl border border-blue-500/20 bg-slate-950 px-4 py-4">
     <div class="flex items-center justify-between caixa-row">
      <span class="text-slate-300">💰 Vendas do dia</span>
-     <strong id="simpleSales" class="text-xl text-blue-400">R$ 0,00</strong>
+     <strong id="simpleSales" class="text-xl text-blue-400" aria-live="polite">R$ 0,00</strong>
     </div>
    </div>
    <div class="rounded-xl border border-rose-500/20 bg-slate-950 px-4 py-4">
     <div class="flex items-center justify-between caixa-row">
      <span class="text-slate-300">💸 Retiradas / despesas do dia</span>
-     <strong id="simpleWithdrawals" class="text-xl text-rose-400">R$ 0,00</strong>
+     <strong id="simpleWithdrawals" class="text-xl text-rose-400" aria-live="polite">R$ 0,00</strong>
     </div>
    </div>
    <div class="rounded-xl border border-emerald-500/30 bg-slate-950 px-4 py-5">
     <div class="flex items-center justify-between caixa-row">
      <span class="font-semibold text-slate-200">🔒 Valor que ficou no caixa</span>
-     <strong id="simpleClosing" class="text-2xl text-emerald-400">R$ 0,00</strong>
+     <strong id="simpleClosing" class="text-2xl text-emerald-400" aria-live="polite">R$ 0,00</strong>
     </div>
+    <div id="simpleClosingData" style="font-size:11px;color:#93a3ba;text-align:right;margin-top:4px;"></div>
    </div>
   </div>
  </div>
@@ -1154,64 +1161,67 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <h2 class="text-xl font-bold">Caixa completo</h2>
     <p class="text-sm text-slate-400 mt-1">Todas as informações do caixa do dia, incluindo dinheiro, cartão e Pix.</p>
    </div>
-   <div class="flex items-center gap-2">
+   <div class="flex items-center gap-2 flex-wrap">
     <select id="completeDaySelect" aria-label="Selecionar dia (Caixa Completo)" class="no-print bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm"></select>
+    <button id="btnIrHojeCompleto" onclick="irParaHoje('completo')" class="no-print bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" style="display:none;" title="Voltar pro dia de hoje">📍 Hoje</button>
     <button id="btnRefreshCompleto" onclick="loadGoogleSheet()" class="no-print bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🔄 Atualizar</button>
     <button id="btnToggleLegendCompleto" onclick="toggleLegend()" class="no-print bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🙈 Esconder explicações</button>
     <button onclick="printCompleteDay()" class="no-print bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🖨 Imprimir</button>
     <button onclick="exportarDiaComoTxt('completo')" class="no-print bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" title="Copia o resumo desse dia em texto">📄 TXT</button>
    </div>
   </div>
+  <div id="badgeDiaCompleto" class="no-print" style="display:none;margin-bottom:10px;"></div>
   <p class="no-print text-xs text-slate-500 mb-1">Não achou o dia de hoje na lista? <a href="#" onclick="loadGoogleSheet();return false;" class="text-emerald-400 underline">Clique aqui para atualizar</a>.</p>
   <p class="no-print text-xs text-slate-500 mb-6">🖨️ O recibo é formatado para impressora de recibo (58/80mm). Numa impressora comum (A4), pode sair pequeno no canto da folha.</p>
   <div id="completeGoalBanner" class="meta-dia-banner"></div>
   <div id="bannerEnviarContadoraCompleto" class="no-print" style="display:none;"></div>
-  <div class="space-y-3">
+  <div class="space-y-3" id="valoresCompletoWrap">
    <div class="rounded-xl border border-slate-800 bg-slate-950 px-4 py-4">
     <div class="flex items-center justify-between caixa-row">
      <span class="text-slate-300">🌅 Valor de início do caixa</span>
-     <strong id="completeInitial" class="text-xl">R$ 0,00</strong>
+     <strong id="completeInitial" class="text-xl" aria-live="polite">R$ 0,00</strong>
     </div>
     <p class="simple-legend text-xs text-slate-500 mt-1">Quanto tinha na gaveta quando a loja <strong class="text-slate-400">abriu</strong> — o dinheiro que ficou de troco do dia anterior.</p>
    </div>
    <div class="rounded-xl border border-blue-500/20 bg-slate-950 px-4 py-4">
     <div class="flex items-center justify-between caixa-row">
      <span class="text-slate-300">💰 Vendas do dia (total)</span>
-     <strong id="completeSales" class="text-xl text-blue-400">R$ 0,00</strong>
+     <strong id="completeSales" class="text-xl text-blue-400" aria-live="polite">R$ 0,00</strong>
     </div>
     <p class="simple-legend text-xs text-slate-500 mt-1">Tudo que foi vendido no dia, somando <strong class="text-slate-400">dinheiro + cartão + Pix</strong> juntos.</p>
    </div>
    <div class="grid grid-cols-2 gap-3">
     <div class="rounded-xl border border-amber-500/20 bg-slate-950 px-4 py-4">
      <div class="text-slate-300 text-sm">💵 Dinheiro</div>
-     <strong id="completeDinheiro" class="text-lg text-amber-400">R$ 0,00</strong>
+     <strong id="completeDinheiro" class="text-lg text-amber-400" aria-live="polite">R$ 0,00</strong>
     </div>
     <div class="rounded-xl border border-cyan-500/20 bg-slate-950 px-4 py-4">
      <div class="text-slate-300 text-sm">💳 Débito</div>
-     <strong id="completeDebito" class="text-lg text-cyan-400">R$ 0,00</strong>
+     <strong id="completeDebito" class="text-lg text-cyan-400" aria-live="polite">R$ 0,00</strong>
     </div>
     <div class="rounded-xl border border-purple-500/20 bg-slate-950 px-4 py-4">
      <div class="text-slate-300 text-sm">💳 Crédito</div>
-     <strong id="completeCredito" class="text-lg text-purple-400">R$ 0,00</strong>
+     <strong id="completeCredito" class="text-lg text-purple-400" aria-live="polite">R$ 0,00</strong>
     </div>
     <div class="rounded-xl border border-teal-500/20 bg-slate-950 px-4 py-4">
      <div class="text-slate-300 text-sm">📲 Pix</div>
-     <strong id="completePix" class="text-lg text-teal-400">R$ 0,00</strong>
+     <strong id="completePix" class="text-lg text-teal-400" aria-live="polite">R$ 0,00</strong>
     </div>
    </div>
    <p class="simple-legend text-xs text-slate-500">Só a parte em <strong class="text-slate-400">dinheiro</strong> passa pela gaveta física. Débito, crédito e Pix vão direto pro banco.</p>
    <div class="rounded-xl border border-rose-500/20 bg-slate-950 px-4 py-4">
     <div class="flex items-center justify-between caixa-row">
      <span class="text-slate-300">💸 Retiradas / despesas do dia</span>
-     <strong id="completeWithdrawals" class="text-xl text-rose-400">R$ 0,00</strong>
+     <strong id="completeWithdrawals" class="text-xl text-rose-400" aria-live="polite">R$ 0,00</strong>
     </div>
     <p class="simple-legend text-xs text-slate-500 mt-1">Dinheiro que <strong class="text-slate-400">saiu da gaveta</strong> durante o dia (compras, troco, sangria etc).</p>
    </div>
    <div class="rounded-xl border border-emerald-500/30 bg-slate-950 px-4 py-5">
     <div class="flex items-center justify-between caixa-row">
      <span class="font-semibold text-slate-200">🔒 Valor que ficou no caixa</span>
-     <strong id="completeClosing" class="text-2xl text-emerald-400">R$ 0,00</strong>
+     <strong id="completeClosing" class="text-2xl text-emerald-400" aria-live="polite">R$ 0,00</strong>
     </div>
+    <div id="completeClosingData" style="font-size:11px;color:#93a3ba;text-align:right;margin-top:4px;"></div>
     <p class="simple-legend text-xs text-slate-500 mt-1">Quanto tinha na gaveta quando a loja <strong class="text-slate-400">fechou</strong> — o valor final, contado na hora de fechar.</p>
    </div>
   </div>
@@ -1434,6 +1444,57 @@ function drawChart() {
 }
 document.getElementById('daySelect').addEventListener('change',e=>updateSelected(e.target.value));
 
+function ehHoje(diaStr){
+ const partes = String(diaStr||'').split('.').map(Number);
+ if(partes.length<2) return false;
+ const [dia, mes] = partes;
+ const hoje = new Date();
+ return dia===hoje.getDate() && mes===(hoje.getMonth()+1);
+}
+
+function atualizarBadgeDia(tipo, diaStr){
+ const badgeEl = document.getElementById(tipo==='completo' ? 'badgeDiaCompleto' : 'badgeDiaSimple');
+ const btnHoje = document.getElementById(tipo==='completo' ? 'btnIrHojeCompleto' : 'btnIrHojeSimple');
+ if(!badgeEl) return;
+ const hoje = ehHoje(diaStr);
+ badgeEl.style.display = 'block';
+ if(hoje){
+  badgeEl.innerHTML = '<span class="badge-dia-hoje">✅ Mostrando hoje</span>';
+  if(btnHoje) btnHoje.style.display = 'none';
+ } else {
+  const dow = nomeDiaSemanaAbrev(diaStr);
+  badgeEl.innerHTML = '<span class="badge-dia-outro">⚠️ Mostrando '+diaComAno(diaStr)+(dow?' ('+dow+')':'')+' — não é hoje</span>';
+  if(btnHoje) btnHoje.style.display = 'inline-flex';
+ }
+}
+
+function irParaHoje(tipo){
+ const hoje = new Date();
+ const diaHojeStr = String(hoje.getDate()).padStart(2,'0')+'.'+String(hoje.getMonth()+1).padStart(2,'0');
+ const existe = daysData.find(d=>d.dia===diaHojeStr);
+ const selectId = tipo==='completo' ? 'completeDaySelect' : 'simpleDaySelect';
+ const sel = document.getElementById(selectId);
+ if(!existe){
+  mostrarToast('⚠️ O dia de hoje ('+diaComAno(diaHojeStr)+') ainda não tem lançamento na planilha.');
+  return;
+ }
+ if(sel){
+  sel.value = diaHojeStr;
+  if(tipo==='completo') updateCompleteDay(diaHojeStr);
+  else updateSimpleDay(diaHojeStr);
+ }
+}
+
+function flashCard(wrapId){
+ const wrap = document.getElementById(wrapId);
+ if(!wrap) return;
+ wrap.querySelectorAll('.rounded-xl').forEach(card=>{
+  card.classList.remove('flash-troca-dia');
+  void card.offsetWidth; // força reiniciar a animação mesmo se já rodou antes
+  card.classList.add('flash-troca-dia');
+ });
+}
+
 function updateSimpleDay(day){
  const d=daysData.find(x=>x.dia===day);
  if(!d) return;
@@ -1441,7 +1502,12 @@ function updateSimpleDay(day){
  document.getElementById('simpleSales').textContent=money(d.sales);
  document.getElementById('simpleWithdrawals').textContent=money(d.withdrawals);
  document.getElementById('simpleClosing').textContent=money(d.closing);
+ const dow = nomeDiaSemanaAbrev(d.dia);
+ const elData = document.getElementById('simpleClosingData');
+ if(elData) elData.textContent = 'referente ao dia '+diaComAno(d.dia)+(dow?' ('+dow+')':'');
  updateGoalBanner('simpleGoalBanner', Number(d.sales)||0);
+ atualizarBadgeDia('simple', d.dia);
+ flashCard('valoresSimpleWrap');
 }
 function updateCompleteDay(day){
  const d=daysData.find(x=>x.dia===day);
@@ -1454,7 +1520,12 @@ function updateCompleteDay(day){
  document.getElementById('completePix').textContent=money(d.pix);
  document.getElementById('completeWithdrawals').textContent=money(d.withdrawals);
  document.getElementById('completeClosing').textContent=money(d.closing);
+ const dow = nomeDiaSemanaAbrev(d.dia);
+ const elData = document.getElementById('completeClosingData');
+ if(elData) elData.textContent = 'referente ao dia '+diaComAno(d.dia)+(dow?' ('+dow+')':'');
  updateGoalBanner('completeGoalBanner', Number(d.sales)||0);
+ atualizarBadgeDia('completo', d.dia);
+ flashCard('valoresCompletoWrap');
 }
 function showTab(tab){
  const titulosAba = {
