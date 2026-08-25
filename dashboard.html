@@ -512,6 +512,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
           <div class="adv-actions">
             <button class="adv-btn green" onclick="printMonthly()">🖨 Imprimir Relatório</button>
             <button class="adv-btn blue" onclick="printDaily()">🖨 Imprimir Dia</button>
+            <button class="adv-btn" style="background:#8b5cf6;color:#fff;" onclick="gerarRelatorioMensalPDF()" id="btnGerarPdfMensal">📑 Relatório em PDF</button>
           </div>
         </div>
 
@@ -1029,6 +1030,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <button type="button" id="chipHorarios" onclick="mostrarSecaoConfig('Horarios')" class="config-chip" role="tab" aria-selected="false">🕘 Horários</button>
   <button type="button" id="chipLog" onclick="mostrarSecaoConfig('Log')" class="config-chip" role="tab" aria-selected="false">📜 Histórico</button>
   <button type="button" id="chipBackup" onclick="mostrarSecaoConfig('Backup')" class="config-chip" role="tab" aria-selected="false">💾 Backup</button>
+  <button type="button" id="chipLogo" onclick="mostrarSecaoConfig('Logo')" class="config-chip" role="tab" aria-selected="false">🖼️ Logo</button>
  </nav>
  <div id="configSecaoConexao" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
   <div class="mb-6">
@@ -1210,6 +1212,23 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <div class="mt-4 text-xs text-slate-500 leading-relaxed">
    <strong class="text-slate-300">Importante:</strong> esse backup guarda só as <em>configurações</em> do painel (metas, planilhas salvas, etc.) — os dados de vendas em si continuam sempre seguros na sua planilha do Google, esse backup não substitui isso.
   </div>
+ </div>
+
+ <div id="configSecaoLogo" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6" style="display:none;">
+  <div class="mb-4">
+   <h2 class="text-xl font-bold">🖼️ Logo da Biobel</h2>
+   <p class="text-sm text-slate-400 mt-1">Usada no relatório mensal em PDF. Envie uma imagem (PNG ou JPG, de preferência quadrada ou levemente retangular) — fica guardada só neste navegador.</p>
+  </div>
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
+   <div style="width:80px;height:80px;border-radius:12px;background:#0b1728;border:1px solid #1e2c42;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+    <img id="previewLogoBiobel" src="/logo_biobel_gravatai.png" alt="Prévia da logo atual" style="max-width:100%;max-height:100%;object-fit:contain;">
+   </div>
+   <div style="flex:1;min-width:200px;">
+    <input id="inputLogoBiobel" type="file" accept="image/png,image/jpeg" onchange="carregarLogoBiobel(event)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-300 outline-none focus:border-emerald-500">
+    <div id="logoBiobelStatus" class="mt-2 text-xs text-slate-400"></div>
+   </div>
+  </div>
+  <button onclick="restaurarLogoPadrao()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2.5 rounded-xl font-semibold text-sm">↺ Restaurar logo padrão</button>
  </div>
 </section>
 
@@ -1911,6 +1930,7 @@ function showTab(tab){
   const metaQtdInput = document.getElementById('metaQtdVendasInput');
   if(metaQtdInput){ const v=getMetaQtdVendas(); metaQtdInput.value = v>0 ? v : ''; }
   initMetasLongoPrazoUI();
+  initLogoBiobelUI();
   renderPlanilhasSalvas();
   initHorarioFuncionamentoUI();
   initAppsScriptUrlUI();
@@ -2459,6 +2479,70 @@ function exportarLogComoTxt(){
  a.click();
  document.body.removeChild(a);
  URL.revokeObjectURL(url);
+}
+
+/* ===== Logo personalizada da Biobel (usada no relatório mensal em PDF) ===== */
+function carregarLogoBiobel(event){
+ const file = event.target.files[0];
+ const statusEl = document.getElementById('logoBiobelStatus');
+ if(!file) return;
+ if(file.size > 2*1024*1024){
+  if(statusEl) statusEl.innerHTML = '<span class="text-rose-400">Imagem muito grande (máximo 2MB). Tente uma versão menor.</span>';
+  return;
+ }
+ const reader = new FileReader();
+ reader.onload = e=>{
+  const dataUrl = e.target.result;
+  localStorage.setItem('biobel_logo_custom', dataUrl);
+  const preview = document.getElementById('previewLogoBiobel');
+  if(preview) preview.src = dataUrl;
+  if(statusEl) statusEl.innerHTML = '<span class="text-emerald-400">✅ Logo salva! Já vai ser usada no próximo PDF gerado.</span>';
+  mostrarToast('✅ Logo atualizada com sucesso!');
+  registrarAlteracao('Logo da Biobel personalizada foi atualizada');
+  renderLogAlteracoes();
+ };
+ reader.onerror = ()=>{
+  if(statusEl) statusEl.innerHTML = '<span class="text-rose-400">Não consegui ler essa imagem. Tente outro arquivo.</span>';
+ };
+ reader.readAsDataURL(file);
+}
+function restaurarLogoPadrao(){
+ localStorage.removeItem('biobel_logo_custom');
+ const preview = document.getElementById('previewLogoBiobel');
+ if(preview) preview.src = '/logo_biobel_gravatai.png';
+ const statusEl = document.getElementById('logoBiobelStatus');
+ if(statusEl) statusEl.innerHTML = '<span class="text-emerald-400">Logo padrão restaurada.</span>';
+ mostrarToast('✅ Voltou pra logo padrão da Biobel.');
+}
+function initLogoBiobelUI(){
+ const preview = document.getElementById('previewLogoBiobel');
+ if(!preview) return;
+ const custom = localStorage.getItem('biobel_logo_custom');
+ preview.src = custom || '/logo_biobel_gravatai.png';
+}
+function obterLogoDataUrl(){
+ // Devolve sempre uma imagem em base64 (data URL), pronta pra usar no PDF —
+ // se tiver logo personalizada salva, usa ela; senão, converte a logo padrão do site.
+ return new Promise(resolve=>{
+  const custom = localStorage.getItem('biobel_logo_custom');
+  if(custom){ resolve(custom); return; }
+  try{
+   const img = new Image();
+   img.crossOrigin = 'anonymous';
+   img.onload = ()=>{
+    try{
+     const canvas = document.createElement('canvas');
+     canvas.width = img.naturalWidth || 200;
+     canvas.height = img.naturalHeight || 200;
+     const ctx = canvas.getContext('2d');
+     ctx.drawImage(img,0,0);
+     resolve(canvas.toDataURL('image/png'));
+    }catch(e){ resolve(null); }
+   };
+   img.onerror = ()=>resolve(null);
+   img.src = '/logo_biobel_gravatai.png';
+  }catch(e){ resolve(null); }
+ });
 }
 
 function baixarBackupCompleto(){
@@ -4549,12 +4633,22 @@ function buildReceipt(type, day){
   const totalSales=daysData.reduce((a,d)=>a+(Number(d.sales)||0),0);
   const totalClosing=daysData.reduce((a,d)=>a+(Number(d.closing)||0),0);
   const totalInitial=daysData.reduce((a,d)=>a+(Number(d.initial)||0),0);
+  const totalDinheiro=daysData.reduce((a,d)=>a+(Number(d.dinheiro)||0),0);
+  const totalDebito=daysData.reduce((a,d)=>a+(Number(d.debito)||0),0);
+  const totalCredito=daysData.reduce((a,d)=>a+(Number(d.credito)||0),0);
+  const totalPix=daysData.reduce((a,d)=>a+(Number(d.pix)||0),0);
   el.innerHTML=`<div class="receipt-center"><strong style="font-size:17px">BIOBEL</strong><br>RELATÓRIO FINANCEIRO<br>AGOSTO/2026</div>
   <div class="receipt-line"></div>
   <div class="receipt-row"><span>Dias registrados</span><strong>${daysData.length}</strong></div>
   <div class="receipt-row"><span>Faturamento total</span><strong>${money(totalSales)}</strong></div>
   <div class="receipt-row"><span>Total dos fechamentos</span><strong>${money(totalClosing)}</strong></div>
   <div class="receipt-row"><span>Total dos saldos iniciais</span><strong>${money(totalInitial)}</strong></div>
+  <div class="receipt-line"></div>
+  <strong>POR FORMA DE PAGAMENTO</strong><br>
+  <div class="receipt-row"><span>Dinheiro</span><strong>${money(totalDinheiro)}</strong></div>
+  <div class="receipt-row"><span>Débito</span><strong>${money(totalDebito)}</strong></div>
+  <div class="receipt-row"><span>Crédito</span><strong>${money(totalCredito)}</strong></div>
+  <div class="receipt-row"><span>Pix</span><strong>${money(totalPix)}</strong></div>
   <div class="receipt-line"></div>
   <strong>FECHAMENTO POR DIA</strong><br>
   ${daysData.map(d=>`<div class="receipt-row"><span>${d.dia}</span><span>${money(d.closing)}</span></div>`).join('')}
@@ -4576,6 +4670,162 @@ function printDaily(){
  updateSelected(day);
  if(buildReceipt('daily-complete',day)) startReceiptPrint('daily-complete');
 }
+async function carregarJsPDFSobDemanda(){
+ if(window.jspdf) return;
+ await new Promise((resolve,reject)=>{
+  const s=document.createElement('script');
+  s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+  s.onload=resolve; s.onerror=reject;
+  document.head.appendChild(s);
+ });
+}
+
+async function gerarRelatorioMensalPDF(){
+ const btn = document.getElementById('btnGerarPdfMensal');
+ const textoOriginal = btn ? btn.textContent : '';
+ if(btn){ btn.disabled=true; btn.textContent='⏳ Gerando...'; }
+ try{
+  if(daysData.length===0){
+   mostrarToast('⚠️ Não há dados carregados pra gerar o relatório ainda.');
+   return;
+  }
+  await carregarJsPDFSobDemanda();
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({unit:'mm', format:'a4'});
+  const larguraPagina = doc.internal.pageSize.getWidth();
+  const margem = 15;
+  let y = 20;
+
+  // Logo + cabeçalho
+  const logoDataUrl = await obterLogoDataUrl();
+  if(logoDataUrl){
+   try{ doc.addImage(logoDataUrl, 'PNG', margem, y-8, 22, 22); }catch(e){}
+  }
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(18);
+  doc.setTextColor(20,20,20);
+  doc.text('BIOBEL', margem+28, y);
+  doc.setFontSize(11);
+  doc.setFont('helvetica','normal');
+  doc.setTextColor(90,90,90);
+  const mesAtualNum = daysData[0]?.dia?.split('.')[1];
+  const nomesMesesPt2 = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const nomeMesRelatorio = mesAtualNum ? (nomesMesesPt2[Number(mesAtualNum)-1]+' de 2026') : 'Período atual';
+  doc.text('Relatório Financeiro Mensal — '+nomeMesRelatorio, margem+28, y+7);
+  y += 22;
+  doc.setDrawColor(220,220,220);
+  doc.line(margem, y, larguraPagina-margem, y);
+  y += 10;
+
+  // Resumo (caixas)
+  const totalSales = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+  const totalClosing = daysData.reduce((s,d)=>s+(Number(d.closing)||0),0);
+  const goal = getSalesGoal();
+  const pctMeta = goal>0 ? Math.min(100,(totalSales/goal)*100) : 0;
+
+  const caixas = [
+   ['Faturamento Total', money(totalSales)],
+   ['Meta do Mês', money(goal)+' ('+pctMeta.toFixed(1)+'%)'],
+   ['Dias Lançados', String(daysData.length)],
+   ['Total dos Fechamentos', money(totalClosing)]
+  ];
+  const larguraCaixa = (larguraPagina - margem*2 - 15) / 2;
+  caixas.forEach((c,i)=>{
+   const col = i%2, row = Math.floor(i/2);
+   const x = margem + col*(larguraCaixa+15);
+   const yy = y + row*22;
+   doc.setFillColor(245,247,250);
+   doc.roundedRect(x, yy, larguraCaixa, 18, 2, 2, 'F');
+   doc.setFontSize(8);
+   doc.setTextColor(120,120,120);
+   doc.text(c[0].toUpperCase(), x+5, yy+7);
+   doc.setFontSize(13);
+   doc.setFont('helvetica','bold');
+   doc.setTextColor(20,20,20);
+   doc.text(c[1], x+5, yy+14);
+   doc.setFont('helvetica','normal');
+  });
+  y += 50;
+
+  // Forma de pagamento
+  doc.setFontSize(12);
+  doc.setFont('helvetica','bold');
+  doc.setTextColor(20,20,20);
+  doc.text('Por forma de pagamento', margem, y);
+  y += 7;
+  const totalDinheiro = daysData.reduce((s,d)=>s+(Number(d.dinheiro)||0),0);
+  const totalDebito = daysData.reduce((s,d)=>s+(Number(d.debito)||0),0);
+  const totalCredito = daysData.reduce((s,d)=>s+(Number(d.credito)||0),0);
+  const totalPix = daysData.reduce((s,d)=>s+(Number(d.pix)||0),0);
+  const formasPagamento = [
+   ['Dinheiro', totalDinheiro], ['Débito', totalDebito], ['Crédito', totalCredito], ['Pix', totalPix]
+  ];
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(10);
+  formasPagamento.forEach(([nome,valor],i)=>{
+   const x = margem + (i%2)*90;
+   const yy = y + Math.floor(i/2)*7;
+   const pct = totalSales>0 ? (valor/totalSales*100).toFixed(1) : '0.0';
+   doc.setTextColor(90,90,90);
+   doc.text(nome+':', x, yy);
+   doc.setTextColor(20,20,20);
+   doc.setFont('helvetica','bold');
+   doc.text(money(valor)+' ('+pct+'%)', x+22, yy);
+   doc.setFont('helvetica','normal');
+  });
+  y += 22;
+
+  // Tabela diária
+  doc.setFontSize(12);
+  doc.setFont('helvetica','bold');
+  doc.text('Fechamento por dia', margem, y);
+  y += 7;
+  doc.setFontSize(9);
+  doc.setFillColor(20,20,20);
+  doc.setTextColor(255,255,255);
+  doc.rect(margem, y-4.5, larguraPagina-margem*2, 6, 'F');
+  doc.text('Dia', margem+2, y);
+  doc.text('Vendas', margem+55, y);
+  doc.text('Fechamento', margem+105, y);
+  doc.text('Diferença (dinheiro)', margem+150, y);
+  y += 6;
+  doc.setFont('helvetica','normal');
+  doc.setTextColor(40,40,40);
+  const ordenadosPorDia = [...daysData].sort((a,b)=>a.dia.localeCompare(b.dia));
+  ordenadosPorDia.forEach((d,i)=>{
+   if(y > 275){ doc.addPage(); y = 20; }
+   if(i%2===0){ doc.setFillColor(248,249,251); doc.rect(margem, y-4, larguraPagina-margem*2, 5.5, 'F'); }
+   const esperado = (Number(d.initial)||0) + (Number(d.dinheiro)||0) - (Number(d.withdrawals)||0);
+   const diferenca = (Number(d.closing)||0) - esperado;
+   doc.text(diaComAno(d.dia), margem+2, y);
+   doc.text(money(d.sales), margem+55, y);
+   doc.text(money(d.closing), margem+105, y);
+   if(Math.abs(diferenca)>=20) doc.setTextColor(200,50,50); else doc.setTextColor(40,150,90);
+   doc.text((diferenca>=0?'+':'')+money(diferenca), margem+150, y);
+   doc.setTextColor(40,40,40);
+   y += 5.5;
+  });
+
+  // Rodapé
+  const totalPaginas = doc.internal.getNumberOfPages();
+  for(let p=1; p<=totalPaginas; p++){
+   doc.setPage(p);
+   doc.setFontSize(8);
+   doc.setTextColor(150,150,150);
+   doc.text('Gerado em '+new Date().toLocaleString('pt-BR')+' — Painel Biobel', margem, 290);
+   doc.text('Página '+p+' de '+totalPaginas, larguraPagina-margem-25, 290);
+  }
+
+  doc.save('biobel-relatorio-mensal-'+(mesAtualNum||'')+'-2026.pdf');
+  mostrarToast('✅ PDF gerado com sucesso!');
+ }catch(e){
+  console.error('Erro ao gerar PDF:', e);
+  mostrarToast('⚠️ Não foi possível gerar o PDF. Tente novamente.');
+ } finally {
+  if(btn){ btn.disabled=false; btn.textContent=textoOriginal; }
+ }
+}
+
 function printMonthly(){
  buildReceipt('monthly');
  startReceiptPrint('monthly');
@@ -4647,7 +4897,7 @@ function extractSpreadsheetId(url){
  return m?m[1]:'';
 }
 function mostrarSecaoConfig(secao){
- const secoes = ['Conexao','Planilhas','Metas','Email','Horarios','Log','Backup'];
+ const secoes = ['Conexao','Planilhas','Metas','Email','Horarios','Log','Backup','Logo'];
  secoes.forEach(s=>{
   const el = document.getElementById('configSecao'+s);
   const chip = document.getElementById('chip'+s);
