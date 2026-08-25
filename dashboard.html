@@ -527,16 +527,20 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <button id="btnVoltarPadraoInfoGeral" onclick="voltarPlanilhaPadrao()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" title="Volta pra planilha principal, marcada como padrão">🏠 Planilha padrão</button>
   <button onclick="exportarInfoComoTxt()" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" title="Copia e baixa um resumo em texto, pronto pra colar em outras IAs">📄 Exportar TXT</button>
  </div>
- <select id="seletorMes" style="display:none;"><option value="">Mês atual (ao vivo)</option></select>
+ <div id="linhaSeletorMes" class="no-print" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+  <span style="font-size:12px;color:#93a3ba;font-weight:800;">📅 Ver dados de:</span>
+  <select id="seletorMes" aria-label="Selecionar mês (ao vivo ou arquivado)" onchange="visualizarMes(this.value)" style="background:#0b1728;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12px;min-width:200px;"><option value="">Mês atual (ao vivo)</option></select>
+  <button id="btnVoltarMesAtual" onclick="visualizarMes('')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" style="display:none;" title="Voltar pro mês atual">📍 Mês atual</button>
+ </div>
  <span id="avisoMesPassado" style="display:none;"></span>
 
  <div id="infoAlertaDiasFaltando" class="no-print" style="display:none;"></div>
 
  <div class="info-resumo-rapido no-print">
-  <div class="item"><div class="lbl">Faturamento</div><div class="val" id="resumoFaturamento">R$ 0,00</div></div>
-  <div class="item"><div class="lbl">% da Meta</div><div class="val" id="resumoPctMeta">0%</div></div>
-  <div class="item"><div class="lbl">Melhor Vendedora</div><div class="val" id="resumoMelhorVendedora">—</div></div>
-  <div class="item"><div class="lbl">Melhor Dia</div><div class="val" id="resumoMelhorDia">—</div></div>
+  <div class="item"><div class="lbl">Faturamento</div><div class="val" id="resumoFaturamento" aria-live="polite">R$ 0,00</div></div>
+  <div class="item"><div class="lbl">% da Meta</div><div class="val" id="resumoPctMeta" aria-live="polite">0%</div></div>
+  <div class="item"><div class="lbl">Melhor Vendedora</div><div class="val" id="resumoMelhorVendedora" aria-live="polite">—</div></div>
+  <div class="item"><div class="lbl">Melhor Dia</div><div class="val" id="resumoMelhorDia" aria-live="polite">—</div></div>
  </div>
 
  <div class="config-chips no-print" style="position:static;top:auto;background:transparent;padding:0 0 4px;margin-bottom:14px;">
@@ -1583,6 +1587,7 @@ function showTab(tab){
   info.classList.remove('hidden');
   b4.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
   b4.setAttribute('aria-selected','true');
+  montarSeletorMeses();
   renderInfoTab();
   let secaoInfoLembrada = 'Financeiro';
   try{ secaoInfoLembrada = localStorage.getItem('biobel_info_secao_ativa') || 'Financeiro'; }catch(e){}
@@ -2598,11 +2603,15 @@ function montarSeletorMeses(){
 }
 
 function visualizarMes(mesKey){
+ const aviso = document.getElementById('avisoMesPassado');
+ const btnVoltar = document.getElementById('btnVoltarMesAtual');
+ const sel = document.getElementById('seletorMes');
  if(!mesKey){
   if(daysDataOriginal){ daysData = daysDataOriginal; daysDataOriginal = null; }
   mesVisualizadoPassado = null;
-  const aviso = document.getElementById('avisoMesPassado');
-  if(aviso) aviso.style.display = 'none';
+  if(aviso){ aviso.style.display = 'none'; aviso.innerHTML = ''; }
+  if(btnVoltar) btnVoltar.style.display = 'none';
+  if(sel) sel.value = '';
   renderAdvancedDashboard();
   return;
  }
@@ -2610,14 +2619,19 @@ function visualizarMes(mesKey){
  try{ arquivo = JSON.parse(localStorage.getItem('biobel_arquivo_meses')||'{}'); }catch(e){}
  const dadosDoMes = arquivo[mesKey];
  if(!dadosDoMes || !dadosDoMes.length){
-  alert('Não há dados arquivados para esse mês.');
+  mostrarToast('⚠️ Não há dados arquivados pra esse mês ainda.');
+  if(sel) sel.value = '';
   return;
  }
  if(!daysDataOriginal) daysDataOriginal = daysData;
  daysData = dadosDoMes;
  mesVisualizadoPassado = mesKey;
- const aviso = document.getElementById('avisoMesPassado');
- if(aviso) aviso.style.display = 'inline-block';
+ const nomesMeses = {'01':'Janeiro','02':'Fevereiro','03':'Março','04':'Abril','05':'Maio','06':'Junho','07':'Julho','08':'Agosto','09':'Setembro','10':'Outubro','11':'Novembro','12':'Dezembro'};
+ if(aviso){
+  aviso.style.display = 'block';
+  aviso.innerHTML = '<div style="background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.35);border-radius:12px;padding:10px 14px;margin-top:10px;font-size:12.5px;color:#fbbf24;font-weight:700;">⚠️ Mostrando o mês arquivado de <strong>'+(nomesMeses[mesKey]||mesKey)+' de 2026</strong> — esses dados não atualizam sozinhos. Pra ver o mês atual de novo, use o botão "📍 Mês atual" ao lado.</div>';
+ }
+ if(btnVoltar) btnVoltar.style.display = 'inline-flex';
  renderAdvancedDashboard();
 }
 
