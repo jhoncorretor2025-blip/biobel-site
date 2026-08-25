@@ -365,9 +365,12 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <button onclick="confirmLogout()" class="no-print text-xs text-slate-400 hover:text-rose-400 underline">Sair</button>
  </div>
  <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row gap-4 justify-between items-center">
-  <div>
-   <h1 class="text-2xl font-bold">Biobel — Fechamento de Caixa</h1>
-   <p class="text-sm text-slate-400">Leitura diária da planilha + histórico do fechamento da gaveta</p>
+  <div style="display:flex;align-items:center;gap:12px;">
+   <img id="logoHeaderBiobel" src="/logo_biobel_gravatai.png" alt="Logo da loja" style="width:44px;height:44px;object-fit:contain;border-radius:8px;">
+   <div>
+    <h1 class="text-2xl font-bold">Biobel — Fechamento de Caixa</h1>
+    <p class="text-sm text-slate-400">Leitura diária da planilha + histórico do fechamento da gaveta</p>
+   </div>
   </div>
   <label class="cursor-pointer bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm">
    Carregar Excel/CSV
@@ -2655,6 +2658,16 @@ function exportarLogComoTxt(){
 }
 
 /* ===== Logo personalizada da Biobel (usada no relatório mensal em PDF) ===== */
+function aplicarLogoPersonalizadaNoSistema(){
+ // Aplica a logo (personalizada ou padrão) no cabeçalho do painel E no ícone da aba do navegador,
+ // pra deixar o sistema visualmente da loja em todos os lugares, não só no PDF.
+ const custom = localStorage.getItem('biobel_logo_custom');
+ const logoParaUsar = custom || '/logo_biobel_gravatai.png';
+ const logoHeader = document.getElementById('logoHeaderBiobel');
+ if(logoHeader) logoHeader.src = logoParaUsar;
+ const favicon = document.querySelector('link[rel="icon"]');
+ if(favicon) favicon.href = logoParaUsar;
+}
 function carregarLogoBiobel(event){
  const file = event.target.files[0];
  const statusEl = document.getElementById('logoBiobelStatus');
@@ -2669,7 +2682,8 @@ function carregarLogoBiobel(event){
   localStorage.setItem('biobel_logo_custom', dataUrl);
   const preview = document.getElementById('previewLogoBiobel');
   if(preview) preview.src = dataUrl;
-  if(statusEl) statusEl.innerHTML = '<span class="text-emerald-400">✅ Logo salva! Já vai ser usada no próximo PDF gerado.</span>';
+  aplicarLogoPersonalizadaNoSistema();
+  if(statusEl) statusEl.innerHTML = '<span class="text-emerald-400">✅ Logo salva! Já atualizada no cabeçalho, no ícone da aba e vai ser usada no próximo PDF.</span>';
   mostrarToast('✅ Logo atualizada com sucesso!');
   registrarAlteracao('Logo da Biobel personalizada foi atualizada');
   renderLogAlteracoes();
@@ -2683,6 +2697,7 @@ function restaurarLogoPadrao(){
  localStorage.removeItem('biobel_logo_custom');
  const preview = document.getElementById('previewLogoBiobel');
  if(preview) preview.src = '/logo_biobel_gravatai.png';
+ aplicarLogoPersonalizadaNoSistema();
  const statusEl = document.getElementById('logoBiobelStatus');
  if(statusEl) statusEl.innerHTML = '<span class="text-emerald-400">Logo padrão restaurada.</span>';
  mostrarToast('✅ Voltou pra logo padrão da Biobel.');
@@ -6898,6 +6913,7 @@ document.addEventListener('keydown', e=>{
  }
 });
 
+aplicarLogoPersonalizadaNoSistema();
 render();
 </script>
 </body>
