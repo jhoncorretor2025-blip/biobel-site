@@ -966,6 +966,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <button type="button" id="chipEmail" onclick="mostrarSecaoConfig('Email')" class="config-chip" role="tab" aria-selected="false">📧 E-mail</button>
   <button type="button" id="chipHorarios" onclick="mostrarSecaoConfig('Horarios')" class="config-chip" role="tab" aria-selected="false">🕘 Horários</button>
   <button type="button" id="chipLog" onclick="mostrarSecaoConfig('Log')" class="config-chip" role="tab" aria-selected="false">📜 Histórico</button>
+  <button type="button" id="chipBackup" onclick="mostrarSecaoConfig('Backup')" class="config-chip" role="tab" aria-selected="false">💾 Backup</button>
  </nav>
  <div id="configSecaoConexao" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
   <div class="mb-6">
@@ -1112,11 +1113,25 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
  </div>
 
  <div id="configSecaoLog" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6" style="display:none;">
-  <div class="mb-4">
-   <h2 class="text-xl font-bold">📜 Histórico de alterações</h2>
-   <p class="text-sm text-slate-400 mt-1">Últimas mudanças de meta e planilhas salvas, pra referência (guarda as 30 mais recentes).</p>
+  <div class="mb-4 flex items-center justify-between gap-3 flex-wrap">
+   <div>
+    <h2 class="text-xl font-bold">📜 Histórico de alterações</h2>
+    <p class="text-sm text-slate-400 mt-1">Últimas mudanças de meta e planilhas salvas, pra referência (guarda as 30 mais recentes).</p>
+   </div>
+   <button onclick="exportarLogComoTxt()" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" title="Copia e baixa o histórico em texto">📄 Exportar TXT</button>
   </div>
   <div id="logAlteracoesLista" style="max-height:280px;overflow-y:auto;"></div>
+ </div>
+
+ <div id="configSecaoBackup" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6" style="display:none;">
+  <div class="mb-4">
+   <h2 class="text-xl font-bold">💾 Backup completo</h2>
+   <p class="text-sm text-slate-400 mt-1">Baixa um arquivo com todas as configurações salvas neste navegador (metas, planilhas salvas, histórico, log). Guarde esse arquivo num lugar seguro — útil se trocar de computador ou limpar o navegador por engano.</p>
+  </div>
+  <button onclick="baixarBackupCompleto()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-xl font-semibold text-sm">💾 Baixar backup completo (.json)</button>
+  <div class="mt-4 text-xs text-slate-500 leading-relaxed">
+   <strong class="text-slate-300">Importante:</strong> esse backup guarda só as <em>configurações</em> do painel (metas, planilhas salvas, etc.) — os dados de vendas em si continuam sempre seguros na sua planilha do Google, esse backup não substitui isso.
+  </div>
  </div>
 </section>
 
@@ -1134,6 +1149,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <button id="btnRefreshSimple" onclick="loadGoogleSheet()" class="no-print bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🔄 Atualizar</button>
     <button onclick="printSimpleDay()" class="no-print bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🖨 Imprimir</button>
     <button onclick="exportarDiaComoTxt('simple')" class="no-print bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" title="Copia o resumo desse dia em texto">📄 TXT</button>
+    <button onclick="compartilharDiaWhatsApp('simple')" class="no-print bg-emerald-500 hover:bg-emerald-400 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" title="Abre o WhatsApp com o resumo do dia pronto">💬 WhatsApp</button>
    </div>
   </div>
   <div id="badgeDiaSimple" class="no-print" style="display:none;margin-bottom:10px;"></div>
@@ -1185,6 +1201,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <button id="btnToggleLegendCompleto" onclick="toggleLegend()" class="no-print bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🙈 Esconder explicações</button>
     <button onclick="printCompleteDay()" class="no-print bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🖨 Imprimir</button>
     <button onclick="exportarDiaComoTxt('completo')" class="no-print bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" title="Copia o resumo desse dia em texto">📄 TXT</button>
+    <button onclick="compartilharDiaWhatsApp('completo')" class="no-print bg-emerald-500 hover:bg-emerald-400 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" title="Abre o WhatsApp com o resumo do dia pronto">💬 WhatsApp</button>
    </div>
   </div>
   <div id="badgeDiaCompleto" class="no-print" style="display:none;margin-bottom:10px;"></div>
@@ -2115,6 +2132,64 @@ function renderLogAlteracoes(){
   const dataTxt = data.toLocaleDateString('pt-BR')+' às '+data.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
   return `<div style="font-size:11.5px;color:#93a3ba;padding:6px 0;border-bottom:1px solid #1a2740;"><span style="color:#dce5f2;">${item.texto}</span><br>${dataTxt}</div>`;
  }).join('');
+}
+
+function exportarLogComoTxt(){
+ let log = [];
+ try{ log = JSON.parse(localStorage.getItem('biobel_log_alteracoes')||'[]'); }catch(e){}
+ if(log.length===0){
+  mostrarToast('⚠️ Não há nenhuma alteração registrada ainda pra exportar.');
+  return;
+ }
+ let txt = '===== HISTÓRICO DE ALTERAÇÕES — BIOBEL =====\n';
+ txt += 'Gerado em: '+new Date().toLocaleString('pt-BR')+'\n\n';
+ log.forEach(item=>{
+  const data = new Date(item.quando);
+  const dataTxt = data.toLocaleDateString('pt-BR')+' às '+data.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  txt += '['+dataTxt+'] '+item.texto+'\n';
+ });
+ txt += '\n========================================\n';
+
+ const copiarPromise = (navigator.clipboard && navigator.clipboard.writeText)
+  ? navigator.clipboard.writeText(txt)
+  : Promise.reject(new Error('clipboard indisponível'));
+ copiarPromise
+  .then(()=>{ mostrarToast('✅ Copiado! Agora é só colar na sua outra IA.'); })
+  .catch(()=>{ mostrarToast('📄 Não deu pra copiar automaticamente — baixando o arquivo TXT.'); });
+
+ const blob = new Blob([txt], {type:'text/plain;charset=utf-8'});
+ const url = URL.createObjectURL(blob);
+ const a = document.createElement('a');
+ a.href = url;
+ a.download = 'biobel-historico-alteracoes.txt';
+ document.body.appendChild(a);
+ a.click();
+ document.body.removeChild(a);
+ URL.revokeObjectURL(url);
+}
+
+function baixarBackupCompleto(){
+ const backup = {
+  geradoEm: new Date().toISOString(),
+  sistema: 'Biobel — Fechamento de Caixa',
+  dados: {}
+ };
+ for(let i=0; i<localStorage.length; i++){
+  const chave = localStorage.key(i);
+  if(chave && chave.startsWith('biobel_')){
+   backup.dados[chave] = localStorage.getItem(chave);
+  }
+ }
+ const blob = new Blob([JSON.stringify(backup, null, 2)], {type:'application/json;charset=utf-8'});
+ const url = URL.createObjectURL(blob);
+ const a = document.createElement('a');
+ a.href = url;
+ a.download = 'biobel-backup-'+new Date().toISOString().slice(0,10)+'.json';
+ document.body.appendChild(a);
+ a.click();
+ document.body.removeChild(a);
+ URL.revokeObjectURL(url);
+ mostrarToast('✅ Backup baixado com sucesso!');
 }
 
 function saveSalesGoal(){
@@ -3467,6 +3542,34 @@ function renderTopDays(){
  }).join('');
 }
 
+function compartilharDiaWhatsApp(tipo){
+ const selectId = tipo==='completo' ? 'completeDaySelect' : 'simpleDaySelect';
+ const select = document.getElementById(selectId);
+ const diaSelecionado = select ? select.value : null;
+ const d = daysData.find(x=>x.dia===diaSelecionado) || daysData[daysData.length-1];
+ if(!d){
+  mostrarToast('⚠️ Não há dados carregados pra compartilhar ainda.');
+  return;
+ }
+ const dow = nomeDiaSemanaAbrev(d.dia);
+ const meta = getDailyGoal();
+ const bateuMeta = (Number(d.sales)||0) >= meta && meta>0;
+
+ let msg = '📊 *Fechamento de Caixa — '+diaComAno(d.dia)+(dow?' ('+dow+')':'')+'*\n\n';
+ msg += '💰 Vendas: *'+money(d.sales)+'*'+(bateuMeta?' 🎉 Meta batida!':'')+'\n';
+ msg += '🔒 Fechamento: '+money(d.closing)+'\n';
+ if(tipo==='completo'){
+  msg += '\n💵 Dinheiro: '+money(d.dinheiro)+'\n';
+  msg += '💳 Débito: '+money(d.debito)+'\n';
+  msg += '💳 Crédito: '+money(d.credito)+'\n';
+  msg += '📲 Pix: '+money(d.pix)+'\n';
+ }
+ msg += '\n_Gerado pelo painel Biobel_';
+
+ const url = 'https://wa.me/?text='+encodeURIComponent(msg);
+ window.open(url, '_blank');
+}
+
 function exportarDiaComoTxt(tipo){
  const selectId = tipo==='completo' ? 'completeDaySelect' : 'simpleDaySelect';
  const select = document.getElementById(selectId);
@@ -3780,7 +3883,7 @@ function extractSpreadsheetId(url){
  return m?m[1]:'';
 }
 function mostrarSecaoConfig(secao){
- const secoes = ['Conexao','Planilhas','Metas','Email','Horarios','Log'];
+ const secoes = ['Conexao','Planilhas','Metas','Email','Horarios','Log','Backup'];
  secoes.forEach(s=>{
   const el = document.getElementById('configSecao'+s);
   const chip = document.getElementById('chip'+s);
