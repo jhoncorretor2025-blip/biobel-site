@@ -1286,7 +1286,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
  <div id="configSecaoLogo" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6" style="display:none;">
   <div class="mb-4">
    <h2 class="text-xl font-bold">🖼️ Logo da Biobel</h2>
-   <p class="text-sm text-slate-400 mt-1">Usada no relatório mensal em PDF. Envie uma imagem (PNG ou JPG, de preferência quadrada ou levemente retangular) — fica guardada só neste navegador.</p>
+   <p class="text-sm text-slate-400 mt-1">Usada no relatório mensal em PDF, no cabeçalho do painel, na tela de login e no ícone da aba do navegador. Envie uma imagem OU cole o link (URL) de uma imagem já publicada na internet.</p>
   </div>
   <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
    <div style="width:80px;height:80px;border-radius:12px;background:#0b1728;border:1px solid #1e2c42;display:flex;align-items:center;justify-content:center;overflow:hidden;">
@@ -1297,6 +1297,16 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <div id="logoBiobelStatus" class="mt-2 text-xs text-slate-400"></div>
    </div>
   </div>
+
+  <div style="border-top:1px solid #1e2c42;padding-top:14px;margin-bottom:14px;">
+   <label class="block text-sm font-semibold mb-2" for="inputLogoBiobelUrl">Ou cole o link (URL) de uma imagem</label>
+   <div style="display:flex;gap:8px;">
+    <input id="inputLogoBiobelUrl" type="url" value="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9SwF4jZXYBWKBwWhxqdwut1wnZRS4hqyU47xNSpsuHg&s" placeholder="https://..." class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-slate-300 outline-none focus:border-emerald-500">
+    <button onclick="salvarLogoPorUrl()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Usar este link</button>
+   </div>
+   <p style="font-size:10.5px;color:#93a3ba;margin-top:6px;">⚠️ Links de imagem do Google Imagens (gstatic.com) às vezes funcionam pra aparecer na tela, mas falham especificamente no PDF, por bloqueio de segurança do próprio Google. Se isso acontecer, a solução mais garantida é baixar a imagem e enviar como arquivo (opção acima).</p>
+  </div>
+
   <button onclick="restaurarLogoPadrao()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2.5 rounded-xl font-semibold text-sm">↺ Restaurar logo padrão</button>
  </div>
 </section>
@@ -2667,11 +2677,30 @@ function exportarLogComoTxt(){
 }
 
 /* ===== Logo personalizada da Biobel (usada no relatório mensal em PDF) ===== */
+function getLogoAtivaParaExibicao(){
+ // Prioridade pra exibição simples (header/login/favicon, que não precisam de canvas):
+ // 1) arquivo enviado (já em base64) — 2) link (URL) salvo — 3) logo padrão do site.
+ const upload = localStorage.getItem('biobel_logo_custom');
+ if(upload) return upload;
+ const url = localStorage.getItem('biobel_logo_custom_url');
+ if(url) return url;
+ return '/logo_biobel_gravatai.png';
+}
+function seedLogoUrlPadrao(){
+ // Se a loja ainda não configurou nenhuma logo (nem upload, nem link), usa automaticamente
+ // o link que foi combinado como padrão — só na primeira vez, sem sobrescrever escolhas já feitas.
+ const jaTemUpload = localStorage.getItem('biobel_logo_custom');
+ const jaTemUrl = localStorage.getItem('biobel_logo_custom_url');
+ const jaEscolheuPadrao = localStorage.getItem('biobel_logo_padrao_escolhido'); // marca se a pessoa clicou "restaurar padrão" de propósito
+ if(!jaTemUpload && !jaTemUrl && !jaEscolheuPadrao){
+  localStorage.setItem('biobel_logo_custom_url', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9SwF4jZXYBWKBwWhxqdwut1wnZRS4hqyU47xNSpsuHg&s');
+ }
+}
 function aplicarLogoPersonalizadaNoSistema(){
  // Aplica a logo (personalizada ou padrão) no cabeçalho do painel E no ícone da aba do navegador,
  // pra deixar o sistema visualmente da loja em todos os lugares, não só no PDF.
- const custom = localStorage.getItem('biobel_logo_custom');
- const logoParaUsar = custom || '/logo_biobel_gravatai.png';
+ seedLogoUrlPadrao();
+ const logoParaUsar = getLogoAtivaParaExibicao();
  const logoHeader = document.getElementById('logoHeaderBiobel');
  if(logoHeader) logoHeader.src = logoParaUsar;
  const favicon = document.querySelector('link[rel="icon"]');
@@ -2689,12 +2718,14 @@ function carregarLogoBiobel(event){
  reader.onload = e=>{
   const dataUrl = e.target.result;
   localStorage.setItem('biobel_logo_custom', dataUrl);
+  localStorage.removeItem('biobel_logo_custom_url'); // arquivo enviado tem prioridade sobre um link salvo antes
+  localStorage.removeItem('biobel_logo_padrao_escolhido');
   const preview = document.getElementById('previewLogoBiobel');
   if(preview) preview.src = dataUrl;
   aplicarLogoPersonalizadaNoSistema();
   if(statusEl) statusEl.innerHTML = '<span class="text-emerald-400">✅ Logo salva! Já atualizada no cabeçalho, no ícone da aba e vai ser usada no próximo PDF.</span>';
   mostrarToast('✅ Logo atualizada com sucesso!');
-  registrarAlteracao('Logo da Biobel personalizada foi atualizada');
+  registrarAlteracao('Logo da Biobel personalizada foi atualizada (arquivo enviado)');
   renderLogAlteracoes();
  };
  reader.onerror = ()=>{
@@ -2702,8 +2733,34 @@ function carregarLogoBiobel(event){
  };
  reader.readAsDataURL(file);
 }
+function salvarLogoPorUrl(){
+ const url = document.getElementById('inputLogoBiobelUrl').value.trim();
+ const statusEl = document.getElementById('logoBiobelStatus');
+ if(!url){ if(statusEl) statusEl.innerHTML = '<span class="text-rose-400">Cole um link de imagem antes de salvar.</span>'; return; }
+ try{ new URL(url); }catch(e){ if(statusEl) statusEl.innerHTML = '<span class="text-rose-400">Esse link não parece válido.</span>'; return; }
+
+ localStorage.setItem('biobel_logo_custom_url', url);
+ localStorage.removeItem('biobel_logo_custom'); // link salvo tem prioridade sobre um arquivo enviado antes
+ localStorage.removeItem('biobel_logo_padrao_escolhido');
+ const preview = document.getElementById('previewLogoBiobel');
+ if(preview) preview.src = url;
+ aplicarLogoPersonalizadaNoSistema();
+ if(statusEl) statusEl.innerHTML = '<span class="text-emerald-400">✅ Link salvo! Já atualizado no cabeçalho e no ícone da aba.</span>';
+ mostrarToast('✅ Logo por link salva com sucesso!');
+ registrarAlteracao('Logo da Biobel personalizada foi atualizada (link/URL)');
+ renderLogAlteracoes();
+
+ // Testa se esse link vai conseguir virar PDF (alguns links do Google Imagens bloqueiam isso por segurança).
+ obterLogoDataUrl().then(resultado=>{
+  if(!resultado && statusEl){
+   statusEl.innerHTML = '<span class="text-amber-400">⚠️ O link foi salvo e já aparece na tela, mas não vai funcionar no PDF (bloqueio de segurança desse tipo de link). Pro PDF funcionar, envie a imagem como arquivo em vez de link.</span>';
+  }
+ });
+}
 function restaurarLogoPadrao(){
  localStorage.removeItem('biobel_logo_custom');
+ localStorage.removeItem('biobel_logo_custom_url');
+ localStorage.setItem('biobel_logo_padrao_escolhido', 'yes'); // marca que foi escolha da pessoa, não aplica o seed de novo
  const preview = document.getElementById('previewLogoBiobel');
  if(preview) preview.src = '/logo_biobel_gravatai.png';
  aplicarLogoPersonalizadaNoSistema();
@@ -2714,31 +2771,51 @@ function restaurarLogoPadrao(){
 function initLogoBiobelUI(){
  const preview = document.getElementById('previewLogoBiobel');
  if(!preview) return;
- const custom = localStorage.getItem('biobel_logo_custom');
- preview.src = custom || '/logo_biobel_gravatai.png';
+ seedLogoUrlPadrao();
+ preview.src = getLogoAtivaParaExibicao();
+ const inputUrl = document.getElementById('inputLogoBiobelUrl');
+ const urlSalva = localStorage.getItem('biobel_logo_custom_url');
+ if(inputUrl && urlSalva) inputUrl.value = urlSalva;
 }
 function obterLogoDataUrl(){
- // Devolve sempre uma imagem em base64 (data URL), pronta pra usar no PDF —
- // se tiver logo personalizada salva, usa ela; senão, converte a logo padrão do site.
+ // Devolve sempre uma imagem em base64 (data URL), pronta pra usar no PDF — tenta nessa ordem:
+ // 1) arquivo enviado (já é base64, sempre funciona) — 2) link (URL) salvo, convertido via canvas
+ // (pode falhar se o site de origem bloquear isso por segurança) — 3) a logo padrão do site.
  return new Promise(resolve=>{
-  const custom = localStorage.getItem('biobel_logo_custom');
-  if(custom){ resolve(custom); return; }
-  try{
-   const img = new Image();
-   img.crossOrigin = 'anonymous';
-   img.onload = ()=>{
+  const upload = localStorage.getItem('biobel_logo_custom');
+  if(upload){ resolve(upload); return; }
+
+  function converterViaCanvas(src){
+   return new Promise(resolveConv=>{
     try{
-     const canvas = document.createElement('canvas');
-     canvas.width = img.naturalWidth || 200;
-     canvas.height = img.naturalHeight || 200;
-     const ctx = canvas.getContext('2d');
-     ctx.drawImage(img,0,0);
-     resolve(canvas.toDataURL('image/png'));
-    }catch(e){ resolve(null); }
-   };
-   img.onerror = ()=>resolve(null);
-   img.src = '/logo_biobel_gravatai.png';
-  }catch(e){ resolve(null); }
+     const img = new Image();
+     img.crossOrigin = 'anonymous';
+     img.onload = ()=>{
+      try{
+       const canvas = document.createElement('canvas');
+       canvas.width = img.naturalWidth || 200;
+       canvas.height = img.naturalHeight || 200;
+       const ctx = canvas.getContext('2d');
+       ctx.drawImage(img,0,0);
+       resolveConv(canvas.toDataURL('image/png'));
+      }catch(e){ resolveConv(null); } // canvas "contaminado" — o site de origem bloqueou o uso da imagem
+     };
+     img.onerror = ()=>resolveConv(null);
+     img.src = src;
+    }catch(e){ resolveConv(null); }
+   });
+  }
+
+  const url = localStorage.getItem('biobel_logo_custom_url');
+  if(url){
+   converterViaCanvas(url).then(resultado=>{
+    if(resultado) resolve(resultado);
+    else converterViaCanvas('/logo_biobel_gravatai.png').then(resolve); // link falhou — usa a padrão como respaldo
+   });
+   return;
+  }
+
+  converterViaCanvas('/logo_biobel_gravatai.png').then(resolve);
  });
 }
 
