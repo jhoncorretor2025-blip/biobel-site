@@ -307,6 +307,16 @@ body.light-mode .info-resumo-rapido .val{color:#0f172a;}
 .card-analise-avancada{border-color:#3a2a5c!important;background:linear-gradient(180deg,#160f2b 0%,#0d1a2c 55%)!important;}
 .card-analise-avancada .adv-card-title h3{color:#c9b6ff!important;}
 .mobile-action-bar{display:none;}
+.card-dia-semana{flex:0 0 220px;background:linear-gradient(180deg,#0d1a2c,#0a1525);border:1px solid #1e2c42;border-radius:16px;padding:14px;scroll-snap-align:start;position:relative;}
+.card-dia-semana.melhor-do-grupo{border-color:#fbbf24;box-shadow:0 0 0 1px rgba(251,191,36,.3);}
+.card-dia-semana .badge-posicao{position:absolute;top:12px;right:12px;background:#1c2c42;color:#93a3ba;font-size:10px;font-weight:800;padding:3px 8px;border-radius:999px;}
+.card-dia-semana.melhor-do-grupo .badge-posicao{background:#fbbf24;color:#3a2a0b;}
+#cardsDiaSemanaWrap{scroll-snap-type:x proximity;}
+.hall-fama-item{background:linear-gradient(180deg,#0d1a2c,#0a1525);border:1px solid #1e2c42;border-radius:16px;padding:16px;text-align:center;}
+.hall-fama-item .emoji{font-size:26px;}
+.hall-fama-item .titulo{font-size:10px;color:#93a3ba;font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin-top:6px;}
+.hall-fama-item .nome{font-size:15px;font-weight:900;color:#f6f9fd;margin-top:4px;}
+.hall-fama-item .valor{font-size:12px;color:#93a3ba;margin-top:2px;}
 @keyframes flashTrocaDia{0%{background-color:rgba(39,215,160,.25);}100%{background-color:transparent;}}
 .flash-troca-dia{animation:flashTrocaDia .6s ease-out;border-radius:12px;}
 .badge-dia-hoje{display:inline-flex;align-items:center;gap:5px;background:rgba(39,215,160,.12);color:#27d7a0;border:1px solid rgba(39,215,160,.35);font-size:11.5px;font-weight:800;padding:5px 10px;border-radius:999px;}
@@ -580,6 +590,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <button type="button" id="chipInfoDias" onclick="mostrarSecaoInfo('Dias')" class="config-chip" role="tab" aria-selected="false">📅 Dias</button>
   <button type="button" id="chipInfoAvancado" onclick="mostrarSecaoInfo('Avancado')" class="config-chip" role="tab" aria-selected="false">🔍 Análises avançadas</button>
   <button type="button" id="chipInfoComparar" onclick="mostrarSecaoInfo('Comparar')" class="config-chip" role="tab" aria-selected="false">📊 Comparar meses</button>
+  <button type="button" id="chipInfoPorDiaSemana" onclick="mostrarSecaoInfo('PorDiaSemana')" class="config-chip" role="tab" aria-selected="false">📆 Por Dia da Semana</button>
  </div>
 
  <div id="infoSecaoFinanceiro">
@@ -872,6 +883,22 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
  </div>
  <!-- fim infoSecaoComparar -->
+
+ <div id="infoSecaoPorDiaSemana" style="display:none;">
+  <div class="config-chips no-print" style="position:static;top:auto;background:transparent;padding:0 0 10px;margin-bottom:4px;">
+   <button type="button" class="config-chip" data-dow="1" onclick="selecionarDiaSemanaView(1)">Segunda</button>
+   <button type="button" class="config-chip" data-dow="2" onclick="selecionarDiaSemanaView(2)">Terça</button>
+   <button type="button" class="config-chip" data-dow="3" onclick="selecionarDiaSemanaView(3)">Quarta</button>
+   <button type="button" class="config-chip" data-dow="4" onclick="selecionarDiaSemanaView(4)">Quinta</button>
+   <button type="button" class="config-chip" data-dow="5" onclick="selecionarDiaSemanaView(5)">Sexta</button>
+   <button type="button" class="config-chip" data-dow="6" onclick="selecionarDiaSemanaView(6)">Sábado</button>
+  </div>
+
+  <div id="hallDaFamaDiaSemana" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:18px;"></div>
+
+  <div id="cardsDiaSemanaWrap" style="display:flex;gap:14px;overflow-x:auto;padding-bottom:10px;"></div>
+ </div>
+ <!-- fim infoSecaoPorDiaSemana -->
 
  <div class="mobile-action-bar no-print">
   <button onclick="loadGoogleSheet()" style="background:#2f78e0;color:#fff;">🔄 Atualizar</button>
@@ -2972,7 +2999,7 @@ function initNotificacoesUI(){
 }
 
 function mostrarSecaoInfo(secao){
- const secoes = ['Financeiro','Vendedoras','Dias','Avancado','Comparar'];
+ const secoes = ['Financeiro','Vendedoras','Dias','Avancado','Comparar','PorDiaSemana'];
  secoes.forEach(s=>{
   const el = document.getElementById('infoSecao'+s);
   const chip = document.getElementById('chipInfo'+s);
@@ -2984,6 +3011,180 @@ function mostrarSecaoInfo(secao){
   }
  });
  try{ localStorage.setItem('biobel_info_secao_ativa', secao); }catch(e){}
+ if(secao==='PorDiaSemana') initPorDiaSemanaView();
+}
+
+/* ===== Tela "Por Dia da Semana" — compara todas as ocorrências do mesmo dia da semana ===== */
+let diaSemanaViewAtual = null;
+
+function diaParaNumeroSemana(diaStr){
+ const partes = String(diaStr||'').split('.').map(Number);
+ if(partes.length<2) return null;
+ const [dia, mes] = partes;
+ return new Date(2026, mes-1, dia).getDay();
+}
+
+function initPorDiaSemanaView(){
+ // Abre automaticamente no dia da semana de HOJE (horário real de Brasília) — assim, amanhã
+ // a pessoa já vê direto os cards de quarta, sem precisar clicar em nada.
+ const hoje = obterAgoraBrasilia();
+ const dowHoje = hoje.getDay();
+ // Se hoje for domingo (loja fechada, sem dado), cai pro dia útil mais recente (sábado).
+ const dowAlvo = dowHoje===0 ? 6 : dowHoje;
+ selecionarDiaSemanaView(dowAlvo);
+}
+
+function selecionarDiaSemanaView(dow){
+ diaSemanaViewAtual = dow;
+ document.querySelectorAll('#infoSecaoPorDiaSemana .config-chip[data-dow]').forEach(btn=>{
+  btn.classList.toggle('active', Number(btn.dataset.dow)===dow);
+ });
+ renderPorDiaSemanaView(dow);
+}
+
+function renderPorDiaSemanaView(dow){
+ const nomesDiasSemana = {1:'Segunda',2:'Terça',3:'Quarta',4:'Quinta',5:'Sexta',6:'Sábado'};
+ const nomeDia = nomesDiasSemana[dow] || '';
+ const ocorrencias = daysData.filter(d=>diaParaNumeroSemana(d.dia)===dow);
+
+ const elHall = document.getElementById('hallDaFamaDiaSemana');
+ const elCards = document.getElementById('cardsDiaSemanaWrap');
+ if(!elHall || !elCards) return;
+
+ if(ocorrencias.length===0){
+  elHall.innerHTML = '';
+  elCards.innerHTML = `<p style="color:#93a3ba;font-size:13px;">Ainda não há nenhuma ${nomeDia.toLowerCase()} lançada nesse período.</p>`;
+  return;
+ }
+
+ // ===== Hall da fama: melhor vendedora geral, melhor da manhã e melhor da tarde, somando todas as ocorrências desse dia da semana =====
+ const totaisGeral = {}, totaisManha = {}, totaisTarde = {};
+ ocorrencias.forEach(d=>{
+  Object.entries(d.vendedoras||{}).forEach(([nome,valor])=>{
+   totaisGeral[nome] = (totaisGeral[nome]||0) + (Number(valor)||0);
+  });
+  const manhaVend = (d.porTurnoVend||{})['manhã']||{};
+  Object.entries(manhaVend).forEach(([nome,info])=>{
+   if(!totaisManha[nome]) totaisManha[nome] = {valor:0,qtd:0};
+   totaisManha[nome].valor += Number(info.valor)||0;
+   totaisManha[nome].qtd += Number(info.qtd)||0;
+  });
+  const tardeVend = (d.porTurnoVend||{})['tarde']||{};
+  Object.entries(tardeVend).forEach(([nome,info])=>{
+   if(!totaisTarde[nome]) totaisTarde[nome] = {valor:0,qtd:0};
+   totaisTarde[nome].valor += Number(info.valor)||0;
+   totaisTarde[nome].qtd += Number(info.qtd)||0;
+  });
+ });
+ const rainhaGeral = Object.entries(totaisGeral).sort((a,b)=>b[1]-a[1])[0];
+ const estrelaManha = Object.entries(totaisManha).sort((a,b)=>b[1].valor-a[1].valor)[0];
+ const estrelaTarde = Object.entries(totaisTarde).sort((a,b)=>b[1].valor-a[1].valor)[0];
+
+ let hallHtml = '';
+ if(rainhaGeral){
+  hallHtml += `<div class="hall-fama-item">
+    <div class="emoji">👑</div>
+    <div class="titulo">Rainha das ${nomeDia}s</div>
+    <div class="nome">${rainhaGeral[0]}</div>
+    <div class="valor">Total: ${money(rainhaGeral[1])} (${ocorrencias.length} ${nomeDia.toLowerCase()}${ocorrencias.length===1?'':'s'})</div>
+   </div>`;
+ }
+ if(estrelaManha){
+  hallHtml += `<div class="hall-fama-item">
+    <div class="emoji">☀️</div>
+    <div class="titulo">Estrela da Manhã</div>
+    <div class="nome">${estrelaManha[0]}</div>
+    <div class="valor">Manhã: ${money(estrelaManha[1].valor)} (${estrelaManha[1].qtd} v)</div>
+   </div>`;
+ }
+ if(estrelaTarde){
+  hallHtml += `<div class="hall-fama-item">
+    <div class="emoji">🌙</div>
+    <div class="titulo">Estrela da Tarde</div>
+    <div class="nome">${estrelaTarde[0]}</div>
+    <div class="valor">Tarde: ${money(estrelaTarde[1].valor)} (${estrelaTarde[1].qtd} v)</div>
+   </div>`;
+ }
+ elHall.innerHTML = hallHtml;
+
+ // ===== Cards, um por ocorrência (mais recente primeiro) =====
+ const ordenadas = [...ocorrencias].sort((a,b)=>b.dia.localeCompare(a.dia));
+ const mediaGeralTodosOsDias = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0) / (daysData.length||1);
+ const maiorValor = Math.max(...ordenadas.map(d=>Number(d.sales)||0)) || 1;
+ const nomesMesesPt3 = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+
+ elCards.innerHTML = ordenadas.map((d,i)=>{
+  const valor = Number(d.sales)||0;
+  const pctDoPico = (valor/maiorValor)*100;
+  const ehMelhor = i===ordenadas.indexOf(ordenadas.reduce((a,b)=>(Number(a.sales)||0)>=(Number(b.sales)||0)?a:b));
+  const posicao = ordenadas
+   .map((x,idx)=>({dia:x.dia, sales:Number(x.sales)||0, idx}))
+   .sort((a,b)=>b.sales-a.sales)
+   .findIndex(x=>x.idx===i) + 1;
+  const clima = climaDoDia(valor, mediaGeralTodosOsDias);
+
+  const partes = String(d.dia).split('.').map(Number);
+  const dataObj = new Date(2026, partes[1]-1, partes[0]);
+  const dataFormatada = String(partes[0]).padStart(2,'0')+'/'+nomesMesesPt3[partes[1]-1]+'/2026';
+
+  const manha = (d.porTurno||{})['manhã'] || {qtd:0,valor:0};
+  const tarde = (d.porTurno||{})['tarde'] || {qtd:0,valor:0};
+  const manhaVendTop = Object.entries((d.porTurnoVend||{})['manhã']||{}).sort((a,b)=>b[1].valor-a[1].valor)[0];
+  const tardeVendTop = Object.entries((d.porTurnoVend||{})['tarde']||{}).sort((a,b)=>b[1].valor-a[1].valor)[0];
+
+  // Intervalos sem vendas: maior gap de tempo entre uma venda e a próxima, naquele dia.
+  const horariosDoDia = d.horariosVendas || [];
+  let maiorIntervaloTxt = '';
+  if(horariosDoDia.length>=2){
+   let maiorGapMin = 0, gapInicio=null, gapFim=null;
+   for(let k=1;k<horariosDoDia.length;k++){
+    const gapMin = (horariosDoDia[k]-horariosDoDia[k-1])*24*60;
+    if(gapMin>maiorGapMin){ maiorGapMin=gapMin; gapInicio=horariosDoDia[k-1]; gapFim=horariosDoDia[k]; }
+   }
+   if(maiorGapMin>=25){
+    const h = Math.floor(maiorGapMin/60), m = Math.round(maiorGapMin%60);
+    maiorIntervaloTxt = `${formatarHoraFracao(gapInicio)} – ${formatarHoraFracao(gapFim)} (${h>0?h+'h':''}${m}min)`;
+   }
+  }
+
+  return `
+   <div class="card-dia-semana${ehMelhor?' melhor-do-grupo':''}">
+    <span class="badge-posicao">${posicao}º lugar</span>
+    ${ehMelhor?'<div style="color:#fbbf24;font-size:10px;font-weight:800;margin-bottom:4px;">🏆 MELHOR</div>':''}
+    <div style="font-size:10px;color:#93a3ba;">${dataFormatada}</div>
+    <div style="font-size:22px;font-weight:900;color:#f6f9fd;margin-top:4px;">${money(valor)}</div>
+    <div style="background:#0b1728;border-radius:999px;height:6px;overflow:hidden;margin-top:8px;">
+     <div style="height:100%;width:${Math.max(pctDoPico,4).toFixed(1)}%;background:linear-gradient(90deg,#fbbf24,#f59e0b);"></div>
+    </div>
+    <div style="font-size:10px;color:#93a3ba;margin-top:4px;">${pctDoPico.toFixed(0)}% do pico ${clima}</div>
+    <div style="font-size:11px;color:#93a3ba;margin-top:10px;">${d.qtdVendas||0} venda${(d.qtdVendas||0)===1?'':'s'}</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;border-top:1px solid #1e2c42;padding-top:10px;">
+     <div>
+      <div style="font-size:9.5px;color:#93a3ba;">☀️ Manhã</div>
+      <div style="font-size:13px;font-weight:800;color:#dce5f2;">${money(manha.valor)}</div>
+      <div style="font-size:9.5px;color:#93a3ba;">${manha.qtd} v</div>
+     </div>
+     <div>
+      <div style="font-size:9.5px;color:#93a3ba;">🌙 Tarde</div>
+      <div style="font-size:13px;font-weight:800;color:#dce5f2;">${money(tarde.valor)}</div>
+      <div style="font-size:9.5px;color:#93a3ba;">${tarde.qtd} v</div>
+     </div>
+    </div>
+
+    ${(manhaVendTop||tardeVendTop) ? `
+    <div style="margin-top:10px;background:#0b1728;border-radius:10px;padding:8px 10px;">
+     <div style="font-size:9.5px;color:#93a3ba;font-weight:800;">⭐ Destaque</div>
+     ${manhaVendTop?`<div style="font-size:11px;color:#dce5f2;margin-top:3px;">${manhaVendTop[0]} <span style="color:#93a3ba;">— M: ${money(manhaVendTop[1].valor)}</span></div>`:''}
+     ${tardeVendTop?`<div style="font-size:11px;color:#dce5f2;margin-top:2px;">${tardeVendTop[0]} <span style="color:#93a3ba;">— T: ${money(tardeVendTop[1].valor)}</span></div>`:''}
+    </div>` : ''}
+
+    ${maiorIntervaloTxt ? `
+    <div style="margin-top:10px;font-size:10px;color:#93a3ba;">
+     ⏱️ Maior intervalo sem venda<br><span style="color:#dce5f2;">${maiorIntervaloTxt}</span>
+    </div>` : ''}
+   </div>`;
+ }).join('');
 }
 
 function renderResumoRapido(totalSales, pct){
@@ -5231,6 +5432,28 @@ function extractPrimeiraUltimaVenda(rows){
  return { primeiraVenda: formatarHoraFracao(primeira), ultimaVenda: formatarHoraFracao(ultima) };
 }
 
+function extractHorariosVendas(rows){
+ // Lista o horário exato (em fração do dia) de cada venda individual, em ordem crescente —
+ // usada pra calcular os "intervalos sem vendas" (maiores gaps de tempo entre uma venda e outra).
+ const horarios = [];
+ for(let r=0;r<rows.length;r++){
+  const rownum = rows[r]?.[0];
+  const label = String(rownum??'').trim().toLowerCase();
+  if(label==='total') break;
+  if(typeof rownum!=='number') continue;
+  let valorVenda = 0;
+  for(const c of [1,2,3,4]){
+   const v = rows[r]?.[c];
+   if(typeof v==='number') valorVenda += v;
+  }
+  if(valorVenda<=0) continue;
+  const frac = extrairFracaoTempo(rows[r]?.[11]);
+  if(frac===null) continue;
+  horarios.push(frac);
+ }
+ return horarios.sort((a,b)=>a-b);
+}
+
 function extractGeneroTotais(rows){
  // Usa a coluna "genero" (J). Só conta linhas com vendedora preenchida (venda real) —
  // a planilha vem com "mulher" pré-preenchido em todo o molde de 60 linhas, mesmo nas vazias.
@@ -5449,7 +5672,8 @@ function processarLinhasDoDia(sheetName, rows){
  const genero=extractGeneroTotais(rows);
  const vendasIndividuais=extractVendasIndividuais(rows);
  const {primeiraVenda,ultimaVenda}=extractPrimeiraUltimaVenda(rows);
- return {dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos,horarios,porTurno,porTurnoVend,totalComTurno,genero,vendasIndividuais,primeiraVenda,ultimaVenda};
+ const horariosVendas=extractHorariosVendas(rows);
+ return {dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos,horarios,porTurno,porTurnoVend,totalComTurno,genero,vendasIndividuais,primeiraVenda,ultimaVenda,horariosVendas};
 }
 
 function getAppsScriptProxyUrl(){
@@ -5611,7 +5835,8 @@ document.getElementById('fileInput').addEventListener('change',async e=>{
    const genero=extractGeneroTotais(rows);
    const vendasIndividuais=extractVendasIndividuais(rows);
    const {primeiraVenda,ultimaVenda}=extractPrimeiraUltimaVenda(rows);
-   const item={dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos,horarios,porTurno,porTurnoVend,totalComTurno,genero,vendasIndividuais,primeiraVenda,ultimaVenda};
+   const horariosVendas=extractHorariosVendas(rows);
+   const item={dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos,horarios,porTurno,porTurnoVend,totalComTurno,genero,vendasIndividuais,primeiraVenda,ultimaVenda,horariosVendas};
    daysData=daysData.filter(x=>x.dia!==sheetName);
    daysData.push(item);
   }
