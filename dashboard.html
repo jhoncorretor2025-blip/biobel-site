@@ -3031,7 +3031,14 @@ function renderRecordeDoMes(){
  let historico = {};
  try{ historico = JSON.parse(localStorage.getItem('biobel_historico_meses')||'{}'); }catch(e){}
  const totalAtual = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
- const valoresAnteriores = Object.values(historico).map(Number).filter(v=>v>0);
+ // Importante: o "histórico de meses" também guarda o total do mês ATUAL (usado noutra tela pra comparação
+ // mês a mês) — se não excluirmos a chave do mês atual daqui, o sistema compara o mês com ele mesmo e
+ // sempre mostra "novo recorde", mesmo sem nenhum mês anterior de verdade já arquivado.
+ const mesAtualKey = daysData[0]?.dia?.split('.')[1];
+ const valoresAnteriores = Object.entries(historico)
+  .filter(([chave])=>chave!==mesAtualKey)
+  .map(([,v])=>Number(v))
+  .filter(v=>v>0);
  if(valoresAnteriores.length===0){ el.style.display='none'; return; }
  const recorde = Math.max(...valoresAnteriores);
  el.style.display='block';
@@ -3043,13 +3050,15 @@ function renderRecordeDoMes(){
  }
 }
 
-/* ===== Alerta de diferença grande entre início+vendas-retiradas e o fechamento contado ===== */
+/* ===== Alerta de diferença grande entre o caixa esperado (só dinheiro físico) e o fechamento contado ===== */
 function renderAlertaDiferencaFechamento(){
  const el = document.getElementById('infoAlertaDiferencaFechamento');
  if(!el || daysData.length===0){ if(el) el.style.display='none'; return; }
  const LIMITE_DIFERENCA = 20; // reais — acima disso, vale a pena conferir a contagem física
  const diferencas = daysData.map(d=>{
-  const esperado = (Number(d.initial)||0) + (Number(d.sales)||0) - (Number(d.withdrawals)||0);
+  // Importante: só o DINHEIRO físico fica na gaveta. Débito/crédito/Pix vão direto pro banco,
+  // então não entram nessa conta — comparar com o total de vendas (d.sales) dava uma diferença falsa e enorme.
+  const esperado = (Number(d.initial)||0) + (Number(d.dinheiro)||0) - (Number(d.withdrawals)||0);
   const diff = (Number(d.closing)||0) - esperado;
   return {dia:d.dia, diff};
  }).filter(x=>Math.abs(x.diff)>=LIMITE_DIFERENCA);
@@ -3059,7 +3068,7 @@ function renderAlertaDiferencaFechamento(){
  const mostrarAte = 4;
  const listaTexto = diferencas.slice(0,mostrarAte).map(x=>diaComAno(x.dia)+': '+(x.diff>0?'+':'')+money(x.diff)).join(' · ');
  el.innerHTML = `<div style="background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.35);border-radius:14px;padding:12px 16px;margin-bottom:14px;font-size:12.5px;color:#fbbf24;">
-   ⚖️ <strong>${diferencas.length} dia${diferencas.length===1?'':'s'} com diferença de caixa acima de ${money(LIMITE_DIFERENCA)}</strong> (entre o valor esperado e o fechamento contado): ${listaTexto}${diferencas.length>mostrarAte?' e mais '+(diferencas.length-mostrarAte):''}. Pode valer a pena reconferir a contagem física desses dias.
+   ⚖️ <strong>${diferencas.length} dia${diferencas.length===1?'':'s'} com diferença de caixa acima de ${money(LIMITE_DIFERENCA)}</strong> (entre o dinheiro físico esperado e o fechamento contado): ${listaTexto}${diferencas.length>mostrarAte?' e mais '+(diferencas.length-mostrarAte):''}. Pode valer a pena reconferir a contagem física desses dias.
   </div>`;
 }
 
@@ -3321,20 +3330,24 @@ function renderNovasMetricas(){
  const elTicketSub=document.getElementById('infoTicketMedioSub');
  if(elTicketSub) elTicketSub.textContent = totalQtdVendas>0 ? totalQtdVendas+' venda(s) contada(s) no mês' : 'ainda sem dados de quantidade (recarregue a planilha)';
 
- // 2) Projecao de Faturamento ate o Fim do Mes
+ // 2) Projeção de Faturamento até o Fim do Mês
+ // Corrigido: usa os dias ÚTEIS que realmente faltam (sem domingo), não todos os dias do calendário —
+ // multiplicar pela quantidade total de dias inflava a projeção contando até domingos, quando a loja nem abre.
  const mesAtual = daysData[0]?.dia?.split('.')[1];
- const anoAtual = 2026;
- let diasNoMes = 30;
- if(mesAtual){
-  diasNoMes = new Date(anoAtual, Number(mesAtual), 0).getDate();
- }
- const diasComDados = daysData.length;
- const mediaDiaria = diasComDados>0 ? totalSales/diasComDados : 0;
- const projecao = mediaDiaria * diasNoMes;
  const elProj=document.getElementById('infoProjecao');
- if(elProj) elProj.textContent = money(projecao);
  const elProjSub=document.getElementById('infoProjecaoSub');
- if(elProjSub) elProjSub.textContent = `média de ${money(mediaDiaria)}/dia × ${diasNoMes} dias no mês`;
+ if(mesVisualizadoPassado){
+  // Mês arquivado: já acabou, não tem "resto do mês" pra projetar — mostra o total real mesmo.
+  if(elProj) elProj.textContent = money(totalSales);
+  if(elProjSub) elProjSub.textContent = 'mês já encerrado — este é o total final, sem projeção';
+ } else {
+  const diasComDados = daysData.length;
+  const mediaDiaria = diasComDados>0 ? totalSales/diasComDados : 0;
+  const diasUteisFaltando = diasUteisRestantesNoMes();
+  const projecao = totalSales + (mediaDiaria * diasUteisFaltando);
+  if(elProj) elProj.textContent = money(projecao);
+  if(elProjSub) elProjSub.textContent = `já vendeu ${money(totalSales)} + média de ${money(mediaDiaria)}/dia × ${diasUteisFaltando} dia${diasUteisFaltando===1?'':'s'} útil${diasUteisFaltando===1?'':'eis'} que ainda faltam`;
+ }
 
  // 3) Comparativo com o Mes Anterior (guarda o total de cada mes no localStorage pra comparar futuramente)
  if(mesAtual){
@@ -4757,6 +4770,8 @@ function extractSellerDetalhes(rows){
 function extractTipoVendaTotais(rows){
  // Conta quantos atendimentos foram presenciais e quantos online, olhando a coluna "tipo de venda" (G),
  // e também soma o valor de cada venda (não só a quantidade), pra dar pra usar em filtros.
+ // Importante: só conta se a venda teve valor de verdade (mesmo critério de countTransactions) —
+ // sem essa checagem, linhas do molde com "presencial" pré-preenchido mas sem pagamento inflavam a contagem.
  const totais = {presencial:0, online:0, presencialValor:0, onlineValor:0};
  for(let r=0;r<rows.length;r++){
   const rownum = rows[r]?.[0];
@@ -4772,6 +4787,7 @@ function extractTipoVendaTotais(rows){
    const v = rows[r]?.[c];
    if(typeof v==='number') valorVenda += v;
   }
+  if(valorVenda<=0) continue;
   totais[t]++;
   totais[t+'Valor'] += valorVenda;
  }
@@ -4840,6 +4856,7 @@ function extractPrimeiraUltimaVenda(rows){
 function extractGeneroTotais(rows){
  // Usa a coluna "genero" (J). Só conta linhas com vendedora preenchida (venda real) —
  // a planilha vem com "mulher" pré-preenchido em todo o molde de 60 linhas, mesmo nas vazias.
+ // Também exige valor de venda > 0 (mesmo critério de countTransactions), pra bater com a contagem oficial de vendas.
  const totais = {mulher:{qtd:0,valor:0}, homem:{qtd:0,valor:0}};
  for(let r=0;r<rows.length;r++){
   const rownum = rows[r]?.[0];
@@ -4857,6 +4874,7 @@ function extractGeneroTotais(rows){
    const v = rows[r]?.[c];
    if(typeof v==='number') valorVenda += v;
   }
+  if(valorVenda<=0) continue;
   totais[g].qtd += 1;
   totais[g].valor += valorVenda;
  }
@@ -5406,7 +5424,8 @@ function renderCardDiferencaCaixa(){
  if(daysData.length===0){ el.innerHTML=''; return; }
  const LIMITE = 20;
  const diferencas = daysData.map(d=>{
-  const esperado = (Number(d.initial)||0) + (Number(d.sales)||0) - (Number(d.withdrawals)||0);
+  // Só o dinheiro físico fica na gaveta — débito/crédito/Pix vão direto pro banco.
+  const esperado = (Number(d.initial)||0) + (Number(d.dinheiro)||0) - (Number(d.withdrawals)||0);
   return { dia: d.dia, diff: (Number(d.closing)||0) - esperado };
  });
  const negativasRelevantes = diferencas.filter(x=>x.diff <= -LIMITE).sort((a,b)=>a.diff-b.diff);
@@ -5436,7 +5455,7 @@ function renderCardDiferencaCaixa(){
  el.innerHTML = `
   <div class="adv-card-title">
    <h3>💰 Diferença de Caixa</h3>
-   <span>esperado (início + vendas − retiradas) x fechamento contado</span>
+   <span>esperado (início + dinheiro físico − retiradas) x fechamento contado</span>
   </div>
   <div style="font-size:42px;font-weight:900;color:${cor};line-height:1;">${ultimaDiferenca.diff>=0?'+':''}${money(ultimaDiferenca.diff)}</div>
   <div style="font-size:12.5px;color:#93a3ba;margin-top:8px;">referente ao dia ${diaComAno(ultimaDiferenca.dia)} (mais recente lançado)${alerta?' — vale reconferir a contagem física.':''}</div>
