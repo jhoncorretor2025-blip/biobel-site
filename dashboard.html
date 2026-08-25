@@ -6385,6 +6385,18 @@ function extractPrimeiraUltimaVenda(rows){
  return { primeiraVenda: formatarHoraFracao(primeira), ultimaVenda: formatarHoraFracao(ultima) };
 }
 
+function normalizarNomeAba(nome){
+ // Reconhece abas no formato "DD.MM" mesmo quando alguém digita sem o zero à esquerda
+ // (ex: "25.8" em vez de "25.08") — erro comum de digitação que fazia o sistema
+ // ignorar o dia inteiro, silenciosamente, sem nenhum aviso.
+ const m = String(nome||'').trim().match(/^(\d{1,2})\.(\d{1,2})$/);
+ if(!m) return null;
+ const dia = String(m[1]).padStart(2,'0');
+ const mes = String(m[2]).padStart(2,'0');
+ if(Number(dia)<1 || Number(dia)>31 || Number(mes)<1 || Number(mes)>12) return null;
+ return dia+'.'+mes;
+}
+
 function extractHorariosVendas(rows){
  // Lista o horário exato (em fração do dia) de cada venda individual, em ordem crescente —
  // usada pra calcular os "intervalos sem vendas" (maiores gaps de tempo entre uma venda e outra).
@@ -6706,7 +6718,9 @@ async function loadGoogleSheet(){
    const data = await resp.json();
    if(data.error) throw new Error(data.error);
    for(const sheetName in (data.sheets||{})){
-    daysData.push(processarLinhasDoDia(sheetName, data.sheets[sheetName]));
+    const nomeNormalizado = normalizarNomeAba(sheetName);
+    if(!nomeNormalizado) continue; // ignora abas que não são de um dia (ex: aba de resumo, config, etc.)
+    daysData.push(processarLinhasDoDia(nomeNormalizado, data.sheets[sheetName]));
     found++;
    }
   } else {
@@ -6718,9 +6732,10 @@ async function loadGoogleSheet(){
    const buf=await response.arrayBuffer();
    const wb=XLSX.read(buf,{type:'array'});
    for(const sheetName of wb.SheetNames){
-    if(!/^\d{2}\.\d{2}$/.test(sheetName)) continue;
+    const nomeNormalizado = normalizarNomeAba(sheetName);
+    if(!nomeNormalizado) continue;
     const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{header:1,defval:null,raw:true});
-    daysData.push(processarLinhasDoDia(sheetName, rows));
+    daysData.push(processarLinhasDoDia(nomeNormalizado, rows));
     found++;
    }
   }
@@ -6754,8 +6769,13 @@ document.getElementById('fileInput').addEventListener('change',async e=>{
  for(const file of e.target.files){
   const buf=await file.arrayBuffer();
   const wb=XLSX.read(buf,{type:'array'});
-  const validSheets = wb.SheetNames.filter(name=>/^\d{2}\.\d{2}$/.test(name));
-  const jaExistem = validSheets.filter(name=>daysData.some(d=>d.dia===name));
+  // "validSheets" guarda os pares {original, normalizado} — o nome original é necessário pra
+  // achar a aba dentro do arquivo Excel, e o normalizado é o que vira o identificador do dia no sistema
+  // (assim "25.8" digitado sem o zero à esquerda continua sendo lido certinho como "25.08").
+  const validSheets = wb.SheetNames
+   .map(original=>({ original, normalizado: normalizarNomeAba(original) }))
+   .filter(x=>x.normalizado!==null);
+  const jaExistem = validSheets.filter(x=>daysData.some(d=>d.dia===x.normalizado)).map(x=>x.normalizado);
 
   if(validSheets.length===0){
    mostrarToast('⚠️ Nenhuma aba de dia (formato DD.MM) foi encontrada em "'+file.name+'".');
@@ -6770,8 +6790,9 @@ document.getElementById('fileInput').addEventListener('change',async e=>{
    if(!ok){ continue; }
   }
 
-  for(const sheetName of validSheets){
-   const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{header:1,defval:null,raw:true});
+  for(const {original, normalizado} of validSheets){
+   const sheetName = normalizado; // a partir daqui, sheetName é sempre o identificador já normalizado (ex: "25.08")
+   const rows=XLSX.utils.sheet_to_json(wb.Sheets[original],{header:1,defval:null,raw:true});
    const colM=12;
    let initial=0,closing=0,withdrawals=0,sales=0;
    for(let r=0;r<rows.length;r++){
