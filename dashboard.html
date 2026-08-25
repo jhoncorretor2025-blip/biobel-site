@@ -1492,6 +1492,11 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <div class="value" id="admTotalGastosGeral">R$ 0,00</div>
     <div class="sub">fixos + variáveis</div>
    </div>
+   <div class="adv-kpi green">
+    <div class="label">📈 Lucro Líquido Estimado</div>
+    <div class="value" id="admLucroEstimado">R$ 0,00</div>
+    <div class="sub" id="admLucroEstimadoSub" style="font-size:10px;">faturamento − gastos − comissões</div>
+   </div>
   </div>
 
   <div class="adv-card">
@@ -1524,10 +1529,14 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
      <input id="novoBoletoQuantidade" type="text" placeholder="Quantidade" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
      <input id="novoBoletoValidade" type="text" placeholder="Validade (ex: 12/2027)" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
      <input id="novoBoletoValor" type="text" inputmode="decimal" placeholder="Valor R$" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
-     <input id="novoBoletoVencimento" type="text" placeholder="Vencimento (ex: 15/09)" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     <div>
+      <label for="novoBoletoVencimento" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Data de vencimento</label>
+      <input id="novoBoletoVencimento" type="date" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     </div>
     </div>
     <textarea id="novoBoletoObs" rows="2" placeholder="Observações (opcional)" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;resize:vertical;margin-bottom:8px;"></textarea>
-    <button onclick="adicionarBoleto()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Adicionar boleto</button>
+    <button id="btnAdicionarBoleto" onclick="adicionarBoleto()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Adicionar boleto</button>
+    <button id="btnCancelarEdicaoBoleto" onclick="cancelarEdicaoBoleto()" style="display:none;margin-top:8px;background:none;border:none;color:#93a3ba;font-size:12px;text-decoration:underline;cursor:pointer;width:100%;">✕ Cancelar edição</button>
    </div>
   </div>
 
@@ -2879,6 +2888,17 @@ function seedGastosFixosPadrao(){
  });
  if(mudou) salvarGastosFixos(lista);
 }
+function diasAteProximoVencimentoMensal(diaVencimento){
+ // Calcula quantos dias faltam pro próximo vencimento de um gasto que se repete todo mês
+ // (ex: aluguel todo dia 10) — olha se esse mês já passou e, se sim, calcula pro mês seguinte.
+ const hoje = obterAgoraBrasilia();
+ const hojeMs = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate()).getTime();
+ let proximo = new Date(hoje.getFullYear(), hoje.getMonth(), diaVencimento);
+ if(proximo.getTime() < hojeMs){
+  proximo = new Date(hoje.getFullYear(), hoje.getMonth()+1, diaVencimento);
+ }
+ return Math.round((proximo.getTime()-hojeMs)/86400000);
+}
 function renderGastosFixos(){
  const el = document.getElementById('listaGastosFixos');
  if(!el) return;
@@ -2888,19 +2908,26 @@ function renderGastosFixos(){
   el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhum gasto fixo cadastrado ainda.</p>';
   return;
  }
- el.innerHTML = lista.map(g=>`
+ el.innerHTML = lista.map(g=>{
+  let avisoVencimento = '';
+  if(g.dia){
+   const dias = diasAteProximoVencimentoMensal(g.dia);
+   if(dias<=5) avisoVencimento = `<span style="color:${dias<=1?'#fb7185':'#fbbf24'};font-weight:800;font-size:10.5px;margin-left:6px;">${dias===0?'🔴 vence hoje':dias===1?'🔴 vence amanhã':'🟡 vence em '+dias+' dias'}</span>`;
+  }
+  return `
   <div style="display:flex;align-items:center;justify-content:space-between;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 14px;flex-wrap:wrap;gap:8px;">
    <div>
     <span style="color:#dce5f2;font-weight:700;font-size:13px;">${g.nome}</span>
     ${g.dia?`<span style="color:#93a3ba;font-size:11px;margin-left:8px;">vence dia ${g.dia}</span>`:''}
+    ${avisoVencimento}
    </div>
    <div style="display:flex;align-items:center;gap:10px;">
     ${g.valor!==null ? `<span style="color:#fb7185;font-weight:800;font-size:13px;">${money(g.valor)}</span>` : `<span style="color:#fbbf24;font-weight:800;font-size:12px;background:rgba(251,191,36,.1);padding:3px 8px;border-radius:999px;">⚠️ A definir</span>`}
     <button onclick="editarGastoFixo(${g.id})" aria-label="Editar ${g.nome}" style="background:none;border:none;color:#4f9cff;cursor:pointer;font-size:14px;">✏️</button>
     <button onclick="removerGastoFixo(${g.id})" aria-label="Remover ${g.nome}" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;">🗑️</button>
    </div>
-  </div>
- `).join('');
+  </div>`;
+ }).join('');
 }
 
 /* ===== Boletos de Fornecedores (gastos variáveis) ===== */
@@ -2910,28 +2937,78 @@ function getBoletos(){
 function salvarBoletos(lista){
  localStorage.setItem('biobel_adm_boletos', JSON.stringify(lista));
 }
+let boletoEditandoId = null;
 function adicionarBoleto(){
  const fornecedor = document.getElementById('novoBoletoFornecedor').value.trim();
  const marca = document.getElementById('novoBoletoMarca').value.trim();
  const quantidade = document.getElementById('novoBoletoQuantidade').value.trim();
  const validade = document.getElementById('novoBoletoValidade').value.trim();
  const valor = parseValorSimples(document.getElementById('novoBoletoValor').value);
- const vencimento = document.getElementById('novoBoletoVencimento').value.trim();
+ const vencimento = document.getElementById('novoBoletoVencimento').value; // yyyy-mm-dd (input type=date)
  const obs = document.getElementById('novoBoletoObs').value.trim();
  if(!fornecedor){ mostrarToast('⚠️ Digite o nome do fornecedor.'); return; }
  if(isNaN(valor) || valor<=0){ mostrarToast('⚠️ Digite um valor válido.'); return; }
+
  const lista = getBoletos();
- lista.unshift({ id: Date.now(), fornecedor, marca, quantidade, validade, valor, vencimento, obs });
- salvarBoletos(lista);
+ if(boletoEditandoId!==null){
+  const idx = lista.findIndex(b=>b.id===boletoEditandoId);
+  if(idx>=0){
+   lista[idx] = { ...lista[idx], fornecedor, marca, quantidade, validade, valor, vencimento, obs };
+   salvarBoletos(lista);
+   mostrarToast('✅ Boleto atualizado!');
+   registrarAlteracao('Boleto de "'+fornecedor+'" editado');
+  }
+  cancelarEdicaoBoleto();
+ } else {
+  lista.unshift({ id: Date.now(), fornecedor, marca, quantidade, validade, valor, vencimento, obs, pago:false, criadoEm: new Date().toISOString() });
+  salvarBoletos(lista);
+  mostrarToast('✅ Boleto adicionado!');
+  registrarAlteracao('Boleto de "'+fornecedor+'" adicionado ('+money(valor)+')');
+ }
  ['novoBoletoFornecedor','novoBoletoMarca','novoBoletoQuantidade','novoBoletoValidade','novoBoletoValor','novoBoletoVencimento','novoBoletoObs'].forEach(id=>{
   const elCampo = document.getElementById(id);
   if(elCampo) elCampo.value='';
  });
  renderBoletos();
  atualizarTotaisAdm();
- mostrarToast('✅ Boleto adicionado!');
- registrarAlteracao('Boleto de "'+fornecedor+'" adicionado ('+money(valor)+')');
  renderLogAlteracoes();
+}
+function editarBoleto(id){
+ const b = getBoletos().find(x=>x.id===id);
+ if(!b) return;
+ boletoEditandoId = id;
+ document.getElementById('novoBoletoFornecedor').value = b.fornecedor||'';
+ document.getElementById('novoBoletoMarca').value = b.marca||'';
+ document.getElementById('novoBoletoQuantidade').value = b.quantidade||'';
+ document.getElementById('novoBoletoValidade').value = b.validade||'';
+ document.getElementById('novoBoletoValor').value = b.valor!==null&&b.valor!==undefined ? String(b.valor).replace('.',',') : '';
+ document.getElementById('novoBoletoVencimento').value = b.vencimento||'';
+ document.getElementById('novoBoletoObs').value = b.obs||'';
+ const btn = document.getElementById('btnAdicionarBoleto');
+ if(btn) btn.textContent = '💾 Salvar edição';
+ const btnCancelar = document.getElementById('btnCancelarEdicaoBoleto');
+ if(btnCancelar) btnCancelar.style.display = 'inline-block';
+ document.getElementById('novoBoletoFornecedor').scrollIntoView({behavior:'smooth', block:'center'});
+}
+function cancelarEdicaoBoleto(){
+ boletoEditandoId = null;
+ ['novoBoletoFornecedor','novoBoletoMarca','novoBoletoQuantidade','novoBoletoValidade','novoBoletoValor','novoBoletoVencimento','novoBoletoObs'].forEach(id=>{
+  const elCampo = document.getElementById(id);
+  if(elCampo) elCampo.value='';
+ });
+ const btn = document.getElementById('btnAdicionarBoleto');
+ if(btn) btn.textContent = '➕ Adicionar boleto';
+ const btnCancelar = document.getElementById('btnCancelarEdicaoBoleto');
+ if(btnCancelar) btnCancelar.style.display = 'none';
+}
+function alternarPagoBoleto(id){
+ const lista = getBoletos();
+ const idx = lista.findIndex(b=>b.id===id);
+ if(idx<0) return;
+ lista[idx].pago = !lista[idx].pago;
+ salvarBoletos(lista);
+ renderBoletos();
+ mostrarToast(lista[idx].pago ? '✅ Marcado como pago.' : '↩️ Marcado como pendente.');
 }
 function removerBoleto(id){
  confirmarBiobel('Remover esse boleto?', ()=>{
@@ -2950,26 +3027,68 @@ function renderBoletos(){
   el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhum boleto cadastrado ainda.</p>';
   return;
  }
- el.innerHTML = lista.map(b=>`
-  <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:12px 14px;">
-   <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;">
-    <div>
-     <div style="color:#dce5f2;font-weight:800;font-size:14px;">${b.fornecedor}</div>
-     ${b.marca?`<div style="color:#93a3ba;font-size:11.5px;margin-top:2px;">Marca: ${b.marca}</div>`:''}
+
+ // Agrupa por mês/ano em que o boleto foi cadastrado — facilita ver "quanto gastei em cada mês".
+ const nomesMesesPt = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+ const grupos = {};
+ lista.forEach(b=>{
+  let chave = 'Sem data registrada';
+  if(b.criadoEm){
+   const d = new Date(b.criadoEm);
+   if(!isNaN(d.getTime())) chave = nomesMesesPt[d.getMonth()]+' de '+d.getFullYear();
+  }
+  if(!grupos[chave]) grupos[chave] = [];
+  grupos[chave].push(b);
+ });
+
+ const hoje = obterAgoraBrasilia();
+ const hojeMs = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate()).getTime();
+
+ el.innerHTML = Object.entries(grupos).map(([mes, boletosDoMes])=>{
+  const totalDoMes = boletosDoMes.reduce((s,b)=>s+(Number(b.valor)||0),0);
+  const itensHtml = boletosDoMes.map(b=>{
+   let avisoVencimento = '';
+   if(b.vencimento && !b.pago){
+    const dataVenc = new Date(b.vencimento+'T00:00:00');
+    if(!isNaN(dataVenc.getTime())){
+     const diasRestantes = Math.round((dataVenc.getTime()-hojeMs)/86400000);
+     if(diasRestantes<0) avisoVencimento = `<span style="color:#fb7185;font-weight:800;">🔴 Venceu há ${Math.abs(diasRestantes)} dia${Math.abs(diasRestantes)===1?'':'s'}</span>`;
+     else if(diasRestantes<=5) avisoVencimento = `<span style="color:#fbbf24;font-weight:800;">🟡 Vence em ${diasRestantes} dia${diasRestantes===1?'':'s'}</span>`;
+    }
+   }
+   const vencimentoTexto = b.vencimento ? new Date(b.vencimento+'T00:00:00').toLocaleDateString('pt-BR') : '';
+   return `
+    <div style="background:#0b1728;border:1px solid ${b.pago?'rgba(39,215,160,.3)':'#1e2c42'};border-radius:12px;padding:12px 14px;${b.pago?'opacity:.75;':''}">
+     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;">
+      <div>
+       <div style="color:#dce5f2;font-weight:800;font-size:14px;">${b.fornecedor} ${b.pago?'<span style="color:#27d7a0;font-size:11px;font-weight:800;">✅ PAGO</span>':''}</div>
+       ${b.marca?`<div style="color:#93a3ba;font-size:11.5px;margin-top:2px;">Marca: ${b.marca}</div>`:''}
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+       <span style="color:#4f9cff;font-weight:900;font-size:15px;">${money(b.valor)}</span>
+       <button onclick="alternarPagoBoleto(${b.id})" aria-label="${b.pago?'Marcar como pendente':'Marcar como pago'}" title="${b.pago?'Marcar como pendente':'Marcar como pago'}" style="background:none;border:none;color:${b.pago?'#93a3ba':'#27d7a0'};cursor:pointer;font-size:14px;">${b.pago?'↩️':'✅'}</button>
+       <button onclick="editarBoleto(${b.id})" aria-label="Editar boleto de ${b.fornecedor}" style="background:none;border:none;color:#4f9cff;cursor:pointer;font-size:14px;">✏️</button>
+       <button onclick="removerBoleto(${b.id})" aria-label="Remover boleto de ${b.fornecedor}" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;">🗑️</button>
+      </div>
+     </div>
+     <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:11.5px;color:#93a3ba;">
+      ${b.quantidade?`<span>📦 Qtd: ${b.quantidade}</span>`:''}
+      ${b.validade?`<span>⏳ Validade: ${b.validade}</span>`:''}
+      ${vencimentoTexto?`<span>📅 Vencimento: ${vencimentoTexto}</span>`:''}
+      ${avisoVencimento}
+     </div>
+     ${b.obs?`<div style="font-size:11.5px;color:#93a3ba;margin-top:6px;font-style:italic;">"${b.obs}"</div>`:''}
+    </div>`;
+  }).join('');
+  return `
+   <div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+     <div style="font-size:11px;font-weight:800;color:#93a3ba;text-transform:uppercase;letter-spacing:.05em;">📆 ${mes}</div>
+     <div style="font-size:11px;color:#93a3ba;">Total do mês: <strong style="color:#dce5f2;">${money(totalDoMes)}</strong></div>
     </div>
-    <div style="display:flex;align-items:center;gap:10px;">
-     <span style="color:#4f9cff;font-weight:900;font-size:15px;">${money(b.valor)}</span>
-     <button onclick="removerBoleto(${b.id})" aria-label="Remover boleto de ${b.fornecedor}" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;">🗑️</button>
-    </div>
-   </div>
-   <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:11.5px;color:#93a3ba;">
-    ${b.quantidade?`<span>📦 Qtd: ${b.quantidade}</span>`:''}
-    ${b.validade?`<span>⏳ Validade: ${b.validade}</span>`:''}
-    ${b.vencimento?`<span>📅 Vencimento: ${b.vencimento}</span>`:''}
-   </div>
-   ${b.obs?`<div style="font-size:11.5px;color:#93a3ba;margin-top:6px;font-style:italic;">"${b.obs}"</div>`:''}
-  </div>
- `).join('');
+    <div style="display:flex;flex-direction:column;gap:10px;">${itensHtml}</div>
+   </div>`;
+ }).join('<div style="height:6px;"></div>');
 }
 
 function atualizarTotaisAdm(){
@@ -2981,6 +3100,30 @@ function atualizarTotaisAdm(){
  if(elFixos) elFixos.textContent = money(gastosFixos);
  if(elVar) elVar.textContent = money(boletos);
  if(elGeral) elGeral.textContent = money(gastosFixos+boletos);
+
+ // Lucro líquido estimado: faturamento do período carregado, menos gastos (fixos + variáveis) e comissões.
+ const faturamento = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const comissoes = getComissoes();
+ const totaisVend = {};
+ daysData.forEach(d=>{
+  Object.entries(d.vendedoras||{}).forEach(([nome,valor])=>{
+   totaisVend[nome] = (totaisVend[nome]||0) + (Number(valor)||0);
+  });
+ });
+ const totalComissoes = Object.entries(totaisVend).reduce((s,[nome,valor])=>{
+  const pct = comissoes[nome];
+  return s + (pct!==undefined && !isNaN(pct) ? valor*(pct/100) : 0);
+ }, 0);
+ const lucroEstimado = faturamento - gastosFixos - boletos - totalComissoes;
+ const elLucro = document.getElementById('admLucroEstimado');
+ const elLucroSub = document.getElementById('admLucroEstimadoSub');
+ if(elLucro){
+  elLucro.textContent = money(lucroEstimado);
+  elLucro.style.color = lucroEstimado>=0 ? '#27d7a0' : '#fb7185';
+ }
+ if(elLucroSub){
+  elLucroSub.textContent = `${money(faturamento)} (faturamento) − ${money(gastosFixos+boletos)} (gastos) − ${money(totalComissoes)} (comissões)`;
+ }
 }
 
 /* ===== Comissões e participação no lucro por vendedora ===== */
@@ -3036,7 +3179,85 @@ function renderComissoes(){
     </div>
     ${valorComissao!==null ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid #1e2c42;font-size:13px;color:#27d7a0;font-weight:800;">💰 Comissão a receber: ${money(valorComissao)}</div>` : ''}
    </div>`;
- }).join('');
+ }).join('') + `
+  <button onclick="registrarComissoesNoHistorico()" class="w-full bg-blue-600 hover:bg-blue-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="margin-top:6px;">💾 Registrar comissões deste período no histórico</button>
+  <div id="historicoComissoesWrap" style="margin-top:16px;padding-top:16px;border-top:1px solid #1e2c42;"></div>
+ `;
+ renderHistoricoComissoes();
+}
+
+/* ===== Histórico de comissões já registradas (fica salvo mesmo depois que o mês virar) ===== */
+function getHistoricoComissoes(){
+ try{ return JSON.parse(localStorage.getItem('biobel_adm_historico_comissoes')||'[]'); }catch(e){ return []; }
+}
+function registrarComissoesNoHistorico(){
+ const totaisVend = {};
+ daysData.forEach(d=>{
+  Object.entries(d.vendedoras||{}).forEach(([nome,valor])=>{
+   totaisVend[nome] = (totaisVend[nome]||0) + (Number(valor)||0);
+  });
+ });
+ const comissoes = getComissoes();
+ const nomes = Object.keys(totaisVend).filter(n=>comissoes[n]!==undefined && !isNaN(comissoes[n]));
+ if(nomes.length===0){
+  mostrarToast('⚠️ Defina a % de comissão de pelo menos 1 vendedora antes de registrar.');
+  return;
+ }
+ confirmarBiobel('Registrar as comissões atuais no histórico? Isso guarda um retrato de hoje — útil pra manter registro de quanto foi pago em cada período.', ()=>{
+  const registro = {
+   id: Date.now(),
+   dataRegistro: new Date().toISOString(),
+   itens: nomes.map(nome=>({
+    nome,
+    totalVendido: totaisVend[nome],
+    pct: comissoes[nome],
+    valorComissao: totaisVend[nome]*(comissoes[nome]/100)
+   }))
+  };
+  const historico = getHistoricoComissoes();
+  historico.unshift(registro);
+  localStorage.setItem('biobel_adm_historico_comissoes', JSON.stringify(historico));
+  mostrarToast('✅ Comissões registradas no histórico!');
+  registrarAlteracao('Comissões registradas no histórico ('+nomes.length+' vendedora'+(nomes.length===1?'':'s')+')');
+  renderLogAlteracoes();
+  renderHistoricoComissoes();
+ });
+}
+function removerRegistroHistoricoComissao(id){
+ confirmarBiobel('Remover esse registro do histórico de comissões?', ()=>{
+  const historico = getHistoricoComissoes().filter(r=>r.id!==id);
+  localStorage.setItem('biobel_adm_historico_comissoes', JSON.stringify(historico));
+  renderHistoricoComissoes();
+  mostrarToast('🗑️ Removido.');
+ });
+}
+function renderHistoricoComissoes(){
+ const el = document.getElementById('historicoComissoesWrap');
+ if(!el) return;
+ const historico = getHistoricoComissoes();
+ if(historico.length===0){
+  el.innerHTML = '<div style="font-size:11px;color:#93a3ba;font-weight:800;text-transform:uppercase;margin-bottom:8px;">📜 Histórico de comissões</div><p style="color:#93a3ba;font-size:12px;">Nenhum registro ainda — use o botão acima quando quiser guardar um retrato do período atual.</p>';
+  return;
+ }
+ el.innerHTML = '<div style="font-size:11px;color:#93a3ba;font-weight:800;text-transform:uppercase;margin-bottom:10px;">📜 Histórico de comissões registradas</div>' +
+  historico.map(r=>{
+   const data = new Date(r.dataRegistro);
+   const dataTexto = data.toLocaleDateString('pt-BR')+' às '+data.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+   const totalRegistro = r.itens.reduce((s,i)=>s+i.valorComissao,0);
+   return `
+    <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;margin-bottom:8px;">
+     <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:11.5px;color:#93a3ba;">📅 ${dataTexto}</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+       <span style="font-size:13px;color:#27d7a0;font-weight:800;">${money(totalRegistro)}</span>
+       <button onclick="removerRegistroHistoricoComissao(${r.id})" aria-label="Remover registro" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:13px;">🗑️</button>
+      </div>
+     </div>
+     <div style="margin-top:8px;font-size:11.5px;color:#dce5f2;">
+      ${r.itens.map(i=>`${i.nome}: ${money(i.valorComissao)} (${i.pct}% de ${money(i.totalVendido)})`).join('<br>')}
+     </div>
+    </div>`;
+  }).join('');
 }
 
 function baixarBackupCompleto(){
