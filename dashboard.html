@@ -868,6 +868,23 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <div id="infoGeneroResumo" style="display:flex;flex-direction:column;gap:14px;"></div>
   <p class="simple-legend" style="font-size:11px;color:#93a3ba;margin-top:12px;">💡 Esse dado depende de quem lança a venda preencher certinho o campo "gênero" na planilha — se a maioria aparecer sempre igual, vale checar com a equipe se estão preenchendo esse campo.</p>
  </div>
+
+ <div class="adv-card card-analise-avancada">
+  <div class="adv-card-title">
+   <h3>🏅 Recordes de Vendas Individuais (Top 5)</h3>
+   <span>as maiores e menores vendas de um cliente só, com filtro por vendedora</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+   <div style="display:flex;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;overflow:hidden;">
+    <button type="button" id="btnRecordeMelhores" onclick="alternarRecordeVendas('melhores')" style="border:0;padding:8px 16px;font-size:12.5px;font-weight:800;cursor:pointer;background:#27d7a0;color:#04241a;">🏆 Melhores</button>
+    <button type="button" id="btnRecordePiores" onclick="alternarRecordeVendas('piores')" style="border:0;padding:8px 16px;font-size:12.5px;font-weight:800;cursor:pointer;background:transparent;color:#93a3ba;">📉 Piores</button>
+   </div>
+   <select id="filtroRecordeVendedora" aria-label="Filtrar recordes por vendedora" onchange="renderRecordesVendasIndividuais()" style="background:#0b1728;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12px;"><option value="">Todas as vendedoras</option></select>
+   <span id="mediaRecordeVendas" style="margin-left:auto;background:rgba(79,156,255,.12);border:1px solid rgba(79,156,255,.3);color:#4f9cff;font-size:12px;font-weight:800;padding:6px 12px;border-radius:999px;white-space:nowrap;">Média: R$ 0,00</span>
+  </div>
+  <div id="listaRecordeVendas" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;"></div>
+  <p class="simple-legend" style="font-size:11px;color:#93a3ba;margin-top:14px;">💡 Não temos um campo de "cliente" na planilha — por isso os cards não mostram nome de cliente, só o que realmente temos registrado: valor, dia, turno e vendedora.</p>
+ </div>
  </div>
  <!-- fim infoSecaoAvancado -->
 
@@ -3548,6 +3565,7 @@ function renderInfoTab(){
  renderHorariosPico();
  renderTurnos();
  renderGenero();
+ renderRecordesVendasIndividuais();
  renderResumoRapido(totalSales, pct);
  renderAlertaDiferencaFechamento();
  renderAlertaDiaAbaixoMeta();
@@ -4259,6 +4277,82 @@ function renderTurnos(){
         </div>
        </div>`;
      }).join('')}
+    </div>
+   </div>`;
+ }).join('');
+}
+
+/* ===== Recordes de Vendas Individuais (Top 5 melhores/piores) ===== */
+let recordeVendasModo = 'melhores';
+function alternarRecordeVendas(modo){
+ recordeVendasModo = modo;
+ const btnM = document.getElementById('btnRecordeMelhores');
+ const btnP = document.getElementById('btnRecordePiores');
+ if(btnM) btnM.style.background = modo==='melhores' ? '#27d7a0' : 'transparent';
+ if(btnM) btnM.style.color = modo==='melhores' ? '#04241a' : '#93a3ba';
+ if(btnP) btnP.style.background = modo==='piores' ? '#fb7185' : 'transparent';
+ if(btnP) btnP.style.color = modo==='piores' ? '#3a0f16' : '#93a3ba';
+ renderRecordesVendasIndividuais();
+}
+function popularFiltroRecordeVendedoras(){
+ const sel = document.getElementById('filtroRecordeVendedora');
+ if(!sel) return;
+ const nomes = new Set();
+ daysData.forEach(d=>(d.registrosVendas||[]).forEach(r=>{ if(r.vendedora) nomes.add(r.vendedora); }));
+ const valorAtual = sel.value;
+ sel.innerHTML = '<option value="">Todas as vendedoras</option>' + Array.from(nomes).sort().map(n=>`<option value="${n}">${n}</option>`).join('');
+ sel.value = valorAtual;
+}
+function renderRecordesVendasIndividuais(){
+ const el = document.getElementById('listaRecordeVendas');
+ const elMedia = document.getElementById('mediaRecordeVendas');
+ if(!el) return;
+ popularFiltroRecordeVendedoras();
+ const filtroVend = document.getElementById('filtroRecordeVendedora')?.value || '';
+
+ const nomesDiasSemana = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+ const nomesTurnos = {'manhã':'☀️ Manhã','meio-dia':'🌤️ Meio-dia','tarde':'🌙 Tarde'};
+
+ let todosRegistros = [];
+ daysData.forEach(d=>{
+  (d.registrosVendas||[]).forEach(r=>{
+   if(filtroVend && r.vendedora!==filtroVend) return;
+   todosRegistros.push({...r, dia:d.dia});
+  });
+ });
+
+ if(todosRegistros.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:13px;">Nenhuma venda individual encontrada pra esse filtro.</p>';
+  if(elMedia) elMedia.textContent = 'Média: R$ 0,00';
+  return;
+ }
+
+ const media = todosRegistros.reduce((s,r)=>s+r.valor,0) / todosRegistros.length;
+ if(elMedia) elMedia.textContent = 'Média: '+money(media);
+
+ const ordenados = [...todosRegistros].sort((a,b)=> recordeVendasModo==='melhores' ? b.valor-a.valor : a.valor-b.valor);
+ const top5 = ordenados.slice(0,5);
+ const medalhas = ['🥇','🥈','🥉','4º','5º'];
+ const nomesTitulos = ['CAMPEÃ 🏅','VICE-CAMPEÃ 🥈','3º LUGAR 🥉','4º LUGAR','5º LUGAR'];
+ const coresPos = ['#fbbf24','#93a3ba','#b45309','#4f9cff','#27d7a0'];
+
+ el.innerHTML = top5.map((r,i)=>{
+  const partes = String(r.dia).split('.').map(Number);
+  const dow = new Date(2026, partes[1]-1, partes[0]).getDay();
+  const semanaDoMes = Math.ceil(partes[0]/7);
+  return `
+   <div style="background:#0b1728;border:1px solid ${i===0?coresPos[0]:'#1e2c42'};border-radius:14px;padding:14px;position:relative;">
+    <span style="position:absolute;top:10px;right:10px;background:${coresPos[i]};color:#04241a;font-size:10px;font-weight:900;padding:3px 8px;border-radius:999px;">#${i+1}</span>
+    <div style="font-size:10px;color:${coresPos[i]};font-weight:800;">${nomesTitulos[i]}</div>
+    <div style="font-size:20px;font-weight:900;color:#f6f9fd;margin-top:6px;">${money(r.valor)}</div>
+    <div style="margin-top:10px;font-size:10px;color:#93a3ba;">📅 Dia do evento</div>
+    <div style="font-size:12px;color:#dce5f2;font-weight:700;">${nomesDiasSemana[dow]}<br><span style="color:#93a3ba;font-weight:400;">${diaComAno(r.dia)}</span></div>
+    ${r.turno ? `<div style="margin-top:8px;font-size:10px;color:#93a3ba;">🎫 Turno do dia</div><div style="font-size:12px;color:#dce5f2;font-weight:700;">${nomesTurnos[r.turno]||r.turno}</div>` : ''}
+    <div style="margin-top:8px;font-size:10px;color:#93a3ba;">📆 Semana do mês</div>
+    <div style="font-size:12px;color:#dce5f2;font-weight:700;">${semanaDoMes}ª semana</div>
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid #1e2c42;font-size:11px;">
+     ${r.vendedora ? `<div style="color:#93a3ba;">Vend: <span style="color:#dce5f2;font-weight:700;">${r.vendedora}</span></div>` : ''}
+     ${r.qtdItens ? `<div style="color:#93a3ba;margin-top:2px;">Itens: <span style="color:#dce5f2;font-weight:700;">${r.qtdItens} un.</span></div>` : ''}
     </div>
    </div>`;
  }).join('');
@@ -5629,6 +5723,32 @@ function extractVendasIndividuais(rows){
  return valores;
 }
 
+function extractRegistrosVendas(rows){
+ // Igual extractVendasIndividuais, mas guarda o contexto completo de cada venda
+ // (vendedora, turno, quantidade de itens) — usado no card de "Recordes de Vendas Individuais".
+ const registros = [];
+ for(let r=0;r<rows.length;r++){
+  const rownum = rows[r]?.[0];
+  const label = String(rownum??'').trim().toLowerCase();
+  if(label==='total') break;
+  if(typeof rownum!=='number') continue;
+  let valorVenda = 0;
+  for(const c of [1,2,3,4]){
+   const v = rows[r]?.[c];
+   if(typeof v==='number') valorVenda += v;
+  }
+  if(valorVenda<=0) continue;
+  const vendedoraRaw = rows[r]?.[5];
+  const vendedora = (vendedoraRaw && typeof vendedoraRaw==='string' && vendedoraRaw.trim()) ? normalizarNome(vendedoraRaw) : null;
+  const turnoRaw = rows[r]?.[10];
+  const turno = (turnoRaw && typeof turnoRaw==='string' && ['manhã','meio-dia','tarde'].includes(turnoRaw.trim())) ? turnoRaw.trim() : null;
+  const qtdItensRaw = rows[r]?.[8];
+  const qtdItens = (typeof qtdItensRaw==='number' && qtdItensRaw>0) ? qtdItensRaw : null;
+  registros.push({ valor: valorVenda, vendedora, turno, qtdItens });
+ }
+ return registros;
+}
+
 function processarLinhasDoDia(sheetName, rows){
  const colM=12;
  let initial=0,closing=0,withdrawals=0,sales=0;
@@ -5673,7 +5793,8 @@ function processarLinhasDoDia(sheetName, rows){
  const vendasIndividuais=extractVendasIndividuais(rows);
  const {primeiraVenda,ultimaVenda}=extractPrimeiraUltimaVenda(rows);
  const horariosVendas=extractHorariosVendas(rows);
- return {dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos,horarios,porTurno,porTurnoVend,totalComTurno,genero,vendasIndividuais,primeiraVenda,ultimaVenda,horariosVendas};
+ const registrosVendas=extractRegistrosVendas(rows);
+ return {dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos,horarios,porTurno,porTurnoVend,totalComTurno,genero,vendasIndividuais,primeiraVenda,ultimaVenda,horariosVendas,registrosVendas};
 }
 
 function getAppsScriptProxyUrl(){
@@ -5836,7 +5957,8 @@ document.getElementById('fileInput').addEventListener('change',async e=>{
    const vendasIndividuais=extractVendasIndividuais(rows);
    const {primeiraVenda,ultimaVenda}=extractPrimeiraUltimaVenda(rows);
    const horariosVendas=extractHorariosVendas(rows);
-   const item={dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos,horarios,porTurno,porTurnoVend,totalComTurno,genero,vendasIndividuais,primeiraVenda,ultimaVenda,horariosVendas};
+   const registrosVendas=extractRegistrosVendas(rows);
+   const item={dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos,horarios,porTurno,porTurnoVend,totalComTurno,genero,vendasIndividuais,primeiraVenda,ultimaVenda,horariosVendas,registrosVendas};
    daysData=daysData.filter(x=>x.dia!==sheetName);
    daysData.push(item);
   }
