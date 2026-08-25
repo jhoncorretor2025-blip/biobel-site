@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
+<link rel="icon" id="faviconLogin" type="image/png" href="/logo_biobel_gravatai.png">
 <title>Biobel — Área do Administrador</title>
 <style>
 *{box-sizing:border-box}
@@ -43,6 +44,7 @@ button:active{transform:translateY(1px)}
 <body>
 <form id="loginForm">
   <div class="title">
+    <img id="logoLoginBiobel" src="/logo_biobel_gravatai.png" alt="Logo da loja" style="width:56px;height:56px;object-fit:contain;border-radius:10px;margin:0 auto 10px;display:block;">
     <strong>Biobel — Acesso Restrito</strong>
     <span>Digite o login e a senha para acessar o painel</span>
   </div>
@@ -65,6 +67,18 @@ button:active{transform:translateY(1px)}
   var err = document.getElementById('loginError');
   var btnMostrarSenha = document.getElementById('btnMostrarSenha');
   var campoSenha = document.getElementById('loginPass');
+
+  // Aplica a logo personalizada da loja (a mesma configurada dentro do painel), se já tiver sido salva
+  // nesse navegador — assim a tela de login também fica com a cara da loja, não só o painel interno.
+  try{
+    var logoCustom = localStorage.getItem('biobel_logo_custom');
+    if(logoCustom){
+      var imgLogo = document.getElementById('logoLoginBiobel');
+      var faviconEl = document.getElementById('faviconLogin');
+      if(imgLogo) imgLogo.src = logoCustom;
+      if(faviconEl) faviconEl.href = logoCustom;
+    }
+  }catch(e){}
 
   btnMostrarSenha.addEventListener('click', function(){
     var visivel = campoSenha.type === 'text';
