@@ -755,6 +755,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <span>quem mais vendeu no mês</span>
    </div>
    <div id="infoSellerRanking" style="display:flex;flex-direction:column;gap:10px;"></div>
+   <div id="infoInsightVendedoras" style="display:none;"></div>
    <div style="border-top:1px solid #1e2c42;margin:16px 0 12px;padding-top:14px;">
     <div style="font-size:12px;font-weight:800;color:#93a3ba;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">🔀 Ticket Médio e Forma de Pagamento Preferida</div>
     <div id="infoSellerCruzamento" style="display:flex;flex-direction:column;gap:12px;"></div>
@@ -830,6 +831,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    </div>
   </div>
   <div id="infoHorariosLista" style="display:flex;flex-direction:column;gap:8px;"></div>
+  <div id="infoRecomendacaoHorarioPico" style="display:none;"></div>
   <div id="infoHorariosForaExpediente" style="display:none;margin-top:18px;padding-top:16px;border-top:1px dashed #3a2a0b;"></div>
  </div>
 
@@ -3768,6 +3770,15 @@ function renderHorariosPico(){
   if(elFracoSub) elFracoSub.textContent = menosMovimento.qtd+' venda'+(menosMovimento.qtd===1?'':'s')+' — '+money(menosMovimento.valor)+' nesse horário';
  }
 
+ const elRecomendacao = document.getElementById('infoRecomendacaoHorarioPico');
+ if(elRecomendacao){
+  const faixaPico = String(maisMovimento.hora).padStart(2,'0')+'h–'+String(maisMovimento.hora+1).padStart(2,'0')+'h';
+  elRecomendacao.style.display = 'block';
+  elRecomendacao.innerHTML = `<div style="background:rgba(79,156,255,.08);border:1px solid rgba(79,156,255,.3);border-radius:12px;padding:12px 16px;margin-top:14px;font-size:12.5px;color:#93a3ba;">
+    💡 <strong style="color:#dce5f2;">Recomendação operacional:</strong> o horário de <strong style="color:#4f9cff;">${faixaPico}</strong> concentra o maior movimento (${maisMovimento.qtd} vendas, ${money(maisMovimento.valor)}). Vale reforçar a equipe, garantir reposição de produtos e concentrar campanhas/promoções nesse horário.
+   </div>`;
+ }
+
  const maxQtd = maisMovimento.qtd || 1;
  elLista.innerHTML = listaOrdenada.map(item=>{
   const pct = (item.qtd/maxQtd)*100;
@@ -3821,8 +3832,16 @@ function renderTurnos(){
   return;
  }
 
+ // Indicador de confiança: quantas vendas têm turno preenchido, comparado ao total geral de vendas do período.
+ const totalComTurnoGeral = daysData.reduce((s,d)=>s+(Number(d.totalComTurno)||0),0);
+ const totalVendasGeral = daysData.reduce((s,d)=>s+(Number(d.qtdVendas)||0),0);
+ let avisoCompletude = '';
+ if(totalVendasGeral>0 && totalComTurnoGeral<totalVendasGeral){
+  avisoCompletude = `<p style="font-size:11px;color:#93a3ba;margin-bottom:12px;">📋 Dados de turno preenchidos em <strong style="color:#dce5f2;">${totalComTurnoGeral} de ${totalVendasGeral}</strong> vendas — o restante não tinha o campo "turno de atendimento" preenchido na planilha.</p>`;
+ }
+
  const maxValor = Math.max(...turnosComDados.map(t=>totalPorTurno[t].valor)) || 1;
- elResumo.innerHTML = turnosComDados.map(t=>{
+ elResumo.innerHTML = avisoCompletude + turnosComDados.map(t=>{
   const info = totalPorTurno[t];
   const pct = (info.valor/maxValor)*100;
   return `
@@ -3998,6 +4017,24 @@ function renderSellerRanking(){
  }).join('');
  renderSellerCruzamento();
  popularSelectsCompararVendedoras(ranked.map(r=>r[0]));
+
+ // Insight automático: quando quem mais fatura não é quem mais vende, isso costuma indicar
+ // ticket médio bem diferente entre elas — vale destacar, é uma leitura útil sobre o time.
+ const elInsight = document.getElementById('infoInsightVendedoras');
+ if(elInsight){
+  const liderFaturamento = ranked[0];
+  const liderQtd = Object.entries(qtds).sort((a,b)=>b[1]-a[1])[0];
+  if(liderFaturamento && liderQtd && liderFaturamento[0]!==liderQtd[0] && qtds[liderFaturamento[0]]>0){
+   const ticketLiderFat = totals[liderFaturamento[0]] / qtds[liderFaturamento[0]];
+   const ticketLiderQtd = totals[liderQtd[0]] / liderQtd[1];
+   elInsight.style.display = 'block';
+   elInsight.innerHTML = `<div style="background:rgba(39,215,160,.08);border:1px solid rgba(39,215,160,.3);border-radius:12px;padding:12px 16px;margin-top:14px;font-size:12.5px;color:#93a3ba;">
+     💡 <strong style="color:#dce5f2;">${liderFaturamento[0]}</strong> lidera em faturamento (${money(liderFaturamento[1])}), mas <strong style="color:#dce5f2;">${liderQtd[0]}</strong> tem mais vendas (${liderQtd[1]}). ${liderFaturamento[0]} vende menos vezes, porém com ticket médio maior (${money(ticketLiderFat)} contra ${money(ticketLiderQtd)}).
+    </div>`;
+  } else {
+   elInsight.style.display = 'none';
+  }
+ }
 }
 
 function popularSelectsCompararVendedoras(nomes){
@@ -4883,9 +4920,11 @@ function extractGeneroTotais(rows){
 
 function extractTurnos(rows){
  // Usa a coluna "turno de atendimento" (K) que já vem pronta na planilha (manhã/meio-dia/tarde).
+ // Exige valor de venda > 0 (mesmo critério das outras contagens), pra não inflar com linhas vazias do molde.
  const porTurno = {};
  const porTurnoVend = {};
  const turnosValidos = ['manhã','meio-dia','tarde'];
+ let totalComTurno = 0;
  for(let r=0;r<rows.length;r++){
   const rownum = rows[r]?.[0];
   const label = String(rownum??'').trim().toLowerCase();
@@ -4900,9 +4939,11 @@ function extractTurnos(rows){
    const v = rows[r]?.[c];
    if(typeof v==='number') valorVenda += v;
   }
+  if(valorVenda<=0) continue;
   if(!porTurno[turno]) porTurno[turno] = {qtd:0, valor:0};
   porTurno[turno].qtd += 1;
   porTurno[turno].valor += valorVenda;
+  totalComTurno++;
 
   const vendedoraRaw = rows[r]?.[5];
   if(vendedoraRaw && typeof vendedoraRaw==='string' && vendedoraRaw.trim()){
@@ -4913,7 +4954,7 @@ function extractTurnos(rows){
    porTurnoVend[turno][nome].valor += valorVenda;
   }
  }
- return {porTurno, porTurnoVend};
+ return {porTurno, porTurnoVend, totalComTurno};
 }
 
 function extractHorariosPico(rows){
@@ -5063,11 +5104,11 @@ function processarLinhasDoDia(sheetName, rows){
  const tipoVenda=extractTipoVendaTotais(rows);
  const produtos=extractProdutosVendidos(rows);
  const horarios=extractHorariosPico(rows);
- const {porTurno,porTurnoVend}=extractTurnos(rows);
+ const {porTurno,porTurnoVend,totalComTurno}=extractTurnos(rows);
  const genero=extractGeneroTotais(rows);
  const vendasIndividuais=extractVendasIndividuais(rows);
  const {primeiraVenda,ultimaVenda}=extractPrimeiraUltimaVenda(rows);
- return {dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos,horarios,porTurno,porTurnoVend,genero,vendasIndividuais,primeiraVenda,ultimaVenda};
+ return {dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos,horarios,porTurno,porTurnoVend,totalComTurno,genero,vendasIndividuais,primeiraVenda,ultimaVenda};
 }
 
 function getAppsScriptProxyUrl(){
@@ -5225,11 +5266,11 @@ document.getElementById('fileInput').addEventListener('change',async e=>{
    const tipoVenda=extractTipoVendaTotais(rows);
    const produtos=extractProdutosVendidos(rows);
    const horarios=extractHorariosPico(rows);
-   const {porTurno,porTurnoVend}=extractTurnos(rows);
+   const {porTurno,porTurnoVend,totalComTurno}=extractTurnos(rows);
    const genero=extractGeneroTotais(rows);
    const vendasIndividuais=extractVendasIndividuais(rows);
    const {primeiraVenda,ultimaVenda}=extractPrimeiraUltimaVenda(rows);
-   const item={dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos,horarios,porTurno,porTurnoVend,genero,vendasIndividuais,primeiraVenda,ultimaVenda};
+   const item={dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos,horarios,porTurno,porTurnoVend,totalComTurno,genero,vendasIndividuais,primeiraVenda,ultimaVenda};
    daysData=daysData.filter(x=>x.dia!==sheetName);
    daysData.push(item);
   }
