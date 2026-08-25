@@ -5614,7 +5614,10 @@ async function gerarRelatorioMensalPDF(){
   // Logo + cabeçalho
   const logoDataUrl = await obterLogoDataUrl();
   if(logoDataUrl){
-   try{ doc.addImage(logoDataUrl, 'PNG', margem, y-8, 22, 22); }catch(e){}
+   // Importante: detectar o formato real da imagem (PNG ou JPEG) pelo início do data URL —
+   // forçar sempre "PNG" fazia o logo falhar silenciosamente quando a pessoa subia um JPG/JPEG.
+   const formatoImagem = logoDataUrl.includes('image/jpeg') || logoDataUrl.includes('image/jpg') ? 'JPEG' : 'PNG';
+   try{ doc.addImage(logoDataUrl, formatoImagem, margem, y-8, 22, 22); }catch(e){ console.warn('Não foi possível inserir a logo no PDF:', e); }
   }
   doc.setFont('helvetica','bold');
   doc.setFontSize(18);
