@@ -1669,11 +1669,56 @@ document.addEventListener('keydown', e=>{
  }
 });
 
+/* ===== Horário real de Brasília (via internet, não depende do relógio nem do fuso do aparelho) =====
+   O GitHub Pages não tem servidor — sem isso, "hoje" seria só o relógio de quem estiver com a
+   página aberta, que pode estar com hora errada OU até em outro fuso horário (o celular sozinho
+   corrigir o relógio não resolve isso — o fuso horário do aparelho também precisa ser ignorado). */
+let offsetBrasiliaMs = 0;
+function partesDataBrasilia(dataObj){
+ // Extrai ano/mês/dia/hora sempre no fuso de Brasília (America/Sao_Paulo), não no fuso do navegador.
+ const fmt = new Intl.DateTimeFormat('en-CA', {
+  timeZone:'America/Sao_Paulo', year:'numeric', month:'2-digit', day:'2-digit',
+  hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false
+ });
+ const partes = {};
+ fmt.formatToParts(dataObj).forEach(p=>{ if(p.type!=='literal') partes[p.type]=p.value; });
+ const ano = Number(partes.year), mes = Number(partes.month), dia = Number(partes.day);
+ // Calcula o dia da semana a partir dos números "limpos" (via UTC), sem depender do fuso do navegador.
+ const diaSemana = new Date(Date.UTC(ano, mes-1, dia)).getUTCDay();
+ return {
+  getFullYear: ()=>ano,
+  getMonth: ()=>mes-1, // 0-indexado, igual ao Date nativo do JavaScript
+  getDate: ()=>dia,
+  getDay: ()=>diaSemana,
+  getHours: ()=>Number(partes.hour),
+  getMinutes: ()=>Number(partes.minute),
+  paraChaveISO: ()=>ano+'-'+String(mes).padStart(2,'0')+'-'+String(dia).padStart(2,'0')
+ };
+}
+function obterAgoraBrasilia(){
+ return partesDataBrasilia(new Date(Date.now() + offsetBrasiliaMs));
+}
+async function sincronizarHorarioBrasilia(){
+ try{
+  const resp = await fetch('https://worldtimeapi.org/api/timezone/America/Sao_Paulo', {cache:'no-store'});
+  if(!resp.ok) throw new Error('resposta não OK');
+  const data = await resp.json();
+  const horaReal = new Date(data.datetime);
+  if(isNaN(horaReal.getTime())) throw new Error('data inválida recebida');
+  offsetBrasiliaMs = horaReal.getTime() - Date.now();
+ }catch(e){
+  console.warn('Não foi possível sincronizar o horário de Brasília pela internet — usando o relógio do próprio aparelho como respaldo (pode ficar impreciso se o aparelho estiver com hora/fuso errado).', e);
+  offsetBrasiliaMs = 0;
+ }
+}
+sincronizarHorarioBrasilia();
+setInterval(sincronizarHorarioBrasilia, 15*60*1000); // ressincroniza a cada 15 min, pra corrigir qualquer desvio ao longo do dia
+
 function ehHoje(diaStr){
  const partes = String(diaStr||'').split('.').map(Number);
  if(partes.length<2) return false;
  const [dia, mes] = partes;
- const hoje = new Date();
+ const hoje = obterAgoraBrasilia();
  return dia===hoje.getDate() && mes===(hoje.getMonth()+1);
 }
 
@@ -1694,7 +1739,7 @@ function atualizarBadgeDia(tipo, diaStr){
 }
 
 function irParaHoje(tipo){
- const hoje = new Date();
+ const hoje = obterAgoraBrasilia();
  const diaHojeStr = String(hoje.getDate()).padStart(2,'0')+'.'+String(hoje.getMonth()+1).padStart(2,'0');
  const existe = daysData.find(d=>d.dia===diaHojeStr);
  const selectId = tipo==='completo' ? 'completeDaySelect' : 'simpleDaySelect';
@@ -2466,20 +2511,21 @@ function diasUteisDoMes(ano, mesIndex){
  return uteis;
 }
 function diasUteisRestantesNoMes(){
- // Conta quantos dias úteis (seg-sáb) ainda restam no mês, a PARTIR DE AMANHÃ até o último dia.
- // Hoje não entra na conta, porque hoje já está em andamento — "restante" é o que ainda vem pela frente.
- const hoje = new Date();
+ // Conta quantos dias úteis (seg-sáb) ainda restam no mês, CONTANDO com hoje —
+ // o dia de hoje ainda está em andamento (a loja pode vender até o fim do expediente),
+ // então ele conta como um dia "restante" também, não só os dias futuros.
+ const hoje = obterAgoraBrasilia();
  const ano = hoje.getFullYear(), mes = hoje.getMonth();
  const ultimoDia = new Date(ano, mes+1, 0).getDate();
  let restantes = 0;
- for(let d=hoje.getDate()+1; d<=ultimoDia; d++){
+ for(let d=hoje.getDate(); d<=ultimoDia; d++){
   const diaSemana = new Date(ano, mes, d).getDay();
   if(diaSemana !== 0) restantes++;
  }
  return restantes;
 }
 function calcularMetaDiariaAutomatica(){
- const hoje = new Date();
+ const hoje = obterAgoraBrasilia();
  const uteis = diasUteisDoMes(hoje.getFullYear(), hoje.getMonth());
  const metaMensal = getSalesGoal();
  return uteis>0 ? metaMensal/uteis : 0;
@@ -2551,7 +2597,7 @@ function construirResumoEmailMes(diasDoMes, nomeMesTxt){
 }
 function renderBannerEnviarContadora(){
  const email = getEmailContadora();
- const hoje = new Date();
+ const hoje = obterAgoraBrasilia();
  const diaHoje = hoje.getDate();
  const mostrarBotao = diaHoje >= 28;
  const nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -2580,7 +2626,7 @@ function renderBannerEnviarContadora(){
 function enviarRelatorioContadoraAgora(){
  const email = getEmailContadora();
  if(!email || daysData.length===0) return;
- const hoje = new Date();
+ const hoje = obterAgoraBrasilia();
  const nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
  const nomeMesTxt = nomesMeses[hoje.getMonth()]+' de 2026';
  const corpoEmail = construirResumoEmailMes(daysData, nomeMesTxt+' (até o dia '+hoje.getDate()+')');
@@ -2602,7 +2648,7 @@ function verificarEnvioEmailMensal(){
  if(!email) return;
  if(daysData.length===0) return;
 
- const hoje = new Date();
+ const hoje = obterAgoraBrasilia();
  const mesRealAtual = String(hoje.getMonth()+1).padStart(2,'0');
  const nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
  const enviados = getMesesEmailEnviados();
@@ -2757,11 +2803,12 @@ function toggleDailyGoalManual(){
  atualizarInfoMetaDiariaAutomatica();
 }
 function atualizarInfoMetaDiariaAutomatica(){
- const hoje = new Date();
+ const hoje = obterAgoraBrasilia();
  const uteis = diasUteisDoMes(hoje.getFullYear(), hoje.getMonth());
  const metaMensal = getSalesGoal();
  const valorAuto = uteis>0 ? metaMensal/uteis : 0;
- const nomeMes = hoje.toLocaleDateString('pt-BR', {month:'long', year:'numeric'});
+ const nomesMesesPt = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+ const nomeMes = nomesMesesPt[hoje.getMonth()]+' de '+hoje.getFullYear();
  const valEl = document.getElementById('dailyGoalAutoValue');
  const formulaEl = document.getElementById('dailyGoalAutoFormula');
  if(valEl) valEl.textContent = money(valorAuto) + ' / dia';
@@ -2797,7 +2844,7 @@ function dispararNotificacaoMetaBatida(sales, goal){
  const ativado = localStorage.getItem('biobel_notificacoes_ativas') === 'yes';
  if(!ativado) return;
  if(typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
- const hoje = new Date().toISOString().slice(0,10);
+ const hoje = obterAgoraBrasilia().paraChaveISO();
  const jaAvisouHoje = localStorage.getItem('biobel_notif_meta_dia') === hoje;
  if(jaAvisouHoje) return;
  localStorage.setItem('biobel_notif_meta_dia', hoje);
