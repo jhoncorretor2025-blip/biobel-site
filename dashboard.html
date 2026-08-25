@@ -3565,7 +3565,7 @@ function startReceiptPrint(type){
 }
 function printDaily(){
  const day=document.getElementById('daySelect').value;
- if(!day) return alert('Selecione um dia antes de imprimir.');
+ if(!day) return mostrarToast('⚠️ Selecione um dia antes de imprimir.');
  updateSelected(day);
  if(buildReceipt('daily-complete',day)) startReceiptPrint('daily-complete');
 }
@@ -3575,12 +3575,12 @@ function printMonthly(){
 }
 function printSimpleDay(){
  const day=document.getElementById('simpleDaySelect').value;
- if(!day) return alert('Selecione um dia antes de imprimir.');
+ if(!day) return mostrarToast('⚠️ Selecione um dia antes de imprimir.');
  if(buildReceipt('daily-simple',day)) startReceiptPrint('daily-simple');
 }
 function printCompleteDay(){
  const day=document.getElementById('completeDaySelect').value;
- if(!day) return alert('Selecione um dia antes de imprimir.');
+ if(!day) return mostrarToast('⚠️ Selecione um dia antes de imprimir.');
  if(buildReceipt('daily-complete',day)) startReceiptPrint('daily-complete');
 }
 
@@ -4187,7 +4187,7 @@ document.getElementById('fileInput').addEventListener('change',async e=>{
   const jaExistem = validSheets.filter(name=>daysData.some(d=>d.dia===name));
 
   if(validSheets.length===0){
-   alert('Nenhuma aba de dia (formato DD.MM) foi encontrada em "'+file.name+'".');
+   mostrarToast('⚠️ Nenhuma aba de dia (formato DD.MM) foi encontrada em "'+file.name+'".');
    continue;
   }
   if(jaExistem.length>0){
