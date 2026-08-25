@@ -364,6 +364,19 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </label>
  </div>
 </header>
+
+<div id="faixaErroConexao" class="no-print" style="display:none;background:linear-gradient(90deg,#3a0f16,#2a0a10);border-bottom:1px solid rgba(251,113,133,.4);padding:12px 16px;">
+ <div class="max-w-7xl mx-auto flex items-center justify-between gap-3 flex-wrap">
+  <div style="display:flex;align-items:center;gap:10px;">
+   <span style="font-size:20px;">🔴</span>
+   <div>
+    <div style="font-size:13.5px;font-weight:800;color:#fca5b1;">Não foi possível conectar à planilha</div>
+    <div id="faixaErroUltimaSinc" style="font-size:11.5px;color:#e8a3ac;margin-top:2px;">Última sincronização bem-sucedida: —</div>
+   </div>
+  </div>
+  <button onclick="loadGoogleSheet()" style="background:#fb7185;color:#3a0f16;border:none;border-radius:10px;padding:9px 18px;font-weight:800;font-size:13px;cursor:pointer;white-space:nowrap;">🔄 Tentar reconectar</button>
+ </div>
+</div>
 <nav class="no-print max-w-7xl mx-auto px-4 md:px-6 pt-4">
  <div class="tabs-scroll-wrap">
  <div class="flex gap-2 border-b border-slate-800" role="tablist" aria-label="Navegação do painel">
@@ -4442,7 +4455,25 @@ let googleTimer=null;
 function updateConnBadge(state){
  // state: 'ok' | 'error' | 'connecting'
  const el = document.getElementById('connBadge');
+ const faixa = document.getElementById('faixaErroConexao');
+ if(state==='ok'){
+  localStorage.setItem('biobel_ultima_sincronizacao_ok', new Date().toISOString());
+ }
  if(state==='error'){ registrarErroConexao(); renderDiasSemErroConexao(); }
+ if(faixa){
+  if(state==='error'){
+   faixa.style.display = 'block';
+   const elUltima = document.getElementById('faixaErroUltimaSinc');
+   if(elUltima){
+    const ultima = localStorage.getItem('biobel_ultima_sincronizacao_ok');
+    elUltima.textContent = ultima
+     ? 'Última sincronização bem-sucedida: '+new Date(ultima).toLocaleString('pt-BR')
+     : 'Ainda não houve nenhuma sincronização bem-sucedida nesse aparelho.';
+   }
+  } else {
+   faixa.style.display = 'none';
+  }
+ }
  if(!el) return;
  el.className = 'conn-badge conn-'+state;
  if(state==='ok'){
@@ -4724,8 +4755,9 @@ function extractSellerDetalhes(rows){
 }
 
 function extractTipoVendaTotais(rows){
- // Conta quantos atendimentos foram presenciais e quantos online, olhando a coluna "tipo de venda" (G).
- const totais = {presencial:0, online:0};
+ // Conta quantos atendimentos foram presenciais e quantos online, olhando a coluna "tipo de venda" (G),
+ // e também soma o valor de cada venda (não só a quantidade), pra dar pra usar em filtros.
+ const totais = {presencial:0, online:0, presencialValor:0, onlineValor:0};
  for(let r=0;r<rows.length;r++){
   const rownum = rows[r]?.[0];
   const label = String(rownum??'').trim().toLowerCase();
@@ -4734,8 +4766,14 @@ function extractTipoVendaTotais(rows){
   const tipo = rows[r]?.[6];
   if(!tipo || typeof tipo!=='string') continue;
   const t = tipo.trim().toLowerCase();
-  if(t==='presencial') totais.presencial++;
-  else if(t==='online') totais.online++;
+  if(t!=='presencial' && t!=='online') continue;
+  let valorVenda = 0;
+  for(const c of [1,2,3,4]){
+   const v = rows[r]?.[c];
+   if(typeof v==='number') valorVenda += v;
+  }
+  totais[t]++;
+  totais[t+'Valor'] += valorVenda;
  }
  return totais;
 }
