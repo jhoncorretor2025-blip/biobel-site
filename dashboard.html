@@ -378,18 +378,24 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 </nav>
 
 <main id="dashboardTab" class="max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabDashboard">
+
+  <div id="metaDestaqueTopo" class="no-print" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid #1e2c42;border-radius:20px;padding:24px 28px;margin-bottom:16px;">
+   <div style="font-size:11px;color:#93a3ba;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">🎯 Meta do mês</div>
+   <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;">
+    <span id="metaDestaqueValor" style="font-size:38px;font-weight:900;color:#27d7a0;line-height:1;">R$ 0,00</span>
+    <span style="font-size:16px;color:#93a3ba;">de <strong id="metaDestaqueTotal" style="color:#dce5f2;">R$ 0,00</strong></span>
+    <span id="metaDestaquePct" style="font-size:16px;font-weight:900;color:#27d7a0;background:rgba(39,215,160,.12);padding:3px 10px;border-radius:999px;">0%</span>
+   </div>
+   <div style="background:#0b1728;border-radius:999px;height:14px;overflow:hidden;margin-top:14px;">
+    <div id="metaDestaqueBar" style="height:100%;width:0%;background:linear-gradient(90deg,#27d7a0,#0ea97a);transition:width .4s;"></div>
+   </div>
+   <div style="font-size:13px;color:#93a3ba;margin-top:10px;">Faltam <strong id="metaDestaqueFaltam" style="color:#dce5f2;">R$ 0,00</strong> para bater a meta.</div>
+  </div>
+
   <div class="adv-shell">
 
     <aside class="adv-sidebar no-print">
-      <div class="adv-brand">Navegação</div>
-      <div class="adv-nav">
-        <button data-tab="dashboard" onclick="showTab('dashboard')">📊 &nbsp; Dashboard Avançado</button>
-        <button data-tab="info" onclick="showTab('info')">🎯 &nbsp; Informação Geral</button>
-        <button data-tab="caixa" onclick="showTab('caixa')">🧾 &nbsp; Caixa Simples</button>
-        <button data-tab="caixaCompleto" onclick="showTab('caixaCompleto')">📖 &nbsp; Caixa Completo</button>
-        <button data-tab="equipe" onclick="showTab('equipe')">👩‍💼 &nbsp; Equipe</button>
-        <button data-tab="config" onclick="showTab('config')">⚙️ &nbsp; Configuração (Google Sheets)</button>
-      </div>
+      <div class="adv-brand">Resumo</div>
 
       <div class="adv-summary">
         <div class="mini">
@@ -462,11 +468,13 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
         </div>
       </div>
 
+      <div id="cardDiferencaCaixa" class="adv-card" style="margin-top:16px;"></div>
+
       <div class="adv-content2">
         <div class="adv-card">
           <div class="adv-card-title">
-            <h3>📈 Histórico de Fechamento do Caixa</h3>
-            <span>evolução por dia</span>
+            <h3>📊 Vendas Diárias × Meta Diária</h3>
+            <span>comparação dia a dia com a meta configurada</span>
           </div>
           <div class="adv-chart"><canvas id="closingChart"></canvas></div>
         </div>
@@ -5197,6 +5205,19 @@ function renderAdvancedDashboard(){
   const totalClosing = daysData.reduce((s,d)=>s+(Number(d.closing)||0),0);
   const avgClosing = daysData.length ? totalClosing/daysData.length : 0;
 
+  // Destaque de meta no topo — a informação mais importante, sempre visível de cara.
+  const metaGoal = getSalesGoal();
+  const metaPct = metaGoal>0 ? Math.min(100,(totalSales/metaGoal)*100) : 0;
+  const metaFaltam = Math.max(0, metaGoal-totalSales);
+  const elMV=document.getElementById('metaDestaqueValor'), elMT=document.getElementById('metaDestaqueTotal'),
+        elMP=document.getElementById('metaDestaquePct'), elMB=document.getElementById('metaDestaqueBar'),
+        elMF=document.getElementById('metaDestaqueFaltam');
+  if(elMV) elMV.textContent = money(totalSales);
+  if(elMT) elMT.textContent = money(metaGoal);
+  if(elMP) elMP.textContent = metaPct.toFixed(1)+'%';
+  if(elMB) elMB.style.width = metaPct.toFixed(1)+'%';
+  if(elMF) elMF.textContent = money(metaFaltam);
+
   const ids = {
     advTotalSales: totalSales, advTotalClosing: totalClosing,
     advDaysCount: daysData.length, advAvgClosing: avgClosing,
@@ -5243,30 +5264,38 @@ function renderAdvancedDashboard(){
   if(window.chart && typeof chart.destroy==='function') { try{ chart.destroy(); }catch(e){} }
   const ctx=document.getElementById('closingChart');
   if(ctx){
+    const metaDiariaChart = getDailyGoal();
     chart=new Chart(ctx,{
-      type:'line',
       data:{
         labels:daysData.map(d=>d.dia),
-        datasets:[{
-          label:'Fechamento do caixa',
-          data:daysData.map(d=>d.closing),
-          borderColor:'#27d7a0',
-          backgroundColor:'rgba(39,215,160,.14)',
-          pointBackgroundColor:'#0d1a2c',
-          pointBorderColor:'#66e6bf',
-          pointRadius:4,
-          pointHoverRadius:6,
-          borderWidth:3,
-          tension:.35,
-          fill:true
-        }]
+        datasets:[
+          {
+            type:'bar',
+            label:'Vendas do dia',
+            data:daysData.map(d=>d.sales),
+            backgroundColor:daysData.map(d=>(Number(d.sales)||0)>=metaDiariaChart ? 'rgba(39,215,160,.75)' : 'rgba(79,156,255,.6)'),
+            borderRadius:4,
+            order:2
+          },
+          {
+            type:'line',
+            label:'Meta diária',
+            data:daysData.map(()=>metaDiariaChart),
+            borderColor:'#fbbf24',
+            borderDash:[6,4],
+            borderWidth:2,
+            pointRadius:0,
+            fill:false,
+            order:1
+          }
+        ]
       },
       options:{
         responsive:true,maintainAspectRatio:false,
         interaction:{mode:'index',intersect:false},
         plugins:{
-          legend:{display:false},
-          tooltip:{callbacks:{label:c=>` Fechamento: ${money(c.raw)}`}}
+          legend:{display:true, labels:{color:'#93a3ba', boxWidth:12, font:{size:11}}},
+          tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${money(c.raw)}`}}
         },
         scales:{
           x:{ticks:{color:'#93a3ba'},grid:{color:'rgba(145,161,184,.06)'}},
@@ -5281,12 +5310,14 @@ function renderAdvancedDashboard(){
     if(advSummaryDonut) advSummaryDonut.destroy();
     const withdrawals=daysData.reduce((s,d)=>s+d.withdrawals,0);
     const initials=daysData.reduce((s,d)=>s+d.initial,0);
+    const dadosDonut = [totalSales,totalClosing,withdrawals,initials];
+    const somaDonut = dadosDonut.reduce((a,b)=>a+b,0);
     advSummaryDonut=new Chart(dctx,{
       type:'doughnut',
       data:{
         labels:['Faturamento','Fechamentos','Retiradas','Saldo Inicial'],
         datasets:[{
-          data:[totalSales,totalClosing,withdrawals,initials],
+          data:dadosDonut,
           backgroundColor:['#27d7a0','#4f9cff','#ff6174','#ffbf47'],
           borderWidth:0,
           hoverOffset:5
@@ -5295,8 +5326,29 @@ function renderAdvancedDashboard(){
       options:{
         responsive:true,maintainAspectRatio:false,
         plugins:{
-          legend:{position:'bottom',labels:{color:'#cbd5e1',boxWidth:10,font:{size:10}}},
-          tooltip:{callbacks:{label:c=>`${c.label}: ${money(c.raw)}`}}
+          legend:{
+            position:'bottom',
+            labels:{
+             color:'#cbd5e1',boxWidth:10,font:{size:10},
+             generateLabels(chartInstance){
+              const dataset = chartInstance.data.datasets[0];
+              return chartInstance.data.labels.map((label,i)=>{
+               const valor = dataset.data[i];
+               const pct = somaDonut>0 ? ((valor/somaDonut)*100).toFixed(1) : '0.0';
+               return {
+                text: `${label}: ${money(valor)} (${pct}%)`,
+                fillStyle: dataset.backgroundColor[i],
+                strokeStyle: dataset.backgroundColor[i],
+                index: i
+               };
+              });
+             }
+            }
+          },
+          tooltip:{callbacks:{label:c=>{
+           const pct = somaDonut>0 ? ((c.raw/somaDonut)*100).toFixed(1) : '0.0';
+           return `${c.label}: ${money(c.raw)} (${pct}%)`;
+          }}}
         },
         cutout:'64%'
       }
@@ -5304,6 +5356,54 @@ function renderAdvancedDashboard(){
   }
   const now=new Date().toLocaleString('pt-BR');
   const last=document.getElementById('advLastUpdate'); if(last) last.textContent=now;
+
+  // Card grande de Diferença de Caixa — usa a mesma conta do alerta (esperado x contado),
+  // com cor de alerta quando a diferença for negativa e relevante.
+  renderCardDiferencaCaixa();
+}
+
+function renderCardDiferencaCaixa(){
+ const el = document.getElementById('cardDiferencaCaixa');
+ if(!el) return;
+ if(daysData.length===0){ el.innerHTML=''; return; }
+ const LIMITE = 20;
+ const diferencas = daysData.map(d=>{
+  const esperado = (Number(d.initial)||0) + (Number(d.sales)||0) - (Number(d.withdrawals)||0);
+  return { dia: d.dia, diff: (Number(d.closing)||0) - esperado };
+ });
+ const negativasRelevantes = diferencas.filter(x=>x.diff <= -LIMITE).sort((a,b)=>a.diff-b.diff);
+ const ultimaDiferenca = diferencas[diferencas.length-1];
+ const alerta = ultimaDiferenca.diff <= -LIMITE;
+ const positivo = ultimaDiferenca.diff >= 0;
+ const cor = alerta ? '#fb7185' : (positivo ? '#27d7a0' : '#fbbf24');
+ const fundo = alerta ? 'rgba(251,113,133,.08)' : (positivo ? 'rgba(39,215,160,.06)' : 'rgba(251,191,36,.06)');
+ const borda = alerta ? 'rgba(251,113,133,.35)' : (positivo ? 'rgba(39,215,160,.25)' : 'rgba(251,191,36,.3)');
+
+ let listaHtml = '';
+ if(negativasRelevantes.length>0){
+  const mostrarAte = 5;
+  listaHtml = `<div style="margin-top:16px;padding-top:14px;border-top:1px solid ${borda};">
+    <div style="font-size:11px;color:#93a3ba;font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">⚠️ Dias com diferença negativa relevante (acima de ${money(LIMITE)})</div>
+    ${negativasRelevantes.slice(0,mostrarAte).map(x=>`
+     <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;">
+      <span style="color:#dce5f2;">Dia ${diaComAno(x.dia)}</span>
+      <strong style="color:#fb7185;">${money(x.diff)}</strong>
+     </div>`).join('')}
+    ${negativasRelevantes.length>mostrarAte ? `<div style="font-size:11.5px;color:#93a3ba;margin-top:4px;">e mais ${negativasRelevantes.length-mostrarAte} dia(s)...</div>` : ''}
+   </div>`;
+ }
+
+ el.style.background = fundo;
+ el.style.border = '1px solid '+borda;
+ el.innerHTML = `
+  <div class="adv-card-title">
+   <h3>💰 Diferença de Caixa</h3>
+   <span>esperado (início + vendas − retiradas) x fechamento contado</span>
+  </div>
+  <div style="font-size:42px;font-weight:900;color:${cor};line-height:1;">${ultimaDiferenca.diff>=0?'+':''}${money(ultimaDiferenca.diff)}</div>
+  <div style="font-size:12.5px;color:#93a3ba;margin-top:8px;">referente ao dia ${diaComAno(ultimaDiferenca.dia)} (mais recente lançado)${alerta?' — vale reconferir a contagem física.':''}</div>
+  ${listaHtml}
+ `;
 }
 
 function updateAdvancedSelected(day){
