@@ -535,6 +535,9 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
  <span id="avisoMesPassado" style="display:none;"></span>
 
  <div id="infoAlertaDiasFaltando" class="no-print" style="display:none;"></div>
+ <div id="infoAlertaVendasForaPadrao" class="no-print" style="display:none;"></div>
+ <div id="infoAlertaDiferencaFechamento" class="no-print" style="display:none;"></div>
+ <div id="infoRecordeMes" class="no-print" style="display:none;"></div>
 
  <div class="info-resumo-rapido no-print">
   <div class="item"><div class="lbl">Faturamento</div><div class="val" id="resumoFaturamento" aria-live="polite">R$ 0,00</div></div>
@@ -623,7 +626,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <div class="adv-kpi blue">
     <div class="label">🧾 Total de Atendimentos/Vendas</div>
     <div class="value" id="infoQtdVendas">0</div>
-    <div class="sub">no mês, somando todos os dias lançados</div>
+    <div class="sub" id="infoQtdVendasSub">no mês, somando todos os dias lançados</div>
    </div>
    <div class="adv-kpi gold">
     <div class="label">📈 Projeção até o Fim do Mês</div>
@@ -981,6 +984,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <div class="text-slate-500 text-xs mt-2">⌨️ Atalho: aperte <strong class="text-slate-300">Alt+A</strong> em qualquer aba do painel pra atualizar na hora.</div>
   </div>
   <div id="googleStatus" class="mt-4 text-sm text-slate-400">Status: configuração ainda não carregada.</div>
+  <div id="diasSemErroConexao" class="mt-2 text-xs text-slate-500"></div>
   <div class="mt-5 text-xs text-slate-500 leading-relaxed">
    <strong class="text-slate-300">Importante:</strong> para leitura direta pelo navegador, a planilha precisa permitir acesso de leitura sem login (por exemplo, “Qualquer pessoa com o link — Leitor” ou estar publicada). Se a planilha estiver privada, será necessário usar uma integração/proxy autenticado.
   </div>
@@ -1046,6 +1050,15 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <button onclick="saveDailyGoal()" class="mt-4 w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-xl font-semibold text-sm">Salvar meta diária manual</button>
     <div id="dailyGoalStatus" class="mt-3 text-sm text-slate-400"></div>
    </div>
+  </div>
+
+  <div class="mt-6 pt-6 border-t border-slate-800">
+   <h3 class="font-bold text-slate-200 mb-1">🧾 Meta de quantidade de vendas (opcional)</h3>
+   <p class="text-sm text-slate-400 mt-1 mb-4">Além da meta em dinheiro, dá pra acompanhar uma meta de <strong class="text-slate-300">número de vendas/atendimentos</strong> no mês — útil se quiser incentivar volume, não só valor. Deixe vazio ou zero pra não usar.</p>
+   <label class="block text-sm font-semibold mb-2" for="metaQtdVendasInput">Meta de vendas no mês (quantidade)</label>
+   <input id="metaQtdVendasInput" type="number" min="0" step="1" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500" placeholder="Ex: 300">
+   <button onclick="saveMetaQtdVendas()" class="mt-4 w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-xl font-semibold text-sm">Salvar meta de quantidade</button>
+   <div id="metaQtdVendasStatus" class="mt-3 text-sm text-slate-400"></div>
   </div>
 
   <div class="mt-6 pt-6 border-t border-slate-800">
@@ -1601,6 +1614,9 @@ function showTab(tab){
   initDailyGoalUI();
   renderListaMetasVendedoras();
   renderLogAlteracoes();
+  renderDiasSemErroConexao();
+  const metaQtdInput = document.getElementById('metaQtdVendasInput');
+  if(metaQtdInput){ const v=getMetaQtdVendas(); metaQtdInput.value = v>0 ? v : ''; }
   renderPlanilhasSalvas();
   initHorarioFuncionamentoUI();
   initAppsScriptUrlUI();
@@ -2496,6 +2512,109 @@ function renderCaixaFisico(){
  if(elSaldoSub) elSaldoSub.textContent = 'referente ao dia '+diaComAno(ultimo.dia)+' (último lançado)';
 }
 
+/* ===== Meta de quantidade de vendas (opcional) ===== */
+function getMetaQtdVendas(){
+ const v = parseInt(localStorage.getItem('biobel_meta_qtd_vendas')||'0', 10);
+ return isNaN(v) ? 0 : v;
+}
+function saveMetaQtdVendas(){
+ const val = parseInt(document.getElementById('metaQtdVendasInput').value||'0', 10);
+ const statusEl = document.getElementById('metaQtdVendasStatus');
+ if(isNaN(val) || val<0){
+  statusEl.innerHTML = '<span class="text-rose-400">Digite um número válido.</span>';
+  return;
+ }
+ localStorage.setItem('biobel_meta_qtd_vendas', String(val));
+ statusEl.innerHTML = val>0
+  ? '<span class="text-emerald-400">Meta de '+val+' vendas salva!</span>'
+  : '<span class="text-slate-400">Meta de quantidade desativada.</span>';
+ mostrarToast(val>0 ? '✅ Meta de quantidade salva!' : '✅ Meta de quantidade removida.');
+ registrarAlteracao(val>0 ? 'Meta de quantidade de vendas alterada para '+val : 'Meta de quantidade de vendas removida');
+ renderLogAlteracoes();
+}
+
+/* ===== Alerta de venda fora do padrão (possível erro de digitação) ===== */
+function renderAlertaVendasForaPadrao(){
+ const el = document.getElementById('infoAlertaVendasForaPadrao');
+ if(!el) return;
+ const todasVendas = [];
+ daysData.forEach(d=>{
+  (d.vendasIndividuais||[]).forEach(v=>todasVendas.push({valor:v, dia:d.dia}));
+ });
+ if(todasVendas.length<5){ el.style.display='none'; return; }
+
+ const media = todasVendas.reduce((s,v)=>s+v.valor,0)/todasVendas.length;
+ const limite = media*5; // venda 5x maior que a média do período — provável erro de digitação
+ const suspeitas = todasVendas.filter(v=>v.valor>limite && v.valor>100);
+
+ if(suspeitas.length===0){ el.style.display='none'; return; }
+ el.style.display='block';
+ const mostrarAte = 4;
+ const listaTexto = suspeitas.slice(0,mostrarAte).map(v=>diaComAno(v.dia)+': '+money(v.valor)).join(' · ');
+ el.innerHTML = `<div style="background:rgba(251,113,133,.1);border:1px solid rgba(251,113,133,.35);border-radius:14px;padding:12px 16px;margin-bottom:14px;font-size:12.5px;color:#fb7185;">
+   🔎 <strong>${suspeitas.length} venda${suspeitas.length===1?'':'s'} bem acima do normal</strong> (ticket médio do período: ${money(media)}): ${listaTexto}${suspeitas.length>mostrarAte?' e mais '+(suspeitas.length-mostrarAte):''}. Pode ser só uma venda grande mesmo, mas vale conferir se não foi erro de digitação na planilha.
+  </div>`;
+}
+
+/* ===== Recorde do mês (comparado ao histórico de meses arquivados) ===== */
+function renderRecordeDoMes(){
+ const el = document.getElementById('infoRecordeMes');
+ if(!el) return;
+ let historico = {};
+ try{ historico = JSON.parse(localStorage.getItem('biobel_historico_meses')||'{}'); }catch(e){}
+ const totalAtual = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const valoresAnteriores = Object.values(historico).map(Number).filter(v=>v>0);
+ if(valoresAnteriores.length===0){ el.style.display='none'; return; }
+ const recorde = Math.max(...valoresAnteriores);
+ el.style.display='block';
+ if(totalAtual>=recorde){
+  el.innerHTML = '<div style="background:rgba(39,215,160,.1);border:1px solid rgba(39,215,160,.35);border-radius:14px;padding:12px 16px;font-size:12.5px;color:#27d7a0;font-weight:700;">🏆 Novo recorde! Esse mês já superou o melhor mês anterior ('+money(recorde)+').</div>';
+ } else {
+  const falta = recorde-totalAtual;
+  el.innerHTML = '<div style="background:rgba(79,156,255,.08);border:1px solid rgba(79,156,255,.3);border-radius:14px;padding:12px 16px;font-size:12.5px;color:#93a3ba;">🏆 Faltam <strong style="color:#dce5f2;">'+money(falta)+'</strong> pra bater o recorde de faturamento mensal (melhor mês até agora: '+money(recorde)+').</div>';
+ }
+}
+
+/* ===== Alerta de diferença grande entre início+vendas-retiradas e o fechamento contado ===== */
+function renderAlertaDiferencaFechamento(){
+ const el = document.getElementById('infoAlertaDiferencaFechamento');
+ if(!el || daysData.length===0){ if(el) el.style.display='none'; return; }
+ const LIMITE_DIFERENCA = 20; // reais — acima disso, vale a pena conferir a contagem física
+ const diferencas = daysData.map(d=>{
+  const esperado = (Number(d.initial)||0) + (Number(d.sales)||0) - (Number(d.withdrawals)||0);
+  const diff = (Number(d.closing)||0) - esperado;
+  return {dia:d.dia, diff};
+ }).filter(x=>Math.abs(x.diff)>=LIMITE_DIFERENCA);
+
+ if(diferencas.length===0){ el.style.display='none'; return; }
+ el.style.display='block';
+ const mostrarAte = 4;
+ const listaTexto = diferencas.slice(0,mostrarAte).map(x=>diaComAno(x.dia)+': '+(x.diff>0?'+':'')+money(x.diff)).join(' · ');
+ el.innerHTML = `<div style="background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.35);border-radius:14px;padding:12px 16px;margin-bottom:14px;font-size:12.5px;color:#fbbf24;">
+   ⚖️ <strong>${diferencas.length} dia${diferencas.length===1?'':'s'} com diferença de caixa acima de ${money(LIMITE_DIFERENCA)}</strong> (entre o valor esperado e o fechamento contado): ${listaTexto}${diferencas.length>mostrarAte?' e mais '+(diferencas.length-mostrarAte):''}. Pode valer a pena reconferir a contagem física desses dias.
+  </div>`;
+}
+
+/* ===== Emoji de "clima do dia" nas vendas (comparado à média do período) ===== */
+function climaDoDia(valorDia, mediaGeral){
+ if(mediaGeral<=0) return '';
+ const razao = valorDia/mediaGeral;
+ if(razao>=1.2) return '🔥';
+ if(razao>=0.8) return '😐';
+ return '🥶';
+}
+
+/* ===== Contador de dias sem erro de conexão ===== */
+function registrarErroConexao(){
+ localStorage.setItem('biobel_ultimo_erro_conexao', new Date().toISOString());
+}
+function diasSemErroConexao(){
+ const ultimoErro = localStorage.getItem('biobel_ultimo_erro_conexao');
+ if(!ultimoErro) return null;
+ const dias = Math.floor((Date.now() - new Date(ultimoErro).getTime()) / 86400000);
+ return dias;
+}
+
 function renderAlertaDiasFaltando(){
  const el = document.getElementById('infoAlertaDiasFaltando');
  if(!el) return;
@@ -2587,6 +2706,9 @@ function renderInfoTab(){
  renderGenero();
  renderResumoRapido(totalSales, pct);
  renderAlertaDiasFaltando();
+ renderAlertaVendasForaPadrao();
+ renderAlertaDiferencaFechamento();
+ renderRecordeDoMes();
 }
 
 function montarSeletorMeses(){
@@ -2646,6 +2768,17 @@ function renderNovasMetricas(){
  if(elTicket) elTicket.textContent = money(ticketMedio);
  const elQtd=document.getElementById('infoQtdVendas');
  if(elQtd) elQtd.textContent = String(totalQtdVendas);
+ const elQtdSub=document.getElementById('infoQtdVendasSub');
+ const metaQtd = getMetaQtdVendas();
+ if(elQtdSub){
+  if(metaQtd>0){
+   const pctQtd = Math.min(100, (totalQtdVendas/metaQtd)*100);
+   const bateu = totalQtdVendas>=metaQtd;
+   elQtdSub.innerHTML = (bateu?'✅ ':'')+'meta: '+metaQtd+' vendas ('+pctQtd.toFixed(0)+'%)';
+  } else {
+   elQtdSub.textContent = 'no mês, somando todos os dias lançados';
+  }
+ }
  const elTicketSub=document.getElementById('infoTicketMedioSub');
  if(elTicketSub) elTicketSub.textContent = totalQtdVendas>0 ? totalQtdVendas+' venda(s) contada(s) no mês' : 'ainda sem dados de quantidade (recarregue a planilha)';
 
@@ -3291,15 +3424,17 @@ function renderTopDays(){
  }
  const ranked = [...daysData].sort((a,b)=>(Number(b.sales)||0)-(Number(a.sales)||0));
  const max = Number(ranked[0].sales)||0;
+ const mediaGeral = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0)/daysData.length;
  const medalhas = ['🥇','🥈','🥉'];
  el.innerHTML = ranked.map((d,i)=>{
   const pct = max>0 ? ((Number(d.sales)||0)/max)*100 : 0;
   const posicao = medalhas[i] || (i+1)+'º';
   const diaSemana = nomeDiaSemanaAbrev(d.dia);
+  const clima = climaDoDia(Number(d.sales)||0, mediaGeral);
   return `
    <div>
     <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
-     <span style="color:#dce5f2;"><span style="display:inline-block;min-width:26px;color:#93a3ba;font-weight:800;">${posicao}</span> Dia ${diaComAno(d.dia)}${diaSemana?` <span style="color:#93a3ba;">(${diaSemana})</span>`:''}</span>
+     <span style="color:#dce5f2;"><span style="display:inline-block;min-width:26px;color:#93a3ba;font-weight:800;">${posicao}</span> ${clima?clima+' ':''}Dia ${diaComAno(d.dia)}${diaSemana?` <span style="color:#93a3ba;">(${diaSemana})</span>`:''}</span>
      <strong style="color:#f6f9fd;">${money(d.sales)}</strong>
     </div>
     <div style="background:#0b1728;border-radius:999px;height:10px;overflow:hidden;">
@@ -3589,6 +3724,7 @@ let googleTimer=null;
 function updateConnBadge(state){
  // state: 'ok' | 'error' | 'connecting'
  const el = document.getElementById('connBadge');
+ if(state==='error'){ registrarErroConexao(); renderDiasSemErroConexao(); }
  if(!el) return;
  el.className = 'conn-badge conn-'+state;
  if(state==='ok'){
@@ -3596,6 +3732,18 @@ function updateConnBadge(state){
   el.textContent = '🟢 Atualizado às '+agora;
  } else {
   el.textContent = state==='error' ? '🔴 Erro de conexão' : '🟡 Conectando...';
+ }
+}
+function renderDiasSemErroConexao(){
+ const el = document.getElementById('diasSemErroConexao');
+ if(!el) return;
+ const dias = diasSemErroConexao();
+ if(dias===null){
+  el.textContent = '✅ Nenhum erro de conexão registrado ainda por aqui.';
+ } else if(dias===0){
+  el.textContent = '🔴 Último erro de conexão foi hoje.';
+ } else {
+  el.textContent = '🟢 '+dias+' dia'+(dias===1?'':'s')+' sem erro de conexão.';
  }
 }
 function setGoogleStatus(msg, ok=false, state){
@@ -4041,6 +4189,25 @@ function setRefreshButtonsLoading(loading){
   }
  });
 }
+function extractVendasIndividuais(rows){
+ // Lista o valor de cada venda individual do dia (soma das colunas de pagamento por linha),
+ // usada pra detectar vendas muito fora do padrão (possível erro de digitação).
+ const valores = [];
+ for(let r=0;r<rows.length;r++){
+  const rownum = rows[r]?.[0];
+  const label = String(rownum??'').trim().toLowerCase();
+  if(label==='total') break;
+  if(typeof rownum!=='number') continue;
+  let valorVenda = 0;
+  for(const c of [1,2,3,4]){
+   const v = rows[r]?.[c];
+   if(typeof v==='number') valorVenda += v;
+  }
+  if(valorVenda>0) valores.push(valorVenda);
+ }
+ return valores;
+}
+
 function processarLinhasDoDia(sheetName, rows){
  const colM=12;
  let initial=0,closing=0,withdrawals=0,sales=0;
@@ -4082,7 +4249,8 @@ function processarLinhasDoDia(sheetName, rows){
  const horarios=extractHorariosPico(rows);
  const {porTurno,porTurnoVend}=extractTurnos(rows);
  const genero=extractGeneroTotais(rows);
- return {dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos,horarios,porTurno,porTurnoVend,genero};
+ const vendasIndividuais=extractVendasIndividuais(rows);
+ return {dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos,horarios,porTurno,porTurnoVend,genero,vendasIndividuais};
 }
 
 function getAppsScriptProxyUrl(){
@@ -4242,7 +4410,8 @@ document.getElementById('fileInput').addEventListener('change',async e=>{
    const horarios=extractHorariosPico(rows);
    const {porTurno,porTurnoVend}=extractTurnos(rows);
    const genero=extractGeneroTotais(rows);
-   const item={dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos,horarios,porTurno,porTurnoVend,genero};
+   const vendasIndividuais=extractVendasIndividuais(rows);
+   const item={dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos,horarios,porTurno,porTurnoVend,genero,vendasIndividuais};
    daysData=daysData.filter(x=>x.dia!==sheetName);
    daysData.push(item);
   }
