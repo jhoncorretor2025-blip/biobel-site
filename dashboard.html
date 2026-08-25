@@ -398,6 +398,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <button id="tabCaixaCompleto" data-tab="caixaCompleto" role="tab" aria-selected="false" aria-controls="caixaCompletoTab" onclick="showTab('caixaCompleto')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">📖 Caixa completo</button>
   <button id="tabEquipe" data-tab="equipe" role="tab" aria-selected="false" aria-controls="equipeTab" onclick="showTab('equipe')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">👩‍💼 Equipe</button>
   <button id="tabConfig" data-tab="config" role="tab" aria-selected="false" aria-controls="configTab" onclick="showTab('config')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">⚙️ Configuração</button>
+  <button id="tabAdm" data-tab="adm" role="tab" aria-selected="false" aria-controls="admTab" onclick="showTab('adm')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">👑 ADM</button>
  </div>
  </div>
 </nav>
@@ -1444,6 +1445,97 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 </section>
 
 
+<section id="admTab" class="hidden max-w-5xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabAdm">
+
+ <div id="admLoginWrap" class="adv-card" style="max-width:380px;margin:40px auto;">
+  <div style="text-align:center;margin-bottom:20px;">
+   <div style="font-size:34px;">👑</div>
+   <h3 style="margin-top:6px;">Área da Gerência</h3>
+   <p style="font-size:12.5px;color:#93a3ba;margin-top:4px;">Acesso restrito — gastos fixos, boletos de fornecedores e comissões da equipe.</p>
+  </div>
+  <label class="block text-sm font-semibold mb-2" for="admLoginUser">Usuário</label>
+  <input id="admLoginUser" type="text" autocomplete="username" placeholder="usuário" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500 mb-3" onkeydown="if(event.key==='Enter')document.getElementById('admLoginPass').focus()">
+  <label class="block text-sm font-semibold mb-2" for="admLoginPass">Senha</label>
+  <div style="position:relative;">
+   <input id="admLoginPass" type="password" autocomplete="current-password" placeholder="senha" style="padding-right:44px;" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500" onkeydown="if(event.key==='Enter')fazerLoginAdm()">
+   <button type="button" id="btnMostrarSenhaAdm" onclick="alternarMostrarSenhaAdm()" aria-label="Mostrar senha" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:#7e92aa;">👁️</button>
+  </div>
+  <button onclick="fazerLoginAdm()" class="mt-4 w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-xl font-semibold text-sm">Entrar</button>
+  <div id="admLoginErro" style="color:#fb7185;font-size:12.5px;margin-top:10px;text-align:center;min-height:16px;"></div>
+ </div>
+
+ <div id="admConteudoWrap" style="display:none;">
+  <div class="adv-card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+   <div>
+    <h3 style="margin:0;">👑 Área da Gerência</h3>
+    <p style="font-size:12px;color:#93a3ba;margin-top:2px;">Gastos fixos, boletos de fornecedores e comissões da equipe.</p>
+   </div>
+   <button onclick="sairAdm()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl font-semibold text-sm">🔒 Sair da área da gerência</button>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">
+   <div class="adv-kpi red">
+    <div class="label">🏠 Gastos Fixos (mensal)</div>
+    <div class="value" id="admTotalGastosFixos">R$ 0,00</div>
+    <div class="sub">aluguel, água, luz, internet...</div>
+   </div>
+   <div class="adv-kpi blue">
+    <div class="label">📦 Gastos Variáveis</div>
+    <div class="value" id="admTotalGastosVariaveis">R$ 0,00</div>
+    <div class="sub">boletos de fornecedores atuais</div>
+   </div>
+   <div class="adv-kpi gold">
+    <div class="label">💸 Total de Gastos</div>
+    <div class="value" id="admTotalGastosGeral">R$ 0,00</div>
+    <div class="sub">fixos + variáveis</div>
+   </div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>🏠 Gastos Fixos</h3>
+    <span>as contas que se repetem todo mês</span>
+   </div>
+   <div id="listaGastosFixos" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
+   <div style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:8px;">
+    <input id="novoGastoFixoNome" type="text" placeholder="Nome (ex: Aluguel)" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <input id="novoGastoFixoValor" type="text" inputmode="decimal" placeholder="R$ 0,00" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <input id="novoGastoFixoDia" type="number" min="1" max="31" placeholder="Dia venc." style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="adicionarGastoFixo()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">➕ Add</button>
+   </div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>📦 Boletos de Fornecedores</h3>
+    <span>gastos variáveis — cada compra registrada separadamente</span>
+   </div>
+   <div id="listaBoletos" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;"></div>
+   <div style="border-top:1px solid #1e2c42;padding-top:14px;">
+    <div style="font-size:12px;font-weight:800;color:#93a3ba;margin-bottom:10px;">➕ Adicionar novo boleto</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:8px;">
+     <input id="novoBoletoFornecedor" type="text" placeholder="Fornecedor" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     <input id="novoBoletoMarca" type="text" placeholder="Marca" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     <input id="novoBoletoQuantidade" type="text" placeholder="Quantidade" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     <input id="novoBoletoValidade" type="text" placeholder="Validade (ex: 12/2027)" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     <input id="novoBoletoValor" type="text" inputmode="decimal" placeholder="Valor R$" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     <input id="novoBoletoVencimento" type="text" placeholder="Vencimento (ex: 15/09)" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    </div>
+    <textarea id="novoBoletoObs" rows="2" placeholder="Observações (opcional)" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;resize:vertical;margin-bottom:8px;"></textarea>
+    <button onclick="adicionarBoleto()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Adicionar boleto</button>
+   </div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>💼 Comissões e Participação no Lucro</h3>
+    <span>defina a % de comissão de cada vendedora sobre o que ela vendeu no mês</span>
+   </div>
+   <div id="listaComissoes" style="display:flex;flex-direction:column;gap:12px;"></div>
+  </div>
+ </div>
+</section>
+
 <div id="printReceipt" class="print-receipt"></div>
 
 <div id="modoApresentacaoOverlay" class="no-print" style="display:none;position:fixed;inset:0;z-index:9999;background:#07111f;padding:40px;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
@@ -1937,6 +2029,7 @@ function showTab(tab){
  const equipe=document.getElementById('equipeTab');
  const config=document.getElementById('configTab');
  const alertas=document.getElementById('alertasTab');
+ const adm=document.getElementById('admTab');
  const b1=document.getElementById('tabDashboard');
  const b4=document.getElementById('tabInfo');
  const b2=document.getElementById('tabCaixa');
@@ -1944,8 +2037,9 @@ function showTab(tab){
  const b6=document.getElementById('tabEquipe');
  const b3=document.getElementById('tabConfig');
  const b7=document.getElementById('tabAlertas');
- [dash,info,caixa,caixaCompleto,equipe,config,alertas].forEach(x=>x.classList.add('hidden'));
- [b1,b4,b2,b5,b6,b3,b7].forEach(x=>{x.className='tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm';x.setAttribute('aria-selected','false');});
+ const b8=document.getElementById('tabAdm');
+ [dash,info,caixa,caixaCompleto,equipe,config,alertas,adm].forEach(x=>x.classList.add('hidden'));
+ [b1,b4,b2,b5,b6,b3,b7,b8].forEach(x=>{x.className='tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm';x.setAttribute('aria-selected','false');});
 
  // Sincroniza o menu lateral (sidebar) com a mesma aba selecionada.
  document.querySelectorAll('.adv-nav button[data-tab]').forEach(btn=>{
@@ -1978,6 +2072,11 @@ function showTab(tab){
   b7.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
   b7.setAttribute('aria-selected','true');
   renderCentralDeAlertas();
+ } else if(tab==='adm'){
+  adm.classList.remove('hidden');
+  b8.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
+  b8.setAttribute('aria-selected','true');
+  initAdmTab();
  } else if(tab==='info'){
   info.classList.remove('hidden');
   b4.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
@@ -2615,6 +2714,253 @@ function obterLogoDataUrl(){
    img.src = '/logo_biobel_gravatai.png';
   }catch(e){ resolve(null); }
  });
+}
+
+/* ===== Área ADM/Gerência (login próprio, separado do login principal do painel) ===== */
+function parseValorSimples(str){
+ // Parser simples pra campos de valor da área ADM (sem a máscara "digite os números"
+ // usada no resto do sistema) — aceita tanto "7000" quanto "7.000,50".
+ if(typeof str !== 'string') return NaN;
+ const limpo = str.replace(/R\$/gi,'').trim().replace(/\./g,'').replace(',','.');
+ return parseFloat(limpo);
+}
+function alternarMostrarSenhaAdm(){
+ const campo = document.getElementById('admLoginPass');
+ const btn = document.getElementById('btnMostrarSenhaAdm');
+ if(!campo || !btn) return;
+ const visivel = campo.type === 'text';
+ campo.type = visivel ? 'password' : 'text';
+ btn.textContent = visivel ? '👁️' : '🙈';
+}
+function fazerLoginAdm(){
+ const usuario = (document.getElementById('admLoginUser').value||'').trim().toLowerCase();
+ const senha = document.getElementById('admLoginPass').value||'';
+ const erroEl = document.getElementById('admLoginErro');
+ if(usuario==='alesandra' && senha==='jhonmeulindo'){
+  sessionStorage.setItem('biobel_adm_autenticado', 'yes');
+  document.getElementById('admLoginUser').value='';
+  document.getElementById('admLoginPass').value='';
+  if(erroEl) erroEl.textContent='';
+  mostrarConteudoAdm();
+ } else {
+  if(erroEl) erroEl.textContent = 'Usuário ou senha incorretos.';
+ }
+}
+function sairAdm(){
+ confirmarBiobel('Sair da área da gerência?', ()=>{
+  sessionStorage.removeItem('biobel_adm_autenticado');
+  document.getElementById('admLoginWrap').style.display='block';
+  document.getElementById('admConteudoWrap').style.display='none';
+ });
+}
+function mostrarConteudoAdm(){
+ document.getElementById('admLoginWrap').style.display='none';
+ document.getElementById('admConteudoWrap').style.display='block';
+ renderGastosFixos();
+ renderBoletos();
+ renderComissoes();
+ atualizarTotaisAdm();
+}
+function initAdmTab(){
+ if(sessionStorage.getItem('biobel_adm_autenticado')==='yes'){
+  mostrarConteudoAdm();
+ } else {
+  document.getElementById('admLoginWrap').style.display='block';
+  document.getElementById('admConteudoWrap').style.display='none';
+ }
+}
+
+/* ===== Gastos Fixos (aluguel, água, luz, internet...) ===== */
+function getGastosFixos(){
+ try{ return JSON.parse(localStorage.getItem('biobel_adm_gastos_fixos')||'[]'); }catch(e){ return []; }
+}
+function salvarGastosFixos(lista){
+ localStorage.setItem('biobel_adm_gastos_fixos', JSON.stringify(lista));
+}
+function adicionarGastoFixo(){
+ const nome = document.getElementById('novoGastoFixoNome').value.trim();
+ const valor = parseValorSimples(document.getElementById('novoGastoFixoValor').value);
+ const diaInput = document.getElementById('novoGastoFixoDia').value;
+ const dia = diaInput ? parseInt(diaInput,10) : null;
+ if(!nome){ mostrarToast('⚠️ Digite o nome do gasto.'); return; }
+ if(isNaN(valor) || valor<=0){ mostrarToast('⚠️ Digite um valor válido.'); return; }
+ const lista = getGastosFixos();
+ lista.push({ id: Date.now(), nome, valor, dia: (dia && !isNaN(dia)) ? dia : null });
+ salvarGastosFixos(lista);
+ document.getElementById('novoGastoFixoNome').value='';
+ document.getElementById('novoGastoFixoValor').value='';
+ document.getElementById('novoGastoFixoDia').value='';
+ renderGastosFixos();
+ atualizarTotaisAdm();
+ mostrarToast('✅ Gasto fixo adicionado!');
+ registrarAlteracao('Gasto fixo "'+nome+'" adicionado ('+money(valor)+')');
+ renderLogAlteracoes();
+}
+function removerGastoFixo(id){
+ confirmarBiobel('Remover esse gasto fixo?', ()=>{
+  const lista = getGastosFixos().filter(g=>g.id!==id);
+  salvarGastosFixos(lista);
+  renderGastosFixos();
+  atualizarTotaisAdm();
+  mostrarToast('🗑️ Removido.');
+ });
+}
+function renderGastosFixos(){
+ const el = document.getElementById('listaGastosFixos');
+ if(!el) return;
+ const lista = getGastosFixos();
+ if(lista.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhum gasto fixo cadastrado ainda.</p>';
+  return;
+ }
+ el.innerHTML = lista.map(g=>`
+  <div style="display:flex;align-items:center;justify-content:space-between;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 14px;">
+   <div>
+    <span style="color:#dce5f2;font-weight:700;font-size:13px;">${g.nome}</span>
+    ${g.dia?`<span style="color:#93a3ba;font-size:11px;margin-left:8px;">vence dia ${g.dia}</span>`:''}
+   </div>
+   <div style="display:flex;align-items:center;gap:10px;">
+    <span style="color:#fb7185;font-weight:800;font-size:13px;">${money(g.valor)}</span>
+    <button onclick="removerGastoFixo(${g.id})" aria-label="Remover ${g.nome}" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;">🗑️</button>
+   </div>
+  </div>
+ `).join('');
+}
+
+/* ===== Boletos de Fornecedores (gastos variáveis) ===== */
+function getBoletos(){
+ try{ return JSON.parse(localStorage.getItem('biobel_adm_boletos')||'[]'); }catch(e){ return []; }
+}
+function salvarBoletos(lista){
+ localStorage.setItem('biobel_adm_boletos', JSON.stringify(lista));
+}
+function adicionarBoleto(){
+ const fornecedor = document.getElementById('novoBoletoFornecedor').value.trim();
+ const marca = document.getElementById('novoBoletoMarca').value.trim();
+ const quantidade = document.getElementById('novoBoletoQuantidade').value.trim();
+ const validade = document.getElementById('novoBoletoValidade').value.trim();
+ const valor = parseValorSimples(document.getElementById('novoBoletoValor').value);
+ const vencimento = document.getElementById('novoBoletoVencimento').value.trim();
+ const obs = document.getElementById('novoBoletoObs').value.trim();
+ if(!fornecedor){ mostrarToast('⚠️ Digite o nome do fornecedor.'); return; }
+ if(isNaN(valor) || valor<=0){ mostrarToast('⚠️ Digite um valor válido.'); return; }
+ const lista = getBoletos();
+ lista.unshift({ id: Date.now(), fornecedor, marca, quantidade, validade, valor, vencimento, obs });
+ salvarBoletos(lista);
+ ['novoBoletoFornecedor','novoBoletoMarca','novoBoletoQuantidade','novoBoletoValidade','novoBoletoValor','novoBoletoVencimento','novoBoletoObs'].forEach(id=>{
+  const elCampo = document.getElementById(id);
+  if(elCampo) elCampo.value='';
+ });
+ renderBoletos();
+ atualizarTotaisAdm();
+ mostrarToast('✅ Boleto adicionado!');
+ registrarAlteracao('Boleto de "'+fornecedor+'" adicionado ('+money(valor)+')');
+ renderLogAlteracoes();
+}
+function removerBoleto(id){
+ confirmarBiobel('Remover esse boleto?', ()=>{
+  const lista = getBoletos().filter(b=>b.id!==id);
+  salvarBoletos(lista);
+  renderBoletos();
+  atualizarTotaisAdm();
+  mostrarToast('🗑️ Removido.');
+ });
+}
+function renderBoletos(){
+ const el = document.getElementById('listaBoletos');
+ if(!el) return;
+ const lista = getBoletos();
+ if(lista.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhum boleto cadastrado ainda.</p>';
+  return;
+ }
+ el.innerHTML = lista.map(b=>`
+  <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:12px 14px;">
+   <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;">
+    <div>
+     <div style="color:#dce5f2;font-weight:800;font-size:14px;">${b.fornecedor}</div>
+     ${b.marca?`<div style="color:#93a3ba;font-size:11.5px;margin-top:2px;">Marca: ${b.marca}</div>`:''}
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+     <span style="color:#4f9cff;font-weight:900;font-size:15px;">${money(b.valor)}</span>
+     <button onclick="removerBoleto(${b.id})" aria-label="Remover boleto de ${b.fornecedor}" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;">🗑️</button>
+    </div>
+   </div>
+   <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:11.5px;color:#93a3ba;">
+    ${b.quantidade?`<span>📦 Qtd: ${b.quantidade}</span>`:''}
+    ${b.validade?`<span>⏳ Validade: ${b.validade}</span>`:''}
+    ${b.vencimento?`<span>📅 Vencimento: ${b.vencimento}</span>`:''}
+   </div>
+   ${b.obs?`<div style="font-size:11.5px;color:#93a3ba;margin-top:6px;font-style:italic;">"${b.obs}"</div>`:''}
+  </div>
+ `).join('');
+}
+
+function atualizarTotaisAdm(){
+ const gastosFixos = getGastosFixos().reduce((s,g)=>s+(Number(g.valor)||0),0);
+ const boletos = getBoletos().reduce((s,b)=>s+(Number(b.valor)||0),0);
+ const elFixos = document.getElementById('admTotalGastosFixos');
+ const elVar = document.getElementById('admTotalGastosVariaveis');
+ const elGeral = document.getElementById('admTotalGastosGeral');
+ if(elFixos) elFixos.textContent = money(gastosFixos);
+ if(elVar) elVar.textContent = money(boletos);
+ if(elGeral) elGeral.textContent = money(gastosFixos+boletos);
+}
+
+/* ===== Comissões e participação no lucro por vendedora ===== */
+function getComissoes(){
+ try{ return JSON.parse(localStorage.getItem('biobel_adm_comissoes')||'{}'); }catch(e){ return {}; }
+}
+function salvarComissaoVendedora(nome){
+ const input = document.getElementById('comissaoInput_'+nome.replace(/\s+/g,'_'));
+ if(!input) return;
+ const pct = parseFloat(input.value.replace(',','.'));
+ if(isNaN(pct) || pct<0){ mostrarToast('⚠️ Digite uma porcentagem válida.'); return; }
+ const comissoes = getComissoes();
+ comissoes[nome] = pct;
+ localStorage.setItem('biobel_adm_comissoes', JSON.stringify(comissoes));
+ mostrarToast('✅ Comissão de '+nome+' salva!');
+ registrarAlteracao('Comissão de '+nome+' definida em '+pct+'%');
+ renderLogAlteracoes();
+ renderComissoes();
+}
+function renderComissoes(){
+ const el = document.getElementById('listaComissoes');
+ if(!el) return;
+ const totaisVend = {};
+ daysData.forEach(d=>{
+  Object.entries(d.vendedoras||{}).forEach(([nome,valor])=>{
+   totaisVend[nome] = (totaisVend[nome]||0) + (Number(valor)||0);
+  });
+ });
+ const nomes = Object.keys(totaisVend).sort((a,b)=>totaisVend[b]-totaisVend[a]);
+ if(nomes.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhuma vendedora encontrada nos dados carregados ainda.</p>';
+  return;
+ }
+ const comissoes = getComissoes();
+ el.innerHTML = nomes.map(nome=>{
+  const totalVendido = totaisVend[nome];
+  const pctSalvo = comissoes[nome];
+  const pctExibir = (pctSalvo!==undefined) ? pctSalvo : '';
+  const valorComissao = (pctSalvo!==undefined && !isNaN(pctSalvo)) ? totalVendido*(pctSalvo/100) : null;
+  const idSeguro = nome.replace(/\s+/g,'_');
+  return `
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+     <div>
+      <div style="color:#dce5f2;font-weight:800;font-size:14px;">${nome}</div>
+      <div style="color:#93a3ba;font-size:11.5px;margin-top:2px;">Vendeu no período: ${money(totalVendido)}</div>
+     </div>
+     <div style="display:flex;align-items:center;gap:8px;">
+      <input id="comissaoInput_${idSeguro}" type="text" inputmode="decimal" value="${pctExibir}" placeholder="0" style="width:70px;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:7px 10px;color:#dce5f2;font-size:13px;text-align:center;">
+      <span style="color:#93a3ba;font-size:13px;">%</span>
+      <button onclick="salvarComissaoVendedora('${nome}')" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-2 rounded-lg font-semibold text-xs whitespace-nowrap">Salvar</button>
+     </div>
+    </div>
+    ${valorComissao!==null ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid #1e2c42;font-size:13px;color:#27d7a0;font-weight:800;">💰 Comissão a receber: ${money(valorComissao)}</div>` : ''}
+   </div>`;
+ }).join('');
 }
 
 function baixarBackupCompleto(){
@@ -6480,9 +6826,9 @@ document.addEventListener('keydown', e=>{
   }
  }
  // Alt+1 a Alt+7 trocam de aba rapidamente (evita Ctrl+número, que o navegador já usa pra trocar de aba dele mesmo).
- if(e.altKey && ['1','2','3','4','5','6','7'].includes(e.key)){
+ if(e.altKey && ['1','2','3','4','5','6','7','8'].includes(e.key)){
   e.preventDefault();
-  const abas = ['dashboard','info','alertas','caixa','caixaCompleto','equipe','config'];
+  const abas = ['dashboard','info','alertas','caixa','caixaCompleto','equipe','config','adm'];
   const alvo = abas[Number(e.key)-1];
   if(alvo) showTab(alvo);
  }
