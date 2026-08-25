@@ -1499,10 +1499,12 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <div id="listaGastosFixos" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
    <div style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:8px;">
     <input id="novoGastoFixoNome" type="text" placeholder="Nome (ex: Aluguel)" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
-    <input id="novoGastoFixoValor" type="text" inputmode="decimal" placeholder="R$ 0,00" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <input id="novoGastoFixoValor" type="text" inputmode="decimal" placeholder="R$ (opcional)" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
     <input id="novoGastoFixoDia" type="number" min="1" max="31" placeholder="Dia venc." style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
-    <button onclick="adicionarGastoFixo()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">➕ Add</button>
+    <button id="btnAdicionarGastoFixo" onclick="adicionarGastoFixo()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">➕ Add</button>
    </div>
+   <button id="btnCancelarEdicaoGastoFixo" onclick="cancelarEdicaoGastoFixo()" style="display:none;margin-top:8px;background:none;border:none;color:#93a3ba;font-size:12px;text-decoration:underline;cursor:pointer;">✕ Cancelar edição</button>
+   <p style="font-size:11px;color:#93a3ba;margin-top:8px;">💡 Pode deixar o valor em branco pra cadastrar o nome agora e preencher o valor depois — vai aparecer como "⚠️ A definir".</p>
   </div>
 
   <div class="adv-card">
@@ -2777,24 +2779,66 @@ function getGastosFixos(){
 function salvarGastosFixos(lista){
  localStorage.setItem('biobel_adm_gastos_fixos', JSON.stringify(lista));
 }
+let gastoFixoEditandoId = null;
 function adicionarGastoFixo(){
  const nome = document.getElementById('novoGastoFixoNome').value.trim();
- const valor = parseValorSimples(document.getElementById('novoGastoFixoValor').value);
+ const valorTexto = document.getElementById('novoGastoFixoValor').value.trim();
  const diaInput = document.getElementById('novoGastoFixoDia').value;
  const dia = diaInput ? parseInt(diaInput,10) : null;
  if(!nome){ mostrarToast('⚠️ Digite o nome do gasto.'); return; }
- if(isNaN(valor) || valor<=0){ mostrarToast('⚠️ Digite um valor válido.'); return; }
+
+ // Valor é opcional agora — deixar em branco salva como "a definir", pra preencher depois.
+ let valor = null;
+ if(valorTexto){
+  valor = parseValorSimples(valorTexto);
+  if(isNaN(valor) || valor<0){ mostrarToast('⚠️ Digite um valor válido, ou deixe em branco pra definir depois.'); return; }
+ }
+
  const lista = getGastosFixos();
- lista.push({ id: Date.now(), nome, valor, dia: (dia && !isNaN(dia)) ? dia : null });
- salvarGastosFixos(lista);
+ if(gastoFixoEditandoId!==null){
+  const idx = lista.findIndex(g=>g.id===gastoFixoEditandoId);
+  if(idx>=0){
+   lista[idx] = { ...lista[idx], nome, valor, dia: (dia && !isNaN(dia)) ? dia : null };
+   salvarGastosFixos(lista);
+   mostrarToast('✅ Gasto fixo atualizado!');
+   registrarAlteracao('Gasto fixo "'+nome+'" editado');
+  }
+  cancelarEdicaoGastoFixo();
+ } else {
+  lista.push({ id: Date.now(), nome, valor, dia: (dia && !isNaN(dia)) ? dia : null });
+  salvarGastosFixos(lista);
+  mostrarToast('✅ Gasto fixo adicionado!');
+  registrarAlteracao('Gasto fixo "'+nome+'" adicionado'+(valor!==null?' ('+money(valor)+')':' (valor a definir)'));
+ }
  document.getElementById('novoGastoFixoNome').value='';
  document.getElementById('novoGastoFixoValor').value='';
  document.getElementById('novoGastoFixoDia').value='';
  renderGastosFixos();
  atualizarTotaisAdm();
- mostrarToast('✅ Gasto fixo adicionado!');
- registrarAlteracao('Gasto fixo "'+nome+'" adicionado ('+money(valor)+')');
  renderLogAlteracoes();
+}
+function editarGastoFixo(id){
+ const g = getGastosFixos().find(x=>x.id===id);
+ if(!g) return;
+ gastoFixoEditandoId = id;
+ document.getElementById('novoGastoFixoNome').value = g.nome;
+ document.getElementById('novoGastoFixoValor').value = g.valor!==null ? String(g.valor).replace('.',',') : '';
+ document.getElementById('novoGastoFixoDia').value = g.dia || '';
+ const btn = document.getElementById('btnAdicionarGastoFixo');
+ if(btn) btn.textContent = '💾 Salvar edição';
+ const btnCancelar = document.getElementById('btnCancelarEdicaoGastoFixo');
+ if(btnCancelar) btnCancelar.style.display = 'inline-block';
+ document.getElementById('novoGastoFixoNome').scrollIntoView({behavior:'smooth', block:'center'});
+}
+function cancelarEdicaoGastoFixo(){
+ gastoFixoEditandoId = null;
+ document.getElementById('novoGastoFixoNome').value='';
+ document.getElementById('novoGastoFixoValor').value='';
+ document.getElementById('novoGastoFixoDia').value='';
+ const btn = document.getElementById('btnAdicionarGastoFixo');
+ if(btn) btn.textContent = '➕ Add';
+ const btnCancelar = document.getElementById('btnCancelarEdicaoGastoFixo');
+ if(btnCancelar) btnCancelar.style.display = 'none';
 }
 function removerGastoFixo(id){
  confirmarBiobel('Remover esse gasto fixo?', ()=>{
@@ -2805,22 +2849,39 @@ function removerGastoFixo(id){
   mostrarToast('🗑️ Removido.');
  });
 }
+function seedGastosFixosPadrao(){
+ // Pré-cadastra 3 gastos fixos que a loja sabe que tem, mas o valor exato só a gerente sabe —
+ // ficam com valor "a definir" até ela preencher, em vez de precisar criar do zero.
+ const lista = getGastosFixos();
+ const nomesJaExistentes = lista.map(g=>g.nome.toLowerCase());
+ const padroes = ['CLT Gabriela', 'Estagiária (Dai)', 'Contadora'];
+ let mudou = false;
+ padroes.forEach(nome=>{
+  if(!nomesJaExistentes.includes(nome.toLowerCase())){
+   lista.push({ id: Date.now()+Math.floor(Math.random()*1000), nome, valor: null, dia: null });
+   mudou = true;
+  }
+ });
+ if(mudou) salvarGastosFixos(lista);
+}
 function renderGastosFixos(){
  const el = document.getElementById('listaGastosFixos');
  if(!el) return;
+ seedGastosFixosPadrao();
  const lista = getGastosFixos();
  if(lista.length===0){
   el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhum gasto fixo cadastrado ainda.</p>';
   return;
  }
  el.innerHTML = lista.map(g=>`
-  <div style="display:flex;align-items:center;justify-content:space-between;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 14px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 14px;flex-wrap:wrap;gap:8px;">
    <div>
     <span style="color:#dce5f2;font-weight:700;font-size:13px;">${g.nome}</span>
     ${g.dia?`<span style="color:#93a3ba;font-size:11px;margin-left:8px;">vence dia ${g.dia}</span>`:''}
    </div>
    <div style="display:flex;align-items:center;gap:10px;">
-    <span style="color:#fb7185;font-weight:800;font-size:13px;">${money(g.valor)}</span>
+    ${g.valor!==null ? `<span style="color:#fb7185;font-weight:800;font-size:13px;">${money(g.valor)}</span>` : `<span style="color:#fbbf24;font-weight:800;font-size:12px;background:rgba(251,191,36,.1);padding:3px 8px;border-radius:999px;">⚠️ A definir</span>`}
+    <button onclick="editarGastoFixo(${g.id})" aria-label="Editar ${g.nome}" style="background:none;border:none;color:#4f9cff;cursor:pointer;font-size:14px;">✏️</button>
     <button onclick="removerGastoFixo(${g.id})" aria-label="Remover ${g.nome}" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;">🗑️</button>
    </div>
   </div>
