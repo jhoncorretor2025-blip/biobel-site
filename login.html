@@ -70,13 +70,20 @@ button:active{transform:translateY(1px)}
 
   // Aplica a logo personalizada da loja (a mesma configurada dentro do painel), se já tiver sido salva
   // nesse navegador — assim a tela de login também fica com a cara da loja, não só o painel interno.
+  // Prioridade: arquivo enviado > link (URL) salvo > link padrão combinado > logo padrão do site.
   try{
-    var logoCustom = localStorage.getItem('biobel_logo_custom');
-    if(logoCustom){
+    var logoUpload = localStorage.getItem('biobel_logo_custom');
+    var logoUrl = localStorage.getItem('biobel_logo_custom_url');
+    var jaEscolheuPadrao = localStorage.getItem('biobel_logo_padrao_escolhido');
+    var logoParaUsar = logoUpload || logoUrl;
+    if(!logoParaUsar && !jaEscolheuPadrao){
+      logoParaUsar = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9SwF4jZXYBWKBwWhxqdwut1wnZRS4hqyU47xNSpsuHg&s';
+    }
+    if(logoParaUsar){
       var imgLogo = document.getElementById('logoLoginBiobel');
       var faviconEl = document.getElementById('faviconLogin');
-      if(imgLogo) imgLogo.src = logoCustom;
-      if(faviconEl) faviconEl.href = logoCustom;
+      if(imgLogo) imgLogo.src = logoParaUsar;
+      if(faviconEl) faviconEl.href = logoParaUsar;
     }
   }catch(e){}
 
