@@ -853,6 +853,10 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    ✏️ <strong>Modo de edição ligado.</strong> Agora dá pra <strong>remover</strong> (🗑), <strong>mover</strong> tarefas entre Gabi e Dai (🔁) e <strong>adicionar</strong> novas tarefas no fim de cada lista.
    <button onclick="restaurarRotinaPadrao()" class="ml-2 text-rose-300 underline">Restaurar lista original</button>
   </div>
+  <div class="no-print" style="background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+   <label for="equipeAssinaturaInput" style="font-size:12px;color:#93a3ba;font-weight:700;white-space:nowrap;">✍️ Quem está fazendo hoje?</label>
+   <input id="equipeAssinaturaInput" type="text" placeholder="Digite seu nome" oninput="salvarAssinaturaAtual()" style="flex:1;min-width:140px;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:6px 10px;color:#dce5f2;font-size:12.5px;">
+  </div>
  </div>
 
  <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
@@ -1747,10 +1751,35 @@ function equipeCheckKey(escopo, index){
 function isEquipeChecked(escopo, index){
  return localStorage.getItem(equipeCheckKey(escopo,index)) === 'yes';
 }
+function getAssinaturaAtual(){
+ return (localStorage.getItem('biobel_equipe_assinatura_atual')||'').trim();
+}
+function salvarAssinaturaAtual(){
+ const input = document.getElementById('equipeAssinaturaInput');
+ if(!input) return;
+ localStorage.setItem('biobel_equipe_assinatura_atual', input.value.trim());
+}
+function getAssinaturasChecklist(){
+ try{ return JSON.parse(localStorage.getItem('biobel_equipe_assinaturas')||'{}'); }
+ catch(e){ return {}; }
+}
+function registrarAssinatura(key, concluido){
+ const assinaturas = getAssinaturasChecklist();
+ if(concluido){
+  const nome = getAssinaturaAtual();
+  if(nome) assinaturas[key] = {nome, quando:new Date().toISOString()};
+  else delete assinaturas[key];
+ } else {
+  delete assinaturas[key];
+ }
+ localStorage.setItem('biobel_equipe_assinaturas', JSON.stringify(assinaturas));
+}
+
 function toggleEquipeCheck(escopo, index){
  const key = equipeCheckKey(escopo,index);
  const novo = !isEquipeChecked(escopo,index);
  localStorage.setItem(key, novo ? 'yes' : 'no');
+ registrarAssinatura(key, novo);
  if(escopo==='diaria') renderEquipeRotinaDiaria();
  else renderEquipeDia(equipeDiaAtual);
 }
@@ -1769,11 +1798,22 @@ function toggleEquipeEditMode(){
 
 function renderEquipeChecklistItem(escopo, index, texto, editControlsHtml){
  const checked = isEquipeChecked(escopo,index);
+ const key = equipeCheckKey(escopo,index);
+ const assinaturas = getAssinaturasChecklist();
+ const assinatura = checked ? assinaturas[key] : null;
+ let assinaturaTexto = '';
+ if(assinatura){
+  const hora = new Date(assinatura.quando).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  assinaturaTexto = `<span style="display:block;font-size:10.5px;color:#27d7a0;margin-top:2px;">✓ ${assinatura.nome} às ${hora}</span>`;
+ }
  return `
   <div style="display:flex;align-items:center;gap:6px;">
    <label style="flex:1;display:flex;align-items:flex-start;gap:10px;background:${checked?'rgba(39,215,160,.06)':'#0b1728'};border:1px solid ${checked?'rgba(39,215,160,.25)':'#1c2c42'};border-radius:12px;padding:10px 12px;cursor:pointer;">
     <input type="checkbox" ${checked?'checked':''} onchange="toggleEquipeCheck('${escopo}',${index})" style="margin-top:3px;width:16px;height:16px;accent-color:#27d7a0;cursor:pointer;flex-shrink:0;">
-    <span style="font-size:13px;color:${checked?'#93a3ba':'#dce5f2'};text-decoration:${checked?'line-through':'none'};">${texto}</span>
+    <span style="flex:1;">
+     <span style="font-size:13px;color:${checked?'#93a3ba':'#dce5f2'};text-decoration:${checked?'line-through':'none'};">${texto}</span>
+     ${assinaturaTexto}
+    </span>
    </label>
    ${editControlsHtml||''}
   </div>`;
@@ -2001,6 +2041,9 @@ function renderEquipeHistorico(){
 function initEquipeTab(){
  const savedDia = localStorage.getItem('biobel_equipe_dia_atual');
  if(savedDia && diasSemanaOrdem.includes(savedDia)) equipeDiaAtual = savedDia;
+
+ const assinaturaInput = document.getElementById('equipeAssinaturaInput');
+ if(assinaturaInput) assinaturaInput.value = getAssinaturaAtual();
 
  const inputs = ['equipeWeekStart','equipeWeekEnd','equipeNomeGabi','equipeNomeDai'];
  inputs.forEach(id=>{
