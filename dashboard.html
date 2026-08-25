@@ -1233,6 +1233,19 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     </div>
     <p class="simple-legend text-xs text-slate-500 mt-1">Dinheiro que <strong class="text-slate-400">saiu da gaveta</strong> durante o dia (compras, troco, sangria etc).</p>
    </div>
+   <div class="rounded-xl border border-slate-800 bg-slate-950 px-4 py-4" id="cardPrimeiraUltimaVenda" style="display:none;">
+    <div class="grid grid-cols-2 gap-3 text-center">
+     <div>
+      <div class="text-slate-400 text-xs">🌅 Primeira venda</div>
+      <strong id="completePrimeiraVenda" class="text-lg text-slate-200">—</strong>
+     </div>
+     <div>
+      <div class="text-slate-400 text-xs">🌙 Última venda</div>
+      <strong id="completeUltimaVenda" class="text-lg text-slate-200">—</strong>
+     </div>
+    </div>
+    <p class="simple-legend text-xs text-slate-500 mt-2 text-center">Horário da primeira e da última venda registradas nesse dia.</p>
+   </div>
    <div class="rounded-xl border border-emerald-500/30 bg-slate-950 px-4 py-5">
     <div class="flex items-center justify-between caixa-row">
      <span class="font-semibold text-slate-200">🔒 Valor que ficou no caixa</span>
@@ -1540,6 +1553,16 @@ function updateCompleteDay(day){
  const dow = nomeDiaSemanaAbrev(d.dia);
  const elData = document.getElementById('completeClosingData');
  if(elData) elData.textContent = 'referente ao dia '+diaComAno(d.dia)+(dow?' ('+dow+')':'');
+ const cardPU = document.getElementById('cardPrimeiraUltimaVenda');
+ if(cardPU){
+  if(d.primeiraVenda || d.ultimaVenda){
+   cardPU.style.display = 'block';
+   document.getElementById('completePrimeiraVenda').textContent = d.primeiraVenda || '—';
+   document.getElementById('completeUltimaVenda').textContent = d.ultimaVenda || '—';
+  } else {
+   cardPU.style.display = 'none';
+  }
+ }
  updateGoalBanner('completeGoalBanner', Number(d.sales)||0);
  atualizarBadgeDia('completo', d.dia);
  flashCard('valoresCompletoWrap');
@@ -4039,6 +4062,48 @@ function extrairHoraDoValor(v){
  return null;
 }
 
+function extrairFracaoTempo(v){
+ // Igual extrairHoraDoValor, mas devolve a fração exata do dia (não só a hora arredondada),
+ // pra dar pra comparar qual venda foi mais cedo/mais tarde com precisão de minuto.
+ if(v==null) return null;
+ if(v instanceof Date) return (v.getHours()*3600+v.getMinutes()*60+v.getSeconds())/86400;
+ if(typeof v==='number'){
+  const fracao = v % 1;
+  if(fracao>=0 && fracao<1) return fracao;
+ }
+ if(typeof v==='string'){
+  const m = v.match(/^(\d{1,2}):(\d{2})(:(\d{2}))?/);
+  if(m){
+   const h=Number(m[1]), mi=Number(m[2]), s=Number(m[4]||0);
+   return (h*3600+mi*60+s)/86400;
+  }
+ }
+ return null;
+}
+function formatarHoraFracao(frac){
+ if(frac==null) return null;
+ const totalSeg = Math.round(frac*86400);
+ const h = Math.floor(totalSeg/3600) % 24;
+ const mi = Math.floor((totalSeg%3600)/60);
+ return String(h).padStart(2,'0')+':'+String(mi).padStart(2,'0');
+}
+function extractPrimeiraUltimaVenda(rows){
+ // Usa a coluna "temp" (L) — mesma coluna já usada em Horários de Pico —
+ // mas aqui guarda o horário exato da primeira e da última venda do dia.
+ let primeira=null, ultima=null;
+ for(let r=0;r<rows.length;r++){
+  const rownum = rows[r]?.[0];
+  const label = String(rownum??'').trim().toLowerCase();
+  if(label==='total') break;
+  if(typeof rownum!=='number') continue;
+  const frac = extrairFracaoTempo(rows[r]?.[11]);
+  if(frac===null) continue;
+  if(primeira===null || frac<primeira) primeira=frac;
+  if(ultima===null || frac>ultima) ultima=frac;
+ }
+ return { primeiraVenda: formatarHoraFracao(primeira), ultimaVenda: formatarHoraFracao(ultima) };
+}
+
 function extractGeneroTotais(rows){
  // Usa a coluna "genero" (J). Só conta linhas com vendedora preenchida (venda real) —
  // a planilha vem com "mulher" pré-preenchido em todo o molde de 60 linhas, mesmo nas vazias.
@@ -4250,7 +4315,8 @@ function processarLinhasDoDia(sheetName, rows){
  const {porTurno,porTurnoVend}=extractTurnos(rows);
  const genero=extractGeneroTotais(rows);
  const vendasIndividuais=extractVendasIndividuais(rows);
- return {dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos,horarios,porTurno,porTurnoVend,genero,vendasIndividuais};
+ const {primeiraVenda,ultimaVenda}=extractPrimeiraUltimaVenda(rows);
+ return {dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos,horarios,porTurno,porTurnoVend,genero,vendasIndividuais,primeiraVenda,ultimaVenda};
 }
 
 function getAppsScriptProxyUrl(){
@@ -4411,7 +4477,8 @@ document.getElementById('fileInput').addEventListener('change',async e=>{
    const {porTurno,porTurnoVend}=extractTurnos(rows);
    const genero=extractGeneroTotais(rows);
    const vendasIndividuais=extractVendasIndividuais(rows);
-   const item={dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos,horarios,porTurno,porTurnoVend,genero,vendasIndividuais};
+   const {primeiraVenda,ultimaVenda}=extractPrimeiraUltimaVenda(rows);
+   const item={dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos,horarios,porTurno,porTurnoVend,genero,vendasIndividuais,primeiraVenda,ultimaVenda};
    daysData=daysData.filter(x=>x.dia!==sheetName);
    daysData.push(item);
   }
