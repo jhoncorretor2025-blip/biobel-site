@@ -551,6 +551,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <button type="button" id="chipInfoVendedoras" onclick="mostrarSecaoInfo('Vendedoras')" class="config-chip" role="tab" aria-selected="false">👥 Vendedoras</button>
   <button type="button" id="chipInfoDias" onclick="mostrarSecaoInfo('Dias')" class="config-chip" role="tab" aria-selected="false">📅 Dias</button>
   <button type="button" id="chipInfoAvancado" onclick="mostrarSecaoInfo('Avancado')" class="config-chip" role="tab" aria-selected="false">🔍 Análises avançadas</button>
+  <button type="button" id="chipInfoComparar" onclick="mostrarSecaoInfo('Comparar')" class="config-chip" role="tab" aria-selected="false">📊 Comparar meses</button>
  </div>
 
  <div id="infoSecaoFinanceiro">
@@ -829,6 +830,19 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
  </div>
  <!-- fim infoSecaoAvancado -->
 
+ <div id="infoSecaoComparar" style="display:none;">
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>📊 Comparar meses arquivados</h3>
+    <span>escolha até 3 meses pra ver os totais lado a lado</span>
+   </div>
+   <div id="listaMesesComparar" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
+   <button onclick="renderComparacaoMeses()" class="w-full bg-blue-600 hover:bg-blue-500 px-4 py-2.5 rounded-xl font-semibold text-sm">📊 Comparar selecionados</button>
+   <div id="resultadoComparacaoMeses" style="margin-top:18px;overflow-x:auto;"></div>
+  </div>
+ </div>
+ <!-- fim infoSecaoComparar -->
+
  <div class="mobile-action-bar no-print">
   <button onclick="loadGoogleSheet()" style="background:#2f78e0;color:#fff;">🔄 Atualizar</button>
   <button onclick="exportarInfoComoTxt()" style="background:#0ea97a;color:#04241a;">📄 Exportar TXT</button>
@@ -1070,6 +1084,11 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <button onclick="saveDailyGoal()" class="mt-4 w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-xl font-semibold text-sm">Salvar meta diária manual</button>
     <div id="dailyGoalStatus" class="mt-3 text-sm text-slate-400"></div>
    </div>
+   <label class="flex items-center gap-2 text-sm font-semibold mt-4 cursor-pointer">
+    <input type="checkbox" id="notificacoesToggle" onchange="ativarNotificacoes()" style="width:16px;height:16px;accent-color:#27d7a0;">
+    🔔 Avisar com notificação do navegador quando a meta do dia for batida
+   </label>
+   <div id="notificacoesStatus" class="mt-2 text-xs text-slate-500">Funciona mesmo com a aba em segundo plano, mas precisa da permissão do navegador.</div>
   </div>
 
   <div class="mt-6 pt-6 border-t border-slate-800">
@@ -1696,6 +1715,7 @@ function showTab(tab){
   b4.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
   b4.setAttribute('aria-selected','true');
   montarSeletorMeses();
+  renderListaMesesComparar();
   renderInfoTab();
   let secaoInfoLembrada = 'Financeiro';
   try{ secaoInfoLembrada = localStorage.getItem('biobel_info_secao_ativa') || 'Financeiro'; }catch(e){}
@@ -1710,6 +1730,7 @@ function showTab(tab){
   renderListaMetasVendedoras();
   renderLogAlteracoes();
   renderDiasSemErroConexao();
+  initNotificacoesUI();
   const metaQtdInput = document.getElementById('metaQtdVendasInput');
   if(metaQtdInput){ const v=getMetaQtdVendas(); metaQtdInput.value = v>0 ? v : ''; }
   renderPlanilhasSalvas();
@@ -2633,13 +2654,61 @@ function updateGoalBanner(bannerId, sales){
  if(sales >= goal && goal > 0){
   el.style.display = 'block';
   el.innerHTML = `🎉 <strong>Parabéns! Meta do dia batida!</strong><br><span style="font-weight:600;font-size:12px;">Vendeu ${money(sales)} de uma meta de ${money(goal)} 🎯</span>`;
+  dispararNotificacaoMetaBatida(sales, goal);
  } else {
   el.style.display = 'none';
  }
 }
 
+function dispararNotificacaoMetaBatida(sales, goal){
+ const ativado = localStorage.getItem('biobel_notificacoes_ativas') === 'yes';
+ if(!ativado) return;
+ if(typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+ const hoje = new Date().toISOString().slice(0,10);
+ const jaAvisouHoje = localStorage.getItem('biobel_notif_meta_dia') === hoje;
+ if(jaAvisouHoje) return;
+ localStorage.setItem('biobel_notif_meta_dia', hoje);
+ try{
+  new Notification('🎉 Meta do dia batida!', {
+   body: 'Vendeu '+money(sales)+' de uma meta de '+money(goal)+'.',
+   icon: '/logo_biobel_gravatai.png'
+  });
+ }catch(e){}
+}
+
+function ativarNotificacoes(){
+ const statusEl = document.getElementById('notificacoesStatus');
+ const toggle = document.getElementById('notificacoesToggle');
+ if(typeof Notification === 'undefined'){
+  if(statusEl) statusEl.innerHTML = '<span class="text-rose-400">Esse navegador não suporta notificações.</span>';
+  if(toggle) toggle.checked = false;
+  return;
+ }
+ if(!toggle.checked){
+  localStorage.setItem('biobel_notificacoes_ativas', 'no');
+  if(statusEl) statusEl.textContent = 'Notificações desativadas.';
+  return;
+ }
+ Notification.requestPermission().then(permissao=>{
+  if(permissao==='granted'){
+   localStorage.setItem('biobel_notificacoes_ativas', 'yes');
+   if(statusEl) statusEl.innerHTML = '<span class="text-emerald-400">✅ Ativado! Você vai receber um aviso quando a meta do dia for batida.</span>';
+   mostrarToast('✅ Notificações ativadas!');
+  } else {
+   localStorage.setItem('biobel_notificacoes_ativas', 'no');
+   toggle.checked = false;
+   if(statusEl) statusEl.innerHTML = '<span class="text-rose-400">Permissão negada. Pra ativar, permita notificações desse site nas configurações do navegador.</span>';
+  }
+ });
+}
+function initNotificacoesUI(){
+ const toggle = document.getElementById('notificacoesToggle');
+ if(!toggle) return;
+ toggle.checked = localStorage.getItem('biobel_notificacoes_ativas') === 'yes';
+}
+
 function mostrarSecaoInfo(secao){
- const secoes = ['Financeiro','Vendedoras','Dias','Avancado'];
+ const secoes = ['Financeiro','Vendedoras','Dias','Avancado','Comparar'];
  secoes.forEach(s=>{
   const el = document.getElementById('infoSecao'+s);
   const chip = document.getElementById('chipInfo'+s);
@@ -2915,6 +2984,75 @@ function montarSeletorMeses(){
  sel.innerHTML = '<option value="">Mês atual (ao vivo)</option>' +
   mesesArquivados.map(m=>`<option value="${m}">${nomesMeses[m]||m} 2026 (arquivado)</option>`).join('');
  sel.value = valorAtual;
+}
+
+/* ===== Comparar meses arquivados lado a lado ===== */
+function renderListaMesesComparar(){
+ const el = document.getElementById('listaMesesComparar');
+ if(!el) return;
+ let arquivo = {};
+ try{ arquivo = JSON.parse(localStorage.getItem('biobel_arquivo_meses')||'{}'); }catch(e){}
+ const nomesMeses = {'01':'Janeiro','02':'Fevereiro','03':'Março','04':'Abril','05':'Maio','06':'Junho','07':'Julho','08':'Agosto','09':'Setembro','10':'Outubro','11':'Novembro','12':'Dezembro'};
+ const mesesArquivados = Object.keys(arquivo).sort();
+ if(mesesArquivados.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Ainda não há meses arquivados pra comparar. Isso acontece automaticamente conforme os meses forem virando.</p>';
+  return;
+ }
+ el.innerHTML = mesesArquivados.map(m=>`
+  <label style="display:flex;align-items:center;gap:8px;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;cursor:pointer;font-size:13px;color:#dce5f2;">
+   <input type="checkbox" class="checkMesComparar" value="${m}" style="width:15px;height:15px;accent-color:#27d7a0;">
+   ${nomesMeses[m]||m} de 2026
+  </label>
+ `).join('');
+}
+
+function renderComparacaoMeses(){
+ const el = document.getElementById('resultadoComparacaoMeses');
+ if(!el) return;
+ const checks = Array.from(document.querySelectorAll('.checkMesComparar:checked')).map(c=>c.value);
+ if(checks.length<2){
+  el.innerHTML = '<p style="color:#fbbf24;font-size:12.5px;">Escolha pelo menos 2 meses pra comparar.</p>';
+  return;
+ }
+ if(checks.length>3){
+  el.innerHTML = '<p style="color:#fbbf24;font-size:12.5px;">Escolha no máximo 3 meses de cada vez, pra ficar fácil de comparar.</p>';
+  return;
+ }
+ let arquivo = {};
+ try{ arquivo = JSON.parse(localStorage.getItem('biobel_arquivo_meses')||'{}'); }catch(e){}
+ const nomesMeses = {'01':'Janeiro','02':'Fevereiro','03':'Março','04':'Abril','05':'Maio','06':'Junho','07':'Julho','08':'Agosto','09':'Setembro','10':'Outubro','11':'Novembro','12':'Dezembro'};
+
+ const dadosMeses = checks.sort().map(mesKey=>{
+  const dias = arquivo[mesKey] || [];
+  const totalSales = dias.reduce((s,d)=>s+(Number(d.sales)||0),0);
+  const totalDespesas = dias.reduce((s,d)=>s+(Number(d.withdrawals)||0),0);
+  const totalDias = dias.length;
+  const media = totalDias>0 ? totalSales/totalDias : 0;
+  return { mesKey, nome:nomesMeses[mesKey]||mesKey, totalSales, totalDespesas, totalDias, media };
+ });
+
+ const linhas = [
+  {label:'Faturamento total', key:'totalSales', formatar:money},
+  {label:'Despesas do mês', key:'totalDespesas', formatar:money},
+  {label:'Dias lançados', key:'totalDias', formatar:v=>String(v)},
+  {label:'Média diária', key:'media', formatar:money},
+ ];
+
+ let html = '<table style="width:100%;border-collapse:collapse;font-size:12.5px;min-width:400px;">';
+ html += '<tr><td style="padding:8px;color:#93a3ba;"></td>' + dadosMeses.map(m=>`<td style="padding:8px;text-align:center;font-weight:900;color:#f6f9fd;">${m.nome}</td>`).join('') + '</tr>';
+ linhas.forEach(linha=>{
+  const valores = dadosMeses.map(m=>m[linha.key]);
+  const maior = Math.max(...valores);
+  html += '<tr style="border-top:1px solid #1e2c42;">';
+  html += `<td style="padding:8px;color:#93a3ba;white-space:nowrap;">${linha.label}</td>`;
+  dadosMeses.forEach(m=>{
+   const destaque = m[linha.key]===maior && maior>0;
+   html += `<td style="padding:8px;text-align:center;font-weight:700;color:${destaque?'#27d7a0':'#dce5f2'};">${linha.formatar(m[linha.key])}</td>`;
+  });
+  html += '</tr>';
+ });
+ html += '</table>';
+ el.innerHTML = html;
 }
 
 function visualizarMes(mesKey){
