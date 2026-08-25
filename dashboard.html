@@ -588,6 +588,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <div style="font-size:20px;font-weight:900;color:#27d7a0;margin-top:4px;" id="infoMediaNecessariaMeta">R$ 0,00 <span style="font-size:11px;color:#93a3ba;font-weight:700;">/dia</span></div>
    </div>
   </div>
+  <div id="infoRitmoAtualWrap" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line);"></div>
  </div>
 
  <div class="adv-card">
@@ -706,6 +707,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <h3>📅 Melhores e piores dias da semana</h3>
    <span>soma total de vendas por dia da semana (todas as sextas somadas, todas as quintas somadas, etc.)</span>
   </div>
+  <div style="max-width:320px;margin:0 auto 16px;"><canvas id="graficoRadarDiasSemana" role="img" aria-label="Gráfico de radar comparando o desempenho de cada dia da semana"></canvas></div>
   <div class="adv-content2" style="margin-top:0;">
    <div>
     <div style="font-size:12px;font-weight:800;color:#27d7a0;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">🏆 3 melhores dias</div>
@@ -1354,6 +1356,7 @@ let mesVisualizadoPassado = null; // null = mes atual (ao vivo). Se preenchido (
 let daysDataOriginal = null; // guarda os dados ao vivo enquanto a pessoa esta vendo um mes passado, pra poder voltar
 let chart = null;
 let chartProdutosPizza = null;
+let chartRadarDiasSemana = null;
 
 function money(v) {
  return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(v)||0);
@@ -2866,6 +2869,7 @@ function renderInfoTab(){
    wrapDetalhe.style.display = 'none';
   }
  }
+ renderRitmoAtual(totalSales, goal, remaining);
 
  const dinheiro = daysData.reduce((s,d)=>s+(Number(d.dinheiro)||0),0);
  const debito = daysData.reduce((s,d)=>s+(Number(d.debito)||0),0);
@@ -3081,6 +3085,74 @@ function renderMelhoresPioresDiasSemana(porDiaSemana){
  elPiores.innerHTML = piorosSemRepetir.length
   ? piorosSemRepetir.map(item=>linhaHtml(item,'linear-gradient(90deg,#fb7185,#e11d48)')).join('')
   : '<p style="color:#93a3ba;font-size:13px;">Ainda não há dias suficientes pra separar os piores dos melhores.</p>';
+
+ const canvasRadar = document.getElementById('graficoRadarDiasSemana');
+ if(canvasRadar && typeof Chart!=='undefined'){
+  // Segunda a sábado, na ordem certa da semana (loja não abre domingo).
+  const ordemSemana = [1,2,3,4,5,6];
+  const labelsSemana = ['Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+  const valoresSemana = ordemSemana.map(dow => (porDiaSemana[dow]?.soma) || 0);
+  if(chartRadarDiasSemana) chartRadarDiasSemana.destroy();
+  chartRadarDiasSemana = new Chart(canvasRadar, {
+   type: 'radar',
+   data: {
+    labels: labelsSemana,
+    datasets: [{
+     label: 'Total vendido',
+     data: valoresSemana,
+     backgroundColor: 'rgba(39,215,160,.18)',
+     borderColor: '#27d7a0',
+     pointBackgroundColor: '#27d7a0',
+     borderWidth: 2
+    }]
+   },
+   options: {
+    plugins: { legend: { display:false } },
+    scales: {
+     r: {
+      angleLines: { color:'#1e2c42' },
+      grid: { color:'#1e2c42' },
+      pointLabels: { color:'#93a3ba', font:{size:11} },
+      ticks: { display:false, backdropColor:'transparent' }
+     }
+    }
+   }
+  });
+ }
+}
+
+function renderRitmoAtual(totalSales, goal, remaining){
+ const el = document.getElementById('infoRitmoAtualWrap');
+ if(!el) return;
+ if(daysData.length===0){ el.innerHTML=''; return; }
+ if(remaining<=0){
+  el.innerHTML = '<div style="font-size:12.5px;color:#27d7a0;font-weight:800;">🚀 No ritmo atual, a meta já foi batida! Parabéns!</div>';
+  return;
+ }
+ const mediaReal = totalSales/daysData.length;
+ if(mediaReal<=0){
+  el.innerHTML = '<div style="font-size:12.5px;color:#93a3ba;">Ainda sem vendas suficientes pra calcular o ritmo do mês.</div>';
+  return;
+ }
+ const diasNecessarios = Math.ceil(remaining/mediaReal);
+
+ const mesAtual = Number(daysData[0]?.dia?.split('.')[1]) || (new Date().getMonth()+1);
+ const ultimoDiaLancado = Math.max(...daysData.map(d=>Number(String(d.dia).split('.')[0])||0));
+ const cursor = new Date(2026, mesAtual-1, ultimoDiaLancado);
+ let contador = 0;
+ // Limite de segurança pra nunca travar num loop infinito (ex: media absurdamente baixa).
+ let tentativas = 0;
+ while(contador < diasNecessarios && tentativas < 400){
+  cursor.setDate(cursor.getDate()+1);
+  if(cursor.getDay()!==0) contador++; // pula domingo (loja fechada)
+  tentativas++;
+ }
+ const diaFinal = String(cursor.getDate()).padStart(2,'0')+'.'+String(cursor.getMonth()+1).padStart(2,'0');
+ const estourouMes = (cursor.getMonth()+1) !== mesAtual;
+
+ el.innerHTML = `<div style="font-size:12.5px;color:#93a3ba;">
+   🏁 No ritmo médio de <strong style="color:#dce5f2;">${money(mediaReal)}/dia</strong>, a meta deve ser batida por volta do dia <strong style="color:#27d7a0;">${diaFinal}</strong>${estourouMes?' <span style="color:#fbbf24;font-weight:700;">(passando pro mês seguinte, nesse ritmo)</span>':''}.
+  </div>`;
 }
 
 function renderMaisNumerosDoMes(){
