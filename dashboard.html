@@ -433,6 +433,14 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <div style="font-size:13px;color:#93a3ba;margin-top:10px;">Faltam <strong id="metaDestaqueFaltam" style="color:#dce5f2;">R$ 0,00</strong> para bater a meta.</div>
   </div>
 
+  <div class="adv-card no-print" style="margin-bottom:16px;">
+   <div class="adv-card-title">
+    <h3>📅 Calendário Comercial</h3>
+    <span>datas especiais que vêm por aí — bom pra todo mundo já ir se preparando</span>
+   </div>
+   <div id="listaDatasComerciaisDashboard" style="display:flex;flex-direction:column;gap:8px;"></div>
+  </div>
+
   <div class="adv-shell">
 
     <aside class="adv-sidebar no-print">
@@ -1522,7 +1530,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraFechamento')">🔒 Fechamento</button>
    <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraGastos')">🏠 Gastos</button>
    <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraComissoes')">🎯 Comissões</button>
-   <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraAgenda')">📅 Agenda</button>
+   <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraAgenda')">🤝 Fornecedores</button>
   </nav>
 
   <div id="admResumoAtencao" style="display:none;"></div>
@@ -1784,14 +1792,6 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
 
   <div id="admAncoraAgenda"></div>
-  <div class="adv-card">
-   <div class="adv-card-title">
-    <h3>📅 Calendário Comercial</h3>
-    <span>datas especiais calculadas automaticamente — bom pra planejar promoção com antecedência</span>
-   </div>
-   <div id="listaDatasComerciais" style="display:flex;flex-direction:column;gap:8px;"></div>
-  </div>
-
   <div class="adv-card">
    <div class="adv-card-title">
     <h3>🤝 Agenda de Reuniões com Fornecedores</h3>
@@ -3171,7 +3171,7 @@ function gerarDatasComerciais(ano){
  ];
 }
 function renderDatasComerciais(){
- const el = document.getElementById('listaDatasComerciais');
+ const el = document.getElementById('listaDatasComerciaisDashboard');
  if(!el) return;
  const hoje = obterAgoraBrasilia();
  const hojeData = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
@@ -3322,7 +3322,6 @@ function mostrarConteudoAdm(){
  renderNascimento('gabriela');
  renderNascimento('day');
  renderEstagioDay();
- renderDatasComerciais();
  renderReunioes();
  atualizarTotaisAdm();
  dispararNotificacaoVencimentos();
@@ -8687,6 +8686,7 @@ function updateAdvancedSelected(day){
 render = function(){
   renderAdvancedDashboard();
   renderCentralDeAlertas();
+  renderDatasComerciais(); // calendário comercial fica visível pra todo mundo, não só a gerência
   const infoTab = document.getElementById('infoTab');
   if(infoTab && !infoTab.classList.contains('hidden')) renderInfoTab();
 
