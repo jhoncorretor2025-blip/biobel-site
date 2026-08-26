@@ -1483,6 +1483,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <h3 style="margin:0;">👑 Área da Gerência</h3>
     <p style="font-size:12px;color:#93a3ba;margin-top:2px;">Gastos fixos, boletos de fornecedores e comissões da equipe.</p>
    </div>
+   <button id="btnExportarPdfAdm" onclick="gerarResumoAdmPDF()" class="bg-purple-600 hover:bg-purple-500 px-4 py-2 rounded-xl font-semibold text-sm" style="background:#8b5cf6;color:#fff;">📑 Exportar PDF</button>
    <button onclick="sairAdm()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl font-semibold text-sm">🔒 Sair da área da gerência</button>
   </div>
 
@@ -1545,6 +1546,12 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
      </div>
     </div>
     <textarea id="novoBoletoObs" rows="2" placeholder="Observações (opcional)" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;resize:vertical;margin-bottom:8px;"></textarea>
+    <label for="novoBoletoComprovante" style="font-size:11px;color:#93a3ba;display:block;margin-bottom:4px;">📎 Foto do comprovante/nota fiscal (opcional)</label>
+    <input id="novoBoletoComprovante" type="file" accept="image/png,image/jpeg" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:8px 12px;color:#93a3ba;font-size:12px;margin-bottom:10px;">
+    <div id="previewComprovanteBoleto" style="display:none;margin-bottom:10px;">
+     <img id="imgPreviewComprovanteBoleto" style="max-width:120px;max-height:120px;border-radius:8px;border:1px solid #1e2c42;">
+     <button type="button" onclick="removerComprovanteAnexado()" style="display:block;margin-top:4px;background:none;border:none;color:#fb7185;font-size:11px;cursor:pointer;">✕ Remover comprovante</button>
+    </div>
     <button id="btnAdicionarBoleto" onclick="adicionarBoleto()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Adicionar boleto</button>
     <button id="btnCancelarEdicaoBoleto" onclick="cancelarEdicaoBoleto()" style="display:none;margin-top:8px;background:none;border:none;color:#93a3ba;font-size:12px;text-decoration:underline;cursor:pointer;width:100%;">✕ Cancelar edição</button>
    </div>
@@ -1599,6 +1606,19 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <button onclick="salvarHoraExtra()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
    </div>
    <div id="resumoHoraExtra"></div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>📊 Participação no Lucro (opcional)</h3>
+    <span>diferente da comissão por metas acima — essa aqui é uma % sobre o lucro que sobrou de verdade, não sobre o faturamento. Deixe em 0% se não usar.</span>
+   </div>
+   <label class="block text-sm font-semibold mb-2" for="pctParticipacaoLucroInput">% do lucro líquido, dividido entre Gabriela e Day</label>
+   <div style="display:flex;gap:8px;">
+    <input id="pctParticipacaoLucroInput" type="text" inputmode="decimal" placeholder="0" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="salvarParticipacaoLucro()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+   </div>
+   <div id="resumoParticipacaoLucro" style="margin-top:12px;"></div>
   </div>
 
   <div class="adv-card">
@@ -3099,7 +3119,48 @@ function salvarBoletos(lista){
  localStorage.setItem('biobel_adm_boletos', JSON.stringify(lista));
 }
 let boletoEditandoId = null;
-function adicionarBoleto(){
+let comprovanteAnexadoTemp = null;
+function lerComprovanteAnexado(){
+ return new Promise(resolve=>{
+  const input = document.getElementById('novoBoletoComprovante');
+  const file = input && input.files[0];
+  if(!file){ resolve(comprovanteAnexadoTemp); return; } // se não escolheu arquivo novo, mantém o que já tinha (edição)
+  if(file.size > 2*1024*1024){
+   mostrarToast('⚠️ Comprovante muito grande (máximo 2MB) — foi salvo sem ele.');
+   resolve(comprovanteAnexadoTemp);
+   return;
+  }
+  const reader = new FileReader();
+  reader.onload = e=>resolve(e.target.result);
+  reader.onerror = ()=>resolve(comprovanteAnexadoTemp);
+  reader.readAsDataURL(file);
+ });
+}
+function removerComprovanteAnexado(){
+ comprovanteAnexadoTemp = null;
+ const input = document.getElementById('novoBoletoComprovante');
+ if(input) input.value = '';
+ const preview = document.getElementById('previewComprovanteBoleto');
+ if(preview) preview.style.display = 'none';
+}
+function mostrarPreviewComprovante(dataUrl){
+ const preview = document.getElementById('previewComprovanteBoleto');
+ const img = document.getElementById('imgPreviewComprovanteBoleto');
+ if(dataUrl && preview && img){
+  img.src = dataUrl;
+  preview.style.display = 'block';
+ } else if(preview){
+  preview.style.display = 'none';
+ }
+}
+function verComprovanteBoleto(id){
+ const b = getBoletos().find(x=>x.id===id);
+ if(!b || !b.comprovante) return;
+ const win = window.open('', '_blank');
+ if(win) win.document.write('<title>Comprovante — '+b.fornecedor+'</title><body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="'+b.comprovante+'" style="max-width:100%;max-height:100vh;"></body>');
+}
+
+async function adicionarBoleto(){
  const fornecedor = document.getElementById('novoBoletoFornecedor').value.trim();
  const marca = document.getElementById('novoBoletoMarca').value.trim();
  const quantidade = document.getElementById('novoBoletoQuantidade').value.trim();
@@ -3110,18 +3171,19 @@ function adicionarBoleto(){
  if(!fornecedor){ mostrarToast('⚠️ Digite o nome do fornecedor.'); return; }
  if(isNaN(valor) || valor<=0){ mostrarToast('⚠️ Digite um valor válido.'); return; }
 
+ const comprovante = await lerComprovanteAnexado();
  const lista = getBoletos();
  if(boletoEditandoId!==null){
   const idx = lista.findIndex(b=>b.id===boletoEditandoId);
   if(idx>=0){
-   lista[idx] = { ...lista[idx], fornecedor, marca, quantidade, validade, valor, vencimento, obs };
+   lista[idx] = { ...lista[idx], fornecedor, marca, quantidade, validade, valor, vencimento, obs, comprovante };
    salvarBoletos(lista);
    mostrarToast('✅ Boleto atualizado!');
    registrarAlteracao('Boleto de "'+fornecedor+'" editado');
   }
   cancelarEdicaoBoleto();
  } else {
-  lista.unshift({ id: Date.now(), fornecedor, marca, quantidade, validade, valor, vencimento, obs, pago:false, criadoEm: new Date().toISOString() });
+  lista.unshift({ id: Date.now(), fornecedor, marca, quantidade, validade, valor, vencimento, obs, comprovante, pago:false, criadoEm: new Date().toISOString() });
   salvarBoletos(lista);
   mostrarToast('✅ Boleto adicionado!');
   registrarAlteracao('Boleto de "'+fornecedor+'" adicionado ('+money(valor)+')');
@@ -3130,6 +3192,7 @@ function adicionarBoleto(){
   const elCampo = document.getElementById(id);
   if(elCampo) elCampo.value='';
  });
+ removerComprovanteAnexado();
  renderBoletos();
  atualizarTotaisAdm();
  renderLogAlteracoes();
@@ -3145,6 +3208,8 @@ function editarBoleto(id){
  document.getElementById('novoBoletoValor').value = b.valor!==null&&b.valor!==undefined ? String(b.valor).replace('.',',') : '';
  document.getElementById('novoBoletoVencimento').value = b.vencimento||'';
  document.getElementById('novoBoletoObs').value = b.obs||'';
+ comprovanteAnexadoTemp = b.comprovante || null;
+ mostrarPreviewComprovante(comprovanteAnexadoTemp);
  const btn = document.getElementById('btnAdicionarBoleto');
  if(btn) btn.textContent = '💾 Salvar edição';
  const btnCancelar = document.getElementById('btnCancelarEdicaoBoleto');
@@ -3157,6 +3222,7 @@ function cancelarEdicaoBoleto(){
   const elCampo = document.getElementById(id);
   if(elCampo) elCampo.value='';
  });
+ removerComprovanteAnexado();
  const btn = document.getElementById('btnAdicionarBoleto');
  if(btn) btn.textContent = '➕ Adicionar boleto';
  const btnCancelar = document.getElementById('btnCancelarEdicaoBoleto');
@@ -3227,6 +3293,7 @@ function renderBoletos(){
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
        <span style="color:#4f9cff;font-weight:900;font-size:15px;">${money(b.valor)}</span>
+       ${b.comprovante?`<button onclick="verComprovanteBoleto(${b.id})" aria-label="Ver comprovante" title="Ver comprovante" style="background:none;border:none;color:#a78bfa;cursor:pointer;font-size:14px;">📎</button>`:''}
        <button onclick="alternarPagoBoleto(${b.id})" aria-label="${b.pago?'Marcar como pendente':'Marcar como pago'}" title="${b.pago?'Marcar como pendente':'Marcar como pago'}" style="background:none;border:none;color:${b.pago?'#93a3ba':'#27d7a0'};cursor:pointer;font-size:14px;">${b.pago?'↩️':'✅'}</button>
        <button onclick="editarBoleto(${b.id})" aria-label="Editar boleto de ${b.fornecedor}" style="background:none;border:none;color:#4f9cff;cursor:pointer;font-size:14px;">✏️</button>
        <button onclick="removerBoleto(${b.id})" aria-label="Remover boleto de ${b.fornecedor}" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;">🗑️</button>
@@ -3461,6 +3528,37 @@ function renderHoraExtra(){
  }
 }
 
+/* ===== Participação no Lucro (opcional, separada da comissão por metas) ===== */
+function getPctParticipacaoLucro(){
+ const v = parseFloat(localStorage.getItem('biobel_adm_pct_participacao_lucro')||'0');
+ return isNaN(v) ? 0 : v;
+}
+function salvarParticipacaoLucro(){
+ const pct = parseFloat(document.getElementById('pctParticipacaoLucroInput').value.replace(',','.'));
+ if(isNaN(pct) || pct<0){ mostrarToast('⚠️ Digite uma porcentagem válida.'); return; }
+ localStorage.setItem('biobel_adm_pct_participacao_lucro', String(pct));
+ mostrarToast('✅ Participação no lucro salva!');
+ registrarAlteracao('Participação no lucro definida em '+pct+'%');
+ renderLogAlteracoes();
+ renderParticipacaoLucro();
+}
+function renderParticipacaoLucro(){
+ const el = document.getElementById('resumoParticipacaoLucro');
+ const input = document.getElementById('pctParticipacaoLucroInput');
+ const pct = getPctParticipacaoLucro();
+ if(input) input.value = pct>0 ? String(pct).replace('.',',') : '';
+ if(!el) return;
+ if(pct<=0){ el.innerHTML = ''; return; }
+ const lucroBase = window._ultimoLucroEstimado || 0;
+ if(lucroBase<=0){
+  el.innerHTML = '<p style="font-size:11.5px;color:#93a3ba;">Sem lucro estimado positivo ainda pra calcular a participação.</p>';
+  return;
+ }
+ const totalParticipacao = lucroBase * (pct/100);
+ const porPessoa = totalParticipacao/2;
+ el.innerHTML = `<div style="font-size:12.5px;color:#93a3ba;">${pct}% de ${money(lucroBase)} (lucro estimado) = <strong style="color:#dce5f2;">${money(totalParticipacao)}</strong> no total — <strong style="color:#27d7a0;">${money(porPessoa)}</strong> pra cada uma.</div>`;
+}
+
 function atualizarTotaisAdm(){
  const gastosFixos = getGastosFixos().reduce((s,g)=>s+(Number(g.valor)||0),0);
  const boletos = getBoletos().reduce((s,b)=>s+(Number(b.valor)||0),0);
@@ -3492,6 +3590,7 @@ function atualizarTotaisAdm(){
 
  const totalComissoesEBonus = totalComissoes + custoComissaoNiveis + custoHoraExtra;
  const lucroEstimado = faturamento - gastosFixos - boletos - totalComissoesEBonus;
+ window._ultimoLucroEstimado = lucroEstimado;
  const elLucro = document.getElementById('admLucroEstimado');
  const elLucroSub = document.getElementById('admLucroEstimadoSub');
  if(elLucro){
@@ -3501,6 +3600,7 @@ function atualizarTotaisAdm(){
  if(elLucroSub){
   elLucroSub.textContent = `${money(faturamento)} (faturamento) − ${money(gastosFixos+boletos)} (gastos) − ${money(totalComissoesEBonus)} (comissões/bônus)`;
  }
+ renderParticipacaoLucro();
 }
 
 /* ===== Comissões e participação no lucro por vendedora ===== */
@@ -6215,6 +6315,143 @@ async function carregarJsPDFSobDemanda(){
   s.onload=resolve; s.onerror=reject;
   document.head.appendChild(s);
  });
+}
+
+async function gerarResumoAdmPDF(){
+ const btn = document.getElementById('btnExportarPdfAdm');
+ const textoOriginal = btn ? btn.textContent : '';
+ if(btn){ btn.disabled=true; btn.textContent='⏳ Gerando...'; }
+ try{
+  await carregarJsPDFSobDemanda();
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({unit:'mm', format:'a4'});
+  const larguraPagina = doc.internal.pageSize.getWidth();
+  const margem = 15;
+  let y = 20;
+
+  const logoDataUrl = await obterLogoDataUrl();
+  if(logoDataUrl){
+   const formatoImagem = logoDataUrl.includes('image/jpeg') || logoDataUrl.includes('image/jpg') ? 'JPEG' : 'PNG';
+   try{ doc.addImage(logoDataUrl, formatoImagem, margem, y-8, 22, 22); }catch(e){}
+  }
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(18);
+  doc.setTextColor(20,20,20);
+  doc.text('BIOBEL', margem+28, y);
+  doc.setFontSize(11);
+  doc.setFont('helvetica','normal');
+  doc.setTextColor(90,90,90);
+  doc.text('Resumo da Área da Gerência — Confidencial', margem+28, y+7);
+  y += 22;
+  doc.setDrawColor(220,220,220);
+  doc.line(margem, y, larguraPagina-margem, y);
+  y += 10;
+
+  function tituloSecao(texto){
+   if(y > 265){ doc.addPage(); y = 20; }
+   doc.setFontSize(12);
+   doc.setFont('helvetica','bold');
+   doc.setTextColor(20,20,20);
+   doc.text(texto, margem, y);
+   y += 7;
+   doc.setFont('helvetica','normal');
+   doc.setFontSize(10);
+  }
+  function linha(esquerda, direita, corDireita){
+   if(y > 280){ doc.addPage(); y = 20; }
+   doc.setTextColor(90,90,90);
+   doc.text(esquerda, margem, y);
+   if(corDireita) doc.setTextColor(...corDireita); else doc.setTextColor(20,20,20);
+   doc.text(direita, larguraPagina-margem, y, {align:'right'});
+   doc.setTextColor(20,20,20);
+   y += 5.5;
+  }
+
+  // Gastos Fixos
+  tituloSecao('🏠 Gastos Fixos');
+  const gastosFixos = getGastosFixos();
+  if(gastosFixos.length===0){ linha('Nenhum gasto fixo cadastrado.', ''); }
+  gastosFixos.forEach(g=>{
+   const valorTxt = g.valor!==null ? money(g.valor) : 'A definir';
+   linha(g.nome+(g.dia?' (vence dia '+g.dia+')':''), valorTxt);
+  });
+  const totalFixosPdf = gastosFixos.reduce((s,g)=>s+(Number(g.valor)||0),0);
+  y += 2;
+  linha('TOTAL GASTOS FIXOS', money(totalFixosPdf), [251,113,133]);
+  y += 8;
+
+  // Boletos de Fornecedores
+  tituloSecao('📦 Boletos de Fornecedores');
+  const boletos = getBoletos();
+  if(boletos.length===0){ linha('Nenhum boleto cadastrado.', ''); }
+  boletos.forEach(b=>{
+   const statusTxt = b.pago ? '[PAGO] ' : '[PENDENTE] ';
+   linha(statusTxt+b.fornecedor, money(b.valor));
+  });
+  const totalBoletosPdf = boletos.reduce((s,b)=>s+(Number(b.valor)||0),0);
+  y += 2;
+  linha('TOTAL BOLETOS', money(totalBoletosPdf), [79,156,255]);
+  y += 8;
+
+  // Comissão por níveis
+  tituloSecao('🎯 Comissão por Metas (Gabriela e Day)');
+  const niveis = [...getNiveisComissao()].sort((a,b)=>a.meta-b.meta);
+  const nivelBatido = nivelAtualAtingido();
+  niveis.forEach(n=>{
+   const totalPessoa = calcularTotalPorPessoa(n);
+   const status = (nivelBatido && nivelBatido.id===n.id) ? ' [ATINGIDO]' : '';
+   linha('Meta '+money(n.meta)+status, '~'+money(totalPessoa)+' cada uma');
+  });
+  y += 2;
+  const custoComissaoAtual = custoTotalComissaoAtual();
+  linha('CUSTO ATUAL (Gabriela + Day)', money(custoComissaoAtual), [39,215,160]);
+  y += 8;
+
+  // Hora extra
+  const valorHora = getValorHoraExtra();
+  if(valorHora>0){
+   tituloSecao('⏰ Hora Extra — Gabriela');
+   linha('2h/semana × '+money(valorHora)+'/h', money(calcularCustoMensalHoraExtra())+'/mês aprox.');
+   y += 8;
+  }
+
+  // Lucro estimado
+  const faturamento = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+  const totaisVendPdf = {};
+  daysData.forEach(d=>{
+   Object.entries(d.vendedoras||{}).forEach(([nome,valor])=>{ totaisVendPdf[nome]=(totaisVendPdf[nome]||0)+(Number(valor)||0); });
+  });
+  const comissoesIndividuaisPdf = getComissoes();
+  const totalComissoesIndPdf = Object.entries(totaisVendPdf).reduce((s,[nome,valor])=>{
+   const pct = comissoesIndividuaisPdf[nome];
+   return s + (pct!==undefined && !isNaN(pct) ? valor*(pct/100) : 0);
+  }, 0);
+  const totalDeducoes = totalFixosPdf + totalBoletosPdf + custoComissaoAtual + calcularCustoMensalHoraExtra() + totalComissoesIndPdf;
+  const lucroPdf = faturamento - totalDeducoes;
+
+  tituloSecao('📈 Resumo Financeiro');
+  linha('Faturamento do período', money(faturamento));
+  linha('Total de gastos e comissões', money(totalDeducoes));
+  y += 2;
+  linha('LUCRO LÍQUIDO ESTIMADO', money(lucroPdf), lucroPdf>=0 ? [39,215,160] : [251,113,133]);
+
+  const totalPaginas = doc.internal.getNumberOfPages();
+  for(let p=1; p<=totalPaginas; p++){
+   doc.setPage(p);
+   doc.setFontSize(8);
+   doc.setTextColor(150,150,150);
+   doc.text('Gerado em '+new Date().toLocaleString('pt-BR')+' — Documento confidencial, uso interno', margem, 290);
+   doc.text('Página '+p+' de '+totalPaginas, larguraPagina-margem-25, 290);
+  }
+
+  doc.save('biobel-resumo-gerencia-'+new Date().toISOString().slice(0,10)+'.pdf');
+  mostrarToast('✅ PDF gerado com sucesso!');
+ }catch(e){
+  console.error('Erro ao gerar PDF da área ADM:', e);
+  mostrarToast('⚠️ Não foi possível gerar o PDF. Tente novamente.');
+ } finally {
+  if(btn){ btn.disabled=false; btn.textContent=textoOriginal; }
+ }
 }
 
 async function gerarRelatorioMensalPDF(){
