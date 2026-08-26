@@ -326,6 +326,18 @@ body.light-mode .info-resumo-rapido .val{color:#0f172a;}
  .mobile-action-bar button{flex:1;border:0;border-radius:10px;padding:11px 8px;font-size:12px;font-weight:800;cursor:pointer;}
  body.light-mode .mobile-action-bar{background:#f4f6f9;border-color:#dde3ea;}
 }
+
+/* Correção de legibilidade no modo claro: muito conteúdo dinâmico (Informação Geral, Central de
+   Alertas, área ADM etc.) usa cores fixas pensadas só pro modo escuro, direto no atributo style
+   de cada elemento. Em vez de reescrever centenas de trechos (arriscado, poderia quebrar os
+   gráficos que usam essas mesmas cores em JavaScript), essas regras miram só o atributo style do
+   HTML — sem tocar em nada gerado por JavaScript puro (como as configurações dos gráficos). */
+body.light-mode [style*="color:#dce5f2"]{color:#0f172a!important;}
+body.light-mode [style*="color:#93a3ba"]{color:#5b6b80!important;}
+body.light-mode [style*="background:#0b1728"]{background:#f4f6f9!important;}
+body.light-mode [style*="border:1px solid #1e2c42"]{border-color:#dde3ea!important;}
+body.light-mode [style*="border-top:1px solid #1e2c42"]{border-top-color:#dde3ea!important;}
+body.light-mode [style*="border-bottom:1px solid #1e2c42"]{border-bottom-color:#dde3ea!important;}
 </style>
 
 </head>
@@ -1677,6 +1689,20 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <button id="btnAdicionarNivel" onclick="adicionarNivelComissao()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Adicionar nível</button>
     <button id="btnCancelarEdicaoNivel" onclick="cancelarEdicaoNivel()" style="display:none;margin-top:8px;background:none;border:none;color:#93a3ba;font-size:12px;text-decoration:underline;cursor:pointer;width:100%;">✕ Cancelar edição</button>
    </div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>📅 Data de Admissão — Gabriela (CLT)</h3>
+    <span>necessária pra calcular férias e FGTS acumulado</span>
+   </div>
+   <label class="block text-sm font-semibold mb-2" for="dataAdmissaoGabrielaInput">Data de admissão (carteira assinada)</label>
+   <div style="display:flex;gap:8px;">
+    <input id="dataAdmissaoGabrielaInput" type="date" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="salvarDataAdmissaoGabriela()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+   </div>
+   <div id="resumoAdmissaoGabriela" style="margin-top:12px;"></div>
+   <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">💡 A estagiária (Day) não tem férias nem FGTS pelas regras de estágio — esse campo é só pra Gabriela, que é CLT.</p>
   </div>
 
   <div class="adv-card">
@@ -3047,6 +3073,7 @@ function mostrarConteudoAdm(){
  renderComissoes();
  renderNiveisComissao();
  renderHoraExtra();
+ renderAdmissaoGabriela();
  atualizarTotaisAdm();
  dispararNotificacaoVencimentos();
  renderHistoricoFechamentosMensais();
@@ -3738,6 +3765,75 @@ function calcularCustoMensalHoraExtra(){
  const semanasPorMes = 52/12;
  return valorHora>0 ? valorHora*2*semanasPorMes : 0;
 }
+/* ===== Data de Admissão — Gabriela (CLT), pra calcular férias e FGTS ===== */
+function getDataAdmissaoGabriela(){
+ return localStorage.getItem('biobel_adm_data_admissao_gabriela') || '';
+}
+function salvarDataAdmissaoGabriela(){
+ const data = document.getElementById('dataAdmissaoGabrielaInput').value;
+ if(!data){ mostrarToast('⚠️ Escolha uma data de admissão.'); return; }
+ localStorage.setItem('biobel_adm_data_admissao_gabriela', data);
+ mostrarToast('✅ Data de admissão salva!');
+ registrarAlteracao('Data de admissão da Gabriela definida em '+new Date(data+'T00:00:00').toLocaleDateString('pt-BR'));
+ renderLogAlteracoes();
+ renderAdmissaoGabriela();
+}
+function renderAdmissaoGabriela(){
+ const input = document.getElementById('dataAdmissaoGabrielaInput');
+ const el = document.getElementById('resumoAdmissaoGabriela');
+ const dataAdmissao = getDataAdmissaoGabriela();
+ if(input) input.value = dataAdmissao;
+ if(!el) return;
+ if(!dataAdmissao){ el.innerHTML = ''; return; }
+
+ const admissao = new Date(dataAdmissao+'T00:00:00');
+ const hoje = obterAgoraBrasilia();
+ const hojeData = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+
+ // Tempo de casa (anos, meses e dias completos)
+ let anos = hojeData.getFullYear() - admissao.getFullYear();
+ let meses = hojeData.getMonth() - admissao.getMonth();
+ let dias = hojeData.getDate() - admissao.getDate();
+ if(dias<0){ meses--; dias += new Date(hojeData.getFullYear(), hojeData.getMonth(), 0).getDate(); }
+ if(meses<0){ anos--; meses += 12; }
+ const mesesTotais = anos*12 + meses;
+
+ // Próximo período aquisitivo de férias (completa a cada 12 meses desde a admissão)
+ const periodosCompletos = Math.floor(mesesTotais/12);
+ const proximoAniversario = new Date(admissao);
+ proximoAniversario.setFullYear(admissao.getFullYear() + periodosCompletos + 1);
+ const diasAteFerias = Math.round((proximoAniversario.getTime()-hojeData.getTime())/86400000);
+ const jaTemDireitoFerias = periodosCompletos>=1;
+
+ // FGTS acumulado estimado: 8% do salário-base × meses trabalhados (aproximação — assume salário
+ // constante desde a admissão; não conta reajustes, 13º nem outros valores que também compõem a base real).
+ const gastosFixos = getGastosFixos();
+ const salarioGabriela = gastosFixos.find(g=>g.nome.toLowerCase().includes('clt gabriela'));
+ const salario = salarioGabriela && salarioGabriela.valor ? salarioGabriela.valor : 0;
+ const fgtsEstimado = salario>0 ? salario*0.08*mesesTotais : 0;
+
+ el.innerHTML = `
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;">
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 12px;">
+    <div style="font-size:10px;color:#93a3ba;">⏳ Tempo de casa</div>
+    <div style="font-size:15px;font-weight:800;color:#dce5f2;margin-top:2px;">${anos>0?anos+'a ':''}${meses}m ${dias}d</div>
+   </div>
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 12px;">
+    <div style="font-size:10px;color:#93a3ba;">🏖️ Férias</div>
+    <div style="font-size:13px;font-weight:800;color:${jaTemDireitoFerias?'#27d7a0':'#93a3ba'};margin-top:2px;">
+     ${jaTemDireitoFerias ? '✅ Já tem direito' : 'Completa em '+diasAteFerias+' dia'+(diasAteFerias===1?'':'s')}
+    </div>
+   </div>
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 12px;">
+    <div style="font-size:10px;color:#93a3ba;">💰 FGTS acumulado (estimado)</div>
+    <div style="font-size:15px;font-weight:800;color:#dce5f2;margin-top:2px;">${salario>0?money(fgtsEstimado):'defina o salário'}</div>
+   </div>
+  </div>
+  ${jaTemDireitoFerias ? `<p style="font-size:11px;color:#93a3ba;margin-top:10px;">📅 Próximo aniversário de férias: ${proximoAniversario.toLocaleDateString('pt-BR')} (depois disso, começa a contar o próximo período).</p>` : ''}
+  <p style="font-size:10.5px;color:#93a3ba;margin-top:8px;">⚠️ O FGTS acima é uma <strong style="color:#dce5f2;">estimativa</strong> (8% do salário atual × meses trabalhados) — não considera reajustes salariais, 13º nem outros valores que também entram na base real. Pro extrato oficial, confira no aplicativo/site da Caixa ou com a contadora.</p>
+ `;
+}
+
 function renderHoraExtra(){
  const el = document.getElementById('resumoHoraExtra');
  const input = document.getElementById('valorHoraExtraInput');
