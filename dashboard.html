@@ -674,6 +674,11 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <div class="value" id="infoQtdVendas">0</div>
     <div class="sub" id="infoQtdVendasSub">no mês, somando todos os dias lançados</div>
    </div>
+   <div class="adv-kpi green">
+    <div class="label">🧺 Total de Itens Vendidos</div>
+    <div class="value" id="infoTotalItensVendidos">0</div>
+    <div class="sub" id="infoTotalItensVendidosSub">soma da coluna "qt de produtos", no mês</div>
+   </div>
    <div class="adv-kpi gold">
     <div class="label">📈 Projeção até o Fim do Mês</div>
     <div class="value" id="infoProjecao">R$ 0,00</div>
@@ -883,6 +888,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <div style="display:flex;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;overflow:hidden;">
     <button type="button" id="btnRecordeMelhores" onclick="alternarRecordeVendas('melhores')" style="border:0;padding:8px 16px;font-size:12.5px;font-weight:800;cursor:pointer;background:#27d7a0;color:#04241a;">🏆 Melhores</button>
     <button type="button" id="btnRecordePiores" onclick="alternarRecordeVendas('piores')" style="border:0;padding:8px 16px;font-size:12.5px;font-weight:800;cursor:pointer;background:transparent;color:#93a3ba;">📉 Piores</button>
+    <button type="button" id="btnRecordeItens" onclick="alternarRecordeVendas('itens')" style="border:0;padding:8px 16px;font-size:12.5px;font-weight:800;cursor:pointer;background:transparent;color:#93a3ba;">🧺 Mais itens</button>
    </div>
    <select id="filtroRecordeVendedora" aria-label="Filtrar recordes por vendedora" onchange="renderRecordesVendasIndividuais()" style="background:#0b1728;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12px;"><option value="">Todas as vendedoras</option></select>
    <span id="mediaRecordeVendas" style="margin-left:auto;background:rgba(79,156,255,.12);border:1px solid rgba(79,156,255,.3);color:#4f9cff;font-size:12px;font-weight:800;padding:6px 12px;border-radius:999px;white-space:nowrap;">Média: R$ 0,00</span>
@@ -1438,6 +1444,18 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
      </div>
     </div>
     <p class="simple-legend text-xs text-slate-500 mt-2 text-center">Horário da primeira e da última venda registradas nesse dia.</p>
+   </div>
+   <div class="rounded-xl border border-slate-800 bg-slate-950 px-4 py-4" id="cardItensDoDia" style="display:none;">
+    <div class="grid grid-cols-2 gap-3 text-center">
+     <div>
+      <div class="text-slate-400 text-xs">🧺 Itens vendidos no dia</div>
+      <strong id="completeTotalItens" class="text-lg text-slate-200">—</strong>
+     </div>
+     <div>
+      <div class="text-slate-400 text-xs">🏆 Venda com mais itens</div>
+      <strong id="completeVendaComMaisItens" class="text-lg text-slate-200">—</strong>
+     </div>
+    </div>
    </div>
    <div class="rounded-xl border border-emerald-500/30 bg-slate-950 px-4 py-5">
     <div class="flex items-center justify-between caixa-row">
@@ -2118,6 +2136,22 @@ function updateCompleteDay(day){
    document.getElementById('completeUltimaVenda').textContent = d.ultimaVenda || '—';
   } else {
    cardPU.style.display = 'none';
+  }
+ }
+ const cardItens = document.getElementById('cardItensDoDia');
+ if(cardItens){
+  const registros = d.registrosVendas || [];
+  const totalItensDia = registros.reduce((s,r)=>s+(r.qtdItens||0),0);
+  if(totalItensDia>0){
+   cardItens.style.display = 'block';
+   document.getElementById('completeTotalItens').textContent = totalItensDia+' un.';
+   const maiorVenda = [...registros].filter(r=>r.qtdItens).sort((a,b)=>b.qtdItens-a.qtdItens)[0];
+   const elMaior = document.getElementById('completeVendaComMaisItens');
+   if(elMaior){
+    elMaior.textContent = maiorVenda ? maiorVenda.qtdItens+' un. ('+money(maiorVenda.valor)+')' : '—';
+   }
+  } else {
+   cardItens.style.display = 'none';
   }
  }
  updateGoalBanner('completeGoalBanner', Number(d.sales)||0);
@@ -5230,6 +5264,19 @@ function renderNovasMetricas(){
  const elTicketSub=document.getElementById('infoTicketMedioSub');
  if(elTicketSub) elTicketSub.textContent = totalQtdVendas>0 ? totalQtdVendas+' venda(s) contada(s) no mês' : 'ainda sem dados de quantidade (recarregue a planilha)';
 
+ // Total de itens vendidos no mês (soma da coluna "qt de produtos", não é o mesmo que "quantidade de vendas" —
+ // uma venda pode ter vários itens juntos, ex: 3 produtos numa venda só).
+ const totalItensVendidos = daysData.reduce((s,d)=>{
+  return s + (d.registrosVendas||[]).reduce((s2,r)=>s2+(r.qtdItens||0),0);
+ }, 0);
+ const elItens = document.getElementById('infoTotalItensVendidos');
+ if(elItens) elItens.textContent = String(totalItensVendidos);
+ const elItensSub = document.getElementById('infoTotalItensVendidosSub');
+ if(elItensSub){
+  const mediaItensPorVenda = totalQtdVendas>0 ? (totalItensVendidos/totalQtdVendas).toFixed(1) : '0';
+  elItensSub.textContent = 'média de '+mediaItensPorVenda+' itens por venda';
+ }
+
  // 2) Projeção de Faturamento até o Fim do Mês
  // Corrigido: usa os dias ÚTEIS que realmente faltam (sem domingo), não todos os dias do calendário —
  // multiplicar pela quantidade total de dias inflava a projeção contando até domingos, quando a loja nem abre.
@@ -5803,10 +5850,10 @@ function alternarRecordeVendas(modo){
  recordeVendasModo = modo;
  const btnM = document.getElementById('btnRecordeMelhores');
  const btnP = document.getElementById('btnRecordePiores');
- if(btnM) btnM.style.background = modo==='melhores' ? '#27d7a0' : 'transparent';
- if(btnM) btnM.style.color = modo==='melhores' ? '#04241a' : '#93a3ba';
- if(btnP) btnP.style.background = modo==='piores' ? '#fb7185' : 'transparent';
- if(btnP) btnP.style.color = modo==='piores' ? '#3a0f16' : '#93a3ba';
+ const btnI = document.getElementById('btnRecordeItens');
+ if(btnM){ btnM.style.background = modo==='melhores' ? '#27d7a0' : 'transparent'; btnM.style.color = modo==='melhores' ? '#04241a' : '#93a3ba'; }
+ if(btnP){ btnP.style.background = modo==='piores' ? '#fb7185' : 'transparent'; btnP.style.color = modo==='piores' ? '#3a0f16' : '#93a3ba'; }
+ if(btnI){ btnI.style.background = modo==='itens' ? '#4f9cff' : 'transparent'; btnI.style.color = modo==='itens' ? '#04182e' : '#93a3ba'; }
  renderRecordesVendasIndividuais();
 }
 function popularFiltroRecordeVendedoras(){
@@ -5845,11 +5892,20 @@ function renderRecordesVendasIndividuais(){
  const media = todosRegistros.reduce((s,r)=>s+r.valor,0) / todosRegistros.length;
  if(elMedia) elMedia.textContent = 'Média: '+money(media);
 
- const ordenados = [...todosRegistros].sort((a,b)=> recordeVendasModo==='melhores' ? b.valor-a.valor : a.valor-b.valor);
+ const ordenados = recordeVendasModo==='itens'
+  ? [...todosRegistros].filter(r=>r.qtdItens).sort((a,b)=>b.qtdItens-a.qtdItens)
+  : [...todosRegistros].sort((a,b)=> recordeVendasModo==='melhores' ? b.valor-a.valor : a.valor-b.valor);
  const top5 = ordenados.slice(0,5);
  const medalhas = ['🥇','🥈','🥉','4º','5º'];
- const nomesTitulos = ['CAMPEÃ 🏅','VICE-CAMPEÃ 🥈','3º LUGAR 🥉','4º LUGAR','5º LUGAR'];
+ const nomesTitulos = recordeVendasModo==='itens'
+  ? ['MAIS ITENS 🧺','2º LUGAR','3º LUGAR','4º LUGAR','5º LUGAR']
+  : ['CAMPEÃ 🏅','VICE-CAMPEÃ 🥈','3º LUGAR 🥉','4º LUGAR','5º LUGAR'];
  const coresPos = ['#fbbf24','#93a3ba','#b45309','#4f9cff','#27d7a0'];
+
+ if(ordenados.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:13px;">Nenhuma venda com quantidade de itens registrada pra esse filtro.</p>';
+  return;
+ }
 
  el.innerHTML = top5.map((r,i)=>{
   const partes = String(r.dia).split('.').map(Number);
@@ -5859,7 +5915,9 @@ function renderRecordesVendasIndividuais(){
    <div style="background:#0b1728;border:1px solid ${i===0?coresPos[0]:'#1e2c42'};border-radius:14px;padding:14px;position:relative;">
     <span style="position:absolute;top:10px;right:10px;background:${coresPos[i]};color:#04241a;font-size:10px;font-weight:900;padding:3px 8px;border-radius:999px;">#${i+1}</span>
     <div style="font-size:10px;color:${coresPos[i]};font-weight:800;">${nomesTitulos[i]}</div>
-    <div style="font-size:20px;font-weight:900;color:#f6f9fd;margin-top:6px;">${money(r.valor)}</div>
+    ${recordeVendasModo==='itens'
+     ? `<div style="font-size:20px;font-weight:900;color:#f6f9fd;margin-top:6px;">${r.qtdItens} itens</div><div style="font-size:12px;color:#93a3ba;margin-top:2px;">${money(r.valor)}</div>`
+     : `<div style="font-size:20px;font-weight:900;color:#f6f9fd;margin-top:6px;">${money(r.valor)}</div>`}
     <div style="margin-top:10px;font-size:10px;color:#93a3ba;">📅 Dia do evento</div>
     <div style="font-size:12px;color:#dce5f2;font-weight:700;">${nomesDiasSemana[dow]}<br><span style="color:#93a3ba;font-weight:400;">${diaComAno(r.dia)}</span></div>
     ${r.turno ? `<div style="margin-top:8px;font-size:10px;color:#93a3ba;">🎫 Turno do dia</div><div style="font-size:12px;color:#dce5f2;font-weight:700;">${nomesTurnos[r.turno]||r.turno}</div>` : ''}
