@@ -3096,9 +3096,21 @@ function sairAdm(){
   document.getElementById('admConteudoWrap').style.display='none';
  });
 }
+function seedDadosPessoaisEquipe(){
+ // Pré-preenche com os dados reais já confirmados — só na primeira vez, sem nunca sobrescrever
+ // se alguém já tiver editado esses campos com a própria mão.
+ const jaMigrou = localStorage.getItem('biobel_adm_seed_dados_pessoais_v1');
+ if(jaMigrou) return;
+ if(!localStorage.getItem('biobel_adm_nascimento_gabriela')) localStorage.setItem('biobel_adm_nascimento_gabriela', '2005-05-30');
+ if(!localStorage.getItem('biobel_adm_data_admissao_gabriela')) localStorage.setItem('biobel_adm_data_admissao_gabriela', '2026-06-01');
+ if(!localStorage.getItem('biobel_adm_nascimento_day')) localStorage.setItem('biobel_adm_nascimento_day', '2009-07-03');
+ if(!localStorage.getItem('biobel_adm_inicio_estagio_day')) localStorage.setItem('biobel_adm_inicio_estagio_day', '2026-05-25');
+ localStorage.setItem('biobel_adm_seed_dados_pessoais_v1', 'yes');
+}
 function mostrarConteudoAdm(){
  document.getElementById('admLoginWrap').style.display='none';
  document.getElementById('admConteudoWrap').style.display='block';
+ seedDadosPessoaisEquipe();
  renderGastosFixos();
  renderBoletos();
  renderComissoes();
