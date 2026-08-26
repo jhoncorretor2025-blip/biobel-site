@@ -1693,16 +1693,47 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
   <div class="adv-card">
    <div class="adv-card-title">
-    <h3>📅 Data de Admissão — Gabriela (CLT)</h3>
-    <span>necessária pra calcular férias e FGTS acumulado</span>
+    <h3>📅 Dados de Gabriela (CLT)</h3>
+    <span>admissão (pra férias e FGTS) e nascimento (pro aniversário)</span>
    </div>
    <label class="block text-sm font-semibold mb-2" for="dataAdmissaoGabrielaInput">Data de admissão (carteira assinada)</label>
-   <div style="display:flex;gap:8px;">
+   <div style="display:flex;gap:8px;margin-bottom:12px;">
     <input id="dataAdmissaoGabrielaInput" type="date" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
     <button onclick="salvarDataAdmissaoGabriela()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
    </div>
+   <label class="block text-sm font-semibold mb-2" for="dataNascimentoGabrielaInput">🎂 Data de nascimento</label>
+   <div style="display:flex;gap:8px;">
+    <input id="dataNascimentoGabrielaInput" type="date" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="salvarNascimento('gabriela')" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+   </div>
    <div id="resumoAdmissaoGabriela" style="margin-top:12px;"></div>
+   <div id="resumoNascimentoGabriela" style="margin-top:10px;"></div>
    <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">💡 A estagiária (Day) não tem férias nem FGTS pelas regras de estágio — esse campo é só pra Gabriela, que é CLT.</p>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>📋 Dados de Day (Estágio)</h3>
+    <span>início do contrato (pra saber quando renovar) e nascimento</span>
+   </div>
+   <label class="block text-sm font-semibold mb-2" for="dataInicioEstagioInput">Data de início do estágio</label>
+   <div style="display:flex;gap:8px;margin-bottom:12px;">
+    <input id="dataInicioEstagioInput" type="date" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="salvarInicioEstagio()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+   </div>
+   <label class="block text-sm font-semibold mb-2" for="renovacaoEstagioMesesInput">Renovar o contrato a cada quantos meses?</label>
+   <div style="display:flex;gap:8px;margin-bottom:12px;">
+    <input id="renovacaoEstagioMesesInput" type="number" min="1" max="24" placeholder="6" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="salvarRenovacaoEstagio()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+   </div>
+   <label class="block text-sm font-semibold mb-2" for="dataNascimentoDayInput">🎂 Data de nascimento</label>
+   <div style="display:flex;gap:8px;">
+    <input id="dataNascimentoDayInput" type="date" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="salvarNascimento('day')" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+   </div>
+   <div id="resumoEstagioDay" style="margin-top:12px;"></div>
+   <div id="resumoNascimentoDay" style="margin-top:10px;"></div>
+   <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">⚠️ A lei do estágio (Lei 11.788/2008) limita o contrato a no máximo 2 anos (24 meses) com a mesma empresa, exceto pra pessoas com deficiência. O sistema avisa quando estiver chegando perto desse limite.</p>
   </div>
 
   <div class="adv-card">
@@ -3074,6 +3105,9 @@ function mostrarConteudoAdm(){
  renderNiveisComissao();
  renderHoraExtra();
  renderAdmissaoGabriela();
+ renderNascimento('gabriela');
+ renderNascimento('day');
+ renderEstagioDay();
  atualizarTotaisAdm();
  dispararNotificacaoVencimentos();
  renderHistoricoFechamentosMensais();
@@ -3109,6 +3143,34 @@ function renderResumoAtencaoAdm(){
   if(dias<0) pontos.push({texto:b.fornecedor+' venceu há '+Math.abs(dias)+' dia'+(Math.abs(dias)===1?'':'s'), cor:'#fb7185'});
   else if(dias<=5) pontos.push({texto:b.fornecedor+' vence em '+dias+' dia'+(dias===1?'':'s'), cor: dias<=1?'#fb7185':'#fbbf24'});
  });
+
+ // Aniversários próximos (Gabriela e Day)
+ const hojeData = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+ [['gabriela','Gabriela'],['day','Day']].forEach(([chave,nome])=>{
+  const nascimento = getDataNascimento(chave);
+  if(!nascimento) return;
+  const { dias } = diasAteProximoAniversario(nascimento, hojeData);
+  if(dias===0) pontos.push({texto:'🎉 Hoje é aniversário de '+nome+'!', cor:'#27d7a0'});
+  else if(dias<=7) pontos.push({texto:'Aniversário de '+nome+' em '+dias+' dia'+(dias===1?'':'s'), cor:'#fbbf24'});
+ });
+
+ // Renovação de estágio da Day
+ const inicioEstagio = getDataInicioEstagio();
+ if(inicioEstagio){
+  const renovacaoMeses = getRenovacaoEstagioMeses();
+  const inicio = new Date(inicioEstagio+'T00:00:00');
+  let proximaRenovacao = new Date(inicio);
+  while(proximaRenovacao.getTime() <= hojeData.getTime()){
+   proximaRenovacao.setMonth(proximaRenovacao.getMonth() + renovacaoMeses);
+  }
+  const diasAteRenovacao = Math.round((proximaRenovacao.getTime()-hojeData.getTime())/86400000);
+  if(diasAteRenovacao<=15) pontos.push({texto:'Contrato de estágio da Day precisa renovar em '+diasAteRenovacao+' dia'+(diasAteRenovacao===1?'':'s'), cor: diasAteRenovacao<=5?'#fb7185':'#fbbf24'});
+
+  const limiteLegal = new Date(inicio);
+  limiteLegal.setMonth(limiteLegal.getMonth() + 24);
+  const diasAteLimiteLegal = Math.round((limiteLegal.getTime()-hojeData.getTime())/86400000);
+  if(diasAteLimiteLegal<=60) pontos.push({texto: diasAteLimiteLegal<0 ? 'Estágio da Day já passou do limite legal de 2 anos!' : 'Estágio da Day chega no limite legal de 2 anos em '+diasAteLimiteLegal+' dias', cor:'#fb7185'});
+ }
 
  if(pontos.length===0){ el.style.display='none'; return; }
  el.style.display='block';
@@ -3831,6 +3893,122 @@ function renderAdmissaoGabriela(){
   </div>
   ${jaTemDireitoFerias ? `<p style="font-size:11px;color:#93a3ba;margin-top:10px;">📅 Próximo aniversário de férias: ${proximoAniversario.toLocaleDateString('pt-BR')} (depois disso, começa a contar o próximo período).</p>` : ''}
   <p style="font-size:10.5px;color:#93a3ba;margin-top:8px;">⚠️ O FGTS acima é uma <strong style="color:#dce5f2;">estimativa</strong> (8% do salário atual × meses trabalhados) — não considera reajustes salariais, 13º nem outros valores que também entram na base real. Pro extrato oficial, confira no aplicativo/site da Caixa ou com a contadora.</p>
+ `;
+}
+
+/* ===== Aniversários (Gabriela e Day) — pra gerente lembrar ===== */
+function getDataNascimento(pessoa){
+ return localStorage.getItem('biobel_adm_nascimento_'+pessoa) || '';
+}
+function salvarNascimento(pessoa){
+ const input = document.getElementById(pessoa==='gabriela' ? 'dataNascimentoGabrielaInput' : 'dataNascimentoDayInput');
+ const data = input ? input.value : '';
+ if(!data){ mostrarToast('⚠️ Escolha uma data de nascimento.'); return; }
+ localStorage.setItem('biobel_adm_nascimento_'+pessoa, data);
+ mostrarToast('✅ Data de nascimento salva!');
+ registrarAlteracao('Data de nascimento de '+(pessoa==='gabriela'?'Gabriela':'Day')+' salva');
+ renderLogAlteracoes();
+ renderNascimento(pessoa);
+}
+function diasAteProximoAniversario(dataNascimento, hojeData){
+ const nasc = new Date(dataNascimento+'T00:00:00');
+ let proximo = new Date(hojeData.getFullYear(), nasc.getMonth(), nasc.getDate());
+ if(proximo.getTime() < hojeData.getTime()){
+  proximo = new Date(hojeData.getFullYear()+1, nasc.getMonth(), nasc.getDate());
+ }
+ return { dias: Math.round((proximo.getTime()-hojeData.getTime())/86400000), dataProxima: proximo };
+}
+function renderNascimento(pessoa){
+ const input = document.getElementById(pessoa==='gabriela' ? 'dataNascimentoGabrielaInput' : 'dataNascimentoDayInput');
+ const el = document.getElementById(pessoa==='gabriela' ? 'resumoNascimentoGabriela' : 'resumoNascimentoDay');
+ const dataNascimento = getDataNascimento(pessoa);
+ if(input) input.value = dataNascimento;
+ if(!el) return;
+ if(!dataNascimento){ el.innerHTML = ''; return; }
+ const hoje = obterAgoraBrasilia();
+ const hojeData = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+ const { dias, dataProxima } = diasAteProximoAniversario(dataNascimento, hojeData);
+ const cor = dias<=7 ? '#fbbf24' : '#93a3ba';
+ el.innerHTML = `<div style="font-size:12px;color:${cor};font-weight:${dias<=7?'800':'400'};">
+   🎂 ${dias===0?'É hoje! 🎉':'Próximo aniversário: '+dataProxima.toLocaleDateString('pt-BR')+' (em '+dias+' dia'+(dias===1?'':'s')+')'}
+  </div>`;
+}
+
+/* ===== Contrato de Estágio — Day (início e prazo de renovação) ===== */
+function getDataInicioEstagio(){
+ return localStorage.getItem('biobel_adm_inicio_estagio_day') || '';
+}
+function salvarInicioEstagio(){
+ const data = document.getElementById('dataInicioEstagioInput').value;
+ if(!data){ mostrarToast('⚠️ Escolha a data de início do estágio.'); return; }
+ localStorage.setItem('biobel_adm_inicio_estagio_day', data);
+ mostrarToast('✅ Data de início do estágio salva!');
+ registrarAlteracao('Data de início do estágio da Day definida em '+new Date(data+'T00:00:00').toLocaleDateString('pt-BR'));
+ renderLogAlteracoes();
+ renderEstagioDay();
+}
+function getRenovacaoEstagioMeses(){
+ const v = parseInt(localStorage.getItem('biobel_adm_renovacao_estagio_meses')||'6', 10);
+ return isNaN(v) || v<=0 ? 6 : v;
+}
+function salvarRenovacaoEstagio(){
+ const meses = parseInt(document.getElementById('renovacaoEstagioMesesInput').value, 10);
+ if(isNaN(meses) || meses<=0){ mostrarToast('⚠️ Digite um número de meses válido.'); return; }
+ localStorage.setItem('biobel_adm_renovacao_estagio_meses', String(meses));
+ mostrarToast('✅ Período de renovação salvo!');
+ registrarAlteracao('Período de renovação do estágio definido em '+meses+' meses');
+ renderLogAlteracoes();
+ renderEstagioDay();
+}
+function renderEstagioDay(){
+ const inputInicio = document.getElementById('dataInicioEstagioInput');
+ const inputRenovacao = document.getElementById('renovacaoEstagioMesesInput');
+ const el = document.getElementById('resumoEstagioDay');
+ const dataInicio = getDataInicioEstagio();
+ const renovacaoMeses = getRenovacaoEstagioMeses();
+ if(inputInicio) inputInicio.value = dataInicio;
+ if(inputRenovacao) inputRenovacao.value = renovacaoMeses;
+ if(!el) return;
+ if(!dataInicio){ el.innerHTML = ''; return; }
+
+ const inicio = new Date(dataInicio+'T00:00:00');
+ const hoje = obterAgoraBrasilia();
+ const hojeData = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+
+ // Tempo de estágio
+ const mesesTotais = Math.floor((hojeData.getTime()-inicio.getTime())/(86400000*30.44));
+ const diasTotais = Math.floor((hojeData.getTime()-inicio.getTime())/86400000);
+
+ // Próxima renovação: soma o período de renovação a partir do início, repetidamente, até passar de hoje
+ let proximaRenovacao = new Date(inicio);
+ while(proximaRenovacao.getTime() <= hojeData.getTime()){
+  proximaRenovacao.setMonth(proximaRenovacao.getMonth() + renovacaoMeses);
+ }
+ const diasAteRenovacao = Math.round((proximaRenovacao.getTime()-hojeData.getTime())/86400000);
+
+ // Limite legal: 2 anos (24 meses) no total, pela Lei 11.788/2008
+ const limiteLegal = new Date(inicio);
+ limiteLegal.setMonth(limiteLegal.getMonth() + 24);
+ const diasAteLimiteLegal = Math.round((limiteLegal.getTime()-hojeData.getTime())/86400000);
+ const pertoDoLimite = diasAteLimiteLegal<=60;
+ const passouDoLimite = diasAteLimiteLegal<0;
+
+ el.innerHTML = `
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;">
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 12px;">
+    <div style="font-size:10px;color:#93a3ba;">⏳ Tempo de estágio</div>
+    <div style="font-size:15px;font-weight:800;color:#dce5f2;margin-top:2px;">${diasTotais} dias</div>
+   </div>
+   <div style="background:#0b1728;border:1px solid ${diasAteRenovacao<=15?'rgba(251,191,36,.4)':'#1e2c42'};border-radius:10px;padding:10px 12px;">
+    <div style="font-size:10px;color:#93a3ba;">🔄 Próxima renovação</div>
+    <div style="font-size:13px;font-weight:800;color:${diasAteRenovacao<=15?'#fbbf24':'#dce5f2'};margin-top:2px;">${proximaRenovacao.toLocaleDateString('pt-BR')} (${diasAteRenovacao}d)</div>
+   </div>
+  </div>
+  ${(pertoDoLimite||passouDoLimite) ? `
+   <div style="margin-top:10px;background:rgba(251,113,133,.08);border:1px solid rgba(251,113,133,.35);border-radius:10px;padding:10px 12px;">
+    <div style="font-size:11.5px;font-weight:800;color:#fb7185;">${passouDoLimite ? '🔴 Já passou do limite legal de 2 anos!' : '🟡 Perto do limite legal de 2 anos ('+diasAteLimiteLegal+' dias restantes)'}</div>
+    <div style="font-size:10.5px;color:#93a3ba;margin-top:4px;">O contrato de estágio não pode passar de 2 anos com a mesma empresa (Lei 11.788/2008), exceto pra pessoas com deficiência. Vale confirmar a situação com a contadora.</div>
+   </div>` : `<div style="font-size:10.5px;color:#93a3ba;margin-top:8px;">Limite legal de 2 anos vence em ${limiteLegal.toLocaleDateString('pt-BR')}.</div>`}
  `;
 }
 
