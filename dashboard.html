@@ -7612,7 +7612,7 @@ async function loadGoogleSheet(){
   if(proxyUrl){
    // Caminho novo: passa pela "ponte" do Google Apps Script — roda dentro do Google,
    // não esbarra no bloqueio de navegador (CORS) que às vezes acontecia no caminho antigo.
-   const chamadaUrl = proxyUrl + (proxyUrl.includes('?')?'&':'?') + 'id=' + encodeURIComponent(id);
+   const chamadaUrl = proxyUrl + (proxyUrl.includes('?')?'&':'?') + 'id=' + encodeURIComponent(id) + '&_t=' + Date.now();
    const resp = await fetch(chamadaUrl, {cache:'no-store'});
    if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
    const data = await resp.json();
@@ -7626,7 +7626,12 @@ async function loadGoogleSheet(){
   } else {
    // Caminho antigo (ainda funciona, mas pode falhar por bloqueio de navegador às vezes):
    // baixa o .xlsx direto do Google e lê com a biblioteca XLSX.js.
-   const exportUrl=`https://docs.google.com/spreadsheets/d/${id}/export?format=xlsx`;
+   // Importante: o Google às vezes guarda uma cópia em cache desse link de exportação no
+   // próprio servidor dele, e demora pra atualizar (às vezes só no dia seguinte) — o "cache:no-store"
+   // sozinho não resolve isso, porque só afeta o cache do navegador, não o do lado do Google.
+   // Adicionar um parâmetro único a cada busca (a hora atual) força o Google a tratar como um
+   // pedido novo, sem usar a cópia antiga guardada.
+   const exportUrl=`https://docs.google.com/spreadsheets/d/${id}/export?format=xlsx&_biobel_cache_bust=${Date.now()}`;
    const response=await fetch(exportUrl,{cache:'no-store'});
    if(!response.ok) throw new Error(`HTTP ${response.status}`);
    const buf=await response.arrayBuffer();
