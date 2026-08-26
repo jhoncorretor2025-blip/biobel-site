@@ -1476,7 +1476,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 </section>
 
 
-<section id="admTab" class="hidden max-w-5xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabAdm">
+<section id="admTab" class="hidden max-w-5xl 2xl:max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabAdm">
 
  <div id="admLoginWrap" class="adv-card" style="max-width:380px;margin:40px auto;">
   <div style="text-align:center;margin-bottom:20px;">
@@ -1505,8 +1505,18 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <button onclick="sairAdm()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl font-semibold text-sm">🔒 Sair da área da gerência</button>
   </div>
 
+  <nav class="config-chips no-print" aria-label="Atalhos da área ADM" style="position:sticky;top:64px;z-index:15;">
+   <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraResumo')">📊 Resumo</button>
+   <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraFechamento')">🔒 Fechamento</button>
+   <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraGastos')">🏠 Gastos</button>
+   <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraComissoes')">🎯 Comissões</button>
+  </nav>
+
+  <div id="admResumoAtencao" style="display:none;"></div>
+  <div id="admAncoraResumo"></div>
+
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">
-   <div class="adv-kpi red">
+   <div class="adv-kpi red" id="admKpiGastosFixos">
     <div class="label">🏠 Gastos Fixos (mensal)</div>
     <div class="value" id="admTotalGastosFixos">R$ 0,00</div>
     <div class="sub">aluguel, água, luz, internet...</div>
@@ -1516,10 +1526,10 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <div class="value" id="admTotalGastosVariaveis">R$ 0,00</div>
     <div class="sub">boletos de fornecedores atuais</div>
    </div>
-   <div class="adv-kpi gold">
+   <div class="adv-kpi gold" id="admKpiTotalGastos">
     <div class="label">💸 Total de Gastos</div>
     <div class="value" id="admTotalGastosGeral">R$ 0,00</div>
-    <div class="sub">fixos + variáveis</div>
+    <div class="sub" id="admTotalGastosGeralSub">fixos + variáveis</div>
    </div>
    <div class="adv-kpi green">
     <div class="label">📈 Lucro Líquido Estimado</div>
@@ -1527,6 +1537,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <div class="sub" id="admLucroEstimadoSub" style="font-size:10px;">faturamento − gastos − comissões</div>
    </div>
   </div>
+  <div id="admUltimoSalvo" style="font-size:10.5px;color:#93a3ba;text-align:right;margin-top:-6px;"></div>
 
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
    <div class="adv-card">
@@ -1545,6 +1556,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    </div>
   </div>
 
+  <div id="admAncoraFechamento"></div>
   <div class="adv-card">
    <div class="adv-card-title">
     <h3>🔒 Fechamento Mensal Formal</h3>
@@ -1557,6 +1569,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <div id="historicoFechamentosMensais" style="margin-top:16px;"></div>
   </div>
 
+  <div id="admAncoraGastos"></div>
   <div class="adv-card">
    <div class="adv-card-title">
     <h3>🏠 Gastos Fixos</h3>
@@ -1577,6 +1590,11 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <div class="adv-card-title">
     <h3>📦 Boletos de Fornecedores</h3>
     <span>gastos variáveis — cada compra registrada separadamente</span>
+   </div>
+   <div style="display:flex;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;overflow:hidden;width:fit-content;margin-bottom:12px;">
+    <button type="button" id="btnFiltroBoletoTodos" onclick="filtrarBoletos('todos')" style="border:0;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer;background:#27d7a0;color:#04241a;">Todos</button>
+    <button type="button" id="btnFiltroBoletoPendentes" onclick="filtrarBoletos('pendentes')" style="border:0;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer;background:transparent;color:#93a3ba;">Pendentes</button>
+    <button type="button" id="btnFiltroBoletoPagos" onclick="filtrarBoletos('pagos')" style="border:0;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer;background:transparent;color:#93a3ba;">Pagos</button>
    </div>
    <div id="listaBoletos" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;"></div>
    <div style="border-top:1px solid #1e2c42;padding-top:14px;">
@@ -1621,6 +1639,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    </div>
   </div>
 
+  <div id="admAncoraComissoes"></div>
   <div class="adv-card">
    <div class="adv-card-title">
     <h3>🎯 Comissão por Metas (Gabriela e Day)</h3>
@@ -1685,10 +1704,10 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <div id="resumoParticipacaoLucro" style="margin-top:12px;"></div>
   </div>
 
-  <div class="adv-card">
+  <div class="adv-card" style="opacity:.85;border-style:dashed;">
    <div class="adv-card-title">
-    <h3>💼 Comissão individual (opcional, além da geral)</h3>
-    <span>use só se, no futuro, alguém tiver uma % própria de comissão sobre o que vendeu — hoje a Biobel usa a comissão geral acima</span>
+    <h3 style="color:#93a3ba;">🗄️ Avançado: Comissão individual (não usada hoje)</h3>
+    <span>diferente da "Comissão por Metas" acima (que é a política real da loja) — esse aqui é um recurso à parte, pra caso um dia alguém tenha uma % própria sobre o que vendeu. Deixe em 0% se não for usar.</span>
    </div>
    <div id="listaComissoes" style="display:flex;flex-direction:column;gap:12px;"></div>
   </div>
@@ -3018,6 +3037,64 @@ function mostrarConteudoAdm(){
  atualizarTotaisAdm();
  dispararNotificacaoVencimentos();
  renderHistoricoFechamentosMensais();
+ renderResumoAtencaoAdm();
+}
+
+/* ===== Índice de navegação (chips) da área ADM ===== */
+function irParaSecaoAdm(idAncora){
+ const el = document.getElementById(idAncora);
+ if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+/* ===== Resumo de "o que precisa de atenção", logo no topo ===== */
+function renderResumoAtencaoAdm(){
+ const el = document.getElementById('admResumoAtencao');
+ if(!el) return;
+ const hoje = obterAgoraBrasilia();
+ const hojeMs = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate()).getTime();
+ const pontos = [];
+
+ getGastosFixos().forEach(g=>{
+  if(g.valor===null){ pontos.push({texto:'"'+g.nome+'" ainda sem valor definido', cor:'#fbbf24'}); return; }
+  if(!g.dia) return;
+  const dias = diasAteProximoVencimentoMensal(g.dia);
+  if(dias<=5) pontos.push({texto:g.nome+' vence em '+dias+' dia'+(dias===1?'':'s'), cor: dias<=1?'#fb7185':'#fbbf24'});
+ });
+
+ getBoletos().forEach(b=>{
+  if(b.pago || !b.vencimento) return;
+  const dataVenc = new Date(b.vencimento+'T00:00:00');
+  if(isNaN(dataVenc.getTime())) return;
+  const dias = Math.round((dataVenc.getTime()-hojeMs)/86400000);
+  if(dias<0) pontos.push({texto:b.fornecedor+' venceu há '+Math.abs(dias)+' dia'+(Math.abs(dias)===1?'':'s'), cor:'#fb7185'});
+  else if(dias<=5) pontos.push({texto:b.fornecedor+' vence em '+dias+' dia'+(dias===1?'':'s'), cor: dias<=1?'#fb7185':'#fbbf24'});
+ });
+
+ if(pontos.length===0){ el.style.display='none'; return; }
+ el.style.display='block';
+ const mostrarAte = 5;
+ el.innerHTML = `<div style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:14px;padding:14px 16px;">
+   <div style="font-size:11px;font-weight:900;color:#fbbf24;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">⚠️ Precisa de atenção (${pontos.length})</div>
+   <div style="display:flex;flex-direction:column;gap:5px;">
+    ${pontos.slice(0,mostrarAte).map(p=>`<div style="font-size:12.5px;color:#dce5f2;">• <span style="color:${p.cor};font-weight:700;">${p.texto}</span></div>`).join('')}
+    ${pontos.length>mostrarAte ? `<div style="font-size:11.5px;color:#93a3ba;margin-top:2px;">e mais ${pontos.length-mostrarAte}...</div>` : ''}
+   </div>
+  </div>`;
+}
+
+/* ===== Filtro rápido de status nos boletos ===== */
+let filtroBoletoAtual = 'todos';
+function filtrarBoletos(modo){
+ filtroBoletoAtual = modo;
+ const btnT = document.getElementById('btnFiltroBoletoTodos');
+ const btnP = document.getElementById('btnFiltroBoletoPendentes');
+ const btnG = document.getElementById('btnFiltroBoletoPagos');
+ [[btnT,'todos'],[btnP,'pendentes'],[btnG,'pagos']].forEach(([btn,m])=>{
+  if(!btn) return;
+  btn.style.background = modo===m ? '#27d7a0' : 'transparent';
+  btn.style.color = modo===m ? '#04241a' : '#93a3ba';
+ });
+ renderBoletos();
 }
 function initAdmTab(){
  if(sessionStorage.getItem('biobel_adm_autenticado')==='yes'){
@@ -3362,9 +3439,11 @@ function removerBoleto(id){
 function renderBoletos(){
  const el = document.getElementById('listaBoletos');
  if(!el) return;
- const lista = getBoletos();
+ let lista = getBoletos();
+ if(filtroBoletoAtual==='pendentes') lista = lista.filter(b=>!b.pago);
+ else if(filtroBoletoAtual==='pagos') lista = lista.filter(b=>b.pago);
  if(lista.length===0){
-  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhum boleto cadastrado ainda.</p>';
+  el.innerHTML = `<p style="color:#93a3ba;font-size:12.5px;">${filtroBoletoAtual==='todos' ? 'Nenhum boleto cadastrado ainda.' : 'Nenhum boleto '+(filtroBoletoAtual==='pendentes'?'pendente':'pago')+' no momento.'}</p>`;
   return;
  }
 
@@ -3690,6 +3769,23 @@ function atualizarTotaisAdm(){
 
  // Lucro líquido estimado: faturamento do período carregado, menos gastos (fixos + variáveis) e comissões.
  const faturamento = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+
+ // Destaque de cor nos KPIs de gastos, conforme o quanto representam do faturamento —
+ // dá pra perceber de cara se os gastos estão "pesados" sem precisar fazer conta de cabeça.
+ const kpiFixosEl = document.getElementById('admKpiGastosFixos');
+ const kpiTotalEl = document.getElementById('admKpiTotalGastos');
+ const elGeralSub = document.getElementById('admTotalGastosGeralSub');
+ if(faturamento>0){
+  const pctTotal = ((gastosFixos+boletos)/faturamento)*100;
+  if(kpiTotalEl){
+   kpiTotalEl.classList.remove('red','gold','green');
+   kpiTotalEl.classList.add(pctTotal>=60 ? 'red' : pctTotal>=35 ? 'gold' : 'green');
+  }
+  if(elGeralSub) elGeralSub.textContent = pctTotal.toFixed(0)+'% do faturamento do período';
+ } else if(elGeralSub){
+  elGeralSub.textContent = 'fixos + variáveis';
+ }
+
  const comissoes = getComissoes();
  const totaisVend = {};
  daysData.forEach(d=>{
@@ -3722,6 +3818,9 @@ function atualizarTotaisAdm(){
  renderParticipacaoLucro();
  renderGraficoPizzaAdm(faturamento, gastosFixos, boletos, totalComissoesEBonus, lucroEstimado);
  renderPontoEquilibrio(gastosFixos, boletos, faturamento);
+ renderResumoAtencaoAdm();
+ const elUltimoSalvo = document.getElementById('admUltimoSalvo');
+ if(elUltimoSalvo) elUltimoSalvo.textContent = '💾 Atualizado às '+obterAgoraBrasilia().getHours().toString().padStart(2,'0')+':'+obterAgoraBrasilia().getMinutes().toString().padStart(2,'0');
 }
 
 let chartPizzaAdm = null;
