@@ -1722,6 +1722,30 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
   <div class="adv-card">
    <div class="adv-card-title">
+    <h3>🏖️ Férias — Gabriela</h3>
+    <span>registre quando ela tirar férias, pra evitar pagar em dobro por vencimento</span>
+   </div>
+   <div id="statusFeriasGabriela" style="margin-bottom:14px;"></div>
+   <div id="historicoFeriasGabriela" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
+   <div style="border-top:1px solid #1e2c42;padding-top:14px;">
+    <div style="font-size:12px;font-weight:800;color:#93a3ba;margin-bottom:10px;">➕ Registrar férias tiradas</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+     <div>
+      <label for="feriasInicioInput" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Data de início</label>
+      <input id="feriasInicioInput" type="date" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     </div>
+     <div>
+      <label for="feriasFimInput" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Data de volta</label>
+      <input id="feriasFimInput" type="date" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     </div>
+    </div>
+    <button onclick="registrarFerias()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Registrar período de férias</button>
+   </div>
+   <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">⚠️ A regra: depois de completar 12 meses trabalhados, a loja tem mais 12 meses pra conceder as férias. Se passar desse prazo sem conceder, a lei manda pagar em dobro. O sistema calcula isso automaticamente com base na admissão (ou na última férias registrada).</p>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
     <h3>📋 Dados de Day (Estágio)</h3>
     <span>início do contrato (pra saber quando renovar) e nascimento</span>
    </div>
@@ -1743,6 +1767,30 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <div id="resumoEstagioDay" style="margin-top:12px;"></div>
    <div id="resumoNascimentoDay" style="margin-top:10px;"></div>
    <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">⚠️ A lei do estágio (Lei 11.788/2008) limita o contrato a no máximo 2 anos (24 meses) com a mesma empresa, exceto pra pessoas com deficiência. O sistema avisa quando estiver chegando perto desse limite.</p>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>🌴 Recesso Remunerado — Day</h3>
+    <span>diferente de férias (isso é regra de CLT) — estagiário tem direito a 30 dias de recesso remunerado por ano de estágio</span>
+   </div>
+   <div id="statusRecessoDay" style="margin-bottom:14px;"></div>
+   <div id="historicoRecessoDay" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
+   <div style="border-top:1px solid #1e2c42;padding-top:14px;">
+    <div style="font-size:12px;font-weight:800;color:#93a3ba;margin-bottom:10px;">➕ Registrar recesso tirado</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+     <div>
+      <label for="recessoInicioInput" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Data de início</label>
+      <input id="recessoInicioInput" type="date" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     </div>
+     <div>
+      <label for="recessoFimInput" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Data de volta</label>
+      <input id="recessoFimInput" type="date" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     </div>
+    </div>
+    <button onclick="registrarRecesso()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Registrar recesso</button>
+   </div>
+   <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">💡 Só tem direito ao recesso completo (30 dias) se o estágio durar 1 ano ou mais — antes disso, o direito é proporcional. Preferencialmente, deve coincidir com as férias escolares dela.</p>
   </div>
 
   <div class="adv-card">
@@ -3319,9 +3367,11 @@ function mostrarConteudoAdm(){
  renderNiveisComissao();
  renderHoraExtra();
  renderAdmissaoGabriela();
+ renderFeriasGabriela();
  renderNascimento('gabriela');
  renderNascimento('day');
  renderEstagioDay();
+ renderRecessoDay();
  renderReunioes();
  atualizarTotaisAdm();
  dispararNotificacaoVencimentos();
@@ -3385,6 +3435,21 @@ function renderResumoAtencaoAdm(){
   limiteLegal.setMonth(limiteLegal.getMonth() + 24);
   const diasAteLimiteLegal = Math.round((limiteLegal.getTime()-hojeData.getTime())/86400000);
   if(diasAteLimiteLegal<=60) pontos.push({texto: diasAteLimiteLegal<0 ? 'Estágio da Day já passou do limite legal de 2 anos!' : 'Estágio da Day chega no limite legal de 2 anos em '+diasAteLimiteLegal+' dias', cor:'#fb7185'});
+ }
+
+ // Férias da Gabriela: alerta quando estiver perto de vencer ou já vencida (risco de pagamento em dobro)
+ const admissaoGabrielaAtencao = getDataAdmissaoGabriela();
+ if(admissaoGabrielaAtencao){
+  const inicioPeriodo = getDataInicioPeriodoAquisitivoFerias();
+  const fimAquisitivo = new Date(inicioPeriodo);
+  fimAquisitivo.setFullYear(fimAquisitivo.getFullYear()+1);
+  if(hojeData >= fimAquisitivo){
+   const fimConcessivo = new Date(fimAquisitivo);
+   fimConcessivo.setFullYear(fimConcessivo.getFullYear()+1);
+   const diasAteVencerFerias = Math.round((fimConcessivo.getTime()-hojeData.getTime())/86400000);
+   if(diasAteVencerFerias<0) pontos.push({texto:'🔴 Férias da Gabriela já venceram — risco de pagamento em dobro!', cor:'#fb7185'});
+   else if(diasAteVencerFerias<=60) pontos.push({texto:'Férias da Gabriela vencem em '+diasAteVencerFerias+' dias — hora de agendar', cor:'#fbbf24'});
+  }
  }
 
  // Reuniões nos próximos 3 dias
@@ -4128,6 +4193,163 @@ function renderAdmissaoGabriela(){
   ${jaTemDireitoFerias ? `<p style="font-size:11px;color:#93a3ba;margin-top:10px;">📅 Próximo aniversário de férias: ${proximoAniversario.toLocaleDateString('pt-BR')} (depois disso, começa a contar o próximo período).</p>` : ''}
   <p style="font-size:10.5px;color:#93a3ba;margin-top:8px;">⚠️ O FGTS acima é uma <strong style="color:#dce5f2;">estimativa</strong> (8% do salário atual × meses trabalhados) — não considera reajustes salariais, 13º nem outros valores que também entram na base real. Pro extrato oficial, confira no aplicativo/site da Caixa ou com a contadora.</p>
  `;
+}
+
+/* ===== Férias — Gabriela (histórico, período aquisitivo/concessivo, alerta de vencimento) ===== */
+function getHistoricoFerias(){
+ try{ return JSON.parse(localStorage.getItem('biobel_adm_historico_ferias_gabriela')||'[]'); }catch(e){ return []; }
+}
+function salvarHistoricoFerias(lista){
+ localStorage.setItem('biobel_adm_historico_ferias_gabriela', JSON.stringify(lista));
+}
+function registrarFerias(){
+ const inicio = document.getElementById('feriasInicioInput').value;
+ const fim = document.getElementById('feriasFimInput').value;
+ if(!inicio || !fim){ mostrarToast('⚠️ Preencha as duas datas.'); return; }
+ if(fim<inicio){ mostrarToast('⚠️ A data de volta não pode ser antes da data de início.'); return; }
+ const lista = getHistoricoFerias();
+ lista.push({ id: Date.now(), inicio, fim });
+ salvarHistoricoFerias(lista);
+ document.getElementById('feriasInicioInput').value='';
+ document.getElementById('feriasFimInput').value='';
+ mostrarToast('✅ Período de férias registrado!');
+ registrarAlteracao('Férias da Gabriela registradas: '+new Date(inicio+'T00:00:00').toLocaleDateString('pt-BR')+' a '+new Date(fim+'T00:00:00').toLocaleDateString('pt-BR'));
+ renderLogAlteracoes();
+ renderFeriasGabriela();
+}
+function removerFerias(id){
+ confirmarBiobel('Remover esse registro de férias?', ()=>{
+  const lista = getHistoricoFerias().filter(f=>f.id!==id);
+  salvarHistoricoFerias(lista);
+  renderFeriasGabriela();
+  mostrarToast('🗑️ Removido.');
+ });
+}
+function getDataInicioPeriodoAquisitivoFerias(){
+ // O período aquisitivo atual começa na admissão, OU no dia seguinte ao fim da última
+ // férias já registrada — o que for mais recente.
+ const admissao = getDataAdmissaoGabriela();
+ if(!admissao) return null;
+ const historico = getHistoricoFerias();
+ if(historico.length===0) return new Date(admissao+'T00:00:00');
+ const ultimaFerias = [...historico].sort((a,b)=>b.fim.localeCompare(a.fim))[0];
+ const proximoDia = new Date(ultimaFerias.fim+'T00:00:00');
+ proximoDia.setDate(proximoDia.getDate()+1);
+ return proximoDia;
+}
+function renderFeriasGabriela(){
+ const elStatus = document.getElementById('statusFeriasGabriela');
+ const elHist = document.getElementById('historicoFeriasGabriela');
+ if(!elStatus || !elHist) return;
+
+ const historico = [...getHistoricoFerias()].sort((a,b)=>b.inicio.localeCompare(a.inicio));
+ elHist.innerHTML = historico.length===0
+  ? '<p style="color:#93a3ba;font-size:12px;">Nenhuma férias registrada ainda.</p>'
+  : historico.map(f=>`
+     <div style="display:flex;justify-content:space-between;align-items:center;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;">
+      <span style="font-size:12.5px;color:#dce5f2;">${new Date(f.inicio+'T00:00:00').toLocaleDateString('pt-BR')} a ${new Date(f.fim+'T00:00:00').toLocaleDateString('pt-BR')}</span>
+      <button onclick="removerFerias(${f.id})" aria-label="Remover" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:13px;">🗑️</button>
+     </div>`).join('');
+
+ const admissao = getDataAdmissaoGabriela();
+ if(!admissao){ elStatus.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Defina a data de admissão no card acima primeiro.</p>'; return; }
+
+ const inicioPeriodo = getDataInicioPeriodoAquisitivoFerias();
+ const hoje = obterAgoraBrasilia();
+ const hojeData = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+
+ const fimAquisitivo = new Date(inicioPeriodo);
+ fimAquisitivo.setFullYear(fimAquisitivo.getFullYear()+1);
+ const fimConcessivo = new Date(fimAquisitivo);
+ fimConcessivo.setFullYear(fimConcessivo.getFullYear()+1);
+
+ if(hojeData < fimAquisitivo){
+  const dias = Math.round((fimAquisitivo-hojeData)/86400000);
+  elStatus.innerHTML = `<div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
+    <div style="font-size:11px;color:#93a3ba;">📆 Período aquisitivo em andamento</div>
+    <div style="font-size:13px;color:#dce5f2;font-weight:800;margin-top:2px;">Completa direito a férias em ${fimAquisitivo.toLocaleDateString('pt-BR')} (${dias} dias)</div>
+   </div>`;
+ } else {
+  const diasAteVencer = Math.round((fimConcessivo-hojeData)/86400000);
+  const venceu = diasAteVencer<0;
+  const pertoDeVencer = diasAteVencer>=0 && diasAteVencer<=60;
+  const cor = venceu ? '#fb7185' : pertoDeVencer ? '#fbbf24' : '#27d7a0';
+  const fundo = venceu ? 'rgba(251,113,133,.08)' : pertoDeVencer ? 'rgba(251,191,36,.08)' : 'rgba(39,215,160,.08)';
+  elStatus.innerHTML = `<div style="background:${fundo};border:1px solid ${cor}55;border-radius:10px;padding:12px 14px;">
+    <div style="font-size:11.5px;font-weight:800;color:${cor};">${venceu ? '🔴 Férias VENCIDAS — risco de pagamento em dobro!' : '✅ Já tem direito a férias'}</div>
+    <div style="font-size:11.5px;color:#93a3ba;margin-top:4px;">${venceu ? 'O prazo pra conceder venceu em '+fimConcessivo.toLocaleDateString('pt-BR')+', há '+Math.abs(diasAteVencer)+' dias — pela lei, precisa pagar em dobro se ainda não foram tiradas.' : 'Prazo pra conceder até '+fimConcessivo.toLocaleDateString('pt-BR')+' ('+diasAteVencer+' dias restantes).'}</div>
+   </div>`;
+ }
+}
+
+/* ===== Recesso Remunerado — Day (estágio, 30 dias/ano, proporcional se < 1 ano) ===== */
+function getHistoricoRecesso(){
+ try{ return JSON.parse(localStorage.getItem('biobel_adm_historico_recesso_day')||'[]'); }catch(e){ return []; }
+}
+function salvarHistoricoRecesso(lista){
+ localStorage.setItem('biobel_adm_historico_recesso_day', JSON.stringify(lista));
+}
+function registrarRecesso(){
+ const inicio = document.getElementById('recessoInicioInput').value;
+ const fim = document.getElementById('recessoFimInput').value;
+ if(!inicio || !fim){ mostrarToast('⚠️ Preencha as duas datas.'); return; }
+ if(fim<inicio){ mostrarToast('⚠️ A data de volta não pode ser antes da data de início.'); return; }
+ const lista = getHistoricoRecesso();
+ lista.push({ id: Date.now(), inicio, fim });
+ salvarHistoricoRecesso(lista);
+ document.getElementById('recessoInicioInput').value='';
+ document.getElementById('recessoFimInput').value='';
+ mostrarToast('✅ Recesso registrado!');
+ registrarAlteracao('Recesso da Day registrado: '+new Date(inicio+'T00:00:00').toLocaleDateString('pt-BR')+' a '+new Date(fim+'T00:00:00').toLocaleDateString('pt-BR'));
+ renderLogAlteracoes();
+ renderRecessoDay();
+}
+function removerRecesso(id){
+ confirmarBiobel('Remover esse registro de recesso?', ()=>{
+  const lista = getHistoricoRecesso().filter(r=>r.id!==id);
+  salvarHistoricoRecesso(lista);
+  renderRecessoDay();
+  mostrarToast('🗑️ Removido.');
+ });
+}
+function renderRecessoDay(){
+ const elStatus = document.getElementById('statusRecessoDay');
+ const elHist = document.getElementById('historicoRecessoDay');
+ if(!elStatus || !elHist) return;
+
+ const historico = [...getHistoricoRecesso()].sort((a,b)=>b.inicio.localeCompare(a.inicio));
+ elHist.innerHTML = historico.length===0
+  ? '<p style="color:#93a3ba;font-size:12px;">Nenhum recesso registrado ainda.</p>'
+  : historico.map(r=>`
+     <div style="display:flex;justify-content:space-between;align-items:center;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;">
+      <span style="font-size:12.5px;color:#dce5f2;">${new Date(r.inicio+'T00:00:00').toLocaleDateString('pt-BR')} a ${new Date(r.fim+'T00:00:00').toLocaleDateString('pt-BR')}</span>
+      <button onclick="removerRecesso(${r.id})" aria-label="Remover" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:13px;">🗑️</button>
+     </div>`).join('');
+
+ const inicioEstagio = getDataInicioEstagio();
+ if(!inicioEstagio){ elStatus.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Defina a data de início do estágio no card acima primeiro.</p>'; return; }
+
+ const inicio = new Date(inicioEstagio+'T00:00:00');
+ const hoje = obterAgoraBrasilia();
+ const hojeData = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+ const diasEstagio = Math.floor((hojeData.getTime()-inicio.getTime())/86400000);
+ const completouUmAno = diasEstagio>=365;
+
+ // Direito proporcional: ~2,5 dias por mês trabalhado, até o teto de 30 dias/ano (aproximação comum).
+ const mesesTrabalhados = Math.floor(diasEstagio/30.44);
+ const diasDireito = completouUmAno ? 30 : Math.max(0, Math.min(30, Math.round(mesesTrabalhados*2.5)));
+
+ const diasUsados = historico.reduce((s,r)=>{
+  const ini = new Date(r.inicio+'T00:00:00');
+  const f = new Date(r.fim+'T00:00:00');
+  return s + Math.round((f.getTime()-ini.getTime())/86400000)+1;
+ },0);
+ const saldo = Math.max(0, diasDireito-diasUsados);
+
+ elStatus.innerHTML = `<div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
+   <div style="font-size:11px;color:#93a3ba;">${completouUmAno?'✅ Já completou 1 ano de estágio — direito ao recesso completo':'⏳ Ainda não completou 1 ano — direito proporcional'}</div>
+   <div style="font-size:14px;font-weight:800;color:#dce5f2;margin-top:4px;">${diasDireito} dias de direito, ${diasUsados} já usado${diasUsados===1?'':'s'} → <span style="color:${saldo>0?'#27d7a0':'#93a3ba'};">saldo de ${saldo} dias</span></div>
+  </div>`;
 }
 
 /* ===== Aniversários (Gabriela e Day) — pra gerente lembrar ===== */
