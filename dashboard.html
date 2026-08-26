@@ -3025,11 +3025,12 @@ function removerGastoFixo(id){
 }
 function seedGastosFixosPadrao(){
  // Pré-cadastra os gastos fixos que a loja sabe que tem. Os que já têm valor conhecido
- // (salário, VT) já entram preenchidos; os que ainda não sabem o valor exato (luz, água,
- // internet, contadora) ficam "a definir" até a gerente preencher.
+ // (aluguel, salário, VT) já entram preenchidos; os que ainda não sabem o valor exato (luz,
+ // água, internet, contadora) ficam "a definir" até a gerente preencher.
  const lista = getGastosFixos();
  const nomesJaExistentes = lista.map(g=>g.nome.toLowerCase());
  const padroes = [
+  { nome:'Aluguel', valor: 7000.00, dia: 10 },
   { nome:'CLT Gabriela (salário)', valor: 1836.00 },
   { nome:'Estagiária (Dai)', valor: 750.00 },
   { nome:'Contadora', valor: null },
@@ -3040,9 +3041,9 @@ function seedGastosFixosPadrao(){
   { nome:'VT Day (~4 semanas/mês, R$120/semana)', valor: 480.00 }
  ];
  let mudou = false;
- padroes.forEach(({nome, valor})=>{
+ padroes.forEach(({nome, valor, dia})=>{
   if(!nomesJaExistentes.includes(nome.toLowerCase())){
-   lista.push({ id: Date.now()+Math.floor(Math.random()*1000), nome, valor, dia: null });
+   lista.push({ id: Date.now()+Math.floor(Math.random()*1000), nome, valor, dia: dia||null });
    mudou = true;
   }
  });
@@ -3050,15 +3051,18 @@ function seedGastosFixosPadrao(){
  migrarValoresConhecidosGastosFixos();
 }
 function migrarValoresConhecidosGastosFixos(){
- // Pra quem já tinha "CLT Gabriela" ou "Estagiária (Dai)" cadastrados como "a definir" antes de
- // a gente saber os valores reais — preenche automaticamente, uma única vez, sem nunca sobrescrever
- // um valor que a gerente já tenha colocado com a própria mão.
- const jaMigrou = localStorage.getItem('biobel_adm_migracao_salarios_v1');
+ // Pra quem já tinha "Aluguel", "CLT Gabriela" ou "Estagiária (Dai)" cadastrados como "a definir"
+ // antes de a gente saber os valores reais — preenche automaticamente, uma única vez, sem nunca
+ // sobrescrever um valor que a gerente já tenha colocado com a própria mão.
+ const jaMigrou = localStorage.getItem('biobel_adm_migracao_salarios_v2');
  if(jaMigrou) return;
  const lista = getGastosFixos();
  let mudou = false;
  lista.forEach(g=>{
   const nomeNorm = g.nome.toLowerCase();
+  if(g.valor===null && nomeNorm==='aluguel'){
+   g.valor = 7000.00; g.dia = g.dia || 10; mudou = true;
+  }
   if(g.valor===null && (nomeNorm==='clt gabriela' || nomeNorm==='clt gabriela (salário)')){
    g.valor = 1836.00; mudou = true;
   }
@@ -3067,7 +3071,7 @@ function migrarValoresConhecidosGastosFixos(){
   }
  });
  if(mudou) salvarGastosFixos(lista);
- localStorage.setItem('biobel_adm_migracao_salarios_v1', 'yes');
+ localStorage.setItem('biobel_adm_migracao_salarios_v2', 'yes');
 }
 function diasAteProximoVencimentoMensal(diaVencimento){
  // Calcula quantos dias faltam pro próximo vencimento de um gasto que se repete todo mês
