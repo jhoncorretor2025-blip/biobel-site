@@ -1522,6 +1522,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraFechamento')">🔒 Fechamento</button>
    <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraGastos')">🏠 Gastos</button>
    <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraComissoes')">🎯 Comissões</button>
+   <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraAgenda')">📅 Agenda</button>
   </nav>
 
   <div id="admResumoAtencao" style="display:none;"></div>
@@ -1780,6 +1781,40 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <span>diferente da "Comissão por Metas" acima (que é a política real da loja) — esse aqui é um recurso à parte, pra caso um dia alguém tenha uma % própria sobre o que vendeu. Deixe em 0% se não for usar.</span>
    </div>
    <div id="listaComissoes" style="display:flex;flex-direction:column;gap:12px;"></div>
+  </div>
+
+  <div id="admAncoraAgenda"></div>
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>📅 Calendário Comercial</h3>
+    <span>datas especiais calculadas automaticamente — bom pra planejar promoção com antecedência</span>
+   </div>
+   <div id="listaDatasComerciais" style="display:flex;flex-direction:column;gap:8px;"></div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>🤝 Agenda de Reuniões com Fornecedores</h3>
+    <span>quando um fornecedor vem até a loja, ou uma reunião marcada</span>
+   </div>
+   <div id="listaReunioes" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;"></div>
+   <div style="border-top:1px solid #1e2c42;padding-top:14px;">
+    <div style="font-size:12px;font-weight:800;color:#93a3ba;margin-bottom:10px;" id="tituloFormReuniao">➕ Adicionar reunião</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:8px;">
+     <input id="novaReuniaoFornecedor" type="text" placeholder="Fornecedor / pessoa" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     <div>
+      <label for="novaReuniaoData" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Data</label>
+      <input id="novaReuniaoData" type="date" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     </div>
+     <div>
+      <label for="novaReuniaoHora" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Hora</label>
+      <input id="novaReuniaoHora" type="time" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     </div>
+    </div>
+    <textarea id="novaReuniaoAssunto" rows="2" placeholder="Assunto (opcional)" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;resize:vertical;margin-bottom:8px;"></textarea>
+    <button id="btnAdicionarReuniao" onclick="adicionarReuniao()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Adicionar reunião</button>
+    <button id="btnCancelarEdicaoReuniao" onclick="cancelarEdicaoReuniao()" style="display:none;margin-top:8px;background:none;border:none;color:#93a3ba;font-size:12px;text-decoration:underline;cursor:pointer;width:100%;">✕ Cancelar edição</button>
+   </div>
   </div>
  </div>
 </section>
@@ -3107,6 +3142,173 @@ function seedDadosPessoaisEquipe(){
  if(!localStorage.getItem('biobel_adm_inicio_estagio_day')) localStorage.setItem('biobel_adm_inicio_estagio_day', '2026-05-25');
  localStorage.setItem('biobel_adm_seed_dados_pessoais_v1', 'yes');
 }
+/* ===== Calendário Comercial (datas especiais calculadas automaticamente) ===== */
+function calcularSegundoDomingo(ano, mes){
+ // mes: 1-indexado (5 = maio, 8 = agosto)
+ const primeiroDiaSemana = new Date(ano, mes-1, 1).getDay(); // 0=domingo
+ const diasAteoPrimeiroDomingo = primeiroDiaSemana===0 ? 0 : 7-primeiroDiaSemana;
+ const primeiroDomingo = 1+diasAteoPrimeiroDomingo;
+ return new Date(ano, mes-1, primeiroDomingo+7);
+}
+function calcularUltimaSexta(ano, mes){
+ const ultimoDiaDoMes = new Date(ano, mes, 0); // dia 0 do mês seguinte = último dia do mês atual
+ const diaSemana = ultimoDiaDoMes.getDay(); // 0=domingo...5=sexta,6=sábado
+ const diff = (diaSemana - 5 + 7) % 7;
+ return new Date(ano, mes-1, ultimoDiaDoMes.getDate()-diff);
+}
+function gerarDatasComerciais(ano){
+ return [
+  { nome:'🌸 Dia Internacional da Mulher', data: new Date(ano,2,8) },
+  { nome:'🛍️ Dia do Consumidor', data: new Date(ano,2,15) },
+  { nome:'🌷 Dia das Mães', data: calcularSegundoDomingo(ano,5) },
+  { nome:'💑 Dia dos Namorados', data: new Date(ano,5,12) },
+  { nome:'👔 Dia dos Pais', data: calcularSegundoDomingo(ano,8) },
+  { nome:'🤝 Dia do Cliente', data: new Date(ano,8,15) },
+  { nome:'🎈 Dia das Crianças', data: new Date(ano,9,12) },
+  { nome:'🛒 Black Friday', data: calcularUltimaSexta(ano,11) },
+  { nome:'🎄 Natal', data: new Date(ano,11,25) },
+  { nome:'🎉 Véspera de Ano Novo', data: new Date(ano,11,31) },
+ ];
+}
+function renderDatasComerciais(){
+ const el = document.getElementById('listaDatasComerciais');
+ if(!el) return;
+ const hoje = obterAgoraBrasilia();
+ const hojeData = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+ const todasAsDatas = [...gerarDatasComerciais(hoje.getFullYear()), ...gerarDatasComerciais(hoje.getFullYear()+1)];
+ const futuras = todasAsDatas
+  .map(d=>({...d, dias: Math.round((d.data.getTime()-hojeData.getTime())/86400000)}))
+  .filter(d=>d.dias>=0)
+  .sort((a,b)=>a.dias-b.dias)
+  .slice(0,6);
+
+ if(futuras.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhuma data encontrada.</p>'; return; }
+
+ el.innerHTML = futuras.map((d,i)=>{
+  const destaque = i===0;
+  return `
+   <div style="display:flex;justify-content:space-between;align-items:center;background:${destaque?'rgba(39,215,160,.08)':'#0b1728'};border:1px solid ${destaque?'rgba(39,215,160,.35)':'#1e2c42'};border-radius:10px;padding:10px 14px;">
+    <div>
+     <span style="color:#dce5f2;font-weight:700;font-size:13px;">${d.nome}</span>
+     <span style="color:#93a3ba;font-size:11px;margin-left:8px;">${d.data.toLocaleDateString('pt-BR')}</span>
+    </div>
+    <span style="color:${destaque?'#27d7a0':'#93a3ba'};font-weight:800;font-size:12.5px;white-space:nowrap;">${d.dias===0?'🎉 é hoje!':d.dias+' dia'+(d.dias===1?'':'s')}</span>
+   </div>`;
+ }).join('');
+}
+
+/* ===== Agenda de Reuniões com Fornecedores ===== */
+function getReunioes(){
+ try{ return JSON.parse(localStorage.getItem('biobel_adm_reunioes')||'[]'); }catch(e){ return []; }
+}
+function salvarReunioes(lista){
+ localStorage.setItem('biobel_adm_reunioes', JSON.stringify(lista));
+}
+let reuniaoEditandoId = null;
+function adicionarReuniao(){
+ const fornecedor = document.getElementById('novaReuniaoFornecedor').value.trim();
+ const data = document.getElementById('novaReuniaoData').value;
+ const hora = document.getElementById('novaReuniaoHora').value;
+ const assunto = document.getElementById('novaReuniaoAssunto').value.trim();
+ if(!fornecedor){ mostrarToast('⚠️ Digite o nome do fornecedor ou pessoa.'); return; }
+ if(!data){ mostrarToast('⚠️ Escolha a data da reunião.'); return; }
+
+ const lista = getReunioes();
+ if(reuniaoEditandoId!==null){
+  const idx = lista.findIndex(r=>r.id===reuniaoEditandoId);
+  if(idx>=0){
+   lista[idx] = { ...lista[idx], fornecedor, data, hora, assunto };
+   salvarReunioes(lista);
+   mostrarToast('✅ Reunião atualizada!');
+   registrarAlteracao('Reunião com "'+fornecedor+'" editada');
+  }
+  cancelarEdicaoReuniao();
+ } else {
+  lista.push({ id: Date.now(), fornecedor, data, hora, assunto, concluida:false });
+  salvarReunioes(lista);
+  mostrarToast('✅ Reunião adicionada!');
+  registrarAlteracao('Reunião com "'+fornecedor+'" agendada para '+new Date(data+'T00:00:00').toLocaleDateString('pt-BR'));
+ }
+ ['novaReuniaoFornecedor','novaReuniaoData','novaReuniaoHora','novaReuniaoAssunto'].forEach(id=>{
+  const el = document.getElementById(id);
+  if(el) el.value='';
+ });
+ renderReunioes();
+ renderLogAlteracoes();
+}
+function editarReuniao(id){
+ const r = getReunioes().find(x=>x.id===id);
+ if(!r) return;
+ reuniaoEditandoId = id;
+ document.getElementById('novaReuniaoFornecedor').value = r.fornecedor||'';
+ document.getElementById('novaReuniaoData').value = r.data||'';
+ document.getElementById('novaReuniaoHora').value = r.hora||'';
+ document.getElementById('novaReuniaoAssunto').value = r.assunto||'';
+ const btn = document.getElementById('btnAdicionarReuniao');
+ if(btn) btn.textContent = '💾 Salvar edição';
+ const btnCancelar = document.getElementById('btnCancelarEdicaoReuniao');
+ if(btnCancelar) btnCancelar.style.display = 'inline-block';
+ document.getElementById('novaReuniaoFornecedor').scrollIntoView({behavior:'smooth', block:'center'});
+}
+function cancelarEdicaoReuniao(){
+ reuniaoEditandoId = null;
+ ['novaReuniaoFornecedor','novaReuniaoData','novaReuniaoHora','novaReuniaoAssunto'].forEach(id=>{
+  const el = document.getElementById(id);
+  if(el) el.value='';
+ });
+ const btn = document.getElementById('btnAdicionarReuniao');
+ if(btn) btn.textContent = '➕ Adicionar reunião';
+ const btnCancelar = document.getElementById('btnCancelarEdicaoReuniao');
+ if(btnCancelar) btnCancelar.style.display = 'none';
+}
+function alternarConcluidaReuniao(id){
+ const lista = getReunioes();
+ const idx = lista.findIndex(r=>r.id===id);
+ if(idx<0) return;
+ lista[idx].concluida = !lista[idx].concluida;
+ salvarReunioes(lista);
+ renderReunioes();
+}
+function removerReuniao(id){
+ confirmarBiobel('Remover essa reunião da agenda?', ()=>{
+  const lista = getReunioes().filter(r=>r.id!==id);
+  salvarReunioes(lista);
+  renderReunioes();
+  mostrarToast('🗑️ Removida.');
+ });
+}
+function renderReunioes(){
+ const el = document.getElementById('listaReunioes');
+ if(!el) return;
+ const lista = [...getReunioes()].sort((a,b)=>(a.data+((a.hora)||'00:00')).localeCompare(b.data+((b.hora)||'00:00')));
+ if(lista.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhuma reunião agendada ainda.</p>';
+  return;
+ }
+ const hoje = obterAgoraBrasilia();
+ const hojeStr = hoje.paraChaveISO();
+ el.innerHTML = lista.map(r=>{
+  const dataFormatada = new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR');
+  const ehHojeReuniao = r.data===hojeStr;
+  const jaPassou = r.data<hojeStr;
+  return `
+   <div style="background:#0b1728;border:1px solid ${ehHojeReuniao&&!r.concluida?'rgba(39,215,160,.4)':'#1e2c42'};border-radius:12px;padding:12px 14px;${r.concluida?'opacity:.6;':''}">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;">
+     <div>
+      <div style="color:#dce5f2;font-weight:800;font-size:14px;">${r.fornecedor} ${r.concluida?'<span style="color:#27d7a0;font-size:11px;font-weight:800;">✅ CONCLUÍDA</span>':ehHojeReuniao?'<span style="color:#27d7a0;font-size:11px;font-weight:800;">📍 HOJE</span>':jaPassou?'<span style="color:#fb7185;font-size:11px;font-weight:800;">⏳ ATRASADA</span>':''}</div>
+      <div style="color:#93a3ba;font-size:11.5px;margin-top:2px;">📅 ${dataFormatada}${r.hora?' às '+r.hora:''}</div>
+     </div>
+     <div style="display:flex;align-items:center;gap:8px;">
+      <button onclick="alternarConcluidaReuniao(${r.id})" aria-label="${r.concluida?'Marcar como pendente':'Marcar como concluída'}" style="background:none;border:none;color:${r.concluida?'#93a3ba':'#27d7a0'};cursor:pointer;font-size:14px;">${r.concluida?'↩️':'✅'}</button>
+      <button onclick="editarReuniao(${r.id})" aria-label="Editar reunião" style="background:none;border:none;color:#4f9cff;cursor:pointer;font-size:14px;">✏️</button>
+      <button onclick="removerReuniao(${r.id})" aria-label="Remover reunião" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;">🗑️</button>
+     </div>
+    </div>
+    ${r.assunto?`<div style="font-size:11.5px;color:#93a3ba;margin-top:6px;font-style:italic;">"${r.assunto}"</div>`:''}
+   </div>`;
+ }).join('');
+}
+
 function mostrarConteudoAdm(){
  document.getElementById('admLoginWrap').style.display='none';
  document.getElementById('admConteudoWrap').style.display='block';
@@ -3120,6 +3322,8 @@ function mostrarConteudoAdm(){
  renderNascimento('gabriela');
  renderNascimento('day');
  renderEstagioDay();
+ renderDatasComerciais();
+ renderReunioes();
  atualizarTotaisAdm();
  dispararNotificacaoVencimentos();
  renderHistoricoFechamentosMensais();
@@ -3182,6 +3386,25 @@ function renderResumoAtencaoAdm(){
   limiteLegal.setMonth(limiteLegal.getMonth() + 24);
   const diasAteLimiteLegal = Math.round((limiteLegal.getTime()-hojeData.getTime())/86400000);
   if(diasAteLimiteLegal<=60) pontos.push({texto: diasAteLimiteLegal<0 ? 'Estágio da Day já passou do limite legal de 2 anos!' : 'Estágio da Day chega no limite legal de 2 anos em '+diasAteLimiteLegal+' dias', cor:'#fb7185'});
+ }
+
+ // Reuniões nos próximos 3 dias
+ const hojeStrAtencao = hoje.paraChaveISO();
+ getReunioes().forEach(r=>{
+  if(r.concluida || !r.data) return;
+  const diasReuniao = Math.round((new Date(r.data+'T00:00:00').getTime()-hojeData.getTime())/86400000);
+  if(diasReuniao>=0 && diasReuniao<=3) pontos.push({texto:'Reunião com '+r.fornecedor+' '+(diasReuniao===0?'é hoje':'em '+diasReuniao+' dia'+(diasReuniao===1?'':'s')), cor: diasReuniao<=1?'#27d7a0':'#fbbf24'});
+  else if(diasReuniao<0) pontos.push({texto:'Reunião com '+r.fornecedor+' ficou pendente (era há '+Math.abs(diasReuniao)+' dia'+(Math.abs(diasReuniao)===1?'':'s')+')', cor:'#fb7185'});
+ });
+
+ // Próxima data comercial, se estiver chegando perto (até 14 dias) — bom pra planejar promoção
+ const todasAsDatasComerciais = [...gerarDatasComerciais(hoje.getFullYear()), ...gerarDatasComerciais(hoje.getFullYear()+1)];
+ const proximaDataComercial = todasAsDatasComerciais
+  .map(d=>({...d, dias: Math.round((d.data.getTime()-hojeData.getTime())/86400000)}))
+  .filter(d=>d.dias>=0)
+  .sort((a,b)=>a.dias-b.dias)[0];
+ if(proximaDataComercial && proximaDataComercial.dias<=14){
+  pontos.push({texto:proximaDataComercial.nome+' em '+proximaDataComercial.dias+' dia'+(proximaDataComercial.dias===1?'':'s')+' — bom momento pra planejar promoção', cor:'#4f9cff'});
  }
 
  if(pontos.length===0){ el.style.display='none'; return; }
