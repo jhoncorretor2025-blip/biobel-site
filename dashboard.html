@@ -1538,6 +1538,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    </div>
   </div>
   <div id="admUltimoSalvo" style="font-size:10.5px;color:#93a3ba;text-align:right;margin-top:-6px;"></div>
+  <p style="font-size:10.5px;color:#93a3ba;margin-top:2px;">⚠️ O Lucro Estimado usa o valor <em>base</em> da hora extra e das comissões — não inclui encargos trabalhistas (DSR, 13º, férias+1/3, FGTS). O custo real pode ser um pouco maior; confirme com a contadora pro número oficial.</p>
 
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
    <div class="adv-card">
@@ -1690,6 +1691,17 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    </div>
    <div id="resumoHoraExtra"></div>
    <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">💡 Valor pré-calculado: salário (R$1.836,00) ÷ 220h = R$8,35/hora normal × 1,5 (adicional de 50%) = R$12,52/hora extra. Ajuste o campo acima se precisar corrigir.</p>
+   <div style="margin-top:12px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:12px;padding:12px 14px;">
+    <div style="font-size:11.5px;font-weight:800;color:#fbbf24;margin-bottom:6px;">⚠️ Esse valor é só a hora extra em si — não é o custo total</div>
+    <div style="font-size:11px;color:#93a3ba;line-height:1.6;">
+     Dependendo da situação trabalhista da Gabriela, o custo real pode ficar maior por causa de reflexos que <strong style="color:#dce5f2;">não estão incluídos</strong> nesse cálculo:
+     <br>• <strong style="color:#dce5f2;">DSR</strong> (Descanso Semanal Remunerado) sobre horas extras
+     <br>• Reflexo em <strong style="color:#dce5f2;">13º salário</strong>
+     <br>• Reflexo em <strong style="color:#dce5f2;">férias + 1/3</strong>
+     <br>• Reflexo no <strong style="color:#dce5f2;">FGTS</strong>
+    </div>
+    <div style="font-size:11px;color:#93a3ba;margin-top:8px;">Pra saber o custo total exato com esses encargos, confirme com a contadora — esse painel mostra só a base, não substitui o cálculo oficial da folha.</div>
+   </div>
   </div>
 
   <div class="adv-card">
