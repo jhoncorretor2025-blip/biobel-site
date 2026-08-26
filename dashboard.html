@@ -1552,37 +1552,53 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
   <div class="adv-card">
    <div class="adv-card-title">
-    <h3>🎯 Comissão Geral & Bônus por Meta</h3>
-    <span>a comissão da Biobel hoje é geral (não individual) — libera pra equipe quando a loja bate a meta do mês</span>
+    <h3>🎯 Comissão por Metas (Gabriela e Day)</h3>
+    <span>cada nível tem um valor que a Gabriela E a Day recebem, cada uma — só as duas participam disso</span>
    </div>
-   <div id="statusMetaComissaoGeral" style="margin-bottom:16px;"></div>
-   <label class="block text-sm font-semibold mb-2" for="valorComissaoGeralInput">Valor da comissão geral quando bate a meta (R$)</label>
+   <div id="statusNivelComissao" style="margin-bottom:16px;"></div>
+
+   <div id="listaNiveisComissao" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;"></div>
+
+   <div style="border-top:1px solid #1e2c42;padding-top:14px;">
+    <div style="font-size:12px;font-weight:800;color:#93a3ba;margin-bottom:10px;" id="tituloFormNivel">➕ Adicionar nível de meta</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:8px;">
+     <div>
+      <label style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;" for="nivelMetaInput">Meta (R$)</label>
+      <input id="nivelMetaInput" type="text" inputmode="decimal" placeholder="45.000" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     </div>
+     <div>
+      <label style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;" for="nivelDinheiroInput">Dinheiro (cada uma)</label>
+      <input id="nivelDinheiroInput" type="text" inputmode="decimal" placeholder="R$ 200" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     </div>
+     <div>
+      <label style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;" for="nivelKitMinInput">Kit — de (R$)</label>
+      <input id="nivelKitMinInput" type="text" inputmode="decimal" placeholder="0" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     </div>
+     <div>
+      <label style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;" for="nivelKitMaxInput">Kit — até (R$)</label>
+      <input id="nivelKitMaxInput" type="text" inputmode="decimal" placeholder="0" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     </div>
+     <div>
+      <label style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;" for="nivelConfraInput">Confraternização</label>
+      <input id="nivelConfraInput" type="text" inputmode="decimal" placeholder="R$ 0" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     </div>
+    </div>
+    <button id="btnAdicionarNivel" onclick="adicionarNivelComissao()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Adicionar nível</button>
+    <button id="btnCancelarEdicaoNivel" onclick="cancelarEdicaoNivel()" style="display:none;margin-top:8px;background:none;border:none;color:#93a3ba;font-size:12px;text-decoration:underline;cursor:pointer;width:100%;">✕ Cancelar edição</button>
+   </div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>⏰ Hora extra — Gabriela</h3>
+    <span>2 horas extras por semana, fixas</span>
+   </div>
+   <label class="block text-sm font-semibold mb-2" for="valorHoraExtraInput">Valor da hora extra (R$/hora)</label>
    <div style="display:flex;gap:8px;">
-    <input id="valorComissaoGeralInput" type="text" inputmode="decimal" placeholder="R$ 0,00" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
-    <button onclick="salvarComissaoGeral()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+    <input id="valorHoraExtraInput" type="text" inputmode="decimal" placeholder="R$ 0,00" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="salvarHoraExtra()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
    </div>
-
-   <div style="border-top:1px solid #1e2c42;margin-top:18px;padding-top:16px;">
-    <h4 style="font-weight:800;color:#dce5f2;font-size:13.5px;margin-bottom:4px;">⏰ Hora extra — Gabriela</h4>
-    <p style="font-size:11.5px;color:#93a3ba;margin-bottom:10px;">2 horas extras por semana, fixas.</p>
-    <label class="block text-sm font-semibold mb-2" for="valorHoraExtraInput">Valor da hora extra (R$/hora)</label>
-    <div style="display:flex;gap:8px;">
-     <input id="valorHoraExtraInput" type="text" inputmode="decimal" placeholder="R$ 0,00" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
-     <button onclick="salvarHoraExtra()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
-    </div>
-    <div id="resumoHoraExtra"></div>
-   </div>
-
-   <div style="border-top:1px solid #1e2c42;margin-top:18px;padding-top:16px;">
-    <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:#dce5f2;cursor:pointer;margin-bottom:10px;">
-     <input type="checkbox" id="kitLojaToggle" style="width:16px;height:16px;accent-color:#27d7a0;">
-     🎁 Kit da loja pra equipe, se bater a meta
-    </label>
-    <div style="display:flex;gap:8px;">
-     <input id="kitLojaCustoInput" type="text" inputmode="decimal" placeholder="Custo estimado do kit (opcional)" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
-     <button onclick="salvarKitLoja()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
-    </div>
-   </div>
+   <div id="resumoHoraExtra"></div>
   </div>
 
   <div class="adv-card">
@@ -2897,9 +2913,8 @@ function mostrarConteudoAdm(){
  renderGastosFixos();
  renderBoletos();
  renderComissoes();
- renderComissaoGeral();
+ renderNiveisComissao();
  renderHoraExtra();
- initKitLojaUI();
  atualizarTotaisAdm();
 }
 function initAdmTab(){
@@ -3237,44 +3252,179 @@ function renderBoletos(){
  }).join('<div style="height:6px;"></div>');
 }
 
-/* ===== Comissão Geral (não individual) — libera pra equipe quando a loja bate a meta do mês ===== */
-function getComissaoGeralValor(){
- const v = parseFloat(localStorage.getItem('biobel_adm_comissao_geral_valor')||'0');
- return isNaN(v) ? 0 : v;
+/* ===== Comissão por Níveis de Meta (Gabriela e Day, cada uma recebe o valor do nível atingido) ===== */
+function getNiveisComissao(){
+ try{ return JSON.parse(localStorage.getItem('biobel_adm_niveis_comissao')||'[]'); }catch(e){ return []; }
 }
-function salvarComissaoGeral(){
- const valor = parseValorSimples(document.getElementById('valorComissaoGeralInput').value);
- if(isNaN(valor) || valor<0){ mostrarToast('⚠️ Digite um valor válido.'); return; }
- localStorage.setItem('biobel_adm_comissao_geral_valor', String(valor));
- mostrarToast('✅ Comissão geral salva!');
- registrarAlteracao('Comissão geral da loja definida em '+money(valor));
+function salvarNiveisComissao(lista){
+ localStorage.setItem('biobel_adm_niveis_comissao', JSON.stringify(lista));
+}
+function seedNiveisComissaoPadrao(){
+ // Pré-cadastra os 2 níveis já combinados: R$45 mil (R$200 cada uma) e R$50 mil
+ // (R$300 + kit de R$200 a R$260 + confraternização de R$110, cada uma).
+ const lista = getNiveisComissao();
+ if(lista.length>0) return; // só cadastra automaticamente se ainda não tiver nenhum nível configurado
+ salvarNiveisComissao([
+  { id: Date.now(), meta: 45000, dinheiro: 200, kitMin: 0, kitMax: 0, confraternizacao: 0 },
+  { id: Date.now()+1, meta: 50000, dinheiro: 300, kitMin: 200, kitMax: 260, confraternizacao: 110 }
+ ]);
+}
+let nivelComissaoEditandoId = null;
+function adicionarNivelComissao(){
+ const meta = parseValorSimples(document.getElementById('nivelMetaInput').value);
+ const dinheiro = parseValorSimples(document.getElementById('nivelDinheiroInput').value);
+ const kitMinTexto = document.getElementById('nivelKitMinInput').value.trim();
+ const kitMaxTexto = document.getElementById('nivelKitMaxInput').value.trim();
+ const confraTexto = document.getElementById('nivelConfraInput').value.trim();
+ const kitMin = kitMinTexto ? parseValorSimples(kitMinTexto) : 0;
+ const kitMax = kitMaxTexto ? parseValorSimples(kitMaxTexto) : 0;
+ const confraternizacao = confraTexto ? parseValorSimples(confraTexto) : 0;
+
+ if(isNaN(meta) || meta<=0){ mostrarToast('⚠️ Digite uma meta válida.'); return; }
+ if(isNaN(dinheiro) || dinheiro<0){ mostrarToast('⚠️ Digite um valor em dinheiro válido.'); return; }
+
+ const lista = getNiveisComissao();
+ if(nivelComissaoEditandoId!==null){
+  const idx = lista.findIndex(n=>n.id===nivelComissaoEditandoId);
+  if(idx>=0){
+   lista[idx] = { ...lista[idx], meta, dinheiro, kitMin: kitMin||0, kitMax: kitMax||0, confraternizacao: confraternizacao||0 };
+   salvarNiveisComissao(lista);
+   mostrarToast('✅ Nível atualizado!');
+   registrarAlteracao('Nível de comissão de '+money(meta)+' editado');
+  }
+  cancelarEdicaoNivel();
+ } else {
+  lista.push({ id: Date.now(), meta, dinheiro, kitMin: kitMin||0, kitMax: kitMax||0, confraternizacao: confraternizacao||0 });
+  lista.sort((a,b)=>a.meta-b.meta);
+  salvarNiveisComissao(lista);
+  mostrarToast('✅ Nível de comissão adicionado!');
+  registrarAlteracao('Nível de comissão de '+money(meta)+' adicionado');
+ }
+ ['nivelMetaInput','nivelDinheiroInput','nivelKitMinInput','nivelKitMaxInput','nivelConfraInput'].forEach(id=>{
+  const el = document.getElementById(id);
+  if(el) el.value='';
+ });
+ renderNiveisComissao();
  renderLogAlteracoes();
- renderComissaoGeral();
  atualizarTotaisAdm();
 }
-function metaGeralFoiBatida(){
- const totalSales = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
- const meta = getSalesGoal();
- return meta>0 && totalSales>=meta;
+function editarNivelComissao(id){
+ const n = getNiveisComissao().find(x=>x.id===id);
+ if(!n) return;
+ nivelComissaoEditandoId = id;
+ document.getElementById('nivelMetaInput').value = String(n.meta).replace('.',',');
+ document.getElementById('nivelDinheiroInput').value = String(n.dinheiro).replace('.',',');
+ document.getElementById('nivelKitMinInput').value = n.kitMin ? String(n.kitMin).replace('.',',') : '';
+ document.getElementById('nivelKitMaxInput').value = n.kitMax ? String(n.kitMax).replace('.',',') : '';
+ document.getElementById('nivelConfraInput').value = n.confraternizacao ? String(n.confraternizacao).replace('.',',') : '';
+ const btn = document.getElementById('btnAdicionarNivel');
+ if(btn) btn.textContent = '💾 Salvar edição';
+ const btnCancelar = document.getElementById('btnCancelarEdicaoNivel');
+ if(btnCancelar) btnCancelar.style.display = 'inline-block';
+ document.getElementById('tituloFormNivel').textContent = '✏️ Editando nível de '+money(n.meta);
 }
-function renderComissaoGeral(){
- const el = document.getElementById('statusMetaComissaoGeral');
- const input = document.getElementById('valorComissaoGeralInput');
- const valorSalvo = getComissaoGeralValor();
- if(input) input.value = valorSalvo>0 ? String(valorSalvo).replace('.',',') : '';
- if(!el) return;
+function cancelarEdicaoNivel(){
+ nivelComissaoEditandoId = null;
+ ['nivelMetaInput','nivelDinheiroInput','nivelKitMinInput','nivelKitMaxInput','nivelConfraInput'].forEach(id=>{
+  const el = document.getElementById(id);
+  if(el) el.value='';
+ });
+ const btn = document.getElementById('btnAdicionarNivel');
+ if(btn) btn.textContent = '➕ Adicionar nível';
+ const btnCancelar = document.getElementById('btnCancelarEdicaoNivel');
+ if(btnCancelar) btnCancelar.style.display = 'none';
+ const titulo = document.getElementById('tituloFormNivel');
+ if(titulo) titulo.textContent = '➕ Adicionar nível de meta';
+}
+function removerNivelComissao(id){
+ confirmarBiobel('Remover esse nível de meta?', ()=>{
+  const lista = getNiveisComissao().filter(n=>n.id!==id);
+  salvarNiveisComissao(lista);
+  renderNiveisComissao();
+  atualizarTotaisAdm();
+  mostrarToast('🗑️ Removido.');
+ });
+}
+function calcularKitMedio(n){
+ if(!n.kitMax || n.kitMax<=0) return n.kitMin||0;
+ return (n.kitMin + n.kitMax) / 2;
+}
+function calcularTotalPorPessoa(n){
+ return (n.dinheiro||0) + calcularKitMedio(n) + (n.confraternizacao||0);
+}
+function nivelAtualAtingido(){
+ // Acha o MAIOR nível de meta que o faturamento atual já alcançou (não soma os níveis, usa o melhor batido).
  const totalSales = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
- const meta = getSalesGoal();
- if(daysData.length===0){
-  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Sem dados carregados ainda pra saber se a meta foi batida.</p>';
-  return;
- }
- if(metaGeralFoiBatida()){
-  el.innerHTML = `<div style="background:rgba(39,215,160,.1);border:1px solid rgba(39,215,160,.35);border-radius:12px;padding:12px 16px;color:#27d7a0;font-weight:800;font-size:13px;">✅ Meta batida! Comissão geral de ${money(valorSalvo)} liberada esse período.</div>`;
+ const niveis = [...getNiveisComissao()].sort((a,b)=>a.meta-b.meta);
+ let atingido = null;
+ niveis.forEach(n=>{ if(totalSales>=n.meta) atingido = n; });
+ return atingido;
+}
+function renderNiveisComissao(){
+ seedNiveisComissaoPadrao();
+ const el = document.getElementById('listaNiveisComissao');
+ const elStatus = document.getElementById('statusNivelComissao');
+ if(!el) return;
+ const niveis = [...getNiveisComissao()].sort((a,b)=>a.meta-b.meta);
+
+ if(niveis.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhum nível de meta cadastrado ainda.</p>';
  } else {
-  const falta = Math.max(0, meta-totalSales);
-  el.innerHTML = `<div style="background:rgba(79,156,255,.08);border:1px solid rgba(79,156,255,.3);border-radius:12px;padding:12px 16px;color:#93a3ba;font-size:13px;">❌ Meta ainda não batida — faltam <strong style="color:#dce5f2;">${money(falta)}</strong> pra liberar a comissão geral de ${money(valorSalvo)}.</div>`;
+  const nivelBatido = nivelAtualAtingido();
+  el.innerHTML = niveis.map(n=>{
+   const kitTexto = (n.kitMax>0 && n.kitMax!==n.kitMin) ? `${money(n.kitMin)} a ${money(n.kitMax)}` : (n.kitMin>0 ? money(n.kitMin) : '—');
+   const totalPessoa = calcularTotalPorPessoa(n);
+   const bateuEsse = nivelBatido && nivelBatido.id===n.id;
+   return `
+    <div style="background:${bateuEsse?'rgba(39,215,160,.08)':'#0b1728'};border:1px solid ${bateuEsse?'rgba(39,215,160,.4)':'#1e2c42'};border-radius:12px;padding:12px 14px;">
+     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+      <div>
+       <span style="color:#dce5f2;font-weight:800;font-size:14px;">Meta: ${money(n.meta)}</span>
+       ${bateuEsse?'<span style="color:#27d7a0;font-size:11px;font-weight:800;margin-left:8px;">✅ ATINGIDO</span>':''}
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+       <span style="color:#4f9cff;font-weight:900;font-size:14px;">~${money(totalPessoa)} cada uma</span>
+       <button onclick="editarNivelComissao(${n.id})" aria-label="Editar nível" style="background:none;border:none;color:#4f9cff;cursor:pointer;font-size:14px;">✏️</button>
+       <button onclick="removerNivelComissao(${n.id})" aria-label="Remover nível" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;">🗑️</button>
+      </div>
+     </div>
+     <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;font-size:11.5px;color:#93a3ba;">
+      <span>💵 Dinheiro: ${money(n.dinheiro)}</span>
+      ${(n.kitMin>0||n.kitMax>0)?`<span>🎁 Kit: ${kitTexto}</span>`:''}
+      ${n.confraternizacao>0?`<span>🎉 Confraternização: ${money(n.confraternizacao)}</span>`:''}
+     </div>
+    </div>`;
+  }).join('');
  }
+
+ if(elStatus){
+  if(daysData.length===0){
+   elStatus.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Sem dados carregados ainda pra saber qual nível foi atingido.</p>';
+  } else {
+   const totalSales = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+   const nivelBatido = nivelAtualAtingido();
+   if(nivelBatido){
+    const totalPessoa = calcularTotalPorPessoa(nivelBatido);
+    const totalDuasPessoas = totalPessoa*2;
+    elStatus.innerHTML = `<div style="background:rgba(39,215,160,.1);border:1px solid rgba(39,215,160,.35);border-radius:12px;padding:12px 16px;color:#27d7a0;font-weight:800;font-size:13px;">✅ Nível de ${money(nivelBatido.meta)} atingido! ~${money(totalPessoa)} pra Gabriela e ~${money(totalPessoa)} pra Day (total ~${money(totalDuasPessoas)}).</div>`;
+   } else {
+    const niveisOrdenados = [...getNiveisComissao()].sort((a,b)=>a.meta-b.meta);
+    const proximo = niveisOrdenados.find(n=>totalSales<n.meta);
+    if(proximo){
+     const falta = proximo.meta-totalSales;
+     elStatus.innerHTML = `<div style="background:rgba(79,156,255,.08);border:1px solid rgba(79,156,255,.3);border-radius:12px;padding:12px 16px;color:#93a3ba;font-size:13px;">❌ Nenhum nível atingido ainda — faltam <strong style="color:#dce5f2;">${money(falta)}</strong> pra chegar em ${money(proximo.meta)}.</div>`;
+    } else {
+     elStatus.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhum nível de meta cadastrado ainda.</p>';
+    }
+   }
+  }
+ }
+}
+function custoTotalComissaoAtual(){
+ // Custo pra loja se o nível atual for pago pras duas (Gabriela e Day) — usado no Lucro Estimado.
+ const nivel = nivelAtualAtingido();
+ if(!nivel) return 0;
+ return calcularTotalPorPessoa(nivel) * 2;
 }
 
 /* ===== Hora extra fixa (Gabriela, 2h/semana) ===== */
@@ -3311,37 +3461,6 @@ function renderHoraExtra(){
  }
 }
 
-/* ===== Kit da loja (bônus não-monetário, se bater a meta) ===== */
-function salvarKitLoja(){
- const ativo = document.getElementById('kitLojaToggle').checked;
- const custo = parseValorSimples(document.getElementById('kitLojaCustoInput').value);
- localStorage.setItem('biobel_adm_kit_loja_ativo', ativo ? 'yes' : 'no');
- if(!isNaN(custo) && custo>=0){
-  localStorage.setItem('biobel_adm_kit_loja_custo', String(custo));
- } else {
-  localStorage.removeItem('biobel_adm_kit_loja_custo');
- }
- mostrarToast('✅ Configuração do kit da loja salva!');
- registrarAlteracao('Kit da loja como bônus por meta: '+(ativo?'ativado':'desativado'));
- renderLogAlteracoes();
- atualizarTotaisAdm();
-}
-function initKitLojaUI(){
- const toggle = document.getElementById('kitLojaToggle');
- const custoInput = document.getElementById('kitLojaCustoInput');
- if(toggle) toggle.checked = localStorage.getItem('biobel_adm_kit_loja_ativo')==='yes';
- if(custoInput){
-  const custo = parseFloat(localStorage.getItem('biobel_adm_kit_loja_custo')||'0');
-  custoInput.value = custo>0 ? String(custo).replace('.',',') : '';
- }
-}
-function getCustoKitLojaSeBatida(){
- const ativo = localStorage.getItem('biobel_adm_kit_loja_ativo')==='yes';
- if(!ativo || !metaGeralFoiBatida()) return 0;
- const custo = parseFloat(localStorage.getItem('biobel_adm_kit_loja_custo')||'0');
- return isNaN(custo) ? 0 : custo;
-}
-
 function atualizarTotaisAdm(){
  const gastosFixos = getGastosFixos().reduce((s,g)=>s+(Number(g.valor)||0),0);
  const boletos = getBoletos().reduce((s,b)=>s+(Number(b.valor)||0),0);
@@ -3366,14 +3485,12 @@ function atualizarTotaisAdm(){
   return s + (pct!==undefined && !isNaN(pct) ? valor*(pct/100) : 0);
  }, 0);
 
- // Comissão geral (não individual) — só entra na conta se a meta já foi batida esse período.
- const comissaoGeral = metaGeralFoiBatida() ? getComissaoGeralValor() : 0;
+ // Comissão por níveis de meta (Gabriela + Day, cada uma) — usa o nível mais alto já atingido.
+ const custoComissaoNiveis = custoTotalComissaoAtual();
  // Hora extra fixa (2h/semana), aproximada pro mês.
  const custoHoraExtra = calcularCustoMensalHoraExtra();
- // Kit da loja — só entra se estiver ativado E a meta já tiver sido batida.
- const custoKit = getCustoKitLojaSeBatida();
 
- const totalComissoesEBonus = totalComissoes + comissaoGeral + custoHoraExtra + custoKit;
+ const totalComissoesEBonus = totalComissoes + custoComissaoNiveis + custoHoraExtra;
  const lucroEstimado = faturamento - gastosFixos - boletos - totalComissoesEBonus;
  const elLucro = document.getElementById('admLucroEstimado');
  const elLucroSub = document.getElementById('admLucroEstimadoSub');
