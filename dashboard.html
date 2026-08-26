@@ -1552,8 +1552,43 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
   <div class="adv-card">
    <div class="adv-card-title">
-    <h3>💼 Comissões e Participação no Lucro</h3>
-    <span>defina a % de comissão de cada vendedora sobre o que ela vendeu no mês</span>
+    <h3>🎯 Comissão Geral & Bônus por Meta</h3>
+    <span>a comissão da Biobel hoje é geral (não individual) — libera pra equipe quando a loja bate a meta do mês</span>
+   </div>
+   <div id="statusMetaComissaoGeral" style="margin-bottom:16px;"></div>
+   <label class="block text-sm font-semibold mb-2" for="valorComissaoGeralInput">Valor da comissão geral quando bate a meta (R$)</label>
+   <div style="display:flex;gap:8px;">
+    <input id="valorComissaoGeralInput" type="text" inputmode="decimal" placeholder="R$ 0,00" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="salvarComissaoGeral()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+   </div>
+
+   <div style="border-top:1px solid #1e2c42;margin-top:18px;padding-top:16px;">
+    <h4 style="font-weight:800;color:#dce5f2;font-size:13.5px;margin-bottom:4px;">⏰ Hora extra — Gabriela</h4>
+    <p style="font-size:11.5px;color:#93a3ba;margin-bottom:10px;">2 horas extras por semana, fixas.</p>
+    <label class="block text-sm font-semibold mb-2" for="valorHoraExtraInput">Valor da hora extra (R$/hora)</label>
+    <div style="display:flex;gap:8px;">
+     <input id="valorHoraExtraInput" type="text" inputmode="decimal" placeholder="R$ 0,00" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     <button onclick="salvarHoraExtra()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+    </div>
+    <div id="resumoHoraExtra"></div>
+   </div>
+
+   <div style="border-top:1px solid #1e2c42;margin-top:18px;padding-top:16px;">
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:#dce5f2;cursor:pointer;margin-bottom:10px;">
+     <input type="checkbox" id="kitLojaToggle" style="width:16px;height:16px;accent-color:#27d7a0;">
+     🎁 Kit da loja pra equipe, se bater a meta
+    </label>
+    <div style="display:flex;gap:8px;">
+     <input id="kitLojaCustoInput" type="text" inputmode="decimal" placeholder="Custo estimado do kit (opcional)" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     <button onclick="salvarKitLoja()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+    </div>
+   </div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>💼 Comissão individual (opcional, além da geral)</h3>
+    <span>use só se, no futuro, alguém tiver uma % própria de comissão sobre o que vendeu — hoje a Biobel usa a comissão geral acima</span>
    </div>
    <div id="listaComissoes" style="display:flex;flex-direction:column;gap:12px;"></div>
   </div>
@@ -2862,6 +2897,9 @@ function mostrarConteudoAdm(){
  renderGastosFixos();
  renderBoletos();
  renderComissoes();
+ renderComissaoGeral();
+ renderHoraExtra();
+ initKitLojaUI();
  atualizarTotaisAdm();
 }
 function initAdmTab(){
@@ -2951,19 +2989,50 @@ function removerGastoFixo(id){
  });
 }
 function seedGastosFixosPadrao(){
- // Pré-cadastra 3 gastos fixos que a loja sabe que tem, mas o valor exato só a gerente sabe —
- // ficam com valor "a definir" até ela preencher, em vez de precisar criar do zero.
+ // Pré-cadastra os gastos fixos que a loja sabe que tem. Os que já têm valor conhecido
+ // (salário, VT) já entram preenchidos; os que ainda não sabem o valor exato (luz, água,
+ // internet, contadora) ficam "a definir" até a gerente preencher.
  const lista = getGastosFixos();
  const nomesJaExistentes = lista.map(g=>g.nome.toLowerCase());
- const padroes = ['CLT Gabriela', 'Estagiária (Dai)', 'Contadora'];
+ const padroes = [
+  { nome:'CLT Gabriela (salário)', valor: 1836.00 },
+  { nome:'Estagiária (Dai)', valor: 750.00 },
+  { nome:'Contadora', valor: null },
+  { nome:'Luz', valor: null },
+  { nome:'Água', valor: null },
+  { nome:'Internet', valor: null },
+  { nome:'VT Gabriela (~4 semanas/mês, R$120/semana)', valor: 480.00 },
+  { nome:'VT Day (~4 semanas/mês, R$120/semana)', valor: 480.00 }
+ ];
  let mudou = false;
- padroes.forEach(nome=>{
+ padroes.forEach(({nome, valor})=>{
   if(!nomesJaExistentes.includes(nome.toLowerCase())){
-   lista.push({ id: Date.now()+Math.floor(Math.random()*1000), nome, valor: null, dia: null });
+   lista.push({ id: Date.now()+Math.floor(Math.random()*1000), nome, valor, dia: null });
    mudou = true;
   }
  });
  if(mudou) salvarGastosFixos(lista);
+ migrarValoresConhecidosGastosFixos();
+}
+function migrarValoresConhecidosGastosFixos(){
+ // Pra quem já tinha "CLT Gabriela" ou "Estagiária (Dai)" cadastrados como "a definir" antes de
+ // a gente saber os valores reais — preenche automaticamente, uma única vez, sem nunca sobrescrever
+ // um valor que a gerente já tenha colocado com a própria mão.
+ const jaMigrou = localStorage.getItem('biobel_adm_migracao_salarios_v1');
+ if(jaMigrou) return;
+ const lista = getGastosFixos();
+ let mudou = false;
+ lista.forEach(g=>{
+  const nomeNorm = g.nome.toLowerCase();
+  if(g.valor===null && (nomeNorm==='clt gabriela' || nomeNorm==='clt gabriela (salário)')){
+   g.valor = 1836.00; mudou = true;
+  }
+  if(g.valor===null && nomeNorm==='estagiária (dai)'){
+   g.valor = 750.00; mudou = true;
+  }
+ });
+ if(mudou) salvarGastosFixos(lista);
+ localStorage.setItem('biobel_adm_migracao_salarios_v1', 'yes');
 }
 function diasAteProximoVencimentoMensal(diaVencimento){
  // Calcula quantos dias faltam pro próximo vencimento de um gasto que se repete todo mês
@@ -3168,6 +3237,111 @@ function renderBoletos(){
  }).join('<div style="height:6px;"></div>');
 }
 
+/* ===== Comissão Geral (não individual) — libera pra equipe quando a loja bate a meta do mês ===== */
+function getComissaoGeralValor(){
+ const v = parseFloat(localStorage.getItem('biobel_adm_comissao_geral_valor')||'0');
+ return isNaN(v) ? 0 : v;
+}
+function salvarComissaoGeral(){
+ const valor = parseValorSimples(document.getElementById('valorComissaoGeralInput').value);
+ if(isNaN(valor) || valor<0){ mostrarToast('⚠️ Digite um valor válido.'); return; }
+ localStorage.setItem('biobel_adm_comissao_geral_valor', String(valor));
+ mostrarToast('✅ Comissão geral salva!');
+ registrarAlteracao('Comissão geral da loja definida em '+money(valor));
+ renderLogAlteracoes();
+ renderComissaoGeral();
+ atualizarTotaisAdm();
+}
+function metaGeralFoiBatida(){
+ const totalSales = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const meta = getSalesGoal();
+ return meta>0 && totalSales>=meta;
+}
+function renderComissaoGeral(){
+ const el = document.getElementById('statusMetaComissaoGeral');
+ const input = document.getElementById('valorComissaoGeralInput');
+ const valorSalvo = getComissaoGeralValor();
+ if(input) input.value = valorSalvo>0 ? String(valorSalvo).replace('.',',') : '';
+ if(!el) return;
+ const totalSales = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const meta = getSalesGoal();
+ if(daysData.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Sem dados carregados ainda pra saber se a meta foi batida.</p>';
+  return;
+ }
+ if(metaGeralFoiBatida()){
+  el.innerHTML = `<div style="background:rgba(39,215,160,.1);border:1px solid rgba(39,215,160,.35);border-radius:12px;padding:12px 16px;color:#27d7a0;font-weight:800;font-size:13px;">✅ Meta batida! Comissão geral de ${money(valorSalvo)} liberada esse período.</div>`;
+ } else {
+  const falta = Math.max(0, meta-totalSales);
+  el.innerHTML = `<div style="background:rgba(79,156,255,.08);border:1px solid rgba(79,156,255,.3);border-radius:12px;padding:12px 16px;color:#93a3ba;font-size:13px;">❌ Meta ainda não batida — faltam <strong style="color:#dce5f2;">${money(falta)}</strong> pra liberar a comissão geral de ${money(valorSalvo)}.</div>`;
+ }
+}
+
+/* ===== Hora extra fixa (Gabriela, 2h/semana) ===== */
+function getValorHoraExtra(){
+ const v = parseFloat(localStorage.getItem('biobel_adm_valor_hora_extra')||'0');
+ return isNaN(v) ? 0 : v;
+}
+function salvarHoraExtra(){
+ const valor = parseValorSimples(document.getElementById('valorHoraExtraInput').value);
+ if(isNaN(valor) || valor<0){ mostrarToast('⚠️ Digite um valor válido.'); return; }
+ localStorage.setItem('biobel_adm_valor_hora_extra', String(valor));
+ mostrarToast('✅ Valor da hora extra salvo!');
+ registrarAlteracao('Valor da hora extra da Gabriela definido em '+money(valor)+'/hora');
+ renderLogAlteracoes();
+ renderHoraExtra();
+ atualizarTotaisAdm();
+}
+function calcularCustoMensalHoraExtra(){
+ const valorHora = getValorHoraExtra();
+ return valorHora>0 ? valorHora*2*4 : 0; // 2h/semana × ~4 semanas/mês
+}
+function renderHoraExtra(){
+ const el = document.getElementById('resumoHoraExtra');
+ const input = document.getElementById('valorHoraExtraInput');
+ const valorHora = getValorHoraExtra();
+ if(input) input.value = valorHora>0 ? String(valorHora).replace('.',',') : '';
+ if(!el) return;
+ if(valorHora>0){
+  const semanal = valorHora*2;
+  const mensalAprox = semanal*4;
+  el.innerHTML = `<div style="margin-top:10px;font-size:12.5px;color:#93a3ba;">2h/semana × ${money(valorHora)}/h = <strong style="color:#dce5f2;">${money(semanal)}/semana</strong> (~${money(mensalAprox)}/mês, considerando 4 semanas)</div>`;
+ } else {
+  el.innerHTML = '';
+ }
+}
+
+/* ===== Kit da loja (bônus não-monetário, se bater a meta) ===== */
+function salvarKitLoja(){
+ const ativo = document.getElementById('kitLojaToggle').checked;
+ const custo = parseValorSimples(document.getElementById('kitLojaCustoInput').value);
+ localStorage.setItem('biobel_adm_kit_loja_ativo', ativo ? 'yes' : 'no');
+ if(!isNaN(custo) && custo>=0){
+  localStorage.setItem('biobel_adm_kit_loja_custo', String(custo));
+ } else {
+  localStorage.removeItem('biobel_adm_kit_loja_custo');
+ }
+ mostrarToast('✅ Configuração do kit da loja salva!');
+ registrarAlteracao('Kit da loja como bônus por meta: '+(ativo?'ativado':'desativado'));
+ renderLogAlteracoes();
+ atualizarTotaisAdm();
+}
+function initKitLojaUI(){
+ const toggle = document.getElementById('kitLojaToggle');
+ const custoInput = document.getElementById('kitLojaCustoInput');
+ if(toggle) toggle.checked = localStorage.getItem('biobel_adm_kit_loja_ativo')==='yes';
+ if(custoInput){
+  const custo = parseFloat(localStorage.getItem('biobel_adm_kit_loja_custo')||'0');
+  custoInput.value = custo>0 ? String(custo).replace('.',',') : '';
+ }
+}
+function getCustoKitLojaSeBatida(){
+ const ativo = localStorage.getItem('biobel_adm_kit_loja_ativo')==='yes';
+ if(!ativo || !metaGeralFoiBatida()) return 0;
+ const custo = parseFloat(localStorage.getItem('biobel_adm_kit_loja_custo')||'0');
+ return isNaN(custo) ? 0 : custo;
+}
+
 function atualizarTotaisAdm(){
  const gastosFixos = getGastosFixos().reduce((s,g)=>s+(Number(g.valor)||0),0);
  const boletos = getBoletos().reduce((s,b)=>s+(Number(b.valor)||0),0);
@@ -3191,7 +3365,16 @@ function atualizarTotaisAdm(){
   const pct = comissoes[nome];
   return s + (pct!==undefined && !isNaN(pct) ? valor*(pct/100) : 0);
  }, 0);
- const lucroEstimado = faturamento - gastosFixos - boletos - totalComissoes;
+
+ // Comissão geral (não individual) — só entra na conta se a meta já foi batida esse período.
+ const comissaoGeral = metaGeralFoiBatida() ? getComissaoGeralValor() : 0;
+ // Hora extra fixa (2h/semana), aproximada pro mês.
+ const custoHoraExtra = calcularCustoMensalHoraExtra();
+ // Kit da loja — só entra se estiver ativado E a meta já tiver sido batida.
+ const custoKit = getCustoKitLojaSeBatida();
+
+ const totalComissoesEBonus = totalComissoes + comissaoGeral + custoHoraExtra + custoKit;
+ const lucroEstimado = faturamento - gastosFixos - boletos - totalComissoesEBonus;
  const elLucro = document.getElementById('admLucroEstimado');
  const elLucroSub = document.getElementById('admLucroEstimadoSub');
  if(elLucro){
@@ -3199,7 +3382,7 @@ function atualizarTotaisAdm(){
   elLucro.style.color = lucroEstimado>=0 ? '#27d7a0' : '#fb7185';
  }
  if(elLucroSub){
-  elLucroSub.textContent = `${money(faturamento)} (faturamento) − ${money(gastosFixos+boletos)} (gastos) − ${money(totalComissoes)} (comissões)`;
+  elLucroSub.textContent = `${money(faturamento)} (faturamento) − ${money(gastosFixos+boletos)} (gastos) − ${money(totalComissoesEBonus)} (comissões/bônus)`;
  }
 }
 
@@ -3390,11 +3573,20 @@ function diasUteisRestantesNoMes(){
  // Conta quantos dias úteis (seg-sáb) ainda restam no mês, CONTANDO com hoje —
  // o dia de hoje ainda está em andamento (a loja pode vender até o fim do expediente),
  // então ele conta como um dia "restante" também, não só os dias futuros.
+ // MAS: se já passou do horário de fechamento de hoje (configurado em Horários),
+ // a loja já encerrou o expediente e não tem mais como vender hoje — nesse caso,
+ // hoje sai da conta e passa a contar só a partir de amanhã.
  const hoje = obterAgoraBrasilia();
  const ano = hoje.getFullYear(), mes = hoje.getMonth();
  const ultimoDia = new Date(ano, mes+1, 0).getDate();
+ const horario = getHorarioFuncionamento();
+ const diaSemanaHoje = hoje.getDay();
+ const fechamentoHojeStr = diaSemanaHoje===6 ? horario.fechamentoSabado : horario.fechamentoSemana;
+ const horaFechamento = horaParaNumero(fechamentoHojeStr);
+ const lojaJaFechouHoje = (horaFechamento!==null) && (hoje.getHours() >= horaFechamento);
+ const diaInicial = lojaJaFechouHoje ? hoje.getDate()+1 : hoje.getDate();
  let restantes = 0;
- for(let d=hoje.getDate(); d<=ultimoDia; d++){
+ for(let d=diaInicial; d<=ultimoDia; d++){
   const diaSemana = new Date(ano, mes, d).getDay();
   if(diaSemana !== 0) restantes++;
  }
