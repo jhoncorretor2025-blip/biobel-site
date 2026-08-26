@@ -1186,7 +1186,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    </div>
    <label class="flex items-center gap-2 text-sm font-semibold mt-4 cursor-pointer">
     <input type="checkbox" id="notificacoesToggle" onchange="ativarNotificacoes()" style="width:16px;height:16px;accent-color:#27d7a0;">
-    🔔 Avisar com notificação do navegador quando a meta do dia for batida
+    🔔 Avisar com notificação do navegador quando a meta do dia for batida ou algo estiver perto de vencer (na área ADM)
    </label>
    <div id="notificacoesStatus" class="mt-2 text-xs text-slate-500">Funciona mesmo com a aba em segundo plano, mas precisa da permissão do navegador.</div>
   </div>
@@ -1510,6 +1510,35 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    </div>
   </div>
 
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+   <div class="adv-card">
+    <div class="adv-card-title">
+     <h3>🥧 Pra onde vai o faturamento</h3>
+     <span>gastos fixos × variáveis × comissões × lucro</span>
+    </div>
+    <div style="max-width:220px;margin:0 auto;"><canvas id="graficoPizzaAdm" role="img" aria-label="Gráfico de pizza mostrando a divisão do faturamento entre gastos e lucro"></canvas></div>
+   </div>
+   <div class="adv-card">
+    <div class="adv-card-title">
+     <h3>⚖️ Ponto de Equilíbrio</h3>
+     <span>quanto precisa faturar só pra cobrir os gastos conhecidos</span>
+    </div>
+    <div id="resumoPontoEquilibrio"></div>
+   </div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>🔒 Fechamento Mensal Formal</h3>
+    <span>trava um retrato definitivo dos números desse período, pra guardar como referência (mesmo que os dados mudem depois)</span>
+   </div>
+   <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <button onclick="encerrarMesAdm()" class="bg-purple-600 hover:bg-purple-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="background:#8b5cf6;flex:1;min-width:200px;">🔒 Encerrar este período</button>
+    <button onclick="exportarAdmExcel()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="flex:1;min-width:200px;">📊 Exportar Excel</button>
+   </div>
+   <div id="historicoFechamentosMensais" style="margin-top:16px;"></div>
+  </div>
+
   <div class="adv-card">
    <div class="adv-card-title">
     <h3>🏠 Gastos Fixos</h3>
@@ -1544,7 +1573,24 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
       <label for="novoBoletoVencimento" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Data de vencimento</label>
       <input id="novoBoletoVencimento" type="date" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
      </div>
+     <div>
+      <label for="novoBoletoCategoria" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Categoria</label>
+      <select id="novoBoletoCategoria" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+       <option value="Produto">📦 Produto</option>
+       <option value="Manutenção">🔧 Manutenção</option>
+       <option value="Marketing">📣 Marketing</option>
+       <option value="Outros">📋 Outros</option>
+      </select>
+     </div>
+     <div>
+      <label for="novoBoletoPagoPor" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Pago por</label>
+      <input id="novoBoletoPagoPor" type="text" placeholder="Ex: Jhonatan" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     </div>
     </div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#dce5f2;cursor:pointer;margin-bottom:8px;">
+     <input type="checkbox" id="novoBoletoRecorrente" style="width:15px;height:15px;accent-color:#27d7a0;">
+     🔁 Esse fornecedor é recorrente (compro sempre, todo mês)
+    </label>
     <textarea id="novoBoletoObs" rows="2" placeholder="Observações (opcional)" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;resize:vertical;margin-bottom:8px;"></textarea>
     <label for="novoBoletoComprovante" style="font-size:11px;color:#93a3ba;display:block;margin-bottom:4px;">📎 Foto do comprovante/nota fiscal (opcional)</label>
     <input id="novoBoletoComprovante" type="file" accept="image/png,image/jpeg" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:8px 12px;color:#93a3ba;font-size:12px;margin-bottom:10px;">
@@ -2936,6 +2982,8 @@ function mostrarConteudoAdm(){
  renderNiveisComissao();
  renderHoraExtra();
  atualizarTotaisAdm();
+ dispararNotificacaoVencimentos();
+ renderHistoricoFechamentosMensais();
 }
 function initAdmTab(){
  if(sessionStorage.getItem('biobel_adm_autenticado')==='yes'){
@@ -3171,6 +3219,9 @@ async function adicionarBoleto(){
  const validade = document.getElementById('novoBoletoValidade').value.trim();
  const valor = parseValorSimples(document.getElementById('novoBoletoValor').value);
  const vencimento = document.getElementById('novoBoletoVencimento').value; // yyyy-mm-dd (input type=date)
+ const categoria = document.getElementById('novoBoletoCategoria').value;
+ const pagoPor = document.getElementById('novoBoletoPagoPor').value.trim();
+ const recorrente = document.getElementById('novoBoletoRecorrente').checked;
  const obs = document.getElementById('novoBoletoObs').value.trim();
  if(!fornecedor){ mostrarToast('⚠️ Digite o nome do fornecedor.'); return; }
  if(isNaN(valor) || valor<=0){ mostrarToast('⚠️ Digite um valor válido.'); return; }
@@ -3180,22 +3231,24 @@ async function adicionarBoleto(){
  if(boletoEditandoId!==null){
   const idx = lista.findIndex(b=>b.id===boletoEditandoId);
   if(idx>=0){
-   lista[idx] = { ...lista[idx], fornecedor, marca, quantidade, validade, valor, vencimento, obs, comprovante };
+   lista[idx] = { ...lista[idx], fornecedor, marca, quantidade, validade, valor, vencimento, categoria, pagoPor, recorrente, obs, comprovante };
    salvarBoletos(lista);
    mostrarToast('✅ Boleto atualizado!');
    registrarAlteracao('Boleto de "'+fornecedor+'" editado');
   }
   cancelarEdicaoBoleto();
  } else {
-  lista.unshift({ id: Date.now(), fornecedor, marca, quantidade, validade, valor, vencimento, obs, comprovante, pago:false, criadoEm: new Date().toISOString() });
+  lista.unshift({ id: Date.now(), fornecedor, marca, quantidade, validade, valor, vencimento, categoria, pagoPor, recorrente, obs, comprovante, pago:false, criadoEm: new Date().toISOString() });
   salvarBoletos(lista);
   mostrarToast('✅ Boleto adicionado!');
   registrarAlteracao('Boleto de "'+fornecedor+'" adicionado ('+money(valor)+')');
  }
- ['novoBoletoFornecedor','novoBoletoMarca','novoBoletoQuantidade','novoBoletoValidade','novoBoletoValor','novoBoletoVencimento','novoBoletoObs'].forEach(id=>{
+ ['novoBoletoFornecedor','novoBoletoMarca','novoBoletoQuantidade','novoBoletoValidade','novoBoletoValor','novoBoletoVencimento','novoBoletoPagoPor','novoBoletoObs'].forEach(id=>{
   const elCampo = document.getElementById(id);
   if(elCampo) elCampo.value='';
  });
+ document.getElementById('novoBoletoCategoria').value = 'Produto';
+ document.getElementById('novoBoletoRecorrente').checked = false;
  removerComprovanteAnexado();
  renderBoletos();
  atualizarTotaisAdm();
@@ -3211,6 +3264,9 @@ function editarBoleto(id){
  document.getElementById('novoBoletoValidade').value = b.validade||'';
  document.getElementById('novoBoletoValor').value = b.valor!==null&&b.valor!==undefined ? String(b.valor).replace('.',',') : '';
  document.getElementById('novoBoletoVencimento').value = b.vencimento||'';
+ document.getElementById('novoBoletoCategoria').value = b.categoria||'Produto';
+ document.getElementById('novoBoletoPagoPor').value = b.pagoPor||'';
+ document.getElementById('novoBoletoRecorrente').checked = !!b.recorrente;
  document.getElementById('novoBoletoObs').value = b.obs||'';
  comprovanteAnexadoTemp = b.comprovante || null;
  mostrarPreviewComprovante(comprovanteAnexadoTemp);
@@ -3220,12 +3276,31 @@ function editarBoleto(id){
  if(btnCancelar) btnCancelar.style.display = 'inline-block';
  document.getElementById('novoBoletoFornecedor').scrollIntoView({behavior:'smooth', block:'center'});
 }
+function duplicarBoleto(id){
+ // Preenche o formulário com os dados desse boleto (menos vencimento e status de pago),
+ // pronto pra só ajustar o valor/data e adicionar de novo — útil pra fornecedores recorrentes.
+ const b = getBoletos().find(x=>x.id===id);
+ if(!b) return;
+ cancelarEdicaoBoleto();
+ document.getElementById('novoBoletoFornecedor').value = b.fornecedor||'';
+ document.getElementById('novoBoletoMarca').value = b.marca||'';
+ document.getElementById('novoBoletoQuantidade').value = b.quantidade||'';
+ document.getElementById('novoBoletoValidade').value = b.validade||'';
+ document.getElementById('novoBoletoValor').value = b.valor!==null&&b.valor!==undefined ? String(b.valor).replace('.',',') : '';
+ document.getElementById('novoBoletoCategoria').value = b.categoria||'Produto';
+ document.getElementById('novoBoletoPagoPor').value = b.pagoPor||'';
+ document.getElementById('novoBoletoRecorrente').checked = !!b.recorrente;
+ document.getElementById('novoBoletoFornecedor').scrollIntoView({behavior:'smooth', block:'center'});
+ mostrarToast('📋 Dados copiados! Ajuste o valor e a data de vencimento novos.');
+}
 function cancelarEdicaoBoleto(){
  boletoEditandoId = null;
- ['novoBoletoFornecedor','novoBoletoMarca','novoBoletoQuantidade','novoBoletoValidade','novoBoletoValor','novoBoletoVencimento','novoBoletoObs'].forEach(id=>{
+ ['novoBoletoFornecedor','novoBoletoMarca','novoBoletoQuantidade','novoBoletoValidade','novoBoletoValor','novoBoletoVencimento','novoBoletoPagoPor','novoBoletoObs'].forEach(id=>{
   const elCampo = document.getElementById(id);
   if(elCampo) elCampo.value='';
  });
+ document.getElementById('novoBoletoCategoria').value = 'Produto';
+ document.getElementById('novoBoletoRecorrente').checked = false;
  removerComprovanteAnexado();
  const btn = document.getElementById('btnAdicionarBoleto');
  if(btn) btn.textContent = '➕ Adicionar boleto';
@@ -3288,17 +3363,22 @@ function renderBoletos(){
     }
    }
    const vencimentoTexto = b.vencimento ? new Date(b.vencimento+'T00:00:00').toLocaleDateString('pt-BR') : '';
+   const coresCategoria = {'Produto':'#4f9cff','Manutenção':'#fbbf24','Marketing':'#a78bfa','Outros':'#93a3ba'};
+   const emojiCategoria = {'Produto':'📦','Manutenção':'🔧','Marketing':'📣','Outros':'📋'};
+   const corCat = coresCategoria[b.categoria] || '#93a3ba';
    return `
     <div style="background:#0b1728;border:1px solid ${b.pago?'rgba(39,215,160,.3)':'#1e2c42'};border-radius:12px;padding:12px 14px;${b.pago?'opacity:.75;':''}">
      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;">
       <div>
-       <div style="color:#dce5f2;font-weight:800;font-size:14px;">${b.fornecedor} ${b.pago?'<span style="color:#27d7a0;font-size:11px;font-weight:800;">✅ PAGO</span>':''}</div>
+       <div style="color:#dce5f2;font-weight:800;font-size:14px;">${b.fornecedor} ${b.pago?'<span style="color:#27d7a0;font-size:11px;font-weight:800;">✅ PAGO</span>':''} ${b.recorrente?'<span style="color:#4f9cff;font-size:11px;font-weight:800;">🔁 RECORRENTE</span>':''}</div>
        ${b.marca?`<div style="color:#93a3ba;font-size:11.5px;margin-top:2px;">Marca: ${b.marca}</div>`:''}
+       ${b.categoria?`<span style="display:inline-block;margin-top:4px;font-size:10px;font-weight:800;color:${corCat};background:${corCat}22;padding:2px 8px;border-radius:999px;">${emojiCategoria[b.categoria]||''} ${b.categoria}</span>`:''}
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
        <span style="color:#4f9cff;font-weight:900;font-size:15px;">${money(b.valor)}</span>
        ${b.comprovante?`<button onclick="verComprovanteBoleto(${b.id})" aria-label="Ver comprovante" title="Ver comprovante" style="background:none;border:none;color:#a78bfa;cursor:pointer;font-size:14px;">📎</button>`:''}
        <button onclick="alternarPagoBoleto(${b.id})" aria-label="${b.pago?'Marcar como pendente':'Marcar como pago'}" title="${b.pago?'Marcar como pendente':'Marcar como pago'}" style="background:none;border:none;color:${b.pago?'#93a3ba':'#27d7a0'};cursor:pointer;font-size:14px;">${b.pago?'↩️':'✅'}</button>
+       <button onclick="duplicarBoleto(${b.id})" aria-label="Duplicar boleto de ${b.fornecedor}" title="Duplicar (útil pra fornecedores recorrentes)" style="background:none;border:none;color:#93a3ba;cursor:pointer;font-size:14px;">🔁</button>
        <button onclick="editarBoleto(${b.id})" aria-label="Editar boleto de ${b.fornecedor}" style="background:none;border:none;color:#4f9cff;cursor:pointer;font-size:14px;">✏️</button>
        <button onclick="removerBoleto(${b.id})" aria-label="Remover boleto de ${b.fornecedor}" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;">🗑️</button>
       </div>
@@ -3307,6 +3387,7 @@ function renderBoletos(){
       ${b.quantidade?`<span>📦 Qtd: ${b.quantidade}</span>`:''}
       ${b.validade?`<span>⏳ Validade: ${b.validade}</span>`:''}
       ${vencimentoTexto?`<span>📅 Vencimento: ${vencimentoTexto}</span>`:''}
+      ${b.pagoPor?`<span>👤 Pago por: ${b.pagoPor}</span>`:''}
       ${avisoVencimento}
      </div>
      ${b.obs?`<div style="font-size:11.5px;color:#93a3ba;margin-top:6px;font-style:italic;">"${b.obs}"</div>`:''}
@@ -3605,6 +3686,58 @@ function atualizarTotaisAdm(){
   elLucroSub.textContent = `${money(faturamento)} (faturamento) − ${money(gastosFixos+boletos)} (gastos) − ${money(totalComissoesEBonus)} (comissões/bônus)`;
  }
  renderParticipacaoLucro();
+ renderGraficoPizzaAdm(faturamento, gastosFixos, boletos, totalComissoesEBonus, lucroEstimado);
+ renderPontoEquilibrio(gastosFixos, boletos, faturamento);
+}
+
+let chartPizzaAdm = null;
+function renderGraficoPizzaAdm(faturamento, gastosFixos, boletos, comissoesEBonus, lucro){
+ const canvas = document.getElementById('graficoPizzaAdm');
+ if(!canvas || typeof Chart==='undefined') return;
+ if(faturamento<=0){
+  if(chartPizzaAdm){ chartPizzaAdm.destroy(); chartPizzaAdm=null; }
+  return;
+ }
+ const lucroPositivo = Math.max(0, lucro);
+ const dados = [gastosFixos, boletos, comissoesEBonus, lucroPositivo];
+ const labels = ['Gastos Fixos','Gastos Variáveis','Comissões/Bônus','Lucro'];
+ const cores = ['#fb7185','#4f9cff','#fbbf24','#27d7a0'];
+ if(chartPizzaAdm) chartPizzaAdm.destroy();
+ chartPizzaAdm = new Chart(canvas, {
+  type: 'pie',
+  data: { labels, datasets: [{ data: dados, backgroundColor: cores, borderColor:'#0b1728', borderWidth:2 }] },
+  options: {
+   plugins: {
+    legend: { position:'bottom', labels:{ color:'#93a3ba', font:{size:10}, boxWidth:10 } },
+    tooltip: { callbacks: { label: c=>{
+     const total = dados.reduce((a,b)=>a+b,0);
+     const pct = total>0 ? ((c.raw/total)*100).toFixed(1) : '0.0';
+     return `${c.label}: ${money(c.raw)} (${pct}%)`;
+    }}}
+   }
+  }
+ });
+}
+
+function renderPontoEquilibrio(gastosFixos, boletos, faturamento){
+ const el = document.getElementById('resumoPontoEquilibrio');
+ if(!el) return;
+ // Estimativa simples: quanto a loja precisa faturar pra cobrir os gastos já conhecidos
+ // (fixos + variáveis atuais), ANTES de considerar a comissão por metas (que só liga em faixas específicas).
+ const pontoEquilibrio = gastosFixos + boletos;
+ const falta = Math.max(0, pontoEquilibrio - faturamento);
+ const jaCobriu = faturamento >= pontoEquilibrio && pontoEquilibrio>0;
+ el.innerHTML = `
+  <div style="font-size:26px;font-weight:900;color:#dce5f2;">${money(pontoEquilibrio)}</div>
+  <div style="font-size:11.5px;color:#93a3ba;margin-top:4px;">soma dos gastos fixos + boletos atuais</div>
+  ${faturamento>0 ? `
+   <div style="margin-top:12px;padding-top:12px;border-top:1px solid #1e2c42;">
+    ${jaCobriu
+     ? `<div style="color:#27d7a0;font-weight:800;font-size:13px;">✅ Já cobriu o ponto de equilíbrio! O que vender a mais já é lucro (antes de comissões).</div>`
+     : `<div style="color:#93a3ba;font-size:13px;">Faltam <strong style="color:#dce5f2;">${money(falta)}</strong> em vendas pra cobrir todos os gastos conhecidos.</div>`}
+   </div>` : ''}
+  <p style="font-size:10px;color:#93a3ba;margin-top:10px;">💡 Não inclui a comissão por metas (ela só entra quando um nível é atingido, e o cálculo exato depende de qual nível).</p>
+ `;
 }
 
 /* ===== Comissões e participação no lucro por vendedora ===== */
@@ -4140,6 +4273,42 @@ function dispararNotificacaoMetaBatida(sales, goal){
  try{
   new Notification('🎉 Meta do dia batida!', {
    body: 'Vendeu '+money(sales)+' de uma meta de '+money(goal)+'.',
+   icon: '/logo_biobel_gravatai.png'
+  });
+ }catch(e){}
+}
+
+function dispararNotificacaoVencimentos(){
+ // Avisa (uma vez por dia) quando algum gasto fixo ou boleto estiver perto de vencer.
+ const ativado = localStorage.getItem('biobel_notificacoes_ativas') === 'yes';
+ if(!ativado) return;
+ if(typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+ const hoje = obterAgoraBrasilia().paraChaveISO();
+ const jaAvisouHoje = localStorage.getItem('biobel_notif_vencimentos_dia') === hoje;
+ if(jaAvisouHoje) return;
+
+ const hojeObj = obterAgoraBrasilia();
+ const hojeMs = new Date(hojeObj.getFullYear(), hojeObj.getMonth(), hojeObj.getDate()).getTime();
+ const proximos = [];
+
+ getGastosFixos().forEach(g=>{
+  if(!g.dia) return;
+  const dias = diasAteProximoVencimentoMensal(g.dia);
+  if(dias<=3) proximos.push(g.nome+' (em '+dias+' dia'+(dias===1?'':'s')+')');
+ });
+ getBoletos().forEach(b=>{
+  if(!b.vencimento || b.pago) return;
+  const dataVenc = new Date(b.vencimento+'T00:00:00');
+  if(isNaN(dataVenc.getTime())) return;
+  const dias = Math.round((dataVenc.getTime()-hojeMs)/86400000);
+  if(dias>=0 && dias<=3) proximos.push(b.fornecedor+' (em '+dias+' dia'+(dias===1?'':'s')+')');
+ });
+
+ if(proximos.length===0) return;
+ localStorage.setItem('biobel_notif_vencimentos_dia', hoje);
+ try{
+  new Notification('💰 Vencimentos próximos', {
+   body: proximos.slice(0,4).join(' · ')+(proximos.length>4?' e mais '+(proximos.length-4):''),
    icon: '/logo_biobel_gravatai.png'
   });
  }catch(e){}
@@ -6319,6 +6488,110 @@ async function carregarJsPDFSobDemanda(){
   s.onload=resolve; s.onerror=reject;
   document.head.appendChild(s);
  });
+}
+
+/* ===== Fechamento Mensal Formal (retrato travado dos números, guardado no histórico) ===== */
+function getFechamentosMensais(){
+ try{ return JSON.parse(localStorage.getItem('biobel_adm_fechamentos_mensais')||'[]'); }catch(e){ return []; }
+}
+function encerrarMesAdm(){
+ if(daysData.length===0){ mostrarToast('⚠️ Sem dados carregados ainda pra encerrar o período.'); return; }
+ confirmarBiobel('Encerrar esse período? Isso guarda um retrato definitivo com os números de agora (faturamento, gastos, comissão, lucro) no histórico — os dados ao vivo continuam podendo mudar depois, mas esse registro fica travado.', ()=>{
+  const faturamento = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+  const gastosFixos = getGastosFixos().reduce((s,g)=>s+(Number(g.valor)||0),0);
+  const boletos = getBoletos().reduce((s,b)=>s+(Number(b.valor)||0),0);
+  const nivel = nivelAtualAtingido();
+  const custoComissao = custoTotalComissaoAtual();
+  const custoHoraExtra = calcularCustoMensalHoraExtra();
+  const lucro = window._ultimoLucroEstimado || 0;
+  const mesRef = daysData[0]?.dia?.split('.')[1];
+  const nomesMesesPt = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const nomeMes = mesRef ? nomesMesesPt[Number(mesRef)-1]+' de 2026' : 'Período atual';
+
+  const registro = {
+   id: Date.now(),
+   dataFechamento: new Date().toISOString(),
+   periodo: nomeMes,
+   faturamento, gastosFixos, boletos,
+   nivelAtingido: nivel ? nivel.meta : null,
+   custoComissao, custoHoraExtra, lucro
+  };
+  const historico = getFechamentosMensais();
+  historico.unshift(registro);
+  localStorage.setItem('biobel_adm_fechamentos_mensais', JSON.stringify(historico));
+  mostrarToast('✅ Período encerrado e registrado no histórico!');
+  registrarAlteracao('Fechamento mensal formal registrado: '+nomeMes);
+  renderLogAlteracoes();
+  renderHistoricoFechamentosMensais();
+ });
+}
+function removerFechamentoMensal(id){
+ confirmarBiobel('Remover esse registro de fechamento?', ()=>{
+  const historico = getFechamentosMensais().filter(r=>r.id!==id);
+  localStorage.setItem('biobel_adm_fechamentos_mensais', JSON.stringify(historico));
+  renderHistoricoFechamentosMensais();
+  mostrarToast('🗑️ Removido.');
+ });
+}
+function renderHistoricoFechamentosMensais(){
+ const el = document.getElementById('historicoFechamentosMensais');
+ if(!el) return;
+ const historico = getFechamentosMensais();
+ if(historico.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12px;">Nenhum período encerrado ainda.</p>';
+  return;
+ }
+ el.innerHTML = historico.map(r=>{
+  const data = new Date(r.dataFechamento);
+  const dataTexto = data.toLocaleDateString('pt-BR')+' às '+data.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  return `
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:12px 14px;margin-bottom:8px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+     <span style="color:#dce5f2;font-weight:800;font-size:13px;">${r.periodo}</span>
+     <div style="display:flex;align-items:center;gap:10px;">
+      <span style="color:${r.lucro>=0?'#27d7a0':'#fb7185'};font-weight:900;font-size:13px;">${money(r.lucro)}</span>
+      <button onclick="removerFechamentoMensal(${r.id})" aria-label="Remover" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:13px;">🗑️</button>
+     </div>
+    </div>
+    <div style="font-size:10.5px;color:#93a3ba;margin-top:4px;">Encerrado em ${dataTexto}</div>
+    <div style="font-size:11.5px;color:#93a3ba;margin-top:6px;">Faturamento: ${money(r.faturamento)} · Gastos: ${money(r.gastosFixos+r.boletos)} · Comissão/bônus: ${money(r.custoComissao+r.custoHoraExtra)}</div>
+   </div>`;
+ }).join('');
+}
+
+/* ===== Exportar Excel (planilha de verdade, pronta pra levar pro contador) ===== */
+function exportarAdmExcel(){
+ if(typeof XLSX === 'undefined'){ mostrarToast('⚠️ Biblioteca de Excel não carregada — tente atualizar a página.'); return; }
+ const wb = XLSX.utils.book_new();
+
+ const gastosFixosDados = getGastosFixos().map(g=>({ Nome:g.nome, 'Valor (R$)':g.valor, 'Dia Vencimento':g.dia||'' }));
+ XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(gastosFixosDados), 'Gastos Fixos');
+
+ const boletosDados = getBoletos().map(b=>({
+  Fornecedor:b.fornecedor, Marca:b.marca||'', Categoria:b.categoria||'', Quantidade:b.quantidade||'',
+  'Valor (R$)':b.valor, Vencimento:b.vencimento||'', Status: b.pago?'Pago':'Pendente',
+  'Pago por':b.pagoPor||'', Recorrente: b.recorrente?'Sim':'Não', Observações:b.obs||''
+ }));
+ XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(boletosDados), 'Boletos');
+
+ const niveisDados = getNiveisComissao().map(n=>({
+  'Meta (R$)':n.meta, 'Dinheiro cada uma (R$)':n.dinheiro, 'Kit de (R$)':n.kitMin, 'Kit até (R$)':n.kitMax, 'Confraternização (R$)':n.confraternizacao
+ }));
+ XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(niveisDados), 'Comissao por Metas');
+
+ const faturamento = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const resumoDados = [{
+  'Faturamento (R$)': faturamento,
+  'Gastos Fixos (R$)': getGastosFixos().reduce((s,g)=>s+(Number(g.valor)||0),0),
+  'Gastos Variáveis (R$)': getBoletos().reduce((s,b)=>s+(Number(b.valor)||0),0),
+  'Lucro Estimado (R$)': window._ultimoLucroEstimado || 0
+ }];
+ XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(resumoDados), 'Resumo');
+
+ XLSX.writeFile(wb, 'biobel-admin-'+new Date().toISOString().slice(0,10)+'.xlsx');
+ mostrarToast('✅ Excel exportado com sucesso!');
+ registrarAlteracao('Área ADM exportada em Excel');
+ renderLogAlteracoes();
 }
 
 async function gerarResumoAdmPDF(){
