@@ -1620,12 +1620,19 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <span>as contas que se repetem todo mês</span>
    </div>
    <div id="listaGastosFixos" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
-   <div style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:8px;">
+   <div style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:8px;margin-bottom:8px;">
     <input id="novoGastoFixoNome" type="text" placeholder="Nome (ex: Aluguel)" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
     <input id="novoGastoFixoValor" type="text" inputmode="decimal" placeholder="R$ (opcional)" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
     <input id="novoGastoFixoDia" type="number" min="1" max="31" placeholder="Dia venc." style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
     <button id="btnAdicionarGastoFixo" onclick="adicionarGastoFixo()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">➕ Add</button>
    </div>
+   <select id="novoGastoFixoCategoria" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <option value="Aluguel/Imóvel">🏠 Aluguel/Imóvel</option>
+    <option value="Pessoal">👥 Pessoal (salários, VT)</option>
+    <option value="Utilidades">💡 Utilidades (água, luz, internet)</option>
+    <option value="Serviços">🧾 Serviços (contadora, etc.)</option>
+    <option value="Outros">📋 Outros</option>
+   </select>
    <button id="btnCancelarEdicaoGastoFixo" onclick="cancelarEdicaoGastoFixo()" style="display:none;margin-top:8px;background:none;border:none;color:#93a3ba;font-size:12px;text-decoration:underline;cursor:pointer;">✕ Cancelar edição</button>
    <p style="font-size:11px;color:#93a3ba;margin-top:8px;">💡 Pode deixar o valor em branco pra cadastrar o nome agora e preencher o valor depois — vai aparecer como "⚠️ A definir".</p>
   </div>
@@ -1870,6 +1877,26 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <button onclick="salvarImposto()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
    </div>
    <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">💡 Enquanto não preencher, esse valor entra como R$ 0,00 no Lucro Estimado — ou seja, o lucro real tende a ser menor do que o mostrado até você colocar o valor certo aqui.</p>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>💳 Taxa da Máquina de Cartão</h3>
+    <span>débito e crédito têm taxa descontada pelo banco/operadora — o faturamento que aparece no resto do sistema é o valor bruto, sem descontar isso</span>
+   </div>
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px;">
+    <div>
+     <label class="block text-sm font-semibold mb-2" for="taxaDebitoInput">Taxa no débito (%)</label>
+     <input id="taxaDebitoInput" type="text" inputmode="decimal" placeholder="Ex: 1,5" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    </div>
+    <div>
+     <label class="block text-sm font-semibold mb-2" for="taxaCreditoInput">Taxa no crédito (%)</label>
+     <input id="taxaCreditoInput" type="text" inputmode="decimal" placeholder="Ex: 3,5" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    </div>
+   </div>
+   <button onclick="salvarTaxasCartao()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">💾 Salvar taxas</button>
+   <div id="resumoTaxasCartao" style="margin-top:12px;"></div>
+   <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">💡 Dinheiro e Pix normalmente não têm taxa, então não entram nessa conta. Confira a taxa exata com a sua maquininha — cada operadora cobra um valor diferente.</p>
   </div>
 
   <div class="adv-card">
@@ -3482,6 +3509,30 @@ function irParaSecaoAdm(idAncora){
 }
 
 /* ===== Resumo de "o que precisa de atenção", logo no topo ===== */
+function detectarGastosForaDoPadrao(){
+ // Agrupa os boletos por fornecedor e compara o mais recente com a média dos anteriores DELE
+ // MESMO — precisa de pelo menos 2 boletos daquele fornecedor pra ter uma média confiável.
+ const boletos = getBoletos();
+ const porFornecedor = {};
+ boletos.forEach(b=>{
+  const chave = String(b.fornecedor||'').toLowerCase().trim();
+  if(!chave) return;
+  if(!porFornecedor[chave]) porFornecedor[chave] = [];
+  porFornecedor[chave].push(b);
+ });
+ const suspeitos = [];
+ Object.values(porFornecedor).forEach(lista=>{
+  if(lista.length<2) return;
+  const ordenados = [...lista].sort((a,b)=>(b.criadoEm||'').localeCompare(a.criadoEm||''));
+  const maisRecente = ordenados[0];
+  const anteriores = ordenados.slice(1);
+  const media = anteriores.reduce((s,b)=>s+(Number(b.valor)||0),0) / anteriores.length;
+  if(media>0 && Number(maisRecente.valor)>media*1.5){
+   suspeitos.push({ fornecedor: maisRecente.fornecedor, valor: Number(maisRecente.valor), media });
+  }
+ });
+ return suspeitos;
+}
 function renderResumoAtencaoAdm(){
  const el = document.getElementById('admResumoAtencao');
  if(!el) return;
@@ -3557,6 +3608,11 @@ function renderResumoAtencaoAdm(){
   else if(diasReuniao<0) pontos.push({texto:'Reunião com '+r.fornecedor+' ficou pendente (era há '+Math.abs(diasReuniao)+' dia'+(Math.abs(diasReuniao)===1?'':'s')+')', cor:'#fb7185'});
  });
 
+ // Gastos fora do padrão: compara o boleto mais recente de cada fornecedor com a média dos anteriores DELE MESMO
+ detectarGastosForaDoPadrao().forEach(g=>{
+  pontos.push({texto:'Boleto de "'+g.fornecedor+'" ('+money(g.valor)+') veio bem acima da média desse fornecedor ('+money(g.media)+')', cor:'#fbbf24'});
+ });
+
  // Próxima data comercial, se estiver chegando perto (até 14 dias) — bom pra planejar promoção
  const todasAsDatasComerciais = [...gerarDatasComerciais(hoje.getFullYear()), ...gerarDatasComerciais(hoje.getFullYear()+1)];
  const proximaDataComercial = todasAsDatasComerciais
@@ -3615,6 +3671,7 @@ function adicionarGastoFixo(){
  const valorTexto = document.getElementById('novoGastoFixoValor').value.trim();
  const diaInput = document.getElementById('novoGastoFixoDia').value;
  const dia = diaInput ? parseInt(diaInput,10) : null;
+ const categoria = document.getElementById('novoGastoFixoCategoria').value;
  if(!nome){ mostrarToast('⚠️ Digite o nome do gasto.'); return; }
 
  // Valor é opcional agora — deixar em branco salva como "a definir", pra preencher depois.
@@ -3628,14 +3685,14 @@ function adicionarGastoFixo(){
  if(gastoFixoEditandoId!==null){
   const idx = lista.findIndex(g=>g.id===gastoFixoEditandoId);
   if(idx>=0){
-   lista[idx] = { ...lista[idx], nome, valor, dia: (dia && !isNaN(dia)) ? dia : null };
+   lista[idx] = { ...lista[idx], nome, valor, dia: (dia && !isNaN(dia)) ? dia : null, categoria };
    salvarGastosFixos(lista);
    mostrarToast('✅ Gasto fixo atualizado!');
    registrarAlteracao('Gasto fixo "'+nome+'" editado');
   }
   cancelarEdicaoGastoFixo();
  } else {
-  lista.push({ id: Date.now(), nome, valor, dia: (dia && !isNaN(dia)) ? dia : null });
+  lista.push({ id: Date.now(), nome, valor, dia: (dia && !isNaN(dia)) ? dia : null, categoria });
   salvarGastosFixos(lista);
   mostrarToast('✅ Gasto fixo adicionado!');
   registrarAlteracao('Gasto fixo "'+nome+'" adicionado'+(valor!==null?' ('+money(valor)+')':' (valor a definir)'));
@@ -3643,6 +3700,7 @@ function adicionarGastoFixo(){
  document.getElementById('novoGastoFixoNome').value='';
  document.getElementById('novoGastoFixoValor').value='';
  document.getElementById('novoGastoFixoDia').value='';
+ document.getElementById('novoGastoFixoCategoria').value='Aluguel/Imóvel';
  renderGastosFixos();
  atualizarTotaisAdm();
  renderLogAlteracoes();
@@ -3654,6 +3712,7 @@ function editarGastoFixo(id){
  document.getElementById('novoGastoFixoNome').value = g.nome;
  document.getElementById('novoGastoFixoValor').value = g.valor!==null ? String(g.valor).replace('.',',') : '';
  document.getElementById('novoGastoFixoDia').value = g.dia || '';
+ document.getElementById('novoGastoFixoCategoria').value = g.categoria || 'Outros';
  const btn = document.getElementById('btnAdicionarGastoFixo');
  if(btn) btn.textContent = '💾 Salvar edição';
  const btnCancelar = document.getElementById('btnCancelarEdicaoGastoFixo');
@@ -3665,6 +3724,7 @@ function cancelarEdicaoGastoFixo(){
  document.getElementById('novoGastoFixoNome').value='';
  document.getElementById('novoGastoFixoValor').value='';
  document.getElementById('novoGastoFixoDia').value='';
+ document.getElementById('novoGastoFixoCategoria').value='Aluguel/Imóvel';
  const btn = document.getElementById('btnAdicionarGastoFixo');
  if(btn) btn.textContent = '➕ Add';
  const btnCancelar = document.getElementById('btnCancelarEdicaoGastoFixo');
@@ -3686,25 +3746,43 @@ function seedGastosFixosPadrao(){
  const lista = getGastosFixos();
  const nomesJaExistentes = lista.map(g=>g.nome.toLowerCase());
  const padroes = [
-  { nome:'Aluguel', valor: 7000.00, dia: 10 },
-  { nome:'CLT Gabriela (salário)', valor: 1836.00 },
-  { nome:'Estagiária (Dai)', valor: 750.00 },
-  { nome:'Contadora', valor: null },
-  { nome:'Luz', valor: null },
-  { nome:'Água', valor: null },
-  { nome:'Internet', valor: null },
-  { nome:'VT Gabriela (~4 semanas/mês, R$120/semana)', valor: 480.00 },
-  { nome:'VT Day (~4 semanas/mês, R$120/semana)', valor: 480.00 }
+  { nome:'Aluguel', valor: 7000.00, dia: 10, categoria:'Aluguel/Imóvel' },
+  { nome:'CLT Gabriela (salário)', valor: 1836.00, categoria:'Pessoal' },
+  { nome:'Estagiária (Dai)', valor: 750.00, categoria:'Pessoal' },
+  { nome:'Contadora', valor: null, categoria:'Serviços' },
+  { nome:'Luz', valor: null, categoria:'Utilidades' },
+  { nome:'Água', valor: null, categoria:'Utilidades' },
+  { nome:'Internet', valor: null, categoria:'Utilidades' },
+  { nome:'VT Gabriela (~4 semanas/mês, R$120/semana)', valor: 480.00, categoria:'Pessoal' },
+  { nome:'VT Day (~4 semanas/mês, R$120/semana)', valor: 480.00, categoria:'Pessoal' }
  ];
  let mudou = false;
- padroes.forEach(({nome, valor, dia})=>{
+ padroes.forEach(({nome, valor, dia, categoria})=>{
   if(!nomesJaExistentes.includes(nome.toLowerCase())){
-   lista.push({ id: Date.now()+Math.floor(Math.random()*1000), nome, valor, dia: dia||null });
+   lista.push({ id: Date.now()+Math.floor(Math.random()*1000), nome, valor, dia: dia||null, categoria });
    mudou = true;
   }
  });
  if(mudou) salvarGastosFixos(lista);
  migrarValoresConhecidosGastosFixos();
+ migrarCategoriasGastosFixos();
+}
+function migrarCategoriasGastosFixos(){
+ // Pra gastos fixos já cadastrados antes de existir o campo categoria — tenta adivinhar pelo
+ // nome (só como ponto de partida, a pessoa pode trocar depois), sem nunca sobrescrever se já tiver categoria.
+ const lista = getGastosFixos();
+ let mudou = false;
+ lista.forEach(g=>{
+  if(g.categoria) return;
+  const nomeNorm = g.nome.toLowerCase();
+  if(nomeNorm.includes('aluguel')) g.categoria = 'Aluguel/Imóvel';
+  else if(nomeNorm.includes('clt') || nomeNorm.includes('estagiár') || nomeNorm.includes('vt ')) g.categoria = 'Pessoal';
+  else if(nomeNorm.includes('luz') || nomeNorm.includes('água') || nomeNorm.includes('agua') || nomeNorm.includes('internet')) g.categoria = 'Utilidades';
+  else if(nomeNorm.includes('contador')) g.categoria = 'Serviços';
+  else g.categoria = 'Outros';
+  mudou = true;
+ });
+ if(mudou) salvarGastosFixos(lista);
 }
 function migrarValoresConhecidosGastosFixos(){
  // Pra quem já tinha "Aluguel", "CLT Gabriela" ou "Estagiária (Dai)" cadastrados como "a definir"
@@ -3749,18 +3827,22 @@ function renderGastosFixos(){
   el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhum gasto fixo cadastrado ainda.</p>';
   return;
  }
+ const coresCategoria = {'Aluguel/Imóvel':'#fb7185','Pessoal':'#4f9cff','Utilidades':'#fbbf24','Serviços':'#a78bfa','Outros':'#93a3ba'};
+ const emojiCategoria = {'Aluguel/Imóvel':'🏠','Pessoal':'👥','Utilidades':'💡','Serviços':'🧾','Outros':'📋'};
  el.innerHTML = lista.map(g=>{
   let avisoVencimento = '';
   if(g.dia){
    const dias = diasAteProximoVencimentoMensal(g.dia);
    if(dias<=5) avisoVencimento = `<span style="color:${dias<=1?'#fb7185':'#fbbf24'};font-weight:800;font-size:10.5px;margin-left:6px;">${dias===0?'🔴 vence hoje':dias===1?'🔴 vence amanhã':'🟡 vence em '+dias+' dias'}</span>`;
   }
+  const corCat = coresCategoria[g.categoria] || '#93a3ba';
   return `
   <div style="display:flex;align-items:center;justify-content:space-between;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 14px;flex-wrap:wrap;gap:8px;">
    <div>
     <span style="color:#dce5f2;font-weight:700;font-size:13px;">${g.nome}</span>
     ${g.dia?`<span style="color:#93a3ba;font-size:11px;margin-left:8px;">vence dia ${g.dia}</span>`:''}
     ${avisoVencimento}
+    ${g.categoria?`<div style="margin-top:4px;"><span style="font-size:10px;font-weight:800;color:${corCat};background:${corCat}22;padding:2px 8px;border-radius:999px;">${emojiCategoria[g.categoria]||''} ${g.categoria}</span></div>`:''}
    </div>
    <div style="display:flex;align-items:center;gap:10px;">
     ${g.valor!==null ? `<span style="color:#fb7185;font-weight:800;font-size:13px;">${money(g.valor)}</span>` : `<span style="color:#fbbf24;font-weight:800;font-size:12px;background:rgba(251,191,36,.1);padding:3px 8px;border-radius:999px;">⚠️ A definir</span>`}
@@ -4589,6 +4671,51 @@ function initImpostoUI(){
  if(input) input.value = valor>0 ? String(valor).replace('.',',') : '';
 }
 
+/* ===== Taxa da Máquina de Cartão (débito/crédito) ===== */
+function getTaxaDebito(){
+ const v = parseFloat(localStorage.getItem('biobel_adm_taxa_debito')||'0');
+ return isNaN(v) ? 0 : v;
+}
+function getTaxaCredito(){
+ const v = parseFloat(localStorage.getItem('biobel_adm_taxa_credito')||'0');
+ return isNaN(v) ? 0 : v;
+}
+function salvarTaxasCartao(){
+ const taxaDebito = parseFloat(document.getElementById('taxaDebitoInput').value.replace(',','.'));
+ const taxaCredito = parseFloat(document.getElementById('taxaCreditoInput').value.replace(',','.'));
+ if(isNaN(taxaDebito) || taxaDebito<0 || isNaN(taxaCredito) || taxaCredito<0){ mostrarToast('⚠️ Digite valores válidos nas duas taxas.'); return; }
+ localStorage.setItem('biobel_adm_taxa_debito', String(taxaDebito));
+ localStorage.setItem('biobel_adm_taxa_credito', String(taxaCredito));
+ mostrarToast('✅ Taxas salvas!');
+ registrarAlteracao('Taxas de cartão definidas: débito '+taxaDebito+'%, crédito '+taxaCredito+'%');
+ renderLogAlteracoes();
+ renderTaxasCartao();
+ atualizarTotaisAdm();
+}
+function calcularTotalTaxasCartao(){
+ const totalDebito = daysData.reduce((s,d)=>s+(Number(d.debito)||0),0);
+ const totalCredito = daysData.reduce((s,d)=>s+(Number(d.credito)||0),0);
+ return (totalDebito*getTaxaDebito()/100) + (totalCredito*getTaxaCredito()/100);
+}
+function renderTaxasCartao(){
+ const inputDebito = document.getElementById('taxaDebitoInput');
+ const inputCredito = document.getElementById('taxaCreditoInput');
+ const el = document.getElementById('resumoTaxasCartao');
+ const taxaDebito = getTaxaDebito();
+ const taxaCredito = getTaxaCredito();
+ if(inputDebito) inputDebito.value = taxaDebito>0 ? String(taxaDebito).replace('.',',') : '';
+ if(inputCredito) inputCredito.value = taxaCredito>0 ? String(taxaCredito).replace('.',',') : '';
+ if(!el) return;
+ if(taxaDebito<=0 && taxaCredito<=0){ el.innerHTML=''; return; }
+ const totalTaxas = calcularTotalTaxasCartao();
+ const totalDebito = daysData.reduce((s,d)=>s+(Number(d.debito)||0),0);
+ const totalCredito = daysData.reduce((s,d)=>s+(Number(d.credito)||0),0);
+ el.innerHTML = `<div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
+   <div style="font-size:11px;color:#93a3ba;">💳 Débito: ${money(totalDebito)} (taxa ${taxaDebito}%) · Crédito: ${money(totalCredito)} (taxa ${taxaCredito}%)</div>
+   <div style="font-size:14px;font-weight:800;color:#fb7185;margin-top:4px;">Total perdido em taxas: ${money(totalTaxas)}</div>
+  </div>`;
+}
+
 /* ===== Valor do Estoque Parado (manual, sem coluna de custo na planilha) ===== */
 function getValorEstoque(){
  const v = parseFloat(localStorage.getItem('biobel_adm_valor_estoque')||'0');
@@ -4737,9 +4864,11 @@ function atualizarTotaisAdm(){
  const custoHoraExtra = calcularCustoMensalHoraExtra();
  // Imposto mensal (se já foi preenchido — fica 0 até você definir o valor real).
  const custoImposto = getValorImpostoMensal();
+ // Taxa da máquina de cartão sobre débito/crédito do período.
+ const custoTaxasCartao = calcularTotalTaxasCartao();
 
  const totalComissoesEBonus = totalComissoes + custoComissaoNiveis + custoHoraExtra;
- const lucroEstimado = faturamento - gastosFixos - boletos - totalComissoesEBonus - custoImposto;
+ const lucroEstimado = faturamento - gastosFixos - boletos - totalComissoesEBonus - custoImposto - custoTaxasCartao;
  window._ultimoLucroEstimado = lucroEstimado;
  const elLucro = document.getElementById('admLucroEstimado');
  const elLucroSub = document.getElementById('admLucroEstimadoSub');
@@ -4748,13 +4877,14 @@ function atualizarTotaisAdm(){
   elLucro.style.color = lucroEstimado>=0 ? '#27d7a0' : '#fb7185';
  }
  if(elLucroSub){
-  elLucroSub.textContent = `${money(faturamento)} (faturamento) − ${money(gastosFixos+boletos)} (gastos) − ${money(totalComissoesEBonus+custoImposto)} (comissões/bônus/impostos)`;
+  elLucroSub.textContent = `${money(faturamento)} (faturamento) − ${money(gastosFixos+boletos)} (gastos) − ${money(totalComissoesEBonus+custoImposto+custoTaxasCartao)} (comissões/bônus/impostos/taxas)`;
  }
  renderParticipacaoLucro();
- renderGraficoPizzaAdm(faturamento, gastosFixos, boletos, totalComissoesEBonus+custoImposto, lucroEstimado);
+ renderGraficoPizzaAdm(faturamento, gastosFixos, boletos, totalComissoesEBonus+custoImposto+custoTaxasCartao, lucroEstimado);
  renderPontoEquilibrio(gastosFixos, boletos, faturamento);
  renderResumoAtencaoAdm();
- renderDRE(faturamento, gastosFixos, boletos, totalComissoesEBonus, custoImposto, lucroEstimado);
+ renderTaxasCartao();
+ renderDRE(faturamento, gastosFixos, boletos, totalComissoesEBonus, custoImposto, custoTaxasCartao, lucroEstimado);
  renderAlertaFluxoCaixa();
  const elUltimoSalvo = document.getElementById('admUltimoSalvo');
  if(elUltimoSalvo) elUltimoSalvo.textContent = '💾 Atualizado às '+obterAgoraBrasilia().getHours().toString().padStart(2,'0')+':'+obterAgoraBrasilia().getMinutes().toString().padStart(2,'0');
@@ -4815,7 +4945,7 @@ function renderAlertaFluxoCaixa(){
 }
 
 /* ===== DRE Simplificado (resumo formal do período) ===== */
-function renderDRE(faturamento, gastosFixos, boletos, comissoesEBonus, imposto, resultado){
+function renderDRE(faturamento, gastosFixos, boletos, comissoesEBonus, imposto, taxasCartao, resultado){
  const el = document.getElementById('conteudoDRE');
  if(!el) return;
  if(daysData.length===0){
@@ -4835,6 +4965,7 @@ function renderDRE(faturamento, gastosFixos, boletos, comissoesEBonus, imposto, 
    ${linha('(−) Gastos Variáveis (Boletos)', '−'+money(boletos))}
    ${linha('(−) Comissões e Bônus', '−'+money(comissoesEBonus))}
    ${linha('(−) Impostos', '−'+money(imposto))}
+   ${taxasCartao>0 ? linha('(−) Taxa da Máquina de Cartão', '−'+money(taxasCartao)) : ''}
    ${linha('= Resultado do Período', money(resultado), true, resultado>=0?'#27d7a0':'#fb7185')}
   </div>
   <p style="font-size:10px;color:#93a3ba;margin-top:10px;">💡 Resultado simplificado — não substitui o DRE oficial da contabilidade, mas dá uma visão rápida e organizada do período.</p>
