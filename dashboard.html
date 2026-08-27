@@ -406,14 +406,14 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 <nav class="no-print max-w-7xl mx-auto px-4 md:px-6 pt-4">
  <div class="tabs-scroll-wrap">
  <div class="flex gap-2 border-b border-slate-800" role="tablist" aria-label="Navegação do painel">
-  <button id="tabDashboard" data-tab="dashboard" role="tab" aria-selected="true" aria-controls="dashboardTab" onclick="showTab('dashboard')" class="tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm">📊 Dashboard</button>
-  <button id="tabInfo" data-tab="info" role="tab" aria-selected="false" aria-controls="infoTab" onclick="showTab('info')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">🎯 Informação Geral</button>
-  <button id="tabAlertas" data-tab="alertas" role="tab" aria-selected="false" aria-controls="alertasTab" onclick="showTab('alertas')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">🚨 Alertas <span id="badgeContadorAlertas" style="display:none;background:#fb7185;color:#3a0f16;font-size:10px;font-weight:900;padding:1px 6px;border-radius:999px;margin-left:2px;">0</span></button>
-  <button id="tabCaixa" data-tab="caixa" role="tab" aria-selected="false" aria-controls="caixaTab" onclick="showTab('caixa')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">🧾 Caixa simples</button>
-  <button id="tabCaixaCompleto" data-tab="caixaCompleto" role="tab" aria-selected="false" aria-controls="caixaCompletoTab" onclick="showTab('caixaCompleto')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">📖 Caixa completo</button>
-  <button id="tabEquipe" data-tab="equipe" role="tab" aria-selected="false" aria-controls="equipeTab" onclick="showTab('equipe')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">👩‍💼 Equipe</button>
-  <button id="tabConfig" data-tab="config" role="tab" aria-selected="false" aria-controls="configTab" onclick="showTab('config')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">⚙️ Configuração</button>
-  <button id="tabAdm" data-tab="adm" role="tab" aria-selected="false" aria-controls="admTab" onclick="showTab('adm')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">👑 ADM</button>
+  <button id="tabDashboard" data-tab="dashboard" role="tab" aria-selected="true" aria-controls="dashboardTab" onclick="showTab('dashboard')" title="Atalho: Alt+1" class="tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm">📊 Dashboard</button>
+  <button id="tabInfo" data-tab="info" role="tab" aria-selected="false" aria-controls="infoTab" onclick="showTab('info')" title="Atalho: Alt+2" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">🎯 Informação Geral</button>
+  <button id="tabAlertas" data-tab="alertas" role="tab" aria-selected="false" aria-controls="alertasTab" onclick="showTab('alertas')" title="Atalho: Alt+3" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">🚨 Alertas <span id="badgeContadorAlertas" style="display:none;background:#fb7185;color:#3a0f16;font-size:10px;font-weight:900;padding:1px 6px;border-radius:999px;margin-left:2px;">0</span></button>
+  <button id="tabCaixa" data-tab="caixa" role="tab" aria-selected="false" aria-controls="caixaTab" onclick="showTab('caixa')" title="Atalho: Alt+4" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">🧾 Caixa simples</button>
+  <button id="tabCaixaCompleto" data-tab="caixaCompleto" role="tab" aria-selected="false" aria-controls="caixaCompletoTab" onclick="showTab('caixaCompleto')" title="Atalho: Alt+5" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">📖 Caixa completo</button>
+  <button id="tabEquipe" data-tab="equipe" role="tab" aria-selected="false" aria-controls="equipeTab" onclick="showTab('equipe')" title="Atalho: Alt+6" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">👩‍💼 Equipe</button>
+  <button id="tabConfig" data-tab="config" role="tab" aria-selected="false" aria-controls="configTab" onclick="showTab('config')" title="Atalho: Alt+7" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">⚙️ Configuração</button>
+  <button id="tabAdm" data-tab="adm" role="tab" aria-selected="false" aria-controls="admTab" onclick="showTab('adm')" title="Atalho: Alt+8" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">👑 ADM</button>
  </div>
  </div>
 </nav>
@@ -468,7 +468,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
       <div class="adv-update">
         <div class="k" style="color:#93a3ba;font-size:11px;">Última atualização</div>
         <div id="advLastUpdate" style="font-size:12px;margin-top:4px;color:#dce5f2;">—</div>
-        <button id="btnRefreshSidebar" class="adv-btn green" style="width:100%;margin-top:10px;" onclick="loadGoogleSheet()">↻ Atualizar agora</button>
+        <button id="btnRefreshSidebar" class="adv-btn green" style="width:100%;margin-top:10px;" onclick="loadGoogleSheet()" title="Atalho: Alt+A">↻ Atualizar agora</button>
         <button class="adv-btn" style="width:100%;margin-top:8px;background:#1c2c42;color:#dce5f2;" onclick="ativarModoApresentacao()" title="Deixa o painel em tela cheia, com fontes maiores e alternando entre telas — pensado pra ficar numa TV da loja">📺 Modo Apresentação</button>
       </div>
     </aside>
@@ -1352,6 +1352,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <button onclick="printSimpleDay()" class="no-print bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🖨 Imprimir</button>
     <button onclick="exportarDiaComoTxt('simple')" class="no-print bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" title="Copia o resumo desse dia em texto">📄 TXT</button>
     <button onclick="compartilharDiaWhatsApp('simple')" class="no-print bg-emerald-500 hover:bg-emerald-400 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" title="Abre o WhatsApp com o resumo do dia pronto">💬 WhatsApp</button>
+    <button onclick="compartilharDiaNativo('simple')" class="btn-compartilhar-nativo no-print bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" style="display:none;" title="Compartilhar pelo menu do celular">📤 Compartilhar</button>
    </div>
   </div>
   <div id="badgeDiaSimple" class="no-print" style="display:none;margin-bottom:10px;"></div>
@@ -1404,6 +1405,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <button onclick="printCompleteDay()" class="no-print bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🖨 Imprimir</button>
     <button onclick="exportarDiaComoTxt('completo')" class="no-print bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" title="Copia o resumo desse dia em texto">📄 TXT</button>
     <button onclick="compartilharDiaWhatsApp('completo')" class="no-print bg-emerald-500 hover:bg-emerald-400 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" title="Abre o WhatsApp com o resumo do dia pronto">💬 WhatsApp</button>
+    <button onclick="compartilharDiaNativo('completo')" class="btn-compartilhar-nativo no-print bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" style="display:none;" title="Compartilhar pelo menu do celular">📤 Compartilhar</button>
    </div>
   </div>
   <div id="badgeDiaCompleto" class="no-print" style="display:none;margin-bottom:10px;"></div>
@@ -2989,6 +2991,20 @@ function ajustarFonteBiobel(direcao){
  const salvo = localStorage.getItem('biobel_font_pct');
  if(salvo) aplicarFonteBiobel(parseFloat(salvo));
 })();
+
+function detectarTelaGrandeEAjustarFonte(){
+ // Sugere uma fonte um pouco maior em monitores bem grandes (tipo 4K) — só na primeira vez que
+ // detectar isso, e nunca se a pessoa já tiver mexido manualmente no A-/A/A+.
+ const jaTemPreferenciaManual = localStorage.getItem('biobel_font_pct');
+ const jaSugeriu = localStorage.getItem('biobel_zoom_auto_sugerido');
+ if(jaTemPreferenciaManual || jaSugeriu) return;
+ if(window.innerWidth >= 2560){
+  aplicarFonteBiobel(114);
+  localStorage.setItem('biobel_zoom_auto_sugerido', 'yes');
+  mostrarToast('🖥️ Detectei uma tela bem grande e deixei a fonte um pouco maior — pode ajustar em A-/A+ se preferir.');
+ }
+}
+detectarTelaGrandeEAjustarFonte();
 
 function toggleTheme(){
  const isLight = document.body.classList.toggle('light-mode');
@@ -7341,21 +7357,18 @@ function renderTopDays(){
  }).join('');
 }
 
-function compartilharDiaWhatsApp(tipo){
+function montarMensagemResumoDia(tipo){
  const selectId = tipo==='completo' ? 'completeDaySelect' : 'simpleDaySelect';
  const select = document.getElementById(selectId);
  const diaSelecionado = select ? select.value : null;
  const d = daysData.find(x=>x.dia===diaSelecionado) || daysData[daysData.length-1];
- if(!d){
-  mostrarToast('⚠️ Não há dados carregados pra compartilhar ainda.');
-  return;
- }
+ if(!d) return null;
  const dow = nomeDiaSemanaAbrev(d.dia);
  const meta = getDailyGoal();
  const bateuMeta = (Number(d.sales)||0) >= meta && meta>0;
 
- let msg = '📊 *Fechamento de Caixa — '+diaComAno(d.dia)+(dow?' ('+dow+')':'')+'*\n\n';
- msg += '💰 Vendas: *'+money(d.sales)+'*'+(bateuMeta?' 🎉 Meta batida!':'')+'\n';
+ let msg = '📊 Fechamento de Caixa — '+diaComAno(d.dia)+(dow?' ('+dow+')':'')+'\n\n';
+ msg += '💰 Vendas: '+money(d.sales)+(bateuMeta?' 🎉 Meta batida!':'')+'\n';
  msg += '🔒 Fechamento: '+money(d.closing)+'\n';
  if(tipo==='completo'){
   msg += '\n💵 Dinheiro: '+money(d.dinheiro)+'\n';
@@ -7363,10 +7376,37 @@ function compartilharDiaWhatsApp(tipo){
   msg += '💳 Crédito: '+money(d.credito)+'\n';
   msg += '📲 Pix: '+money(d.pix)+'\n';
  }
- msg += '\n_Gerado pelo painel Biobel_';
-
- const url = 'https://wa.me/?text='+encodeURIComponent(msg);
+ msg += '\nGerado pelo painel Biobel';
+ return msg;
+}
+function compartilharDiaWhatsApp(tipo){
+ const msg = montarMensagemResumoDia(tipo);
+ if(!msg){ mostrarToast('⚠️ Não há dados carregados pra compartilhar ainda.'); return; }
+ // O WhatsApp usa *asteriscos* pra negrito — aplica só nas duas linhas mais importantes.
+ const msgFormatadaWhatsApp = msg
+  .replace(/^(📊 Fechamento de Caixa.*)$/m, '*$1*')
+  .replace(/^(💰 Vendas:.*)$/m, m=>m.replace(/💰 Vendas: (.*?)(🎉.*)?$/, '💰 Vendas: *$1*$2'));
+ const url = 'https://wa.me/?text='+encodeURIComponent(msgFormatadaWhatsApp);
  window.open(url, '_blank');
+}
+async function compartilharDiaNativo(tipo){
+ const msg = montarMensagemResumoDia(tipo);
+ if(!msg){ mostrarToast('⚠️ Não há dados carregados pra compartilhar ainda.'); return; }
+ if(navigator.share){
+  try{
+   await navigator.share({ title:'Fechamento de Caixa — Biobel', text: msg });
+  }catch(e){
+   // a pessoa cancelou o compartilhamento — não faz nada, sem mostrar erro
+  }
+ } else {
+  mostrarToast('⚠️ Esse navegador não suporta o menu de compartilhar nativo. Use o botão do WhatsApp.');
+ }
+}
+function inicializarBotoesCompartilharNativo(){
+ // Só mostra o botão de compartilhar nativo em navegadores/aparelhos que realmente suportam —
+ // em vez de mostrar um botão que não vai funcionar.
+ if(!navigator.share) return;
+ document.querySelectorAll('.btn-compartilhar-nativo').forEach(btn=>{ btn.style.display='inline-flex'; });
 }
 
 function exportarDiaComoTxt(tipo){
@@ -9265,6 +9305,7 @@ document.addEventListener('keydown', e=>{
 });
 
 aplicarLogoPersonalizadaNoSistema();
+inicializarBotoesCompartilharNativo();
 render();
 </script>
 </body>
