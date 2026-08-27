@@ -1519,7 +1519,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <div class="adv-card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
    <div>
     <h3 style="margin:0;">👑 Área da Gerência</h3>
-    <p style="font-size:12px;color:#93a3ba;margin-top:2px;">Gastos fixos, boletos de fornecedores e comissões da equipe.</p>
+    <p style="font-size:12px;color:#93a3ba;margin-top:2px;" id="admUsuarioLogadoTexto">Gastos fixos, boletos de fornecedores e comissões da equipe.</p>
    </div>
    <button id="btnExportarPdfAdm" onclick="gerarResumoAdmPDF()" class="bg-purple-600 hover:bg-purple-500 px-4 py-2 rounded-xl font-semibold text-sm" style="background:#8b5cf6;color:#fff;">📑 Exportar PDF</button>
    <button onclick="sairAdm()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl font-semibold text-sm">🔒 Sair da área da gerência</button>
@@ -1561,6 +1561,16 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <div id="admUltimoSalvo" style="font-size:10.5px;color:#93a3ba;text-align:right;margin-top:-6px;"></div>
   <p style="font-size:10.5px;color:#93a3ba;margin-top:2px;">⚠️ O Lucro Estimado usa o valor <em>base</em> da hora extra e das comissões — não inclui encargos trabalhistas (DSR, 13º, férias+1/3, FGTS). O custo real pode ser um pouco maior; confirme com a contadora pro número oficial.</p>
 
+  <div id="admAlertaFluxoCaixa" style="display:none;"></div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>📋 DRE Simplificado</h3>
+    <span>resumo formal do período — bom pra imprimir e levar direto pra contadora</span>
+   </div>
+   <div id="conteudoDRE"></div>
+  </div>
+
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
    <div class="adv-card">
     <div class="adv-card-title">
@@ -1589,6 +1599,16 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <button onclick="exportarAdmExcel()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="flex:1;min-width:200px;">📊 Exportar Excel</button>
    </div>
    <div id="historicoFechamentosMensais" style="margin-top:16px;"></div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>📊 Gastos ao Longo do Tempo</h3>
+    <span>compara os períodos já encerrados formalmente (use o botão "Encerrar este período" acima pra ir guardando histórico)</span>
+   </div>
+   <div id="graficoGastosMensaisWrap">
+    <div style="max-width:100%;"><canvas id="graficoGastosMensais" role="img" aria-label="Gráfico comparando gastos entre os meses encerrados"></canvas></div>
+   </div>
   </div>
 
   <div id="admAncoraGastos"></div>
@@ -1829,6 +1849,52 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <button onclick="salvarParticipacaoLucro()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
    </div>
    <div id="resumoParticipacaoLucro" style="margin-top:12px;"></div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>🧾 Impostos</h3>
+    <span>DAS/MEI, Simples Nacional ou outro — o valor exato só você sabe, então fica em branco até preencher</span>
+   </div>
+   <label class="block text-sm font-semibold mb-2" for="tipoImpostoSelect">Regime tributário</label>
+   <select id="tipoImpostoSelect" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:12px;">
+    <option value="MEI">MEI (DAS)</option>
+    <option value="Simples Nacional">Simples Nacional</option>
+    <option value="Outro">Outro</option>
+   </select>
+   <label class="block text-sm font-semibold mb-2" for="valorImpostoMensalInput">Valor mensal (R$)</label>
+   <div style="display:flex;gap:8px;">
+    <input id="valorImpostoMensalInput" type="text" inputmode="decimal" placeholder="R$ 0,00" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="salvarImposto()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+   </div>
+   <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">💡 Enquanto não preencher, esse valor entra como R$ 0,00 no Lucro Estimado — ou seja, o lucro real tende a ser menor do que o mostrado até você colocar o valor certo aqui.</p>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>📦 Valor do Estoque Parado</h3>
+    <span>quanto (em custo) está guardado em produto — atualize de vez em quando, o sistema não calcula sozinho</span>
+   </div>
+   <label class="block text-sm font-semibold mb-2" for="valorEstoqueInput">Valor do estoque (R$)</label>
+   <div style="display:flex;gap:8px;">
+    <input id="valorEstoqueInput" type="text" inputmode="decimal" placeholder="R$ 0,00" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="salvarValorEstoque()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+   </div>
+   <div id="ultimaAtualizacaoEstoque" style="font-size:10.5px;color:#93a3ba;margin-top:8px;"></div>
+   <p style="font-size:10.5px;color:#93a3ba;margin-top:6px;">💡 A planilha de vendas não tem coluna de custo/preço de compra, então isso não dá pra calcular sozinho — é um valor que você atualiza manualmente de vez em quando, só pra referência.</p>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>🏦 Reserva de Emergência / Capital de Giro</h3>
+    <span>quanto a loja tem guardado, fora do caixa do dia a dia</span>
+   </div>
+   <label class="block text-sm font-semibold mb-2" for="valorReservaInput">Valor guardado (R$)</label>
+   <div style="display:flex;gap:8px;">
+    <input id="valorReservaInput" type="text" inputmode="decimal" placeholder="R$ 0,00" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="salvarValorReserva()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+   </div>
+   <div id="ultimaAtualizacaoReserva" style="font-size:10.5px;color:#93a3ba;margin-top:8px;"></div>
   </div>
 
   <div class="adv-card" style="opacity:.85;border-style:dashed;">
@@ -3158,12 +3224,19 @@ function alternarMostrarSenhaAdm(){
  campo.type = visivel ? 'password' : 'text';
  btn.textContent = visivel ? '👁️' : '🙈';
 }
+// Lista de quem pode entrar na área ADM. Pra adicionar mais uma pessoa, é só colocar
+// mais uma linha aqui — usuário sempre em letras minúsculas.
+const ADM_USUARIOS_VALIDOS = [
+ { usuario:'alesandra', senha:'jhonmeulindo', nomeExibicao:'Alesandra' }
+];
 function fazerLoginAdm(){
  const usuario = (document.getElementById('admLoginUser').value||'').trim().toLowerCase();
  const senha = document.getElementById('admLoginPass').value||'';
  const erroEl = document.getElementById('admLoginErro');
- if(usuario==='alesandra' && senha==='jhonmeulindo'){
+ const encontrado = ADM_USUARIOS_VALIDOS.find(u=>u.usuario===usuario && u.senha===senha);
+ if(encontrado){
   sessionStorage.setItem('biobel_adm_autenticado', 'yes');
+  sessionStorage.setItem('biobel_adm_usuario_logado', encontrado.nomeExibicao);
   document.getElementById('admLoginUser').value='';
   document.getElementById('admLoginPass').value='';
   if(erroEl) erroEl.textContent='';
@@ -3175,6 +3248,7 @@ function fazerLoginAdm(){
 function sairAdm(){
  confirmarBiobel('Sair da área da gerência?', ()=>{
   sessionStorage.removeItem('biobel_adm_autenticado');
+  sessionStorage.removeItem('biobel_adm_usuario_logado');
   document.getElementById('admLoginWrap').style.display='block';
   document.getElementById('admConteudoWrap').style.display='none';
  });
@@ -3360,6 +3434,9 @@ function renderReunioes(){
 function mostrarConteudoAdm(){
  document.getElementById('admLoginWrap').style.display='none';
  document.getElementById('admConteudoWrap').style.display='block';
+ const usuarioLogado = sessionStorage.getItem('biobel_adm_usuario_logado');
+ const elUsuario = document.getElementById('admUsuarioLogadoTexto');
+ if(elUsuario && usuarioLogado) elUsuario.textContent = 'Conectado como '+usuarioLogado+' — gastos fixos, boletos de fornecedores e comissões da equipe.';
  seedDadosPessoaisEquipe();
  renderGastosFixos();
  renderBoletos();
@@ -3373,6 +3450,9 @@ function mostrarConteudoAdm(){
  renderEstagioDay();
  renderRecessoDay();
  renderReunioes();
+ initImpostoUI();
+ renderUltimaAtualizacaoEstoque();
+ renderUltimaAtualizacaoReserva();
  atualizarTotaisAdm();
  dispararNotificacaoVencimentos();
  renderHistoricoFechamentosMensais();
@@ -4468,6 +4548,84 @@ function renderEstagioDay(){
  `;
 }
 
+/* ===== Impostos (DAS/MEI/Simples Nacional) — valor manual, sem inventar número ===== */
+function getValorImpostoMensal(){
+ const v = parseFloat(localStorage.getItem('biobel_adm_valor_imposto_mensal')||'0');
+ return isNaN(v) ? 0 : v;
+}
+function salvarImposto(){
+ const tipo = document.getElementById('tipoImpostoSelect').value;
+ const valor = parseValorSimples(document.getElementById('valorImpostoMensalInput').value);
+ if(isNaN(valor) || valor<0){ mostrarToast('⚠️ Digite um valor válido.'); return; }
+ localStorage.setItem('biobel_adm_tipo_imposto', tipo);
+ localStorage.setItem('biobel_adm_valor_imposto_mensal', String(valor));
+ mostrarToast('✅ Imposto salvo!');
+ registrarAlteracao('Imposto ('+tipo+') definido em '+money(valor)+'/mês');
+ renderLogAlteracoes();
+ atualizarTotaisAdm();
+}
+function initImpostoUI(){
+ const select = document.getElementById('tipoImpostoSelect');
+ const input = document.getElementById('valorImpostoMensalInput');
+ const tipo = localStorage.getItem('biobel_adm_tipo_imposto');
+ if(select && tipo) select.value = tipo;
+ const valor = getValorImpostoMensal();
+ if(input) input.value = valor>0 ? String(valor).replace('.',',') : '';
+}
+
+/* ===== Valor do Estoque Parado (manual, sem coluna de custo na planilha) ===== */
+function getValorEstoque(){
+ const v = parseFloat(localStorage.getItem('biobel_adm_valor_estoque')||'0');
+ return isNaN(v) ? 0 : v;
+}
+function salvarValorEstoque(){
+ const valor = parseValorSimples(document.getElementById('valorEstoqueInput').value);
+ if(isNaN(valor) || valor<0){ mostrarToast('⚠️ Digite um valor válido.'); return; }
+ localStorage.setItem('biobel_adm_valor_estoque', String(valor));
+ localStorage.setItem('biobel_adm_valor_estoque_data', new Date().toISOString());
+ mostrarToast('✅ Valor do estoque salvo!');
+ registrarAlteracao('Valor do estoque atualizado para '+money(valor));
+ renderLogAlteracoes();
+ renderUltimaAtualizacaoEstoque();
+}
+function renderUltimaAtualizacaoEstoque(){
+ const input = document.getElementById('valorEstoqueInput');
+ const el = document.getElementById('ultimaAtualizacaoEstoque');
+ const valor = getValorEstoque();
+ if(input) input.value = valor>0 ? String(valor).replace('.',',') : '';
+ if(!el) return;
+ const dataStr = localStorage.getItem('biobel_adm_valor_estoque_data');
+ if(!dataStr){ el.textContent = ''; return; }
+ const dias = Math.floor((Date.now()-new Date(dataStr).getTime())/86400000);
+ el.innerHTML = `Última atualização: ${new Date(dataStr).toLocaleDateString('pt-BR')}${dias>60?' <span style="color:#fbbf24;">(faz '+dias+' dias — vale conferir se ainda está certo)</span>':''}`;
+}
+
+/* ===== Reserva de Emergência / Capital de Giro (manual) ===== */
+function getValorReserva(){
+ const v = parseFloat(localStorage.getItem('biobel_adm_valor_reserva')||'0');
+ return isNaN(v) ? 0 : v;
+}
+function salvarValorReserva(){
+ const valor = parseValorSimples(document.getElementById('valorReservaInput').value);
+ if(isNaN(valor) || valor<0){ mostrarToast('⚠️ Digite um valor válido.'); return; }
+ localStorage.setItem('biobel_adm_valor_reserva', String(valor));
+ localStorage.setItem('biobel_adm_valor_reserva_data', new Date().toISOString());
+ mostrarToast('✅ Reserva atualizada!');
+ registrarAlteracao('Reserva de emergência atualizada para '+money(valor));
+ renderLogAlteracoes();
+ renderUltimaAtualizacaoReserva();
+ atualizarTotaisAdm();
+}
+function renderUltimaAtualizacaoReserva(){
+ const input = document.getElementById('valorReservaInput');
+ const el = document.getElementById('ultimaAtualizacaoReserva');
+ const valor = getValorReserva();
+ if(input) input.value = valor>0 ? String(valor).replace('.',',') : '';
+ if(!el) return;
+ const dataStr = localStorage.getItem('biobel_adm_valor_reserva_data');
+ el.textContent = dataStr ? 'Última atualização: '+new Date(dataStr).toLocaleDateString('pt-BR') : '';
+}
+
 function renderHoraExtra(){
  const el = document.getElementById('resumoHoraExtra');
  const input = document.getElementById('valorHoraExtraInput');
@@ -4561,9 +4719,11 @@ function atualizarTotaisAdm(){
  const custoComissaoNiveis = custoTotalComissaoAtual();
  // Hora extra fixa (2h/semana), aproximada pro mês.
  const custoHoraExtra = calcularCustoMensalHoraExtra();
+ // Imposto mensal (se já foi preenchido — fica 0 até você definir o valor real).
+ const custoImposto = getValorImpostoMensal();
 
  const totalComissoesEBonus = totalComissoes + custoComissaoNiveis + custoHoraExtra;
- const lucroEstimado = faturamento - gastosFixos - boletos - totalComissoesEBonus;
+ const lucroEstimado = faturamento - gastosFixos - boletos - totalComissoesEBonus - custoImposto;
  window._ultimoLucroEstimado = lucroEstimado;
  const elLucro = document.getElementById('admLucroEstimado');
  const elLucroSub = document.getElementById('admLucroEstimadoSub');
@@ -4572,14 +4732,97 @@ function atualizarTotaisAdm(){
   elLucro.style.color = lucroEstimado>=0 ? '#27d7a0' : '#fb7185';
  }
  if(elLucroSub){
-  elLucroSub.textContent = `${money(faturamento)} (faturamento) − ${money(gastosFixos+boletos)} (gastos) − ${money(totalComissoesEBonus)} (comissões/bônus)`;
+  elLucroSub.textContent = `${money(faturamento)} (faturamento) − ${money(gastosFixos+boletos)} (gastos) − ${money(totalComissoesEBonus+custoImposto)} (comissões/bônus/impostos)`;
  }
  renderParticipacaoLucro();
- renderGraficoPizzaAdm(faturamento, gastosFixos, boletos, totalComissoesEBonus, lucroEstimado);
+ renderGraficoPizzaAdm(faturamento, gastosFixos, boletos, totalComissoesEBonus+custoImposto, lucroEstimado);
  renderPontoEquilibrio(gastosFixos, boletos, faturamento);
  renderResumoAtencaoAdm();
+ renderDRE(faturamento, gastosFixos, boletos, totalComissoesEBonus, custoImposto, lucroEstimado);
+ renderAlertaFluxoCaixa();
  const elUltimoSalvo = document.getElementById('admUltimoSalvo');
  if(elUltimoSalvo) elUltimoSalvo.textContent = '💾 Atualizado às '+obterAgoraBrasilia().getHours().toString().padStart(2,'0')+':'+obterAgoraBrasilia().getMinutes().toString().padStart(2,'0');
+}
+
+/* ===== Alerta de Fluxo de Caixa (avisa se as contas a vencer não vão caber no saldo disponível) ===== */
+function calcularContasAVencerProximosDias(diasJanela){
+ let total = 0;
+ getGastosFixos().forEach(g=>{
+  if(!g.dia || g.valor===null) return;
+  const diasAte = diasAteProximoVencimentoMensal(g.dia);
+  if(diasAte<=diasJanela) total += g.valor;
+ });
+ const hoje = obterAgoraBrasilia();
+ const hojeData = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+ getBoletos().forEach(b=>{
+  if(b.pago || !b.vencimento) return;
+  const dataVenc = new Date(b.vencimento+'T00:00:00');
+  if(isNaN(dataVenc.getTime())) return;
+  const dias = Math.round((dataVenc.getTime()-hojeData.getTime())/86400000);
+  if(dias>=0 && dias<=diasJanela) total += (Number(b.valor)||0);
+ });
+ return total;
+}
+function getSaldoGavetaAtual(){
+ if(daysData.length===0) return 0;
+ const ordenadoPorData = [...daysData].sort((a,b)=>{
+  const [da,ma] = String(a.dia).split('.').map(Number);
+  const [db,mb] = String(b.dia).split('.').map(Number);
+  return (mb*100+db) - (ma*100+da);
+ });
+ return Number(ordenadoPorData[0].closing)||0;
+}
+function renderAlertaFluxoCaixa(){
+ const el = document.getElementById('admAlertaFluxoCaixa');
+ if(!el) return;
+ const diasJanela = 15;
+ const contasAVencer = calcularContasAVencerProximosDias(diasJanela);
+ if(contasAVencer<=0){ el.style.display='none'; return; }
+
+ const saldoGaveta = getSaldoGavetaAtual();
+ const reserva = getValorReserva();
+ const saldoDisponivel = saldoGaveta + reserva;
+ const diferenca = saldoDisponivel - contasAVencer;
+
+ el.style.display = 'block';
+ if(diferenca<0){
+  el.innerHTML = `<div style="background:rgba(251,113,133,.08);border:1px solid rgba(251,113,133,.35);border-radius:14px;padding:14px 16px;">
+    <div style="font-size:12px;font-weight:900;color:#fb7185;">🔴 Cuidado — pode faltar dinheiro nos próximos ${diasJanela} dias</div>
+    <div style="font-size:12px;color:#93a3ba;margin-top:6px;">Contas a vencer: <strong style="color:#dce5f2;">${money(contasAVencer)}</strong> · Disponível (gaveta + reserva): <strong style="color:#dce5f2;">${money(saldoDisponivel)}</strong> · Falta: <strong style="color:#fb7185;">${money(Math.abs(diferenca))}</strong></div>
+   </div>`;
+ } else {
+  el.innerHTML = `<div style="background:rgba(39,215,160,.08);border:1px solid rgba(39,215,160,.3);border-radius:14px;padding:14px 16px;">
+    <div style="font-size:12px;font-weight:800;color:#27d7a0;">✅ Fluxo de caixa tranquilo nos próximos ${diasJanela} dias</div>
+    <div style="font-size:12px;color:#93a3ba;margin-top:6px;">Contas a vencer: ${money(contasAVencer)} · Disponível: ${money(saldoDisponivel)} · Sobra: ${money(diferenca)}</div>
+   </div>`;
+ }
+}
+
+/* ===== DRE Simplificado (resumo formal do período) ===== */
+function renderDRE(faturamento, gastosFixos, boletos, comissoesEBonus, imposto, resultado){
+ const el = document.getElementById('conteudoDRE');
+ if(!el) return;
+ if(daysData.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Sem dados carregados ainda.</p>';
+  return;
+ }
+ function linha(label, valor, destaque, cor){
+  return `<div style="display:flex;justify-content:space-between;padding:8px 0;${destaque?'border-top:1px solid #1e2c42;margin-top:6px;':''}">
+    <span style="font-size:${destaque?'13':'12.5'}px;color:${destaque?'#dce5f2':'#93a3ba'};font-weight:${destaque?'800':'400'};">${label}</span>
+    <span style="font-size:${destaque?'14':'12.5'}px;color:${cor||(destaque?'#dce5f2':'#93a3ba')};font-weight:${destaque?'900':'700'};">${valor}</span>
+   </div>`;
+ }
+ el.innerHTML = `
+  <div>
+   ${linha('Receita Bruta (Faturamento)', money(faturamento))}
+   ${linha('(−) Gastos Fixos', '−'+money(gastosFixos))}
+   ${linha('(−) Gastos Variáveis (Boletos)', '−'+money(boletos))}
+   ${linha('(−) Comissões e Bônus', '−'+money(comissoesEBonus))}
+   ${linha('(−) Impostos', '−'+money(imposto))}
+   ${linha('= Resultado do Período', money(resultado), true, resultado>=0?'#27d7a0':'#fb7185')}
+  </div>
+  <p style="font-size:10px;color:#93a3ba;margin-top:10px;">💡 Resultado simplificado — não substitui o DRE oficial da contabilidade, mas dá uma visão rápida e organizada do período.</p>
+ `;
 }
 
 let chartPizzaAdm = null;
@@ -7473,6 +7716,50 @@ function renderHistoricoFechamentosMensais(){
     <div style="font-size:11.5px;color:#93a3ba;margin-top:6px;">Faturamento: ${money(r.faturamento)} · Gastos: ${money(r.gastosFixos+r.boletos)} · Comissão/bônus: ${money(r.custoComissao+r.custoHoraExtra)}</div>
    </div>`;
  }).join('');
+ renderGraficoGastosMensais();
+}
+
+let chartGastosMensais = null;
+function renderGraficoGastosMensais(){
+ const canvas = document.getElementById('graficoGastosMensais');
+ if(!canvas || typeof Chart==='undefined') return;
+ const historico = [...getFechamentosMensais()].sort((a,b)=>new Date(a.dataFechamento)-new Date(b.dataFechamento));
+ if(chartGastosMensais){ chartGastosMensais.destroy(); chartGastosMensais=null; }
+ if(historico.length<2){
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const wrap = document.getElementById('graficoGastosMensaisWrap');
+  if(wrap && !document.getElementById('avisoPoucosDadosGastos')){
+   const aviso = document.createElement('p');
+   aviso.id = 'avisoPoucosDadosGastos';
+   aviso.style.cssText = 'color:#93a3ba;font-size:12.5px;text-align:center;padding:20px 0;';
+   aviso.textContent = 'Encerre pelo menos 2 períodos (botão "Encerrar este período" acima) pra começar a ver a comparação aqui.';
+   wrap.appendChild(aviso);
+  }
+  return;
+ }
+ const avisoExistente = document.getElementById('avisoPoucosDadosGastos');
+ if(avisoExistente) avisoExistente.remove();
+
+ chartGastosMensais = new Chart(canvas, {
+  type: 'bar',
+  data: {
+   labels: historico.map(r=>r.periodo),
+   datasets: [
+    { label:'Gastos Fixos', data: historico.map(r=>r.gastosFixos), backgroundColor:'#fb7185' },
+    { label:'Gastos Variáveis', data: historico.map(r=>r.boletos), backgroundColor:'#4f9cff' },
+    { label:'Comissões/Bônus', data: historico.map(r=>r.custoComissao+r.custoHoraExtra), backgroundColor:'#fbbf24' }
+   ]
+  },
+  options: {
+   responsive:true,
+   plugins:{ legend:{ position:'bottom', labels:{ color:'#93a3ba', font:{size:10}, boxWidth:10 } } },
+   scales:{
+    x:{ stacked:true, ticks:{ color:'#93a3ba' }, grid:{ color:'rgba(145,161,184,.06)' } },
+    y:{ stacked:true, beginAtZero:true, ticks:{ color:'#93a3ba', callback:v=>money(v) }, grid:{ color:'rgba(145,161,184,.08)' } }
+   }
+  }
+ });
 }
 
 /* ===== Exportar Excel (planilha de verdade, pronta pra levar pro contador) ===== */
