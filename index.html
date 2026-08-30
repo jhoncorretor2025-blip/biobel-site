@@ -36,16 +36,18 @@
 <script src="script.js"></script><script src="navigation-improvements.js" defer></script>
 <script>
 (function(){
+  // Link padrão de "Trabalhe Conosco" — já vem certo pra qualquer visitante do site, mesmo quem
+  // nunca acessou o painel administrativo. O painel (Configuração > Site) pode trocar esse link
+  // sempre que precisar, sem precisar editar o código.
+  var linkPadrao = 'https://docs.google.com/forms/d/e/1FAIpQLSdmqyIp285ObM8e-E8SnoF-5m5MIlMDG0mUGp0uZ3gd6GBCKw/viewform?usp=publish-editor';
   try{
-    var link = localStorage.getItem('biobel_link_trabalhe_conosco');
-    if(link){
-      var secao = document.getElementById('trabalhe-conosco');
-      var botao = document.getElementById('linkTrabalheConoscoBtn');
-      var navLink = document.getElementById('navTrabalheConosco');
-      if(secao) secao.style.display = 'block';
-      if(botao) botao.href = link;
-      if(navLink) navLink.style.display = 'inline';
-    }
+    var link = localStorage.getItem('biobel_link_trabalhe_conosco') || linkPadrao;
+    var secao = document.getElementById('trabalhe-conosco');
+    var botao = document.getElementById('linkTrabalheConoscoBtn');
+    var navLink = document.getElementById('navTrabalheConosco');
+    if(secao) secao.style.display = 'block';
+    if(botao) botao.href = link;
+    if(navLink) navLink.style.display = 'inline';
   }catch(e){}
 })();
 </script>
