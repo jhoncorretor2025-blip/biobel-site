@@ -1126,6 +1126,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <button type="button" id="chipLog" onclick="mostrarSecaoConfig('Log')" class="config-chip" role="tab" aria-selected="false">📜 Histórico</button>
   <button type="button" id="chipBackup" onclick="mostrarSecaoConfig('Backup')" class="config-chip" role="tab" aria-selected="false">💾 Backup</button>
   <button type="button" id="chipLogo" onclick="mostrarSecaoConfig('Logo')" class="config-chip" role="tab" aria-selected="false">🖼️ Logo</button>
+  <button type="button" id="chipSitePublico" onclick="mostrarSecaoConfig('SitePublico')" class="config-chip" role="tab" aria-selected="false">🌐 Site</button>
  </nav>
  <div id="configSecaoConexao" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
   <div class="mb-6">
@@ -1334,6 +1335,20 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
 
   <button onclick="restaurarLogoPadrao()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2.5 rounded-xl font-semibold text-sm">↺ Restaurar logo padrão</button>
+ </div>
+
+ <div id="configSecaoSitePublico" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6" style="display:none;">
+  <div class="mb-4">
+   <h2 class="text-xl font-bold">🌐 Site Público — Trabalhe Conosco</h2>
+   <p class="text-sm text-slate-400 mt-1">O link que você colar aqui aparece automaticamente na página pública da Biobel, na seção "Trabalhe Conosco" — sem precisar mexer no código do site.</p>
+  </div>
+  <label class="block text-sm font-semibold mb-2" for="inputLinkTrabalheConosco">Link do formulário do Google (Trabalhe Conosco)</label>
+  <div style="display:flex;gap:8px;">
+   <input id="inputLinkTrabalheConosco" type="url" placeholder="https://forms.google.com/..." class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-slate-300 outline-none focus:border-emerald-500">
+   <button onclick="salvarLinkTrabalheConosco()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+  </div>
+  <div id="statusLinkTrabalheConosco" class="mt-2 text-xs text-slate-400"></div>
+  <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">💡 Enquanto esse campo estiver vazio, a seção "Trabalhe Conosco" não aparece no site público — assim que você colar o link, ela aparece automaticamente na próxima visita de alguém ao site.</p>
  </div>
 </section>
 
@@ -2544,6 +2559,7 @@ function showTab(tab){
   if(metaQtdInput){ const v=getMetaQtdVendas(); metaQtdInput.value = v>0 ? v : ''; }
   initMetasLongoPrazoUI();
   initLogoBiobelUI();
+  initLinkTrabalheConoscoUI();
   renderPlanilhasSalvas();
   initHorarioFuncionamentoUI();
   initAppsScriptUrlUI();
@@ -3208,6 +3224,34 @@ function initLogoBiobelUI(){
  const inputUrl = document.getElementById('inputLogoBiobelUrl');
  const urlSalva = localStorage.getItem('biobel_logo_custom_url');
  if(inputUrl && urlSalva) inputUrl.value = urlSalva;
+}
+
+/* ===== Link "Trabalhe Conosco" (Google Forms) — aparece automaticamente no site público ===== */
+function salvarLinkTrabalheConosco(){
+ const input = document.getElementById('inputLinkTrabalheConosco');
+ const statusEl = document.getElementById('statusLinkTrabalheConosco');
+ const link = input ? input.value.trim() : '';
+ if(!link){
+  localStorage.removeItem('biobel_link_trabalhe_conosco');
+  if(statusEl) statusEl.innerHTML = '<span class="text-slate-400">Link removido — a seção "Trabalhe Conosco" volta a ficar escondida no site.</span>';
+  mostrarToast('✅ Link removido.');
+  return;
+ }
+ try{ new URL(link); }catch(e){
+  if(statusEl) statusEl.innerHTML = '<span class="text-rose-400">Esse link não parece válido.</span>';
+  return;
+ }
+ localStorage.setItem('biobel_link_trabalhe_conosco', link);
+ if(statusEl) statusEl.innerHTML = '<span class="text-emerald-400">✅ Link salvo! Já vai aparecer no site público.</span>';
+ mostrarToast('✅ Link do Trabalhe Conosco salvo!');
+ registrarAlteracao('Link do Trabalhe Conosco atualizado');
+ renderLogAlteracoes();
+}
+function initLinkTrabalheConoscoUI(){
+ const input = document.getElementById('inputLinkTrabalheConosco');
+ if(!input) return;
+ const link = localStorage.getItem('biobel_link_trabalhe_conosco');
+ if(link) input.value = link;
 }
 function obterLogoDataUrl(){
  // Devolve sempre uma imagem em base64 (data URL), pronta pra usar no PDF — tenta nessa ordem:
@@ -8325,7 +8369,7 @@ function extractSpreadsheetId(url){
  return m?m[1]:'';
 }
 function mostrarSecaoConfig(secao){
- const secoes = ['Conexao','Planilhas','Metas','Email','Horarios','Log','Backup','Logo'];
+ const secoes = ['Conexao','Planilhas','Metas','Email','Horarios','Log','Backup','Logo','SitePublico'];
  secoes.forEach(s=>{
   const el = document.getElementById('configSecao'+s);
   const chip = document.getElementById('chip'+s);
