@@ -1127,6 +1127,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <button type="button" id="chipBackup" onclick="mostrarSecaoConfig('Backup')" class="config-chip" role="tab" aria-selected="false">💾 Backup</button>
   <button type="button" id="chipLogo" onclick="mostrarSecaoConfig('Logo')" class="config-chip" role="tab" aria-selected="false">🖼️ Logo</button>
   <button type="button" id="chipSitePublico" onclick="mostrarSecaoConfig('SitePublico')" class="config-chip" role="tab" aria-selected="false">🌐 Site</button>
+  <button type="button" id="chipMensagens" onclick="mostrarSecaoConfig('Mensagens')" class="config-chip" role="tab" aria-selected="false">💬 Mensagens</button>
  </nav>
  <div id="configSecaoConexao" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
   <div class="mb-6">
@@ -1350,6 +1351,40 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <div id="statusLinkTrabalheConosco" class="mt-2 text-xs text-slate-400"></div>
   <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">💡 Enquanto esse campo estiver vazio, a seção "Trabalhe Conosco" não aparece no site público — assim que você colar o link, ela aparece automaticamente na próxima visita de alguém ao site.</p>
  </div>
+
+ <div id="configSecaoMensagens" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6" style="display:none;">
+  <div class="mb-4">
+   <h2 class="text-xl font-bold">💬 Mensagens Programadas</h2>
+   <p class="text-sm text-slate-400 mt-1">Mensagens que aparecem sozinhas na área ADM em datas específicas — aniversários, datas comemorativas, avisos da equipe. Cada uma aparece até 3 vezes de manhã e 3 vezes à tarde, com botão de fechar.</p>
+  </div>
+  <div id="listaMensagensProgramadas" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;"></div>
+  <div style="border-top:1px solid #1e2c42;padding-top:14px;">
+   <div style="font-size:12px;font-weight:800;color:#93a3ba;margin-bottom:10px;" id="tituloFormMensagem">➕ Adicionar mensagem programada</div>
+   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:8px;">
+    <div>
+     <label for="mensagemDiaInicioInput" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Dia início</label>
+     <input id="mensagemDiaInicioInput" type="number" min="1" max="31" placeholder="28" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    </div>
+    <div>
+     <label for="mensagemDiaFimInput" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Dia fim</label>
+     <input id="mensagemDiaFimInput" type="number" min="1" max="31" placeholder="31" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    </div>
+    <div>
+     <label for="mensagemMesSelect" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Mês</label>
+     <select id="mensagemMesSelect" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+      <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
+      <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
+      <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
+      <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+     </select>
+    </div>
+   </div>
+   <label class="block text-sm font-semibold mb-2" for="mensagemTextoInput">Mensagem</label>
+   <textarea id="mensagemTextoInput" rows="4" placeholder="Digite a mensagem que vai aparecer..." style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;resize:vertical;margin-bottom:10px;"></textarea>
+   <button id="btnAdicionarMensagem" onclick="adicionarMensagemProgramada()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Adicionar mensagem</button>
+   <button id="btnCancelarEdicaoMensagem" onclick="cancelarEdicaoMensagem()" style="display:none;margin-top:8px;background:none;border:none;color:#93a3ba;font-size:12px;text-decoration:underline;cursor:pointer;width:100%;">✕ Cancelar edição</button>
+  </div>
+ </div>
 </section>
 
 <section id="caixaTab" class="hidden max-w-3xl mx-auto p-4 md:p-6" role="tabpanel" aria-labelledby="tabCaixa">
@@ -1550,6 +1585,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraAgenda')">🤝 Fornecedores</button>
   </nav>
 
+  <div id="faixaMensagemProgramada" style="display:none;"></div>
   <div id="admResumoAtencao" style="display:none;"></div>
   <div id="admAncoraResumo"></div>
 
@@ -2560,6 +2596,7 @@ function showTab(tab){
   initMetasLongoPrazoUI();
   initLogoBiobelUI();
   initLinkTrabalheConoscoUI();
+  renderMensagensProgramadas();
   renderPlanilhasSalvas();
   initHorarioFuncionamentoUI();
   initAppsScriptUrlUI();
@@ -3518,6 +3555,153 @@ function renderReunioes(){
  }).join('');
 }
 
+/* ===== Mensagens Programadas (aniversários, avisos, datas especiais) ===== */
+function getMensagensProgramadas(){
+ try{ return JSON.parse(localStorage.getItem('biobel_mensagens_programadas')||'[]'); }catch(e){ return []; }
+}
+function salvarMensagensProgramadas(lista){
+ localStorage.setItem('biobel_mensagens_programadas', JSON.stringify(lista));
+}
+function seedMensagemAniversarioAlessandra(){
+ // A mensagem oficial de aniversário da Alessandra, pré-programada de 28 a 31 de agosto —
+ // só na primeira vez, sem nunca sobrescrever se alguém editar ou remover depois.
+ const jaSeedou = localStorage.getItem('biobel_seed_msg_alessandra_v1');
+ if(jaSeedou) return;
+ const mensagens = getMensagensProgramadas();
+ mensagens.push({
+  id: Date.now(),
+  diaInicio: 28,
+  diaFim: 31,
+  mes: 8,
+  mensagem: '🎉🎂 Feliz Aniversário, Alessandra!\n\nParabéns pelo seu dia! Te desejo muita paz, muito amor e, principalmente, muita saúde. 💕\n\n— Jhon kkkkkkk'
+ });
+ salvarMensagensProgramadas(mensagens);
+ localStorage.setItem('biobel_seed_msg_alessandra_v1', 'yes');
+}
+let mensagemEditandoId = null;
+function adicionarMensagemProgramada(){
+ const diaInicio = parseInt(document.getElementById('mensagemDiaInicioInput').value, 10);
+ const diaFim = parseInt(document.getElementById('mensagemDiaFimInput').value, 10);
+ const mes = parseInt(document.getElementById('mensagemMesSelect').value, 10);
+ const mensagem = document.getElementById('mensagemTextoInput').value.trim();
+ if(isNaN(diaInicio) || diaInicio<1 || diaInicio>31){ mostrarToast('⚠️ Digite um dia de início válido.'); return; }
+ if(isNaN(diaFim) || diaFim<1 || diaFim>31){ mostrarToast('⚠️ Digite um dia de fim válido.'); return; }
+ if(diaFim<diaInicio){ mostrarToast('⚠️ O dia de fim não pode ser antes do dia de início.'); return; }
+ if(!mensagem){ mostrarToast('⚠️ Digite a mensagem.'); return; }
+
+ const lista = getMensagensProgramadas();
+ if(mensagemEditandoId!==null){
+  const idx = lista.findIndex(m=>m.id===mensagemEditandoId);
+  if(idx>=0){
+   lista[idx] = { ...lista[idx], diaInicio, diaFim, mes, mensagem };
+   salvarMensagensProgramadas(lista);
+   mostrarToast('✅ Mensagem atualizada!');
+   registrarAlteracao('Mensagem programada editada');
+  }
+  cancelarEdicaoMensagem();
+ } else {
+  lista.push({ id: Date.now(), diaInicio, diaFim, mes, mensagem });
+  salvarMensagensProgramadas(lista);
+  mostrarToast('✅ Mensagem programada adicionada!');
+  registrarAlteracao('Mensagem programada adicionada ('+diaInicio+' a '+diaFim+')');
+ }
+ document.getElementById('mensagemDiaInicioInput').value='';
+ document.getElementById('mensagemDiaFimInput').value='';
+ document.getElementById('mensagemTextoInput').value='';
+ renderMensagensProgramadas();
+ renderLogAlteracoes();
+}
+function editarMensagemProgramada(id){
+ const m = getMensagensProgramadas().find(x=>x.id===id);
+ if(!m) return;
+ mensagemEditandoId = id;
+ document.getElementById('mensagemDiaInicioInput').value = m.diaInicio;
+ document.getElementById('mensagemDiaFimInput').value = m.diaFim;
+ document.getElementById('mensagemMesSelect').value = m.mes;
+ document.getElementById('mensagemTextoInput').value = m.mensagem;
+ const btn = document.getElementById('btnAdicionarMensagem');
+ if(btn) btn.textContent = '💾 Salvar edição';
+ const btnCancelar = document.getElementById('btnCancelarEdicaoMensagem');
+ if(btnCancelar) btnCancelar.style.display = 'inline-block';
+ document.getElementById('mensagemTextoInput').scrollIntoView({behavior:'smooth', block:'center'});
+}
+function cancelarEdicaoMensagem(){
+ mensagemEditandoId = null;
+ document.getElementById('mensagemDiaInicioInput').value='';
+ document.getElementById('mensagemDiaFimInput').value='';
+ document.getElementById('mensagemTextoInput').value='';
+ const btn = document.getElementById('btnAdicionarMensagem');
+ if(btn) btn.textContent = '➕ Adicionar mensagem';
+ const btnCancelar = document.getElementById('btnCancelarEdicaoMensagem');
+ if(btnCancelar) btnCancelar.style.display = 'none';
+}
+function removerMensagemProgramada(id){
+ confirmarBiobel('Remover essa mensagem programada?', ()=>{
+  const lista = getMensagensProgramadas().filter(m=>m.id!==id);
+  salvarMensagensProgramadas(lista);
+  renderMensagensProgramadas();
+  mostrarToast('🗑️ Removida.');
+ });
+}
+function renderMensagensProgramadas(){
+ seedMensagemAniversarioAlessandra();
+ const el = document.getElementById('listaMensagensProgramadas');
+ if(!el) return;
+ const lista = getMensagensProgramadas();
+ const nomesMeses = ['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+ if(lista.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhuma mensagem programada ainda.</p>';
+  return;
+ }
+ el.innerHTML = lista.map(m=>{
+  const preview = m.mensagem.length>100 ? m.mensagem.slice(0,100)+'...' : m.mensagem;
+  return `
+  <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
+   <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;">
+    <span style="color:#dce5f2;font-weight:800;font-size:13px;">📅 ${m.diaInicio} a ${m.diaFim} de ${nomesMeses[m.mes]}</span>
+    <div style="display:flex;align-items:center;gap:8px;">
+     <button onclick="editarMensagemProgramada(${m.id})" aria-label="Editar mensagem" style="background:none;border:none;color:#4f9cff;cursor:pointer;font-size:14px;">✏️</button>
+     <button onclick="removerMensagemProgramada(${m.id})" aria-label="Remover mensagem" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;">🗑️</button>
+    </div>
+   </div>
+   <div style="font-size:11.5px;color:#93a3ba;margin-top:6px;white-space:pre-line;">${preview}</div>
+  </div>`;
+ }).join('');
+}
+
+/* ===== Exibição da faixa (na área ADM) — até 3x de manhã e 3x à tarde por mensagem/dia ===== */
+function obterPeriodoSimplificadoDoDia(hora){
+ return hora<12 ? 'manha' : 'tarde';
+}
+function encontrarMensagemAtivaHoje(){
+ const hoje = obterAgoraBrasilia();
+ const mesAtual = hoje.getMonth()+1;
+ const diaAtual = hoje.getDate();
+ return getMensagensProgramadas().find(m=>
+  Number(m.mes)===mesAtual && diaAtual>=Number(m.diaInicio) && diaAtual<=Number(m.diaFim)
+ );
+}
+function renderFaixaMensagemProgramada(){
+ const el = document.getElementById('faixaMensagemProgramada');
+ if(!el) return;
+ const msg = encontrarMensagemAtivaHoje();
+ if(!msg){ el.style.display='none'; return; }
+
+ const hoje = obterAgoraBrasilia();
+ const periodo = obterPeriodoSimplificadoDoDia(hoje.getHours());
+ const chaveContador = 'biobel_msg_contador_'+msg.id+'_'+hoje.paraChaveISO()+'_'+periodo;
+ const contadorAtual = parseInt(localStorage.getItem(chaveContador)||'0', 10);
+
+ if(contadorAtual>=3){ el.style.display='none'; return; }
+ localStorage.setItem(chaveContador, String(contadorAtual+1));
+
+ el.style.display='block';
+ el.innerHTML = `<div style="background:linear-gradient(135deg,#3d1a4a,#2a1030);border:1px solid rgba(236,72,153,.4);border-radius:16px;padding:18px 22px;position:relative;">
+   <button onclick="document.getElementById('faixaMensagemProgramada').style.display='none';" aria-label="Fechar mensagem" style="position:absolute;top:10px;right:12px;background:none;border:none;color:#f6f0fa;font-size:20px;cursor:pointer;opacity:.75;line-height:1;">✕</button>
+   <div style="font-size:14px;color:#f6f0fa;white-space:pre-line;line-height:1.6;padding-right:26px;">${msg.mensagem}</div>
+  </div>`;
+}
+
 function mostrarConteudoAdm(){
  document.getElementById('admLoginWrap').style.display='none';
  document.getElementById('admConteudoWrap').style.display='block';
@@ -3525,6 +3709,7 @@ function mostrarConteudoAdm(){
  const elUsuario = document.getElementById('admUsuarioLogadoTexto');
  if(elUsuario && usuarioLogado) elUsuario.textContent = 'Conectado como '+usuarioLogado+' — gastos fixos, boletos de fornecedores e comissões da equipe.';
  seedDadosPessoaisEquipe();
+ renderFaixaMensagemProgramada();
  renderGastosFixos();
  renderBoletos();
  renderComissoes();
@@ -8369,7 +8554,7 @@ function extractSpreadsheetId(url){
  return m?m[1]:'';
 }
 function mostrarSecaoConfig(secao){
- const secoes = ['Conexao','Planilhas','Metas','Email','Horarios','Log','Backup','Logo','SitePublico'];
+ const secoes = ['Conexao','Planilhas','Metas','Email','Horarios','Log','Backup','Logo','SitePublico','Mensagens'];
  secoes.forEach(s=>{
   const el = document.getElementById('configSecao'+s);
   const chip = document.getElementById('chip'+s);
