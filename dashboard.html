@@ -1349,7 +1349,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <button onclick="salvarLinkTrabalheConosco()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
   </div>
   <div id="statusLinkTrabalheConosco" class="mt-2 text-xs text-slate-400"></div>
-  <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">💡 Enquanto esse campo estiver vazio, a seção "Trabalhe Conosco" não aparece no site público — assim que você colar o link, ela aparece automaticamente na próxima visita de alguém ao site.</p>
+  <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">💡 O site já tem um link padrão embutido, funcionando pra qualquer visitante. Se você trocar aqui, esse novo link passa a valer só pra quem já acessou o painel — pra atualizar pra todo mundo (visitantes novos incluídos), me avisa que eu atualizo o link padrão embutido no código.</p>
  </div>
 
  <div id="configSecaoMensagens" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6" style="display:none;">
@@ -3268,10 +3268,11 @@ function salvarLinkTrabalheConosco(){
  const input = document.getElementById('inputLinkTrabalheConosco');
  const statusEl = document.getElementById('statusLinkTrabalheConosco');
  const link = input ? input.value.trim() : '';
+ localStorage.setItem('biobel_link_trabalhe_conosco_definido', 'yes');
  if(!link){
   localStorage.removeItem('biobel_link_trabalhe_conosco');
-  if(statusEl) statusEl.innerHTML = '<span class="text-slate-400">Link removido — a seção "Trabalhe Conosco" volta a ficar escondida no site.</span>';
-  mostrarToast('✅ Link removido.');
+  if(statusEl) statusEl.innerHTML = '<span class="text-slate-400">Campo limpo — o site volta a usar o link padrão já embutido nele.</span>';
+  mostrarToast('✅ Salvo — usando o link padrão do site agora.');
   return;
  }
  try{ new URL(link); }catch(e){
@@ -3284,9 +3285,19 @@ function salvarLinkTrabalheConosco(){
  registrarAlteracao('Link do Trabalhe Conosco atualizado');
  renderLogAlteracoes();
 }
+function seedLinkTrabalheConosco(){
+ // Já vem com o link real cadastrado, pra ficar sincronizado com o que já está embutido no
+ // site público — só na primeira vez, sem nunca sobrescrever se alguém trocar depois.
+ const jaTemLink = localStorage.getItem('biobel_link_trabalhe_conosco');
+ const jaEscolheu = localStorage.getItem('biobel_link_trabalhe_conosco_definido');
+ if(!jaTemLink && !jaEscolheu){
+  localStorage.setItem('biobel_link_trabalhe_conosco', 'https://docs.google.com/forms/d/e/1FAIpQLSdmqyIp285ObM8e-E8SnoF-5m5MIlMDG0mUGp0uZ3gd6GBCKw/viewform?usp=publish-editor');
+ }
+}
 function initLinkTrabalheConoscoUI(){
  const input = document.getElementById('inputLinkTrabalheConosco');
  if(!input) return;
+ seedLinkTrabalheConosco();
  const link = localStorage.getItem('biobel_link_trabalhe_conosco');
  if(link) input.value = link;
 }
