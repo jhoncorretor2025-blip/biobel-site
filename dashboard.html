@@ -9658,6 +9658,7 @@ render = function(){
   renderAdvancedDashboard();
   renderCentralDeAlertas();
   renderDatasComerciais(); // calendário comercial fica visível pra todo mundo, não só a gerência
+  renderFaixaMensagemProgramada(); // mensagens programadas (ex: aniversário) aparecem pra quem estiver logado, sem precisar da senha da área ADM
   const infoTab = document.getElementById('infoTab');
   if(infoTab && !infoTab.classList.contains('hidden')) renderInfoTab();
 
