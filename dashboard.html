@@ -3718,11 +3718,17 @@ function renderFaixaMensagemProgramada(){
  if(contadorAtual>=3){ el.style.display='none'; return; }
  localStorage.setItem(chaveContador, String(contadorAtual+1));
 
- el.style.display='block';
- el.innerHTML = `<div style="background:linear-gradient(135deg,#3d1a4a,#2a1030);border:1px solid rgba(236,72,153,.4);border-radius:16px;padding:18px 22px;position:relative;">
-   <button onclick="document.getElementById('faixaMensagemProgramada').style.display='none';" aria-label="Fechar mensagem" style="position:absolute;top:10px;right:12px;background:none;border:none;color:#f6f0fa;font-size:20px;cursor:pointer;opacity:.75;line-height:1;">✕</button>
-   <div style="font-size:14px;color:#f6f0fa;white-space:pre-line;line-height:1.6;padding-right:26px;">${msg.mensagem}</div>
+ // Popup de verdade: fundo escurecido cobrindo a tela toda, card centralizado por cima de tudo.
+ el.style.cssText = 'display:flex;position:fixed;inset:0;z-index:9999;background:rgba(7,17,31,.78);align-items:center;justify-content:center;padding:20px;';
+ el.onclick = function(e){ if(e.target===el) fecharPopupMensagemProgramada(); };
+ el.innerHTML = `<div onclick="event.stopPropagation()" style="background:linear-gradient(135deg,#3d1a4a,#2a1030);border:1px solid rgba(236,72,153,.5);border-radius:20px;padding:32px 28px;position:relative;max-width:420px;width:100%;box-shadow:0 24px 70px rgba(0,0,0,.55);text-align:center;">
+   <button onclick="fecharPopupMensagemProgramada()" aria-label="Fechar mensagem" style="position:absolute;top:12px;right:14px;background:none;border:none;color:#f6f0fa;font-size:22px;cursor:pointer;opacity:.75;line-height:1;">✕</button>
+   <div style="font-size:15px;color:#f6f0fa;white-space:pre-line;line-height:1.7;">${msg.mensagem}</div>
   </div>`;
+}
+function fecharPopupMensagemProgramada(){
+ const el = document.getElementById('faixaMensagemProgramada');
+ if(el) el.style.display='none';
 }
 
 function mostrarConteudoAdm(){
@@ -8574,20 +8580,10 @@ function updateConnBadge(state){
   localStorage.setItem('biobel_ultima_sincronizacao_ok', new Date().toISOString());
  }
  if(state==='error'){ registrarErroConexao(); renderDiasSemErroConexao(); }
- if(faixa){
-  if(state==='error'){
-   faixa.style.display = 'block';
-   const elUltima = document.getElementById('faixaErroUltimaSinc');
-   if(elUltima){
-    const ultima = localStorage.getItem('biobel_ultima_sincronizacao_ok');
-    elUltima.textContent = ultima
-     ? 'Última sincronização bem-sucedida: '+new Date(ultima).toLocaleString('pt-BR')
-     : 'Ainda não houve nenhuma sincronização bem-sucedida nesse aparelho.';
-   }
-  } else {
-   faixa.style.display = 'none';
-  }
- }
+ // A faixa vermelha de aviso foi desativada por pedido — nunca mais aparece na tela,
+ // mesmo se a planilha realmente desconectar. O pequeno indicador (connBadge) continua
+ // funcionando normalmente, discreto, sem interromper ninguém.
+ if(faixa) faixa.style.display = 'none';
  if(!el) return;
  el.className = 'conn-badge conn-'+state;
  if(state==='ok'){
