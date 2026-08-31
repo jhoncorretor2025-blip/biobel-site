@@ -342,6 +342,7 @@ body.light-mode [style*="border-bottom:1px solid #1e2c42"]{border-bottom-color:#
 
 </head>
 <body class="min-h-screen bg-slate-950 text-slate-100">
+<div id="faixaMensagemProgramada" style="display:none;"></div>
 <a href="#dashboardTab" style="position:absolute;left:-9999px;top:0;z-index:9999;background:#0ea97a;color:#04241a;padding:12px 18px;border-radius:0 0 10px 0;font-weight:700;text-decoration:none" onfocus="this.style.left='0'" onblur="this.style.left='-9999px'">Pular para o conteúdo</a>
 <script>
 // Proteção de acesso: só entra aqui quem passou pela tela de login (login.html).
@@ -1595,7 +1596,6 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraAgenda')">🤝 Fornecedores</button>
   </nav>
 
-  <div id="faixaMensagemProgramada" style="display:none;"></div>
   <div id="admResumoAtencao" style="display:none;"></div>
   <div id="admAncoraResumo"></div>
 
