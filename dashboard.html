@@ -5608,10 +5608,16 @@ function renderBannerEnviarContadora(){
  alvos.forEach(el=>{
   if(!el) return;
   if(mesPendente){
+   const dias = mesPendente.diasAtraso || 0;
+   const corAtraso = dias>=15 ? '#fb7185' : dias>=7 ? '#fbbf24' : '#27d7a0';
+   const textoAtraso = dias===0 ? 'venceu hoje' : dias===1 ? 'atrasado há 1 dia' : dias>=15 ? '🔴 MUITO atrasado — já são '+dias+' dias!' : 'atrasado há '+dias+' dias';
    el.style.display = 'block';
-   el.innerHTML = `<button onclick="enviarEmailMesPendenteContadora()" style="display:block;width:100%;background:linear-gradient(90deg,#0ea97a,#27d7a0);color:#04241a;border:none;border-radius:14px;padding:16px;font-weight:900;font-size:15px;cursor:pointer;margin-bottom:16px;box-shadow:0 6px 18px rgba(39,215,160,.25);">
-     📧 Enviar Fechamento de ${mesPendente.nomeMesTxt} pra Contadora (mês virou e ainda não foi enviado)
-    </button>`;
+   el.innerHTML = `<div style="margin-bottom:16px;">
+     <div style="font-size:11.5px;font-weight:800;color:${corAtraso};margin-bottom:6px;">⚠️ ${textoAtraso}</div>
+     <button onclick="enviarEmailMesPendenteContadora()" style="display:block;width:100%;background:linear-gradient(90deg,#0ea97a,#27d7a0);color:#04241a;border:none;border-radius:14px;padding:16px;font-weight:900;font-size:15px;cursor:pointer;box-shadow:0 6px 18px rgba(39,215,160,.25);">
+      📧 Enviar Fechamento de ${mesPendente.nomeMesTxt} pra Contadora
+     </button>
+    </div>`;
    return;
   }
   if(!mostrarBotaoMesAtual){
@@ -5635,6 +5641,7 @@ function enviarEmailMesPendenteContadora(){
  const dados = window._mesPendenteEnvioContadora;
  if(!dados) return;
  abrirEmailPronto(dados.email, dados.assunto, dados.corpo);
+ if(dados.mesNum) marcarMesEmailPreparado(dados.mesNum);
  mostrarToast('📧 E-mail preparado — confirme e clique em Enviar.');
  window._mesPendenteEnvioContadora = null;
  renderBannerEnviarContadora();
@@ -5677,12 +5684,23 @@ function verificarEnvioEmailMensal(){
   const corpoEmail = construirResumoEmailMes(diasDoMes, nomeMesTxt);
   const assunto = 'Fechamento de Caixa Biobel — '+nomeMesTxt;
 
-  marcarMesEmailPreparado(mesNum);
+  // Calcula há quantos dias esse mês já devia ter sido enviado (contando desde o dia em que o
+  // mês virou) — fica bem claro o quão atrasado está, em vez de só dizer "pendente".
+  const mesNumInt = Number(mesNum);
+  let mesSeguinte = mesNumInt+1, anoSeguinte = 2026;
+  if(mesSeguinte>12){ mesSeguinte=1; anoSeguinte++; }
+  const dataVirouMes = new Date(anoSeguinte, mesSeguinte-1, 1);
+  const hojeData = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+  const diasAtraso = Math.max(0, Math.round((hojeData.getTime()-dataVirouMes.getTime())/86400000));
 
   // Importante: NÃO abre o e-mail sozinho (isso disparava a tela do Windows perguntando qual
   // app usar, sem a pessoa ter clicado em nada). Em vez disso, guarda os dados prontos e mostra
-  // um botão — só abre de verdade quando alguém clicar.
-  window._mesPendenteEnvioContadora = { email, assunto, corpo: corpoEmail, nomeMesTxt };
+  // um botão — só abre de verdade (e só marca como enviado) quando alguém clicar. Se tiver mais
+  // de um mês pendente, prioriza o mais atrasado (o que precisa de atenção com mais urgência).
+  const jaTinhaPendente = window._mesPendenteEnvioContadora;
+  if(!jaTinhaPendente || diasAtraso > jaTinhaPendente.diasAtraso){
+   window._mesPendenteEnvioContadora = { email, assunto, corpo: corpoEmail, nomeMesTxt, diasAtraso, mesNum };
+  }
   renderBannerEnviarContadora();
  });
 }
