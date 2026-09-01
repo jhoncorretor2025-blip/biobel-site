@@ -434,6 +434,8 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
 <main id="dashboardTab" class="max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabDashboard">
 
+  <div id="avisoMesDivergente" class="no-print" style="display:none;"></div>
+  <div id="avisoProximaPlanilha" class="no-print" style="display:none;"></div>
   <div id="metaDestaqueTopo" class="no-print" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid #1e2c42;border-radius:20px;padding:24px 28px;margin-bottom:16px;">
    <div style="font-size:11px;color:#93a3ba;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">🎯 Meta do mês</div>
    <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;">
@@ -8920,12 +8922,67 @@ function selecionarPlanilhaSalva(){
  const url = select.value;
  if(!url) return;
  const nomeSelecionado = select.options[select.selectedIndex]?.textContent || '';
+
+ // Item 8: arquiva automaticamente um retrato dos dados que estavam carregados ANTES de trocar,
+ // pra nunca perder o que tinha ali, mesmo que ninguém tenha clicado em "Encerrar período" antes.
+ arquivarDadosAntesDeTrocarPlanilha();
+
+ // Item 10: resumo de "boas-vindas" mostrando como fechou o período anterior, antes de mergulhar
+ // nos dados novos — só mostra se já tinha dados carregados antes da troca.
+ const resumoAnterior = daysData.length>0 ? montarResumoBoasVindas() : null;
+
  document.getElementById('googleSheetUrl').value = url;
  localStorage.setItem('biobel_google_sheet_url', url);
  setGoogleStatus('trocando de planilha...', false, 'connecting');
  mostrarToast('🔄 Trocando para: '+nomeSelecionado);
+
+ // Item 7: guarda no histórico qual planilha ficou ativa a partir de agora.
+ registrarTrocaDePlanilha(nomeSelecionado, url);
+
  loadGoogleSheet();
  atualizarNomePlanilhaAtiva();
+
+ if(resumoAnterior) setTimeout(()=>mostrarPopupBoasVindas(resumoAnterior, nomeSelecionado), 600);
+}
+function arquivarDadosAntesDeTrocarPlanilha(){
+ if(daysData.length===0) return;
+ const mesRef = daysData[0]?.dia?.split('.')[1];
+ if(!mesRef) return;
+ try{
+  const arquivo = JSON.parse(localStorage.getItem('biobel_arquivo_meses')||'{}');
+  arquivo[mesRef] = daysData;
+  localStorage.setItem('biobel_arquivo_meses', JSON.stringify(arquivo));
+ }catch(e){}
+}
+function montarResumoBoasVindas(){
+ const faturamento = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const meta = getSalesGoal();
+ const bateuMeta = meta>0 && faturamento>=meta;
+ const mesRef = daysData[0]?.dia?.split('.')[1];
+ const nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+ const nomeMesAnterior = mesRef ? nomesMeses[Number(mesRef)-1] : 'período anterior';
+ return { nomeMesAnterior, faturamento, meta, bateuMeta };
+}
+function mostrarPopupBoasVindas(resumo, nomeNovaPlanilha){
+ const el = document.getElementById('faixaMensagemProgramada');
+ if(!el) return;
+ el.style.cssText = 'display:flex;position:fixed;inset:0;z-index:9999;background:rgba(7,17,31,.78);align-items:center;justify-content:center;padding:20px;';
+ el.onclick = function(e){ if(e.target===el) el.style.display='none'; };
+ el.innerHTML = `<div onclick="event.stopPropagation()" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid #1e2c42;border-radius:20px;padding:28px 26px;position:relative;max-width:400px;width:100%;box-shadow:0 24px 70px rgba(0,0,0,.55);text-align:center;">
+   <button onclick="document.getElementById('faixaMensagemProgramada').style.display='none';" aria-label="Fechar" style="position:absolute;top:12px;right:14px;background:none;border:none;color:#dce5f2;font-size:22px;cursor:pointer;opacity:.75;line-height:1;">✕</button>
+   <div style="font-size:28px;">${resumo.bateuMeta?'🎉':'📊'}</div>
+   <div style="font-size:15px;color:#dce5f2;font-weight:800;margin-top:8px;">Fechamento de ${resumo.nomeMesAnterior}</div>
+   <div style="font-size:22px;color:${resumo.bateuMeta?'#27d7a0':'#dce5f2'};font-weight:900;margin-top:6px;">${money(resumo.faturamento)}</div>
+   <div style="font-size:12px;color:#93a3ba;margin-top:4px;">${resumo.meta>0 ? (resumo.bateuMeta?'✅ Meta batida! ('+money(resumo.meta)+')':'Meta era '+money(resumo.meta)) : ''}</div>
+   <div style="font-size:11px;color:#93a3ba;margin-top:14px;border-top:1px solid #1e2c42;padding-top:12px;">Agora vendo: <strong style="color:#dce5f2;">${nomeNovaPlanilha}</strong></div>
+  </div>`;
+}
+function registrarTrocaDePlanilha(nome, url){
+ try{
+  const historico = JSON.parse(localStorage.getItem('biobel_historico_planilhas_ativas')||'[]');
+  historico.unshift({ data: new Date().toISOString(), nome, url });
+  localStorage.setItem('biobel_historico_planilhas_ativas', JSON.stringify(historico.slice(0,30)));
+ }catch(e){}
 }
 function atualizarNomePlanilhaAtiva(){
  const el = document.getElementById('nomePlanilhaAtivaHeader');
@@ -8933,7 +8990,89 @@ function atualizarNomePlanilhaAtiva(){
  const lista = getPlanilhasSalvas();
  const urlAtual = getGoogleUrl();
  const encontrada = lista.find(p=>p.url===urlAtual);
- el.textContent = encontrada ? '📂 '+encontrada.nome : '';
+ el.textContent = encontrada ? '📅 Vendo: '+encontrada.nome : '';
+ verificarMesDivergente(encontrada ? encontrada.nome : null);
+}
+
+/* ===== Aviso de mês divergente (itens 1, 2, 3, 4, 9) ===== */
+function verificarMesDivergente(nomePlanilhaAtiva){
+ const el = document.getElementById('avisoMesDivergente');
+ if(!el) return;
+ if(daysData.length===0 || !nomePlanilhaAtiva){ el.style.display='none'; return; }
+
+ const hoje = obterAgoraBrasilia();
+ const nomesMeses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+ const nomeMesReal = nomesMeses[hoje.getMonth()];
+ const bateComMesAtual = nomePlanilhaAtiva.toLowerCase().includes(nomeMesReal);
+
+ if(bateComMesAtual){ el.style.display='none'; return; }
+
+ // Acha a planilha salva que já tem o nome do mês atual, pra oferecer o botão de troca rápida.
+ const lista = getPlanilhasSalvas();
+ const nomeMesRealCapitalizado = nomeMesReal.charAt(0).toUpperCase()+nomeMesReal.slice(1);
+ const planilhaDoMesAtual = lista.find(p=>p.nome.toLowerCase().includes(nomeMesReal));
+
+ el.style.display = 'block';
+ el.innerHTML = `<div style="background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.35);border-radius:14px;padding:14px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+   <div style="font-size:12.5px;color:#fbbf24;font-weight:700;">📅 O mês virou! Você está vendo "<strong>${nomePlanilhaAtiva}</strong>", mas hoje já é ${nomeMesRealCapitalizado}.</div>
+   ${planilhaDoMesAtual
+    ? `<button onclick="irParaPlanilhaPorNome('${planilhaDoMesAtual.nome.replace(/'/g,"\\'")}')" style="background:#fbbf24;color:#3a2a0b;border:none;border-radius:10px;padding:8px 14px;font-weight:800;font-size:12px;cursor:pointer;white-space:nowrap;">🔄 Ir pra ${planilhaDoMesAtual.nome}</button>`
+    : `<button onclick="showTab('config');mostrarSecaoConfig('Planilhas');" style="background:#fbbf24;color:#3a2a0b;border:none;border-radius:10px;padding:8px 14px;font-weight:800;font-size:12px;cursor:pointer;white-space:nowrap;">➕ Cadastrar planilha de ${nomeMesRealCapitalizado}</button>`}
+  </div>`;
+
+ dispararNotificacaoMesDivergente(nomePlanilhaAtiva, nomeMesRealCapitalizado);
+}
+function irParaPlanilhaPorNome(nome){
+ const lista = getPlanilhasSalvas();
+ const encontrada = lista.find(p=>p.nome===nome);
+ if(!encontrada) return;
+ document.getElementById('googleSheetUrl').value = encontrada.url;
+ localStorage.setItem('biobel_google_sheet_url', encontrada.url);
+ registrarTrocaDePlanilha(encontrada.nome, encontrada.url);
+ mostrarToast('🔄 Trocando para: '+encontrada.nome);
+ loadGoogleSheet();
+ atualizarNomePlanilhaAtiva();
+}
+function dispararNotificacaoMesDivergente(nomeAtual, nomeMesReal){
+ // Reaproveita o mesmo sistema de notificação da meta batida — só avisa nos 3 primeiros dias
+ // do mês novo, uma vez por dia, pra não incomodar depois disso.
+ const ativado = localStorage.getItem('biobel_notificacoes_ativas') === 'yes';
+ if(!ativado) return;
+ if(typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+ const hoje = obterAgoraBrasilia();
+ if(hoje.getDate()>3) return;
+ const hojeStr = hoje.paraChaveISO();
+ const jaAvisouHoje = localStorage.getItem('biobel_notif_mes_divergente_dia') === hojeStr;
+ if(jaAvisouHoje) return;
+ localStorage.setItem('biobel_notif_mes_divergente_dia', hojeStr);
+ try{
+  new Notification('📅 O mês virou!', {
+   body: 'Você ainda está vendo "'+nomeAtual+'" — já é '+nomeMesReal+'. Hora de trocar de planilha.',
+   icon: '/logo_biobel_gravatai.png'
+  });
+ }catch(e){}
+}
+function sugerirProximaPlanilha(){
+ // Item 9: perto do fim do mês, sugere já preparar a planilha do mês seguinte, evitando a
+ // correria do dia 1.
+ const el = document.getElementById('avisoProximaPlanilha');
+ if(!el) return;
+ const hoje = obterAgoraBrasilia();
+ if(hoje.getDate()<25){ el.style.display='none'; return; }
+
+ const nomesMeses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+ const proximoMesIdx = (hoje.getMonth()+1)%12;
+ const nomeProximoMes = nomesMeses[proximoMesIdx];
+ const lista = getPlanilhasSalvas();
+ const jaTemProximoMes = lista.some(p=>p.nome.toLowerCase().includes(nomeProximoMes));
+ if(jaTemProximoMes){ el.style.display='none'; return; }
+
+ const nomeProximoMesCap = nomeProximoMes.charAt(0).toUpperCase()+nomeProximoMes.slice(1);
+ el.style.display = 'block';
+ el.innerHTML = `<div style="background:rgba(79,156,255,.08);border:1px solid rgba(79,156,255,.3);border-radius:14px;padding:14px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+   <div style="font-size:12.5px;color:#93a3ba;">💡 Faltam poucos dias pro mês virar — que tal já deixar a planilha de <strong style="color:#dce5f2;">${nomeProximoMesCap}</strong> pronta?</div>
+   <button onclick="showTab('config');mostrarSecaoConfig('Planilhas');" style="background:#4f9cff;color:#04182e;border:none;border-radius:10px;padding:8px 14px;font-weight:800;font-size:12px;cursor:pointer;white-space:nowrap;">➕ Cadastrar agora</button>
+  </div>`;
 }
 function removerPlanilhaSalva(index){
  const lista0 = getPlanilhasSalvas();
@@ -9559,6 +9698,8 @@ async function loadGoogleSheet(){
   render();
   setGoogleStatus(`conectado. ${found} dia(s) atualizado(s) às ${new Date().toLocaleTimeString('pt-BR')}.`,true);
   verificarEnvioEmailMensal();
+  atualizarNomePlanilhaAtiva();
+  sugerirProximaPlanilha();
  }catch(err){
   console.error(err);
   setGoogleStatus('não foi possível ler a planilha. Verifique se ela está acessível para leitura sem login e se o navegador permite o acesso.');
