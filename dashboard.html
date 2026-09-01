@@ -364,6 +364,12 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
 <header class="border-b border-slate-800 bg-slate-900/95 sticky top-0 z-20 backdrop-blur">
  <div class="max-w-7xl mx-auto px-4 pt-2 flex justify-end items-center gap-4">
+  <div class="no-print" style="position:relative;flex:1;max-width:260px;">
+   <input id="inputBuscaGlobal" type="text" placeholder="🔍 Buscar (ex: aluguel, meta...)" autocomplete="off"
+    oninput="renderResultadosBuscaGlobal()" onfocus="renderResultadosBuscaGlobal()"
+    style="width:100%;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;font-size:12px;color:#dce5f2;outline:none;">
+   <div id="resultadosBuscaGlobal" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border:1px solid #1e2c42;border-radius:10px;margin-top:4px;max-height:320px;overflow-y:auto;z-index:50;box-shadow:0 12px 32px rgba(0,0,0,.4);"></div>
+  </div>
   <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v1.1</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
@@ -410,11 +416,18 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <button id="tabDashboard" data-tab="dashboard" role="tab" aria-selected="true" aria-controls="dashboardTab" onclick="showTab('dashboard')" title="Atalho: Alt+1" class="tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm">📊 Dashboard</button>
   <button id="tabInfo" data-tab="info" role="tab" aria-selected="false" aria-controls="infoTab" onclick="showTab('info')" title="Atalho: Alt+2" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">🎯 Informação Geral</button>
   <button id="tabAlertas" data-tab="alertas" role="tab" aria-selected="false" aria-controls="alertasTab" onclick="showTab('alertas')" title="Atalho: Alt+3" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">🚨 Alertas <span id="badgeContadorAlertas" style="display:none;background:#fb7185;color:#3a0f16;font-size:10px;font-weight:900;padding:1px 6px;border-radius:999px;margin-left:2px;">0</span></button>
-  <button id="tabCaixa" data-tab="caixa" role="tab" aria-selected="false" aria-controls="caixaTab" onclick="showTab('caixa')" title="Atalho: Alt+4" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">🧾 Caixa simples</button>
-  <button id="tabCaixaCompleto" data-tab="caixaCompleto" role="tab" aria-selected="false" aria-controls="caixaCompletoTab" onclick="showTab('caixaCompleto')" title="Atalho: Alt+5" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">📖 Caixa completo</button>
+  <button id="tabCaixa" data-tab="caixa" role="tab" aria-selected="false" aria-controls="caixaTab" onclick="showTab('caixa')" title="Atalho: Alt+4 — só o valor final do fechamento" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">⚡ Fechamento Rápido</button>
+  <button id="tabCaixaCompleto" data-tab="caixaCompleto" role="tab" aria-selected="false" aria-controls="caixaCompletoTab" onclick="showTab('caixaCompleto')" title="Atalho: Alt+5 — dinheiro, débito, crédito, pix e mais detalhes" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">📊 Detalhamento do Dia</button>
   <button id="tabEquipe" data-tab="equipe" role="tab" aria-selected="false" aria-controls="equipeTab" onclick="showTab('equipe')" title="Atalho: Alt+6" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">👩‍💼 Equipe</button>
-  <button id="tabConfig" data-tab="config" role="tab" aria-selected="false" aria-controls="configTab" onclick="showTab('config')" title="Atalho: Alt+7" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">⚙️ Configuração</button>
-  <button id="tabAdm" data-tab="adm" role="tab" aria-selected="false" aria-controls="admTab" onclick="showTab('adm')" title="Atalho: Alt+8" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">👑 ADM</button>
+  <button id="tabConfig" data-tab="config" role="tab" aria-selected="false" aria-controls="configTab" onclick="showTab('config')" title="Atalho: Alt+7" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm" style="display:none;">⚙️ Configuração</button>
+  <button id="tabAdm" data-tab="adm" role="tab" aria-selected="false" aria-controls="admTab" onclick="showTab('adm')" title="Atalho: Alt+8" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm" style="display:none;">👑 ADM</button>
+  <div style="position:relative;">
+   <button id="btnMenuMais" onclick="alternarMenuMais()" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm" aria-haspopup="true" aria-expanded="false">⋯ Mais</button>
+   <div id="menuMaisDropdown" style="display:none;position:absolute;top:100%;right:0;background:#0f172a;border:1px solid #1e2c42;border-radius:12px;padding:6px;min-width:180px;box-shadow:0 12px 32px rgba(0,0,0,.4);z-index:40;margin-top:4px;">
+    <button onclick="irParaTabViaMenu('config')" style="display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:none;color:#dce5f2;font-size:13px;font-weight:600;padding:10px 12px;border-radius:8px;cursor:pointer;">⚙️ Configuração</button>
+    <button onclick="irParaTabViaMenu('adm')" style="display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:none;color:#dce5f2;font-size:13px;font-weight:600;padding:10px 12px;border-radius:8px;cursor:pointer;">👑 ADM</button>
+   </div>
+  </div>
  </div>
  </div>
 </nav>
@@ -1422,8 +1435,8 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
  <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
   <div class="flex items-center justify-between gap-3 mb-3 flex-wrap">
    <div>
-    <h2 class="text-xl font-bold">Caixa simples</h2>
-    <p class="text-sm text-slate-400 mt-1">Somente os valores principais do caixa do dia.</p>
+    <h2 class="text-xl font-bold">⚡ Fechamento Rápido</h2>
+    <p class="text-sm text-slate-400 mt-1">Só o valor final do fechamento — pra uma conferida rápida, sem entrar em detalhes.</p>
    </div>
    <div class="flex items-center gap-2 flex-wrap">
     <select id="simpleDaySelect" aria-label="Selecionar dia (Caixa Simples)" class="no-print bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm"></select>
@@ -1475,8 +1488,8 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
  <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
   <div class="flex items-center justify-between gap-3 mb-3 flex-wrap">
    <div>
-    <h2 class="text-xl font-bold">Caixa completo</h2>
-    <p class="text-sm text-slate-400 mt-1">Todas as informações do caixa do dia, incluindo dinheiro, cartão e Pix.</p>
+    <h2 class="text-xl font-bold">📊 Detalhamento do Dia</h2>
+    <p class="text-sm text-slate-400 mt-1">Tudo aberto: dinheiro, débito, crédito, Pix, itens vendidos e mais — pra quando precisar entender o dia inteiro.</p>
    </div>
    <div class="flex items-center gap-2 flex-wrap">
     <select id="completeDaySelect" aria-label="Selecionar dia (Caixa Completo)" class="no-print bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm"></select>
@@ -2544,12 +2557,100 @@ function salvarObservacaoDia(){
  mostrarToast('✅ Observação salva!');
 }
 
+/* ===== Busca Global — pula direto pra onde a pessoa precisa, sem caçar pelo sistema ===== */
+const BIOBEL_INDICE_BUSCA = [
+ { termos:'dashboard inicio meta faturamento', label:'📊 Dashboard', acao:()=>showTab('dashboard') },
+ { termos:'calendario comercial datas especiais dia das maes pais natal', label:'📅 Calendário Comercial (Dashboard)', acao:()=>showTab('dashboard') },
+ { termos:'informação geral financeiro ticket medio projecao', label:'💰 Informação Geral → Financeiro', acao:()=>{showTab('info'); mostrarSecaoInfo('Financeiro');} },
+ { termos:'vendedoras ranking comissao', label:'👥 Informação Geral → Vendedoras', acao:()=>{showTab('info'); mostrarSecaoInfo('Vendedoras');} },
+ { termos:'dias historico calendario dias uteis', label:'📅 Informação Geral → Dias', acao:()=>{showTab('info'); mostrarSecaoInfo('Dias');} },
+ { termos:'analises avancadas recordes produtos mais vendidos itens', label:'🔍 Informação Geral → Análises avançadas', acao:()=>{showTab('info'); mostrarSecaoInfo('Avancado');} },
+ { termos:'comparar meses', label:'📊 Informação Geral → Comparar meses', acao:()=>{showTab('info'); mostrarSecaoInfo('Comparar');} },
+ { termos:'dia da semana melhor pior', label:'📆 Informação Geral → Por Dia da Semana', acao:()=>{showTab('info'); mostrarSecaoInfo('PorDiaSemana');} },
+ { termos:'alertas divergencia caixa vencimento', label:'🚨 Alertas', acao:()=>showTab('alertas') },
+ { termos:'fechamento rapido caixa simples', label:'⚡ Fechamento Rápido', acao:()=>showTab('caixa') },
+ { termos:'detalhamento dia caixa completo dinheiro debito credito pix', label:'📊 Detalhamento do Dia', acao:()=>showTab('caixaCompleto') },
+ { termos:'equipe checklist tarefas', label:'👩‍💼 Equipe', acao:()=>showTab('equipe') },
+ { termos:'conexao planilha google sheets', label:'🔗 Configuração → Conexão', acao:()=>{showTab('config'); mostrarSecaoConfig('Conexao');} },
+ { termos:'planilhas salvas trocar mes', label:'📂 Configuração → Planilhas', acao:()=>{showTab('config'); mostrarSecaoConfig('Planilhas');} },
+ { termos:'metas faturamento vendedora', label:'🎯 Configuração → Metas', acao:()=>{showTab('config'); mostrarSecaoConfig('Metas');} },
+ { termos:'email contadora enviar relatorio', label:'📧 Configuração → E-mail', acao:()=>{showTab('config'); mostrarSecaoConfig('Email');} },
+ { termos:'horarios abertura fechamento loja', label:'🕘 Configuração → Horários', acao:()=>{showTab('config'); mostrarSecaoConfig('Horarios');} },
+ { termos:'historico log alteracoes', label:'📜 Configuração → Histórico', acao:()=>{showTab('config'); mostrarSecaoConfig('Log');} },
+ { termos:'backup exportar dados', label:'💾 Configuração → Backup', acao:()=>{showTab('config'); mostrarSecaoConfig('Backup');} },
+ { termos:'logo imagem marca', label:'🖼️ Configuração → Logo', acao:()=>{showTab('config'); mostrarSecaoConfig('Logo');} },
+ { termos:'site trabalhe conosco curriculo formulario', label:'🌐 Configuração → Site', acao:()=>{showTab('config'); mostrarSecaoConfig('SitePublico');} },
+ { termos:'mensagens programadas aniversario popup', label:'💬 Configuração → Mensagens', acao:()=>{showTab('config'); mostrarSecaoConfig('Mensagens');} },
+ { termos:'aluguel gastos fixos agua luz internet contadora', label:'🏠 ADM → Gastos Fixos', acao:()=>{showTab('adm'); setTimeout(()=>irParaSecaoAdm('admAncoraGastos'),250);} },
+ { termos:'boletos fornecedores comprovante', label:'📦 ADM → Boletos de Fornecedores', acao:()=>{showTab('adm'); setTimeout(()=>irParaSecaoAdm('admAncoraGastos'),250);} },
+ { termos:'comissao meta gabriela day niveis', label:'🎯 ADM → Comissão por Metas', acao:()=>{showTab('adm'); setTimeout(()=>irParaSecaoAdm('admAncoraComissoes'),250);} },
+ { termos:'ferias fgts admissao gabriela', label:'🏖️ ADM → Férias e Admissão', acao:()=>{showTab('adm'); setTimeout(()=>irParaSecaoAdm('admAncoraComissoes'),250);} },
+ { termos:'estagio day recesso contrato', label:'📋 ADM → Estágio da Day', acao:()=>{showTab('adm'); setTimeout(()=>irParaSecaoAdm('admAncoraComissoes'),250);} },
+ { termos:'imposto das mei simples nacional', label:'🧾 ADM → Impostos', acao:()=>{showTab('adm'); setTimeout(()=>irParaSecaoAdm('admAncoraComissoes'),250);} },
+ { termos:'estoque valor parado', label:'📦 ADM → Estoque', acao:()=>{showTab('adm'); setTimeout(()=>irParaSecaoAdm('admAncoraComissoes'),250);} },
+ { termos:'reserva emergencia capital de giro', label:'🏦 ADM → Reserva de Emergência', acao:()=>{showTab('adm'); setTimeout(()=>irParaSecaoAdm('admAncoraComissoes'),250);} },
+ { termos:'taxa maquina cartao debito credito', label:'💳 ADM → Taxa de Cartão', acao:()=>{showTab('adm'); setTimeout(()=>irParaSecaoAdm('admAncoraResumo'),250);} },
+ { termos:'dre relatorio anual lucro fluxo de caixa ponto equilibrio', label:'📋 ADM → DRE e Relatórios', acao:()=>{showTab('adm'); setTimeout(()=>irParaSecaoAdm('admAncoraResumo'),250);} },
+ { termos:'fechamento mensal encerrar periodo', label:'🔒 ADM → Fechamento Mensal', acao:()=>{showTab('adm'); setTimeout(()=>irParaSecaoAdm('admAncoraFechamento'),250);} },
+ { termos:'reunioes fornecedores agenda', label:'🤝 ADM → Agenda de Fornecedores', acao:()=>{showTab('adm'); setTimeout(()=>irParaSecaoAdm('admAncoraAgenda'),250);} },
+];
+function renderResultadosBuscaGlobal(){
+ const input = document.getElementById('inputBuscaGlobal');
+ const el = document.getElementById('resultadosBuscaGlobal');
+ if(!input || !el) return;
+ const termo = input.value.trim().toLowerCase();
+ if(termo.length<2){ el.style.display='none'; return; }
+ const resultados = BIOBEL_INDICE_BUSCA.filter(item=>item.termos.includes(termo) || item.label.toLowerCase().includes(termo)).slice(0,8);
+ if(resultados.length===0){
+  el.style.display='block';
+  el.innerHTML = '<div style="padding:12px 14px;font-size:12px;color:#93a3ba;">Nada encontrado pra "'+input.value+'".</div>';
+  return;
+ }
+ el.style.display='block';
+ el.innerHTML = resultados.map((r,i)=>`<button onclick="executarBuscaGlobal(${i})" style="display:block;width:100%;text-align:left;background:none;border:none;border-bottom:1px solid #1c2c42;color:#dce5f2;font-size:12.5px;padding:10px 14px;cursor:pointer;">${r.label}</button>`).join('');
+ window._resultadosBuscaAtual = resultados;
+}
+function executarBuscaGlobal(i){
+ const resultados = window._resultadosBuscaAtual;
+ if(!resultados || !resultados[i]) return;
+ resultados[i].acao();
+ document.getElementById('resultadosBuscaGlobal').style.display='none';
+ document.getElementById('inputBuscaGlobal').value='';
+}
+document.addEventListener('click', function(e){
+ const el = document.getElementById('resultadosBuscaGlobal');
+ const input = document.getElementById('inputBuscaGlobal');
+ if(!el || el.style.display==='none') return;
+ if(!el.contains(e.target) && e.target!==input) el.style.display='none';
+});
+
+function alternarMenuMais(){
+ const menu = document.getElementById('menuMaisDropdown');
+ const btn = document.getElementById('btnMenuMais');
+ if(!menu) return;
+ const abrir = menu.style.display==='none';
+ menu.style.display = abrir ? 'block' : 'none';
+ if(btn) btn.setAttribute('aria-expanded', abrir ? 'true' : 'false');
+}
+function irParaTabViaMenu(tab){
+ document.getElementById('menuMaisDropdown').style.display = 'none';
+ showTab(tab);
+}
+document.addEventListener('click', function(e){
+ const menu = document.getElementById('menuMaisDropdown');
+ const btn = document.getElementById('btnMenuMais');
+ if(!menu || menu.style.display==='none') return;
+ if(!menu.contains(e.target) && e.target!==btn){
+  menu.style.display = 'none';
+  if(btn) btn.setAttribute('aria-expanded','false');
+ }
+});
 function showTab(tab){
  const titulosAba = {
   dashboard: 'Dashboard — Biobel',
   info: 'Informação Geral — Biobel',
-  caixa: 'Caixa Simples — Biobel',
-  caixaCompleto: 'Caixa Completo — Biobel',
+  caixa: 'Fechamento Rápido — Biobel',
+  caixaCompleto: 'Detalhamento do Dia — Biobel',
   equipe: 'Equipe — Biobel',
   config: 'Configuração — Biobel'
  };
@@ -2578,6 +2679,14 @@ function showTab(tab){
  document.querySelectorAll('.adv-nav button[data-tab]').forEach(btn=>{
   btn.classList.toggle('active', btn.dataset.tab===tab);
  });
+
+ // Destaca o botão "⋯ Mais" quando Configuração ou ADM estiver ativa (já que esses dois ficam
+ // escondidos da fileira principal, dentro do menu).
+ const btnMais = document.getElementById('btnMenuMais');
+ if(btnMais){
+  const dentroDoMenu = tab==='config' || tab==='adm';
+  btnMais.className = 'tab-btn px-4 py-2 rounded-t-xl font-semibold text-sm '+(dentroDoMenu ? 'bg-emerald-600' : 'bg-slate-800 text-slate-300');
+ }
 
  if(tab==='caixa'){
   caixa.classList.remove('hidden');
