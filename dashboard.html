@@ -8816,7 +8816,21 @@ function removerPlanilhaSalva(index){
   renderPlanilhasSalvas();
  });
 }
+function seedPlanilhaSetembro2026(){
+ // Já deixa a planilha de setembro/2026 cadastrada na lista — só na primeira vez, sem nunca
+ // sobrescrever se alguém já tiver mexido na lista com a própria mão.
+ const jaSeedou = localStorage.getItem('biobel_seed_planilha_setembro_v1');
+ if(jaSeedou) return;
+ const lista = getPlanilhasSalvas();
+ const jaExiste = lista.some(p=>p.nome.trim().toLowerCase()==='setembro 2026');
+ if(!jaExiste){
+  lista.push({ nome:'Setembro 2026', url:'https://docs.google.com/spreadsheets/d/1o99UbEDpc0wgnjAfF0D0DQZcLdR53zBMW3Cieqoa1IQ/edit?usp=sharing' });
+  salvarListaPlanilhas(lista);
+ }
+ localStorage.setItem('biobel_seed_planilha_setembro_v1', 'yes');
+}
 function renderPlanilhasSalvas(){
+ seedPlanilhaSetembro2026();
  const select = document.getElementById('planilhaSalvaSelect');
  const listaEl = document.getElementById('listaPlanilhasSalvas');
  const selectInfo = document.getElementById('seletorPlanilhaInfoGeral');
