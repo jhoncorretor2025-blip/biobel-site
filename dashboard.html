@@ -420,8 +420,8 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <button onclick="loadGoogleSheet()" style="background:#fb7185;color:#3a0f16;border:none;border-radius:10px;padding:9px 18px;font-weight:800;font-size:13px;cursor:pointer;white-space:nowrap;">🔄 Tentar reconectar</button>
  </div>
 </div>
-<nav class="no-print max-w-7xl mx-auto px-4 md:px-6 pt-4">
- <div class="tabs-scroll-wrap">
+<nav class="no-print max-w-7xl mx-auto px-4 md:px-6 pt-4" style="display:flex;align-items:flex-end;gap:6px;">
+ <div class="tabs-scroll-wrap" style="flex:1;min-width:0;">
  <div class="flex gap-2 border-b border-slate-800" role="tablist" aria-label="Navegação do painel">
   <button id="tabDashboard" data-tab="dashboard" role="tab" aria-selected="true" aria-controls="dashboardTab" onclick="showTab('dashboard')" title="Atalho: Alt+1" class="tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm">📊 Dashboard</button>
   <button id="tabInfo" data-tab="info" role="tab" aria-selected="false" aria-controls="infoTab" onclick="showTab('info')" title="Atalho: Alt+2" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">🎯 Informação Geral</button>
@@ -431,14 +431,14 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <button id="tabEquipe" data-tab="equipe" role="tab" aria-selected="false" aria-controls="equipeTab" onclick="showTab('equipe')" title="Atalho: Alt+6" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">👩‍💼 Equipe</button>
   <button id="tabConfig" data-tab="config" role="tab" aria-selected="false" aria-controls="configTab" onclick="showTab('config')" title="Atalho: Alt+7" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm" style="display:none;">⚙️ Configuração</button>
   <button id="tabAdm" data-tab="adm" role="tab" aria-selected="false" aria-controls="admTab" onclick="showTab('adm')" title="Atalho: Alt+8" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm" style="display:none;">👑 ADM</button>
-  <div style="position:relative;">
-   <button id="btnMenuMais" onclick="alternarMenuMais()" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm" aria-haspopup="true" aria-expanded="false">⋯ Mais</button>
-   <div id="menuMaisDropdown" style="display:none;position:absolute;top:100%;right:0;background:#0f172a;border:1px solid #1e2c42;border-radius:12px;padding:6px;min-width:180px;box-shadow:0 12px 32px rgba(0,0,0,.4);z-index:40;margin-top:4px;">
-    <button onclick="irParaTabViaMenu('config')" style="display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:none;color:#dce5f2;font-size:13px;font-weight:600;padding:10px 12px;border-radius:8px;cursor:pointer;">⚙️ Configuração</button>
-    <button onclick="irParaTabViaMenu('adm')" style="display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:none;color:#dce5f2;font-size:13px;font-weight:600;padding:10px 12px;border-radius:8px;cursor:pointer;">👑 ADM</button>
-   </div>
-  </div>
  </div>
+ </div>
+ <div style="position:relative;flex-shrink:0;padding-bottom:2px;">
+  <button id="btnMenuMais" onclick="alternarMenuMais()" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm" aria-haspopup="true" aria-expanded="false">⋯ Mais</button>
+  <div id="menuMaisDropdown" style="display:none;position:absolute;top:100%;right:0;background:#0f172a;border:1px solid #1e2c42;border-radius:12px;padding:6px;min-width:180px;box-shadow:0 12px 32px rgba(0,0,0,.4);z-index:40;margin-top:4px;">
+   <button onclick="irParaTabViaMenu('config')" style="display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:none;color:#dce5f2;font-size:13px;font-weight:600;padding:10px 12px;border-radius:8px;cursor:pointer;">⚙️ Configuração</button>
+   <button onclick="irParaTabViaMenu('adm')" style="display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:none;color:#dce5f2;font-size:13px;font-weight:600;padding:10px 12px;border-radius:8px;cursor:pointer;">👑 ADM</button>
+  </div>
  </div>
 </nav>
 
