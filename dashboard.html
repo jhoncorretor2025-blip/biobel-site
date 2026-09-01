@@ -327,6 +327,16 @@ body.light-mode .info-resumo-rapido .val{color:#0f172a;}
  body.light-mode .mobile-action-bar{background:#f4f6f9;border-color:#dde3ea;}
 }
 
+/* Correção: o card "Análises avançadas" (roxo escuro) fica assim mesmo no modo claro,
+   de propósito — mas o texto dentro dele estava pegando a cor escura genérica do modo claro,
+   ficando escuro em cima de escuro. Aqui força o texto a continuar claro só dentro desse card. */
+body.light-mode .card-analise-avancada .adv-kpi .label{color:#c4b5e0!important;}
+body.light-mode .card-analise-avancada .adv-kpi .value{color:#f6f0fa!important;}
+body.light-mode .card-analise-avancada .adv-kpi .sub{color:#a394c2!important;}
+body.light-mode .card-analise-avancada .adv-card-title span{color:#a394c2!important;}
+body.light-mode .card-analise-avancada [style*="color:#93a3ba"]{color:#a394c2!important;}
+body.light-mode .card-analise-avancada [style*="color:#dce5f2"]{color:#f6f0fa!important;}
+
 /* Correção de legibilidade no modo claro: muito conteúdo dinâmico (Informação Geral, Central de
    Alertas, área ADM etc.) usa cores fixas pensadas só pro modo escuro, direto no atributo style
    de cada elemento. Em vez de reescrever centenas de trechos (arriscado, poderia quebrar os
@@ -1575,6 +1585,19 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
      </div>
     </div>
    </div>
+
+   <div class="rounded-xl border border-slate-800 bg-slate-950 px-4 py-4" id="cardTopVendasVendedoras" style="display:none;">
+    <div class="flex items-center justify-between flex-wrap gap-2 mb-3">
+     <span class="font-semibold text-slate-200 text-sm">🏆 Top Vendas & Vendedoras</span>
+     <div style="display:flex;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;overflow:hidden;">
+      <button type="button" id="btnPeriodoHoje" onclick="alternarPeriodoTopVendas('hoje')" style="border:0;padding:6px 12px;font-size:11.5px;font-weight:800;cursor:pointer;background:#27d7a0;color:#04241a;">📅 Só esse dia</button>
+      <button type="button" id="btnPeriodoAcumulado" onclick="alternarPeriodoTopVendas('acumulado')" style="border:0;padding:6px 12px;font-size:11.5px;font-weight:800;cursor:pointer;background:transparent;color:#93a3ba;">📈 Acumulado do mês</button>
+     </div>
+    </div>
+    <div id="topVendasDoDia" style="margin-bottom:14px;"></div>
+    <div id="rankingVendedorasDoDia"></div>
+   </div>
+
    <div class="rounded-xl border border-emerald-500/30 bg-slate-950 px-4 py-5">
     <div class="flex items-center justify-between caixa-row">
      <span class="font-semibold text-slate-200">🔒 Valor que ficou no caixa</span>
@@ -2487,9 +2510,94 @@ function updateSimpleDay(day){
  atualizarBadgeDia('simple', d.dia);
  flashCard('valoresSimpleWrap');
 }
+let _periodoTopVendas = 'hoje';
+function alternarPeriodoTopVendas(periodo){
+ _periodoTopVendas = periodo;
+ const btnHoje = document.getElementById('btnPeriodoHoje');
+ const btnAcum = document.getElementById('btnPeriodoAcumulado');
+ if(btnHoje){ btnHoje.style.background = periodo==='hoje' ? '#27d7a0' : 'transparent'; btnHoje.style.color = periodo==='hoje' ? '#04241a' : '#93a3ba'; }
+ if(btnAcum){ btnAcum.style.background = periodo==='acumulado' ? '#27d7a0' : 'transparent'; btnAcum.style.color = periodo==='acumulado' ? '#04241a' : '#93a3ba'; }
+ renderTopVendasVendedoras();
+}
+function renderTopVendasVendedoras(){
+ const card = document.getElementById('cardTopVendasVendedoras');
+ const diaAtual = window._diaAtualCaixaCompleto;
+ if(!card || !diaAtual) return;
+
+ // "Hoje" = só o dia selecionado. "Acumulado" = todos os dias do mesmo mês, do dia 1 até
+ // (e incluindo) o dia selecionado — amanhã, ao trocar pro dia 2, soma o 1 e o 2, e assim por diante.
+ const [diaNum, mesNum] = diaAtual.split('.').map(Number);
+ let diasConsiderados;
+ if(_periodoTopVendas==='hoje'){
+  diasConsiderados = daysData.filter(d=>d.dia===diaAtual);
+ } else {
+  diasConsiderados = daysData.filter(d=>{
+   const [dd, mm] = d.dia.split('.').map(Number);
+   return mm===mesNum && dd<=diaNum;
+  });
+ }
+
+ if(diasConsiderados.length===0){ card.style.display='none'; return; }
+ card.style.display = 'block';
+
+ // 3 melhores vendas (por valor), juntando os registros de todos os dias considerados.
+ let todosRegistros = [];
+ diasConsiderados.forEach(d=>{
+  (d.registrosVendas||[]).forEach(r=>{ todosRegistros.push({...r, dia:d.dia}); });
+ });
+ const top3 = [...todosRegistros].filter(r=>r.valor).sort((a,b)=>b.valor-a.valor).slice(0,3);
+ const elTop = document.getElementById('topVendasDoDia');
+ if(elTop){
+  const medalhas = ['🥇','🥈','🥉'];
+  elTop.innerHTML = '<div style="font-size:10px;font-weight:800;color:#93a3ba;text-transform:uppercase;margin-bottom:8px;">💰 3 Melhores Vendas</div>' +
+   (top3.length===0
+    ? '<p style="color:#93a3ba;font-size:12px;">Sem dados de vendas individuais pra esse período.</p>'
+    : top3.map((r,i)=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:8px 12px;margin-bottom:6px;">
+       <span style="font-size:12.5px;color:#dce5f2;">${medalhas[i]} ${r.vendedora||'—'}${_periodoTopVendas==='acumulado'?' · dia '+r.dia:''}</span>
+       <span style="font-size:13px;font-weight:800;color:#27d7a0;">${money(r.valor)}</span>
+      </div>`).join(''));
+ }
+
+ // Ranking de vendedoras: soma total + forma de pagamento (em R$) por vendedora, nos dias considerados.
+ const totaisPorVendedora = {};
+ diasConsiderados.forEach(d=>{
+  Object.entries(d.vendedorasDetalhe||{}).forEach(([nome, det])=>{
+   if(!totaisPorVendedora[nome]) totaisPorVendedora[nome] = {total:0, dinheiroValor:0, debitoValor:0, creditoValor:0, pixValor:0};
+   totaisPorVendedora[nome].total += det.total||0;
+   totaisPorVendedora[nome].dinheiroValor += det.dinheiroValor||0;
+   totaisPorVendedora[nome].debitoValor += det.debitoValor||0;
+   totaisPorVendedora[nome].creditoValor += det.creditoValor||0;
+   totaisPorVendedora[nome].pixValor += det.pixValor||0;
+  });
+ });
+ const ranking = Object.entries(totaisPorVendedora).sort((a,b)=>b[1].total-a[1].total);
+ const elRanking = document.getElementById('rankingVendedorasDoDia');
+ if(elRanking){
+  const medalhas = ['🥇','🥈','🥉'];
+  elRanking.innerHTML = '<div style="font-size:10px;font-weight:800;color:#93a3ba;text-transform:uppercase;margin-bottom:8px;">👥 Ranking de Vendedoras'+(_periodoTopVendas==='acumulado'?' (acumulado do mês)':'')+'</div>' +
+   (ranking.length===0
+    ? '<p style="color:#93a3ba;font-size:12px;">Sem dados de vendedoras pra esse período.</p>'
+    : ranking.map(([nome, t], i)=>`
+      <div style="background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:10px 12px;margin-bottom:6px;">
+       <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:12.5px;color:#dce5f2;font-weight:700;">${medalhas[i]||(i+1)+'º'} ${nome}</span>
+        <span style="font-size:13.5px;font-weight:900;color:#27d7a0;">${money(t.total)}</span>
+       </div>
+       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;font-size:10.5px;color:#93a3ba;">
+        <span>💵 ${money(t.dinheiroValor)}</span>
+        <span>💳 Déb: ${money(t.debitoValor)}</span>
+        <span>💳 Créd: ${money(t.creditoValor)}</span>
+        <span>📲 Pix: ${money(t.pixValor)}</span>
+       </div>
+      </div>`).join(''));
+ }
+}
+
 function updateCompleteDay(day){
  const d=daysData.find(x=>x.dia===day);
  if(!d) return;
+ window._diaAtualCaixaCompleto = day;
  document.getElementById('completeInitial').textContent=money(d.initial);
  document.getElementById('completeSales').textContent=money(d.sales);
  document.getElementById('completeDinheiro').textContent=money(d.dinheiro);
@@ -2529,6 +2637,7 @@ function updateCompleteDay(day){
  }
  updateGoalBanner('completeGoalBanner', Number(d.sales)||0);
  atualizarBadgeDia('completo', d.dia);
+ renderTopVendasVendedoras();
  flashCard('valoresCompletoWrap');
  carregarObservacaoDia(d.dia);
 }
@@ -9224,8 +9333,8 @@ function extractSellerTotals(rows){
 }
 
 function extractSellerDetalhes(rows){
- // Igual extractSellerTotals, mas tambem conta quantas vendas cada vendedora fez
- // e em qual forma de pagamento (Dinheiro/Débito/Crédito/Pix), pra cruzar os dados depois.
+ // Igual extractSellerTotals, mas tambem conta quantas vendas cada vendedora fez, em qual forma
+ // de pagamento (Dinheiro/Débito/Crédito/Pix) — tanto a QUANTIDADE quanto o VALOR em R$ de cada uma.
  const detalhes = {};
  const colunaParaForma = {1:'dinheiro',2:'debito',3:'credito',4:'pix'};
  for(let r=0;r<rows.length;r++){
@@ -9236,13 +9345,14 @@ function extractSellerDetalhes(rows){
   const vendedora = rows[r]?.[5];
   if(!vendedora || typeof vendedora!=='string' || !vendedora.trim()) continue;
   const nome = normalizarNome(vendedora);
-  if(!detalhes[nome]) detalhes[nome]={total:0,qtd:0,dinheiro:0,debito:0,credito:0,pix:0};
+  if(!detalhes[nome]) detalhes[nome]={total:0,qtd:0,dinheiro:0,debito:0,credito:0,pix:0,dinheiroValor:0,debitoValor:0,creditoValor:0,pixValor:0};
   for(const c of [1,2,3,4]){
    const v = rows[r]?.[c];
    if(typeof v==='number' && v>0){
     detalhes[nome].total += v;
     detalhes[nome].qtd += 1;
     detalhes[nome][colunaParaForma[c]] += 1;
+    detalhes[nome][colunaParaForma[c]+'Valor'] += v;
    }
   }
  }
