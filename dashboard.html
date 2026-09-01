@@ -1118,17 +1118,37 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
 
 <section id="configTab" class="hidden max-w-3xl mx-auto p-4 md:p-6" role="tabpanel" aria-labelledby="tabConfig">
- <nav class="config-chips no-print" aria-label="Atalhos da Configuração" role="tablist">
-  <button type="button" id="chipConexao" onclick="mostrarSecaoConfig('Conexao')" class="config-chip" role="tab" aria-selected="true">🔗 Conexão</button>
-  <button type="button" id="chipPlanilhas" onclick="mostrarSecaoConfig('Planilhas')" class="config-chip" role="tab" aria-selected="false">📂 Planilhas</button>
-  <button type="button" id="chipMetas" onclick="mostrarSecaoConfig('Metas')" class="config-chip" role="tab" aria-selected="false">🎯 Metas</button>
-  <button type="button" id="chipEmail" onclick="mostrarSecaoConfig('Email')" class="config-chip" role="tab" aria-selected="false">📧 E-mail</button>
-  <button type="button" id="chipHorarios" onclick="mostrarSecaoConfig('Horarios')" class="config-chip" role="tab" aria-selected="false">🕘 Horários</button>
-  <button type="button" id="chipLog" onclick="mostrarSecaoConfig('Log')" class="config-chip" role="tab" aria-selected="false">📜 Histórico</button>
-  <button type="button" id="chipBackup" onclick="mostrarSecaoConfig('Backup')" class="config-chip" role="tab" aria-selected="false">💾 Backup</button>
-  <button type="button" id="chipLogo" onclick="mostrarSecaoConfig('Logo')" class="config-chip" role="tab" aria-selected="false">🖼️ Logo</button>
-  <button type="button" id="chipSitePublico" onclick="mostrarSecaoConfig('SitePublico')" class="config-chip" role="tab" aria-selected="false">🌐 Site</button>
-  <button type="button" id="chipMensagens" onclick="mostrarSecaoConfig('Mensagens')" class="config-chip" role="tab" aria-selected="false">💬 Mensagens</button>
+ <nav aria-label="Atalhos da Configuração" role="tablist" style="margin-bottom:18px;">
+  <div style="margin-bottom:10px;">
+   <div style="font-size:10px;font-weight:800;color:#93a3ba;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">📡 Dados</div>
+   <div class="config-chips no-print" style="margin:0;">
+    <button type="button" id="chipConexao" onclick="mostrarSecaoConfig('Conexao')" class="config-chip" role="tab" aria-selected="true">🔗 Conexão</button>
+    <button type="button" id="chipPlanilhas" onclick="mostrarSecaoConfig('Planilhas')" class="config-chip" role="tab" aria-selected="false">📂 Planilhas</button>
+   </div>
+  </div>
+  <div style="margin-bottom:10px;">
+   <div style="font-size:10px;font-weight:800;color:#93a3ba;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">🎯 Operação</div>
+   <div class="config-chips no-print" style="margin:0;">
+    <button type="button" id="chipMetas" onclick="mostrarSecaoConfig('Metas')" class="config-chip" role="tab" aria-selected="false">🎯 Metas</button>
+    <button type="button" id="chipHorarios" onclick="mostrarSecaoConfig('Horarios')" class="config-chip" role="tab" aria-selected="false">🕘 Horários</button>
+   </div>
+  </div>
+  <div style="margin-bottom:10px;">
+   <div style="font-size:10px;font-weight:800;color:#93a3ba;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">📣 Comunicação</div>
+   <div class="config-chips no-print" style="margin:0;">
+    <button type="button" id="chipEmail" onclick="mostrarSecaoConfig('Email')" class="config-chip" role="tab" aria-selected="false">📧 E-mail</button>
+    <button type="button" id="chipMensagens" onclick="mostrarSecaoConfig('Mensagens')" class="config-chip" role="tab" aria-selected="false">💬 Mensagens</button>
+    <button type="button" id="chipSitePublico" onclick="mostrarSecaoConfig('SitePublico')" class="config-chip" role="tab" aria-selected="false">🌐 Site</button>
+   </div>
+  </div>
+  <div>
+   <div style="font-size:10px;font-weight:800;color:#93a3ba;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">🗄️ Visual & Sistema</div>
+   <div class="config-chips no-print" style="margin:0;">
+    <button type="button" id="chipLogo" onclick="mostrarSecaoConfig('Logo')" class="config-chip" role="tab" aria-selected="false">🖼️ Logo</button>
+    <button type="button" id="chipLog" onclick="mostrarSecaoConfig('Log')" class="config-chip" role="tab" aria-selected="false">📜 Histórico</button>
+    <button type="button" id="chipBackup" onclick="mostrarSecaoConfig('Backup')" class="config-chip" role="tab" aria-selected="false">💾 Backup</button>
+   </div>
+  </div>
  </nav>
  <div id="configSecaoConexao" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
   <div class="mb-6">
