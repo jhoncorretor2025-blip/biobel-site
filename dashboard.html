@@ -1674,6 +1674,14 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    </div>
   </div>
 
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>📅 Relatório Anual Consolidado — 2026</h3>
+    <span>soma dos meses já encerrados formalmente + o período atual em andamento</span>
+   </div>
+   <div id="conteudoRelatorioAnual"></div>
+  </div>
+
   <div id="admAncoraGastos"></div>
   <div class="adv-card">
    <div class="adv-card-title">
@@ -1687,13 +1695,15 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <input id="novoGastoFixoDia" type="number" min="1" max="31" placeholder="Dia venc." style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
     <button id="btnAdicionarGastoFixo" onclick="adicionarGastoFixo()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">➕ Add</button>
    </div>
-   <select id="novoGastoFixoCategoria" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+   <select id="novoGastoFixoCategoria" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:8px;">
     <option value="Aluguel/Imóvel">🏠 Aluguel/Imóvel</option>
     <option value="Pessoal">👥 Pessoal (salários, VT)</option>
     <option value="Utilidades">💡 Utilidades (água, luz, internet)</option>
     <option value="Serviços">🧾 Serviços (contadora, etc.)</option>
     <option value="Outros">📋 Outros</option>
    </select>
+   <label for="novoGastoFixoRenovacao" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">📄 Data de renovação do contrato (opcional — pra aluguel, internet, etc.)</label>
+   <input id="novoGastoFixoRenovacao" type="date" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
    <button id="btnCancelarEdicaoGastoFixo" onclick="cancelarEdicaoGastoFixo()" style="display:none;margin-top:8px;background:none;border:none;color:#93a3ba;font-size:12px;text-decoration:underline;cursor:pointer;">✕ Cancelar edição</button>
    <p style="font-size:11px;color:#93a3ba;margin-top:8px;">💡 Pode deixar o valor em branco pra cadastrar o nome agora e preencher o valor depois — vai aparecer como "⚠️ A definir".</p>
   </div>
@@ -3757,6 +3767,7 @@ function mostrarConteudoAdm(){
  atualizarTotaisAdm();
  dispararNotificacaoVencimentos();
  renderHistoricoFechamentosMensais();
+ renderRelatorioAnual();
  renderResumoAtencaoAdm();
 }
 
@@ -3857,6 +3868,16 @@ function renderResumoAtencaoAdm(){
   }
  }
 
+ // Contratos de gastos fixos vencendo (aluguel, internet, etc.) — até 30 dias de antecedência
+ getGastosFixos().forEach(g=>{
+  if(!g.renovacaoContrato) return;
+  const dataRenov = new Date(g.renovacaoContrato+'T00:00:00');
+  if(isNaN(dataRenov.getTime())) return;
+  const diasAteRenov = Math.round((dataRenov.getTime()-hojeData.getTime())/86400000);
+  if(diasAteRenov<0) pontos.push({texto:'Contrato de "'+g.nome+'" venceu há '+Math.abs(diasAteRenov)+' dia'+(Math.abs(diasAteRenov)===1?'':'s'), cor:'#fb7185'});
+  else if(diasAteRenov<=30) pontos.push({texto:'Contrato de "'+g.nome+'" renova em '+diasAteRenov+' dia'+(diasAteRenov===1?'':'s'), cor: diasAteRenov<=7?'#fb7185':'#fbbf24'});
+ });
+
  // Reuniões nos próximos 3 dias
  const hojeStrAtencao = hoje.paraChaveISO();
  getReunioes().forEach(r=>{
@@ -3930,6 +3951,7 @@ function adicionarGastoFixo(){
  const diaInput = document.getElementById('novoGastoFixoDia').value;
  const dia = diaInput ? parseInt(diaInput,10) : null;
  const categoria = document.getElementById('novoGastoFixoCategoria').value;
+ const renovacaoContrato = document.getElementById('novoGastoFixoRenovacao').value || null;
  if(!nome){ mostrarToast('⚠️ Digite o nome do gasto.'); return; }
 
  // Valor é opcional agora — deixar em branco salva como "a definir", pra preencher depois.
@@ -3943,14 +3965,14 @@ function adicionarGastoFixo(){
  if(gastoFixoEditandoId!==null){
   const idx = lista.findIndex(g=>g.id===gastoFixoEditandoId);
   if(idx>=0){
-   lista[idx] = { ...lista[idx], nome, valor, dia: (dia && !isNaN(dia)) ? dia : null, categoria };
+   lista[idx] = { ...lista[idx], nome, valor, dia: (dia && !isNaN(dia)) ? dia : null, categoria, renovacaoContrato };
    salvarGastosFixos(lista);
    mostrarToast('✅ Gasto fixo atualizado!');
    registrarAlteracao('Gasto fixo "'+nome+'" editado');
   }
   cancelarEdicaoGastoFixo();
  } else {
-  lista.push({ id: Date.now(), nome, valor, dia: (dia && !isNaN(dia)) ? dia : null, categoria });
+  lista.push({ id: Date.now(), nome, valor, dia: (dia && !isNaN(dia)) ? dia : null, categoria, renovacaoContrato });
   salvarGastosFixos(lista);
   mostrarToast('✅ Gasto fixo adicionado!');
   registrarAlteracao('Gasto fixo "'+nome+'" adicionado'+(valor!==null?' ('+money(valor)+')':' (valor a definir)'));
@@ -3959,6 +3981,7 @@ function adicionarGastoFixo(){
  document.getElementById('novoGastoFixoValor').value='';
  document.getElementById('novoGastoFixoDia').value='';
  document.getElementById('novoGastoFixoCategoria').value='Aluguel/Imóvel';
+ document.getElementById('novoGastoFixoRenovacao').value='';
  renderGastosFixos();
  atualizarTotaisAdm();
  renderLogAlteracoes();
@@ -3971,6 +3994,7 @@ function editarGastoFixo(id){
  document.getElementById('novoGastoFixoValor').value = g.valor!==null ? String(g.valor).replace('.',',') : '';
  document.getElementById('novoGastoFixoDia').value = g.dia || '';
  document.getElementById('novoGastoFixoCategoria').value = g.categoria || 'Outros';
+ document.getElementById('novoGastoFixoRenovacao').value = g.renovacaoContrato || '';
  const btn = document.getElementById('btnAdicionarGastoFixo');
  if(btn) btn.textContent = '💾 Salvar edição';
  const btnCancelar = document.getElementById('btnCancelarEdicaoGastoFixo');
@@ -3983,6 +4007,7 @@ function cancelarEdicaoGastoFixo(){
  document.getElementById('novoGastoFixoValor').value='';
  document.getElementById('novoGastoFixoDia').value='';
  document.getElementById('novoGastoFixoCategoria').value='Aluguel/Imóvel';
+ document.getElementById('novoGastoFixoRenovacao').value='';
  const btn = document.getElementById('btnAdicionarGastoFixo');
  if(btn) btn.textContent = '➕ Add';
  const btnCancelar = document.getElementById('btnCancelarEdicaoGastoFixo');
@@ -4101,6 +4126,7 @@ function renderGastosFixos(){
     ${g.dia?`<span style="color:#93a3ba;font-size:11px;margin-left:8px;">vence dia ${g.dia}</span>`:''}
     ${avisoVencimento}
     ${g.categoria?`<div style="margin-top:4px;"><span style="font-size:10px;font-weight:800;color:${corCat};background:${corCat}22;padding:2px 8px;border-radius:999px;">${emojiCategoria[g.categoria]||''} ${g.categoria}</span></div>`:''}
+    ${g.renovacaoContrato?`<div style="margin-top:4px;font-size:10.5px;color:#93a3ba;">📄 Contrato renova em ${new Date(g.renovacaoContrato+'T00:00:00').toLocaleDateString('pt-BR')}</div>`:''}
    </div>
    <div style="display:flex;align-items:center;gap:10px;">
     ${g.valor!==null ? `<span style="color:#fb7185;font-weight:800;font-size:13px;">${money(g.valor)}</span>` : `<span style="color:#fbbf24;font-weight:800;font-size:12px;background:rgba(251,191,36,.1);padding:3px 8px;border-radius:999px;">⚠️ A definir</span>`}
@@ -8145,7 +8171,8 @@ function getFechamentosMensais(){
 }
 function encerrarMesAdm(){
  if(daysData.length===0){ mostrarToast('⚠️ Sem dados carregados ainda pra encerrar o período.'); return; }
- confirmarBiobel('Encerrar esse período? Isso guarda um retrato definitivo com os números de agora (faturamento, gastos, comissão, lucro) no histórico — os dados ao vivo continuam podendo mudar depois, mas esse registro fica travado.', ()=>{
+ const usuarioLogado = sessionStorage.getItem('biobel_adm_usuario_logado') || 'não identificado';
+ confirmarBiobel('Encerrar esse período como '+usuarioLogado+'? Isso guarda um retrato definitivo com os números de agora (faturamento, gastos, comissão, lucro) no histórico, com sua confirmação registrada — os dados ao vivo continuam podendo mudar depois, mas esse registro fica travado.', ()=>{
   const faturamento = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
   const gastosFixos = getGastosFixos().reduce((s,g)=>s+(Number(g.valor)||0),0);
   const boletos = getBoletos().reduce((s,b)=>s+(Number(b.valor)||0),0);
@@ -8163,13 +8190,14 @@ function encerrarMesAdm(){
    periodo: nomeMes,
    faturamento, gastosFixos, boletos,
    nivelAtingido: nivel ? nivel.meta : null,
-   custoComissao, custoHoraExtra, lucro
+   custoComissao, custoHoraExtra, lucro,
+   confirmadoPor: usuarioLogado
   };
   const historico = getFechamentosMensais();
   historico.unshift(registro);
   localStorage.setItem('biobel_adm_fechamentos_mensais', JSON.stringify(historico));
-  mostrarToast('✅ Período encerrado e registrado no histórico!');
-  registrarAlteracao('Fechamento mensal formal registrado: '+nomeMes);
+  mostrarToast('✅ Período encerrado e confirmado por '+usuarioLogado+'!');
+  registrarAlteracao('Fechamento mensal formal registrado: '+nomeMes+' (confirmado por '+usuarioLogado+')');
   renderLogAlteracoes();
   renderHistoricoFechamentosMensais();
  });
@@ -8202,7 +8230,7 @@ function renderHistoricoFechamentosMensais(){
       <button onclick="removerFechamentoMensal(${r.id})" aria-label="Remover" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:13px;">🗑️</button>
      </div>
     </div>
-    <div style="font-size:10.5px;color:#93a3ba;margin-top:4px;">Encerrado em ${dataTexto}</div>
+    <div style="font-size:10.5px;color:#93a3ba;margin-top:4px;">Encerrado em ${dataTexto}${r.confirmadoPor?' · ✍️ Confirmado por <strong style="color:#dce5f2;">'+r.confirmadoPor+'</strong>':''}</div>
     <div style="font-size:11.5px;color:#93a3ba;margin-top:6px;">Faturamento: ${money(r.faturamento)} · Gastos: ${money(r.gastosFixos+r.boletos)} · Comissão/bônus: ${money(r.custoComissao+r.custoHoraExtra)}</div>
    </div>`;
  }).join('');
@@ -8250,6 +8278,63 @@ function renderGraficoGastosMensais(){
    }
   }
  });
+}
+
+function renderRelatorioAnual(){
+ const el = document.getElementById('conteudoRelatorioAnual');
+ if(!el) return;
+ const historico = getFechamentosMensais();
+ const mesesEncerrados = [...new Set(historico.map(r=>r.periodo))];
+
+ // Soma tudo que já foi encerrado formalmente...
+ let faturamentoAno = historico.reduce((s,r)=>s+(Number(r.faturamento)||0),0);
+ let gastosAno = historico.reduce((s,r)=>s+(Number(r.gastosFixos)||0)+(Number(r.boletos)||0),0);
+ let comissoesAno = historico.reduce((s,r)=>s+(Number(r.custoComissao)||0)+(Number(r.custoHoraExtra)||0),0);
+ let lucroAno = historico.reduce((s,r)=>s+(Number(r.lucro)||0),0);
+
+ // ...mais o período atual em andamento, se ainda não tiver sido encerrado (evita contar 2x).
+ const hoje = obterAgoraBrasilia();
+ const nomesMesesPt = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+ const nomePeriodoAtual = nomesMesesPt[hoje.getMonth()]+' de 2026';
+ const jaEncerrouEsseMes = mesesEncerrados.includes(nomePeriodoAtual);
+ if(!jaEncerrouEsseMes && daysData.length>0){
+  const fatAtual = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+  const gastosAtual = getGastosFixos().reduce((s,g)=>s+(Number(g.valor)||0),0) + getBoletos().reduce((s,b)=>s+(Number(b.valor)||0),0);
+  const comissaoAtual = custoTotalComissaoAtual() + calcularCustoMensalHoraExtra();
+  faturamentoAno += fatAtual;
+  gastosAno += gastosAtual;
+  comissoesAno += comissaoAtual;
+  lucroAno += (window._ultimoLucroEstimado || 0);
+ }
+
+ const totalMesesConsiderados = mesesEncerrados.length + (jaEncerrouEsseMes || daysData.length===0 ? 0 : 1);
+
+ if(totalMesesConsiderados===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Sem nenhum período contabilizado ainda — carregue dados ou encerre algum mês pra começar.</p>';
+  return;
+ }
+
+ el.innerHTML = `
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:10px;">
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
+    <div style="font-size:10px;color:#93a3ba;">💰 Faturamento do ano</div>
+    <div style="font-size:16px;font-weight:900;color:#dce5f2;margin-top:2px;">${money(faturamentoAno)}</div>
+   </div>
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
+    <div style="font-size:10px;color:#93a3ba;">💸 Gastos do ano</div>
+    <div style="font-size:16px;font-weight:900;color:#fb7185;margin-top:2px;">${money(gastosAno)}</div>
+   </div>
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
+    <div style="font-size:10px;color:#93a3ba;">🎯 Comissões/bônus do ano</div>
+    <div style="font-size:16px;font-weight:900;color:#fbbf24;margin-top:2px;">${money(comissoesAno)}</div>
+   </div>
+   <div style="background:#0b1728;border:1px solid ${lucroAno>=0?'rgba(39,215,160,.4)':'rgba(251,113,133,.4)'};border-radius:10px;padding:12px 14px;">
+    <div style="font-size:10px;color:#93a3ba;">📈 Lucro do ano</div>
+    <div style="font-size:16px;font-weight:900;color:${lucroAno>=0?'#27d7a0':'#fb7185'};margin-top:2px;">${money(lucroAno)}</div>
+   </div>
+  </div>
+  <p style="font-size:10.5px;color:#93a3ba;">📆 Considerando ${totalMesesConsiderados} período${totalMesesConsiderados===1?'':'s'} (${mesesEncerrados.length} encerrado${mesesEncerrados.length===1?'':'s'} formalmente${!jaEncerrouEsseMes&&daysData.length>0?' + '+nomePeriodoAtual+' em andamento':''}).</p>
+ `;
 }
 
 /* ===== Exportar Excel (planilha de verdade, pronta pra levar pro contador) ===== */
