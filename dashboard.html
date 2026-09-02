@@ -348,11 +348,52 @@ body.light-mode [style*="background:#0b1728"]{background:#f4f6f9!important;}
 body.light-mode [style*="border:1px solid #1e2c42"]{border-color:#dde3ea!important;}
 body.light-mode [style*="border-top:1px solid #1e2c42"]{border-top-color:#dde3ea!important;}
 body.light-mode [style*="border-bottom:1px solid #1e2c42"]{border-bottom-color:#dde3ea!important;}
+
+/* Melhoria 1+4: botões de ação (editar/excluir/pago) em listas densas ganham mais área de toque
+   e mais espaçamento entre si no celular, evitando toque errado sem querer. */
+@media(max-width:640px){
+ button[onclick*="editar"], button[onclick*="remover"], button[onclick*="alternar"]{
+  min-width:32px; min-height:32px; padding:6px!important;
+ }
+}
+
+/* Melhoria 2: botão flutuante de "voltar ao topo", aparece só depois de rolar a tela. */
+#btnVoltarTopo{
+ display:none; position:fixed; bottom:20px; right:16px; z-index:45;
+ width:44px; height:44px; border-radius:50%; border:1px solid #1e2c42;
+ background:#0ea97a; color:#04241a; font-size:18px; font-weight:900; cursor:pointer;
+ box-shadow:0 8px 20px rgba(0,0,0,.35); align-items:center; justify-content:center;
+}
+#btnVoltarTopo.mostrar{ display:flex; }
+body.light-mode #btnVoltarTopo{ background:#0ea97a; color:#04241a; }
+
+/* Melhoria 3: textos de detalhe pequenos (forma de pagamento, badges) ficam um pouco maiores no celular. */
+@media(max-width:640px){
+ .adv-card [style*="font-size:10px"], .adv-card [style*="font-size:10.5px"]{ font-size:11.5px!important; }
+}
+
+/* Melhoria 6: em monitores bem grandes, mais seções aproveitam a largura extra. */
+@media(min-width:1800px){
+ #infoTab, #alertasTab, #equipeTab{ max-width:88rem!important; }
+}
+
+/* Melhoria 7: gráficos (pizza, barras) ficam um pouco maiores por padrão. */
+#graficoPizzaAdm, #graficoGastosMensais{ min-height:220px; }
+
+/* Melhoria 8: reforça a diferença entre o número principal (grande) e os detalhes (pequenos). */
+.adv-kpi .value{ letter-spacing:-.04em!important; }
+
+/* Melhoria 10: modo compacto — reduz o espaçamento entre cards e o padding interno, pra caber
+   mais informação na tela sem precisar rolar tanto. Ativado via um botão no cabeçalho. */
+body.modo-compacto .adv-card{ padding:12px!important; margin-bottom:8px!important; }
+body.modo-compacto .adv-kpi{ padding:12px!important; }
+body.modo-compacto .space-y-4 > * + *{ margin-top:8px!important; }
 </style>
 
 </head>
 <body class="min-h-screen bg-slate-950 text-slate-100">
 <div id="faixaMensagemProgramada" style="display:none;"></div>
+<button id="btnVoltarTopo" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Voltar ao topo">↑</button>
 <a href="#dashboardTab" style="position:absolute;left:-9999px;top:0;z-index:9999;background:#0ea97a;color:#04241a;padding:12px 18px;border-radius:0 0 10px 0;font-weight:700;text-decoration:none" onfocus="this.style.left='0'" onblur="this.style.left='-9999px'">Pular para o conteúdo</a>
 <script>
 // Proteção de acesso: só entra aqui quem passou pela tela de login (login.html).
@@ -388,9 +429,10 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <button onclick="ajustarFonteBiobel(0)" aria-label="Restaurar tamanho padrão da fonte" title="Tamanho padrão" style="background:transparent;border:none;border-left:1px solid #1c2c42;border-right:1px solid #1c2c42;color:#93a3ba;padding:4px 8px;font-size:12px;font-weight:800;cursor:pointer;">A</button>
    <button onclick="ajustarFonteBiobel(1)" aria-label="Aumentar tamanho da fonte" title="Aumentar fonte" style="background:transparent;border:none;color:#93a3ba;padding:4px 8px;font-size:12px;font-weight:800;cursor:pointer;">A+</button>
   </div>
-  <button id="themeToggleBtn" onclick="toggleTheme()" class="no-print text-xs text-slate-400 hover:text-white flex items-center gap-1">
+  <button id="themeToggleBtn" onclick="toggleTheme()" class="no-print text-xs text-slate-300 hover:text-white flex items-center gap-1" style="background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Trocar entre modo escuro e claro">
    <span id="themeToggleIcon">🌙</span> <span id="themeToggleLabel">Modo claro</span>
   </button>
+  <button id="btnModoCompacto" onclick="alternarModoCompacto()" class="no-print text-xs text-slate-300 hover:text-white" style="background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Reduzir o espaçamento pra caber mais informação na tela">↕️ Compacto</button>
   <button onclick="confirmLogout()" class="no-print text-xs text-slate-400 hover:text-rose-400 underline">Sair</button>
  </div>
  <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row gap-4 justify-between items-center">
@@ -2519,6 +2561,13 @@ function alternarPeriodoTopVendas(periodo){
  if(btnAcum){ btnAcum.style.background = periodo==='acumulado' ? '#27d7a0' : 'transparent'; btnAcum.style.color = periodo==='acumulado' ? '#04241a' : '#93a3ba'; }
  renderTopVendasVendedoras();
 }
+function getHorasTrabalhadasVendedora(nome){
+ // Alesandra e Gabriela trabalham 8h/dia, a Day (estagiária) trabalha 6h/dia — importante pra
+ // comparar as vendas de forma justa, já que a Day sempre teria menos tempo pra vender no total.
+ const nomeNorm = String(nome||'').toLowerCase();
+ if(nomeNorm.includes('day') || nomeNorm.includes('dai')) return 6;
+ return 8;
+}
 function renderTopVendasVendedoras(){
  const card = document.getElementById('cardTopVendasVendedoras');
  const diaAtual = window._diaAtualCaixaCompleto;
@@ -2571,18 +2620,37 @@ function renderTopVendasVendedoras(){
    totaisPorVendedora[nome].pixValor += det.pixValor||0;
   });
  });
- const ranking = Object.entries(totaisPorVendedora).sort((a,b)=>b[1].total-a[1].total);
+ // Valor por hora trabalhada — importante pra comparar de forma justa, já que a Day (estagiária,
+ // 6h/dia) sempre teria menos tempo pra vender no total do que Alesandra e Gabriela (8h/dia).
+ const qtdDiasConsiderados = diasConsiderados.length || 1;
+ const totaisComMedia = Object.entries(totaisPorVendedora).map(([nome, t])=>{
+  const horasPorDia = getHorasTrabalhadasVendedora(nome);
+  const totalHoras = horasPorDia * qtdDiasConsiderados;
+  const mediaPorHora = totalHoras>0 ? t.total/totalHoras : 0;
+  return [nome, {...t, mediaPorHora, horasPorDia}];
+ });
+ const ordenarPor = window._ordenarRankingPor || 'total';
+ const ranking = [...totaisComMedia].sort((a,b)=> ordenarPor==='media' ? b[1].mediaPorHora-a[1].mediaPorHora : b[1].total-a[1].total);
  const elRanking = document.getElementById('rankingVendedorasDoDia');
  if(elRanking){
   const medalhas = ['🥇','🥈','🥉'];
-  elRanking.innerHTML = '<div style="font-size:10px;font-weight:800;color:#93a3ba;text-transform:uppercase;margin-bottom:8px;">👥 Ranking de Vendedoras'+(_periodoTopVendas==='acumulado'?' (acumulado do mês)':'')+'</div>' +
+  elRanking.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+     <div style="font-size:10px;font-weight:800;color:#93a3ba;text-transform:uppercase;">👥 Ranking de Vendedoras${_periodoTopVendas==='acumulado'?' (acumulado do mês)':''}</div>
+     <div style="display:flex;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;overflow:hidden;">
+      <button type="button" onclick="alternarOrdemRanking('total')" style="border:0;padding:5px 10px;font-size:10.5px;font-weight:800;cursor:pointer;background:${ordenarPor==='total'?'#27d7a0':'transparent'};color:${ordenarPor==='total'?'#04241a':'#93a3ba'};">💰 Total</button>
+      <button type="button" onclick="alternarOrdemRanking('media')" style="border:0;padding:5px 10px;font-size:10.5px;font-weight:800;cursor:pointer;background:${ordenarPor==='media'?'#27d7a0':'transparent'};color:${ordenarPor==='media'?'#04241a':'#93a3ba'};">⏱️ R$/hora</button>
+     </div>
+    </div>` +
    (ranking.length===0
     ? '<p style="color:#93a3ba;font-size:12px;">Sem dados de vendedoras pra esse período.</p>'
     : ranking.map(([nome, t], i)=>`
       <div style="background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:10px 12px;margin-bottom:6px;">
        <div style="display:flex;justify-content:space-between;align-items:center;">
         <span style="font-size:12.5px;color:#dce5f2;font-weight:700;">${medalhas[i]||(i+1)+'º'} ${nome}</span>
-        <span style="font-size:13.5px;font-weight:900;color:#27d7a0;">${money(t.total)}</span>
+        <div style="text-align:right;">
+         <span style="font-size:13.5px;font-weight:900;color:#27d7a0;">${money(t.total)}</span>
+         <div style="font-size:10px;color:#93a3ba;">${money(t.mediaPorHora)}/h (${t.horasPorDia}h/dia)</div>
+        </div>
        </div>
        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;font-size:10.5px;color:#93a3ba;">
         <span>💵 ${money(t.dinheiroValor)}</span>
@@ -2592,6 +2660,10 @@ function renderTopVendasVendedoras(){
        </div>
       </div>`).join(''));
  }
+}
+function alternarOrdemRanking(ordem){
+ window._ordenarRankingPor = ordem;
+ renderTopVendasVendedoras();
 }
 
 function updateCompleteDay(day){
@@ -2734,6 +2806,33 @@ document.addEventListener('click', function(e){
  if(!el || el.style.display==='none') return;
  if(!el.contains(e.target) && e.target!==input) el.style.display='none';
 });
+
+/* ===== Botão "Voltar ao Topo" (aparece só depois de rolar a tela) ===== */
+window.addEventListener('scroll', function(){
+ const btn = document.getElementById('btnVoltarTopo');
+ if(!btn) return;
+ btn.classList.toggle('mostrar', window.scrollY>400);
+});
+
+/* ===== Modo Compacto (reduz espaçamento entre cards, pra caber mais informação na tela) ===== */
+function alternarModoCompacto(){
+ const ativo = document.body.classList.toggle('modo-compacto');
+ localStorage.setItem('biobel_modo_compacto', ativo?'yes':'no');
+ atualizarBotaoModoCompacto();
+}
+function atualizarBotaoModoCompacto(){
+ const btn = document.getElementById('btnModoCompacto');
+ if(!btn) return;
+ const ativo = document.body.classList.contains('modo-compacto');
+ btn.style.background = ativo ? '#0ea97a' : '#0b1728';
+ btn.style.color = ativo ? '#04241a' : '#cbd5e1';
+ btn.textContent = ativo ? '↕️ Compacto ✓' : '↕️ Compacto';
+}
+(function initModoCompacto(){
+ if(localStorage.getItem('biobel_modo_compacto')==='yes'){
+  document.body.classList.add('modo-compacto');
+ }
+})();
 
 function alternarMenuMais(){
  const menu = document.getElementById('menuMaisDropdown');
@@ -10247,6 +10346,7 @@ document.addEventListener('keydown', e=>{
 
 aplicarLogoPersonalizadaNoSistema();
 inicializarBotoesCompartilharNativo();
+atualizarBotaoModoCompacto();
 render();
 </script>
 </body>
