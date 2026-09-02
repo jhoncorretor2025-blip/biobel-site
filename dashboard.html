@@ -999,6 +999,14 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
   <div class="adv-card">
    <div class="adv-card-title">
+    <h3>🏆 Top 30 Melhores Dias (de todos os meses)</h3>
+    <span>mistura o mês atual com todos os meses já arquivados — não separa por mês, é o ranking geral de sempre</span>
+   </div>
+   <div id="conteudoTop30Dias"></div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
     <h3>📊 Comparar meses arquivados</h3>
     <span>escolha até 3 meses pra ver os totais lado a lado</span>
    </div>
@@ -2945,6 +2953,7 @@ function showTab(tab){
   montarSeletorMeses();
   renderListaMesesComparar();
   renderComparacaoMesmoPeriodo();
+  renderTop30Dias();
   renderInfoTab();
   let secaoInfoLembrada = 'Financeiro';
   try{ secaoInfoLembrada = localStorage.getItem('biobel_info_secao_ativa') || 'Financeiro'; }catch(e){}
@@ -7168,6 +7177,52 @@ function renderComparacaoMesmoPeriodo(){
    </div>
   </div>
  `;
+}
+
+/* ===== Top 30 Melhores Dias — junta o mês atual com TODOS os meses arquivados, sem separar ===== */
+function renderTop30Dias(){
+ const el = document.getElementById('conteudoTop30Dias');
+ if(!el) return;
+
+ const nomesMeses = {'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'};
+
+ // Junta o mês atual (ao vivo) com todos os meses já arquivados — usa um Map pra nunca contar
+ // o mesmo dia duas vezes, mesmo que ele apareça tanto ao vivo quanto arquivado.
+ let arquivo = {};
+ try{ arquivo = JSON.parse(localStorage.getItem('biobel_arquivo_meses')||'{}'); }catch(e){}
+
+ const todosOsDias = new Map();
+ daysData.forEach(d=>{
+  const [dia, mes] = String(d.dia).split('.');
+  todosOsDias.set(dia+'.'+mes, { dia, mes, sales: Number(d.sales)||0 });
+ });
+ Object.entries(arquivo).forEach(([mesKey, dias])=>{
+  (dias||[]).forEach(d=>{
+   const [dia] = String(d.dia).split('.');
+   const chave = dia+'.'+mesKey;
+   if(!todosOsDias.has(chave)){
+    todosOsDias.set(chave, { dia, mes: mesKey, sales: Number(d.sales)||0 });
+   }
+  });
+ });
+
+ const listaCompleta = Array.from(todosOsDias.values()).filter(d=>d.sales>0);
+ if(listaCompleta.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Sem dados suficientes ainda pra montar esse ranking.</p>';
+  return;
+ }
+
+ const top30 = [...listaCompleta].sort((a,b)=>b.sales-a.sales).slice(0,30);
+ const medalhas = ['🥇','🥈','🥉'];
+
+ el.innerHTML = `<div style="max-height:420px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;">` +
+  top30.map((d,i)=>`
+   <div style="display:flex;justify-content:space-between;align-items:center;background:#0b1728;border:1px solid ${i<3?'rgba(39,215,160,.3)':'#1e2c42'};border-radius:8px;padding:8px 12px;">
+    <span style="font-size:12.5px;color:#dce5f2;">${medalhas[i]||'#'+(i+1)} ${d.dia}/${nomesMeses[d.mes]||d.mes}</span>
+    <span style="font-size:13px;font-weight:800;color:${i<3?'#27d7a0':'#dce5f2'};">${money(d.sales)}</span>
+   </div>`).join('') +
+  `</div>
+  <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">📊 Baseado em ${listaCompleta.length} dia${listaCompleta.length===1?'':'s'} guardado${listaCompleta.length===1?'':'s'} no total (mês atual + arquivados).</p>`;
 }
 
 function renderListaMesesComparar(){
