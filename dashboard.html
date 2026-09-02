@@ -9107,7 +9107,7 @@ function atualizarNomePlanilhaAtiva(){
 function verificarMesDivergente(nomePlanilhaAtiva){
  const el = document.getElementById('avisoMesDivergente');
  if(!el) return;
- if(daysData.length===0 || !nomePlanilhaAtiva){ el.style.display='none'; return; }
+ if(!nomePlanilhaAtiva){ el.style.display='none'; return; }
 
  const hoje = obterAgoraBrasilia();
  const nomesMeses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
@@ -9808,7 +9808,6 @@ async function loadGoogleSheet(){
   render();
   setGoogleStatus(`conectado. ${found} dia(s) atualizado(s) às ${new Date().toLocaleTimeString('pt-BR')}.`,true);
   verificarEnvioEmailMensal();
-  atualizarNomePlanilhaAtiva();
   sugerirProximaPlanilha();
  }catch(err){
   console.error(err);
@@ -9816,6 +9815,9 @@ async function loadGoogleSheet(){
  }finally{
   setRefreshButtonsLoading(false);
   carregandoPlanilha = false;
+  // Roda sempre, sucesso ou falha — o aviso de "mês virou" só depende de qual planilha está
+  // configurada (já salva no navegador), não precisa de conexão nenhuma pra funcionar.
+  atualizarNomePlanilhaAtiva();
  }
 }
 function startGoogleAutoRefresh(){
@@ -9826,6 +9828,10 @@ function startGoogleAutoRefresh(){
  const saved=localStorage.getItem('biobel_google_sheet_url');
  const input=document.getElementById('googleSheetUrl');
  if(saved && input) input.value=saved;
+ // O aviso de "mês virou" já aparece na hora, mesmo antes da planilha terminar de carregar (ou
+ // mesmo se a conexão falhar) — ele só depende de saber qual planilha está configurada, que já
+ // está salva no navegador.
+ atualizarNomePlanilhaAtiva();
  // Sempre busca a planilha ao abrir a página (usa o link salvo, ou o link padrão da loja),
  // e sempre mantém a atualização automática ligada — mesmo em um computador novo.
  startGoogleAutoRefresh();
