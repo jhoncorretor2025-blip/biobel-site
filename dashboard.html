@@ -6871,6 +6871,16 @@ function renderCentralDeAlertas(){
   });
  }
 
+ // Queda grande (20%+) comparando o mesmo período do mês atual com o mês passado.
+ const quedaComparacao = calcularQuedaMesmoPeriodo();
+ if(quedaComparacao){
+  alertas.push({
+   severidade:'atencao', emoji:'📉', titulo:'Queda forte comparado ao mês passado',
+   descricao:`Faturamento caiu ${Math.abs(quedaComparacao.percentual).toFixed(1)}% em ${quedaComparacao.nomeMesAtual} comparado ao mesmo período de ${quedaComparacao.nomeMesAnterior}. Vale investigar o que mudou.`,
+   aba:'info', secao:'Comparar'
+  });
+ }
+
  // Ordena por severidade: crítico primeiro, depois atenção, depois informativo.
  const ordemSeveridade = {critico:0, atencao:1, informativo:2};
  alertas.sort((a,b)=>ordemSeveridade[a.severidade]-ordemSeveridade[b.severidade]);
@@ -7090,6 +7100,98 @@ function montarSeletorMeses(){
 
 /* ===== Comparar meses arquivados lado a lado ===== */
 /* ===== Comparar Mesmo Período — este mês (em andamento) x mês passado (arquivado) ===== */
+function calcularQuedaMesmoPeriodo(){
+ // Versão independente (sem depender de nenhuma tela estar aberta) — usada tanto pela Central
+ // de Alertas quanto pela tela de comparação, pra sempre calcular a mesma coisa do mesmo jeito.
+ if(daysData.length===0) return null;
+ const mesAtualNum = Number(String(daysData[0].dia).split('.')[1]);
+ let mesAnteriorNum = mesAtualNum - 1;
+ if(mesAnteriorNum<1) mesAnteriorNum = 12;
+ const mesAnteriorStr = String(mesAnteriorNum).padStart(2,'0');
+ let arquivo = {};
+ try{ arquivo = JSON.parse(localStorage.getItem('biobel_arquivo_meses')||'{}'); }catch(e){}
+ const diasMesAnterior = arquivo[mesAnteriorStr] || [];
+ if(diasMesAnterior.length===0) return null;
+ const diasOrdenadosAnterior = [...diasMesAnterior].sort((a,b)=>Number(String(a.dia).split('.')[0])-Number(String(b.dia).split('.')[0]));
+ const primeirosDiasAnterior = diasOrdenadosAnterior.slice(0, daysData.length);
+ const faturamentoAtual = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const faturamentoAnterior = primeirosDiasAnterior.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ if(faturamentoAnterior<=0) return null;
+ const percentual = ((faturamentoAtual-faturamentoAnterior)/faturamentoAnterior)*100;
+ if(percentual>-20) return null;
+ const nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+ return { percentual, nomeMesAtual: nomesMeses[mesAtualNum-1], nomeMesAnterior: nomesMeses[mesAnteriorNum-1] };
+}
+
+/* ===== Recordes batidos (item 10) — guarda uma linha do tempo de conquistas ===== */
+function getRecordesComparacao(){
+ try{ return JSON.parse(localStorage.getItem('biobel_recordes_comparacao')||'[]'); }catch(e){ return []; }
+}
+function verificarRecordesComparacao(faturamentoAtual, diasConsiderados){
+ if(diasConsiderados<=0) return;
+ const mediaAtual = faturamentoAtual/diasConsiderados;
+ const recordes = getRecordesComparacao();
+ const melhorMediaAnterior = recordes.filter(r=>r.tipo==='media_diaria').sort((a,b)=>b.valor-a.valor)[0];
+ if(!melhorMediaAnterior || mediaAtual>melhorMediaAnterior.valor){
+  const hoje = obterAgoraBrasilia().paraChaveISO();
+  const jaRegistrouHoje = recordes.some(r=>r.tipo==='media_diaria' && r.data===hoje);
+  if(!jaRegistrouHoje){
+   recordes.unshift({ tipo:'media_diaria', valor:mediaAtual, data:hoje, descricao:'Nova melhor média diária: '+money(mediaAtual) });
+   localStorage.setItem('biobel_recordes_comparacao', JSON.stringify(recordes.slice(0,50)));
+  }
+ }
+}
+function renderRecordesComparacao(){
+ const el = document.getElementById('conteudoRecordesComparacao');
+ if(!el) return;
+ const recordes = getRecordesComparacao();
+ if(recordes.length===0){ el.innerHTML=''; return; }
+ el.innerHTML = `<div style="border-top:1px solid #1e2c42;padding-top:14px;">
+   <div style="font-size:10.5px;color:#93a3ba;font-weight:800;text-transform:uppercase;margin-bottom:8px;">🏅 Recordes Batidos</div>
+   <div style="max-height:200px;overflow-y:auto;">
+   ${recordes.slice(0,10).map(r=>`<div style="font-size:11.5px;color:#dce5f2;padding:5px 0;border-bottom:1px solid #1e2c42;">🏅 ${new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR')} — ${r.descricao}</div>`).join('')}
+   </div>
+  </div>`;
+}
+
+/* ===== Exportar a comparação em PDF (item 6) ===== */
+async function exportarComparacaoPeriodoPDF(){
+ try{
+  await carregarJsPDFSobDemanda();
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({unit:'mm', format:'a4'});
+  const largura = doc.internal.pageSize.getWidth();
+  const margem = 15;
+  let y = 20;
+
+  const logoDataUrl = await obterLogoDataUrl();
+  if(logoDataUrl){
+   const formato = logoDataUrl.includes('image/jpeg') ? 'JPEG' : 'PNG';
+   try{ doc.addImage(logoDataUrl, formato, margem, y-8, 20, 20); }catch(e){}
+  }
+  doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.setTextColor(20,20,20);
+  doc.text('Comparação — Mesmo Período', margem+26, y);
+  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(90,90,90);
+  doc.text('Gerado em '+new Date().toLocaleString('pt-BR'), margem+26, y+7);
+  y += 22;
+
+  const texto = document.getElementById('conteudoComparacaoMesmoPeriodo').innerText;
+  doc.setFontSize(10); doc.setTextColor(20,20,20);
+  const linhas = doc.splitTextToSize(texto, largura-margem*2);
+  linhas.forEach(linha=>{
+   if(y>280){ doc.addPage(); y=20; }
+   doc.text(linha, margem, y);
+   y += 5.5;
+  });
+
+  doc.save('biobel-comparacao-periodo-'+new Date().toISOString().slice(0,10)+'.pdf');
+  mostrarToast('✅ PDF exportado!');
+ }catch(e){
+  console.error(e);
+  mostrarToast('⚠️ Não foi possível gerar o PDF.');
+ }
+}
+
 function renderComparacaoMesmoPeriodo(){
  const el = document.getElementById('conteudoComparacaoMesmoPeriodo');
  if(!el) return;
@@ -7129,6 +7231,35 @@ function renderComparacaoMesmoPeriodo(){
  const diferenca = faturamentoAtual - faturamentoAnterior;
  const percentual = faturamentoAnterior>0 ? (diferenca/faturamentoAnterior*100) : null;
  const subiu = diferenca>=0;
+
+ // Item 8: alerta automático se a queda for grande (20%+), reaproveitando o sistema de alertas.
+ window._quedaGrandeComparacaoPeriodo = calcularQuedaMesmoPeriodo();
+
+ // Item 10: verifica e registra novos recordes batidos nessa comparação (ticket médio, etc.)
+ verificarRecordesComparacao(faturamentoAtual, diasEsteMes);
+
+ // Item 1: quantidade de itens vendidos (não só R$) em cada período.
+ function somarItensVendidos(dias){
+  return dias.reduce((s,d)=>s+(d.registrosVendas||[]).reduce((s2,r)=>s2+(r.qtdItens||0),0),0);
+ }
+ const itensAtual = somarItensVendidos(daysData);
+ const itensAnterior = somarItensVendidos(primeirosDiasAnterior);
+
+ // Item 2: horário de pico de cada período (soma o valor de cada hora, entre todos os dias).
+ function acharHorarioPico(dias){
+  const porHora = {};
+  dias.forEach(d=>{
+   Object.entries(d.horarios||{}).forEach(([hora,info])=>{
+    porHora[hora] = (porHora[hora]||0) + (info.valor||0);
+   });
+  });
+  const entradas = Object.entries(porHora);
+  if(entradas.length===0) return null;
+  const [horaPico, valorPico] = entradas.sort((a,b)=>b[1]-a[1])[0];
+  return { hora: Number(horaPico), valor: valorPico };
+ }
+ const picoAtual = acharHorarioPico(daysData);
+ const picoAnterior = acharHorarioPico(primeirosDiasAnterior);
 
  function somarPorVendedora(dias){
   const totais = {};
@@ -7209,6 +7340,7 @@ function renderComparacaoMesmoPeriodo(){
   </div>
   <div style="background:${subiu?'rgba(39,215,160,.08)':'rgba(251,113,133,.08)'};border:1px solid ${subiu?'rgba(39,215,160,.3)':'rgba(251,113,133,.3)'};border-radius:12px;padding:12px 16px;margin-bottom:16px;">
    <div style="font-size:13px;font-weight:800;color:${subiu?'#27d7a0':'#fb7185'};">${subiu?'📈':'📉'} ${subiu?'Subiu':'Caiu'} ${money(Math.abs(diferenca))}${percentual!==null?' ('+(subiu?'+':'')+percentual.toFixed(1)+'%)':''} em relação ao mesmo período do mês passado</div>
+   ${window._quedaGrandeComparacaoPeriodo ? `<div style="font-size:11.5px;color:#fb7185;margin-top:6px;">🔴 Essa é uma queda grande (20%+) — vale investigar o que mudou.</div>` : ''}
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
    <div>
@@ -7219,6 +7351,27 @@ function renderComparacaoMesmoPeriodo(){
     <div style="font-size:10.5px;color:#93a3ba;font-weight:800;text-transform:uppercase;margin-bottom:6px;">👥 Quem vendeu mais — ${nomeMesAnterior}</div>
     ${listaRanking(rankingAnterior)}
    </div>
+  </div>
+
+  <div style="border-top:1px solid #1e2c42;padding-top:14px;margin-bottom:16px;">
+   <div style="font-size:10.5px;color:#93a3ba;font-weight:800;text-transform:uppercase;margin-bottom:8px;">🧺 Itens Vendidos (${nomeMesAtual} vs ${nomeMesAnterior})</div>
+   <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;">
+    <span style="font-size:12px;color:#93a3ba;">🧺 Quantidade de itens</span>
+    <span style="font-size:12.5px;color:#dce5f2;"><strong>${itensAtual}</strong> <span style="color:#93a3ba;">vs</span> ${itensAnterior}</span>
+   </div>
+  </div>
+
+  <div style="border-top:1px solid #1e2c42;padding-top:14px;margin-bottom:16px;">
+   <div style="font-size:10.5px;color:#93a3ba;font-weight:800;text-transform:uppercase;margin-bottom:8px;">🔥 Horário de Pico (${nomeMesAtual} vs ${nomeMesAnterior})</div>
+   <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;">
+    <span style="font-size:12px;color:#93a3ba;">🔥 Melhor horário</span>
+    <span style="font-size:12.5px;color:#dce5f2;">
+     <strong>${picoAtual ? picoAtual.hora+'h ('+money(picoAtual.valor)+')' : '—'}</strong>
+     <span style="color:#93a3ba;"> vs </span>
+     ${picoAnterior ? picoAnterior.hora+'h ('+money(picoAnterior.valor)+')' : '—'}
+    </span>
+   </div>
+   ${(picoAtual && picoAnterior && picoAtual.hora!==picoAnterior.hora) ? `<div style="font-size:11px;color:#fbbf24;margin-top:4px;">⚠️ O horário mais forte mudou de ${picoAnterior.hora}h pra ${picoAtual.hora}h.</div>` : ''}
   </div>
 
   <div style="border-top:1px solid #1e2c42;padding-top:14px;margin-bottom:16px;">
@@ -7234,11 +7387,15 @@ function renderComparacaoMesmoPeriodo(){
    ${linhaComparacao('Pix', pagAtual.pix, pagAnterior.pix, '📲')}
   </div>
 
-  <div style="border-top:1px solid #1e2c42;padding-top:14px;">
+  <div style="border-top:1px solid #1e2c42;padding-top:14px;margin-bottom:16px;">
    <div style="font-size:10.5px;color:#93a3ba;font-weight:800;text-transform:uppercase;margin-bottom:8px;">📆 Dias da Semana (${nomeMesAtual} vs ${nomeMesAnterior})</div>
    ${nomesDiasSemanaComp.map((nome,i)=>linhaDiaSemana(nome,i)).join('')}
   </div>
+
+  <button onclick="exportarComparacaoPeriodoPDF()" class="w-full bg-purple-600 hover:bg-purple-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="background:#8b5cf6;margin-top:8px;">📑 Exportar essa comparação em PDF</button>
+  <div id="conteudoRecordesComparacao" style="margin-top:16px;"></div>
  `;
+ renderRecordesComparacao();
 }
 
 /* ===== Top 30 Melhores Dias — junta o mês atual com TODOS os meses arquivados, sem separar ===== */
