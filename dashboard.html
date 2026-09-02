@@ -991,6 +991,14 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
  <div id="infoSecaoComparar" style="display:none;">
   <div class="adv-card">
    <div class="adv-card-title">
+    <h3>📅 Mesmo Período — Este Mês x Mês Passado</h3>
+    <span>compara os primeiros dias corridos de cada mês (ex: se hoje é o 2º dia útil de setembro, compara com os 2 primeiros dias úteis de agosto)</span>
+   </div>
+   <div id="conteudoComparacaoMesmoPeriodo"></div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
     <h3>📊 Comparar meses arquivados</h3>
     <span>escolha até 3 meses pra ver os totais lado a lado</span>
    </div>
@@ -2936,6 +2944,7 @@ function showTab(tab){
   b4.setAttribute('aria-selected','true');
   montarSeletorMeses();
   renderListaMesesComparar();
+  renderComparacaoMesmoPeriodo();
   renderInfoTab();
   let secaoInfoLembrada = 'Financeiro';
   try{ secaoInfoLembrada = localStorage.getItem('biobel_info_secao_ativa') || 'Financeiro'; }catch(e){}
@@ -7071,6 +7080,96 @@ function montarSeletorMeses(){
 }
 
 /* ===== Comparar meses arquivados lado a lado ===== */
+/* ===== Comparar Mesmo Período — este mês (em andamento) x mês passado (arquivado) ===== */
+function renderComparacaoMesmoPeriodo(){
+ const el = document.getElementById('conteudoComparacaoMesmoPeriodo');
+ if(!el) return;
+
+ const diasEsteMes = daysData.length;
+ if(diasEsteMes===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Sem dados carregados no mês atual ainda.</p>';
+  return;
+ }
+
+ // Acha o mês anterior arquivado (o mês anterior ao mês do próprio daysData atual, não
+ // necessariamente "hoje" — assim funciona mesmo revisando um mês antigo).
+ const mesAtualNum = Number(String(daysData[0].dia).split('.')[1]);
+ let mesAnteriorNum = mesAtualNum - 1;
+ if(mesAnteriorNum<1) mesAnteriorNum = 12;
+ const mesAnteriorStr = String(mesAnteriorNum).padStart(2,'0');
+
+ let arquivo = {};
+ try{ arquivo = JSON.parse(localStorage.getItem('biobel_arquivo_meses')||'{}'); }catch(e){}
+ const diasMesAnterior = arquivo[mesAnteriorStr] || [];
+
+ if(diasMesAnterior.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Ainda não há dados arquivados do mês anterior pra comparar. Isso é guardado automaticamente quando você troca de planilha.</p>';
+  return;
+ }
+
+ // Pega só os primeiros N dias do mês anterior (N = quantos dias já foram lançados nesse mês).
+ const diasOrdenadosAnterior = [...diasMesAnterior].sort((a,b)=>Number(String(a.dia).split('.')[0])-Number(String(b.dia).split('.')[0]));
+ const primeirosDiasAnterior = diasOrdenadosAnterior.slice(0, diasEsteMes);
+
+ const nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+ const nomeMesAtual = nomesMeses[mesAtualNum-1];
+ const nomeMesAnterior = nomesMeses[mesAnteriorNum-1];
+
+ const faturamentoAtual = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const faturamentoAnterior = primeirosDiasAnterior.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const diferenca = faturamentoAtual - faturamentoAnterior;
+ const percentual = faturamentoAnterior>0 ? (diferenca/faturamentoAnterior*100) : null;
+ const subiu = diferenca>=0;
+
+ function somarPorVendedora(dias){
+  const totais = {};
+  dias.forEach(d=>{
+   Object.entries(d.vendedorasDetalhe||{}).forEach(([nome,det])=>{
+    totais[nome] = (totais[nome]||0) + (det.total||0);
+   });
+  });
+  return Object.entries(totais).sort((a,b)=>b[1]-a[1]);
+ }
+ const rankingAtual = somarPorVendedora(daysData);
+ const rankingAnterior = somarPorVendedora(primeirosDiasAnterior);
+
+ function listaRanking(ranking){
+  if(ranking.length===0) return '<p style="color:#93a3ba;font-size:11.5px;">Sem dados de vendedoras.</p>';
+  const medalhas = ['🥇','🥈','🥉'];
+  return ranking.slice(0,5).map(([nome,total],i)=>`
+    <div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;">
+     <span style="color:#dce5f2;">${medalhas[i]||(i+1)+'º'} ${nome}</span>
+     <span style="color:#27d7a0;font-weight:700;">${money(total)}</span>
+    </div>`).join('');
+ }
+
+ el.innerHTML = `
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:14px;">
+    <div style="font-size:10.5px;color:#93a3ba;font-weight:800;text-transform:uppercase;">📆 ${nomeMesAtual} (${diasEsteMes} dia${diasEsteMes===1?'':'s'})</div>
+    <div style="font-size:19px;font-weight:900;color:#dce5f2;margin-top:6px;">${money(faturamentoAtual)}</div>
+   </div>
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:14px;">
+    <div style="font-size:10.5px;color:#93a3ba;font-weight:800;text-transform:uppercase;">📆 ${nomeMesAnterior} (primeiros ${primeirosDiasAnterior.length} dia${primeirosDiasAnterior.length===1?'':'s'})</div>
+    <div style="font-size:19px;font-weight:900;color:#dce5f2;margin-top:6px;">${money(faturamentoAnterior)}</div>
+   </div>
+  </div>
+  <div style="background:${subiu?'rgba(39,215,160,.08)':'rgba(251,113,133,.08)'};border:1px solid ${subiu?'rgba(39,215,160,.3)':'rgba(251,113,133,.3)'};border-radius:12px;padding:12px 16px;margin-bottom:16px;">
+   <div style="font-size:13px;font-weight:800;color:${subiu?'#27d7a0':'#fb7185'};">${subiu?'📈':'📉'} ${subiu?'Subiu':'Caiu'} ${money(Math.abs(diferenca))}${percentual!==null?' ('+(subiu?'+':'')+percentual.toFixed(1)+'%)':''} em relação ao mesmo período do mês passado</div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+   <div>
+    <div style="font-size:10.5px;color:#93a3ba;font-weight:800;text-transform:uppercase;margin-bottom:6px;">👥 Quem vendeu mais — ${nomeMesAtual}</div>
+    ${listaRanking(rankingAtual)}
+   </div>
+   <div>
+    <div style="font-size:10.5px;color:#93a3ba;font-weight:800;text-transform:uppercase;margin-bottom:6px;">👥 Quem vendeu mais — ${nomeMesAnterior}</div>
+    ${listaRanking(rankingAnterior)}
+   </div>
+  </div>
+ `;
+}
+
 function renderListaMesesComparar(){
  const el = document.getElementById('listaMesesComparar');
  if(!el) return;
