@@ -7142,6 +7142,38 @@ function renderComparacaoMesmoPeriodo(){
  const rankingAtual = somarPorVendedora(daysData);
  const rankingAnterior = somarPorVendedora(primeirosDiasAnterior);
 
+ // Ticket médio: faturamento total ÷ quantidade de vendas, em cada período.
+ const qtdVendasAtual = daysData.reduce((s,d)=>s+(Number(d.qtdVendas)||0),0);
+ const qtdVendasAnterior = primeirosDiasAnterior.reduce((s,d)=>s+(Number(d.qtdVendas)||0),0);
+ const ticketAtual = qtdVendasAtual>0 ? faturamentoAtual/qtdVendasAtual : 0;
+ const ticketAnterior = qtdVendasAnterior>0 ? faturamentoAnterior/qtdVendasAnterior : 0;
+
+ // Formas de pagamento: soma de dinheiro/débito/crédito/pix em cada período.
+ function somarFormasPagamento(dias){
+  return {
+   dinheiro: dias.reduce((s,d)=>s+(Number(d.dinheiro)||0),0),
+   debito: dias.reduce((s,d)=>s+(Number(d.debito)||0),0),
+   credito: dias.reduce((s,d)=>s+(Number(d.credito)||0),0),
+   pix: dias.reduce((s,d)=>s+(Number(d.pix)||0),0),
+  };
+ }
+ const pagAtual = somarFormasPagamento(daysData);
+ const pagAnterior = somarFormasPagamento(primeirosDiasAnterior);
+
+ // Dias da semana: agrupa o faturamento por dia da semana em cada período.
+ const nomesDiasSemanaComp = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+ function somarPorDiaSemana(dias, mesNum){
+  const totais = [0,0,0,0,0,0,0];
+  dias.forEach(d=>{
+   const diaNum = Number(String(d.dia).split('.')[0]);
+   const dow = new Date(2026, mesNum-1, diaNum).getDay();
+   totais[dow] += Number(d.sales)||0;
+  });
+  return totais;
+ }
+ const semanaAtual = somarPorDiaSemana(daysData, mesAtualNum);
+ const semanaAnterior = somarPorDiaSemana(primeirosDiasAnterior, mesAnteriorNum);
+
  function listaRanking(ranking){
   if(ranking.length===0) return '<p style="color:#93a3ba;font-size:11.5px;">Sem dados de vendedoras.</p>';
   const medalhas = ['🥇','🥈','🥉'];
@@ -7150,6 +7182,18 @@ function renderComparacaoMesmoPeriodo(){
      <span style="color:#dce5f2;">${medalhas[i]||(i+1)+'º'} ${nome}</span>
      <span style="color:#27d7a0;font-weight:700;">${money(total)}</span>
     </div>`).join('');
+ }
+ function linhaComparacao(label, valorAtual, valorAnterior, emoji){
+  return `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #1e2c42;">
+    <span style="font-size:12px;color:#93a3ba;">${emoji} ${label}</span>
+    <span style="font-size:12.5px;color:#dce5f2;"><strong>${money(valorAtual)}</strong> <span style="color:#93a3ba;">vs</span> ${money(valorAnterior)}</span>
+   </div>`;
+ }
+ function linhaDiaSemana(nomeDia, i){
+  return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:11.5px;">
+    <span style="color:#93a3ba;">${nomeDia}</span>
+    <span style="color:#dce5f2;"><strong>${money(semanaAtual[i])}</strong> <span style="color:#93a3ba;">vs</span> ${money(semanaAnterior[i])}</span>
+   </div>`;
  }
 
  el.innerHTML = `
@@ -7166,7 +7210,7 @@ function renderComparacaoMesmoPeriodo(){
   <div style="background:${subiu?'rgba(39,215,160,.08)':'rgba(251,113,133,.08)'};border:1px solid ${subiu?'rgba(39,215,160,.3)':'rgba(251,113,133,.3)'};border-radius:12px;padding:12px 16px;margin-bottom:16px;">
    <div style="font-size:13px;font-weight:800;color:${subiu?'#27d7a0':'#fb7185'};">${subiu?'📈':'📉'} ${subiu?'Subiu':'Caiu'} ${money(Math.abs(diferenca))}${percentual!==null?' ('+(subiu?'+':'')+percentual.toFixed(1)+'%)':''} em relação ao mesmo período do mês passado</div>
   </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
    <div>
     <div style="font-size:10.5px;color:#93a3ba;font-weight:800;text-transform:uppercase;margin-bottom:6px;">👥 Quem vendeu mais — ${nomeMesAtual}</div>
     ${listaRanking(rankingAtual)}
@@ -7175,6 +7219,24 @@ function renderComparacaoMesmoPeriodo(){
     <div style="font-size:10.5px;color:#93a3ba;font-weight:800;text-transform:uppercase;margin-bottom:6px;">👥 Quem vendeu mais — ${nomeMesAnterior}</div>
     ${listaRanking(rankingAnterior)}
    </div>
+  </div>
+
+  <div style="border-top:1px solid #1e2c42;padding-top:14px;margin-bottom:16px;">
+   <div style="font-size:10.5px;color:#93a3ba;font-weight:800;text-transform:uppercase;margin-bottom:8px;">🎫 Ticket Médio (${nomeMesAtual} vs ${nomeMesAnterior})</div>
+   ${linhaComparacao('Valor médio por venda', ticketAtual, ticketAnterior, '🎫')}
+  </div>
+
+  <div style="border-top:1px solid #1e2c42;padding-top:14px;margin-bottom:16px;">
+   <div style="font-size:10.5px;color:#93a3ba;font-weight:800;text-transform:uppercase;margin-bottom:8px;">💳 Formas de Pagamento (${nomeMesAtual} vs ${nomeMesAnterior})</div>
+   ${linhaComparacao('Dinheiro', pagAtual.dinheiro, pagAnterior.dinheiro, '💵')}
+   ${linhaComparacao('Débito', pagAtual.debito, pagAnterior.debito, '💳')}
+   ${linhaComparacao('Crédito', pagAtual.credito, pagAnterior.credito, '💳')}
+   ${linhaComparacao('Pix', pagAtual.pix, pagAnterior.pix, '📲')}
+  </div>
+
+  <div style="border-top:1px solid #1e2c42;padding-top:14px;">
+   <div style="font-size:10.5px;color:#93a3ba;font-weight:800;text-transform:uppercase;margin-bottom:8px;">📆 Dias da Semana (${nomeMesAtual} vs ${nomeMesAnterior})</div>
+   ${nomesDiasSemanaComp.map((nome,i)=>linhaDiaSemana(nome,i)).join('')}
   </div>
  `;
 }
