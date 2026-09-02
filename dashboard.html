@@ -8924,16 +8924,31 @@ function updateConnBadge(state){
  }
  if(state==='error'){ registrarErroConexao(); renderDiasSemErroConexao(); }
  // A faixa vermelha de aviso foi desativada por pedido — nunca mais aparece na tela,
- // mesmo se a planilha realmente desconectar. O pequeno indicador (connBadge) continua
- // funcionando normalmente, discreto, sem interromper ninguém.
+ // mesmo se a planilha realmente desconectar.
  if(faixa) faixa.style.display = 'none';
  if(!el) return;
+
+ // O indicador de "Erro de conexão" também foi desativado — em vez de alarmar, mostra a
+ // última vez que sincronizou com sucesso, ou fica quieto se nunca sincronizou ainda.
+ if(state==='error'){
+  const ultima = localStorage.getItem('biobel_ultima_sincronizacao_ok');
+  if(ultima){
+   el.style.display = '';
+   el.className = 'conn-badge conn-ok';
+   el.textContent = '🟢 Última att.: '+new Date(ultima).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  } else {
+   el.style.display = 'none';
+  }
+  return;
+ }
+
+ el.style.display = '';
  el.className = 'conn-badge conn-'+state;
  if(state==='ok'){
   const agora = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
   el.textContent = '🟢 Atualizado às '+agora;
  } else {
-  el.textContent = state==='error' ? '🔴 Erro de conexão' : '🟡 Conectando...';
+  el.textContent = '🟡 Conectando...';
  }
 }
 function renderDiasSemErroConexao(){
