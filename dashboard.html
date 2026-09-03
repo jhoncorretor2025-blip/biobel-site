@@ -1812,6 +1812,8 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <input id="novoGastoFixoDia" type="number" min="1" max="31" placeholder="Dia venc." style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
     <button id="btnAdicionarGastoFixo" onclick="adicionarGastoFixo()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">➕ Add</button>
    </div>
+   <label for="novoGastoFixoDiaUtil" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">📅 OU: Nº-ésimo dia útil (ex: salário sempre no 5º dia útil — muda de data a cada mês)</label>
+   <input id="novoGastoFixoDiaUtil" type="number" min="1" max="22" placeholder="Ex: 5 (deixe em branco se usar 'Dia venc.' acima)" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:8px;">
    <select id="novoGastoFixoCategoria" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:8px;">
     <option value="Aluguel/Imóvel">🏠 Aluguel/Imóvel</option>
     <option value="Pessoal">👥 Pessoal (salários, VT)</option>
@@ -4169,8 +4171,8 @@ function renderResumoAtencaoAdm(){
 
  getGastosFixos().forEach(g=>{
   if(g.valor===null){ pontos.push({texto:'"'+g.nome+'" ainda sem valor definido', cor:'#fbbf24'}); return; }
-  if(!g.dia) return;
-  const dias = diasAteProximoVencimentoMensal(g.dia);
+  if(!g.dia && !g.diaUtil) return;
+  const dias = diasAteProximoVencimentoMensal(g.dia, g.diaUtil);
   if(dias<=5) pontos.push({texto:g.nome+' vence em '+dias+' dia'+(dias===1?'':'s'), cor: dias<=1?'#fb7185':'#fbbf24'});
  });
 
@@ -4308,6 +4310,8 @@ function adicionarGastoFixo(){
  const valorTexto = document.getElementById('novoGastoFixoValor').value.trim();
  const diaInput = document.getElementById('novoGastoFixoDia').value;
  const dia = diaInput ? parseInt(diaInput,10) : null;
+ const diaUtilInput = document.getElementById('novoGastoFixoDiaUtil').value;
+ const diaUtil = diaUtilInput ? parseInt(diaUtilInput,10) : null;
  const categoria = document.getElementById('novoGastoFixoCategoria').value;
  const renovacaoContrato = document.getElementById('novoGastoFixoRenovacao').value || null;
  if(!nome){ mostrarToast('⚠️ Digite o nome do gasto.'); return; }
@@ -4323,14 +4327,14 @@ function adicionarGastoFixo(){
  if(gastoFixoEditandoId!==null){
   const idx = lista.findIndex(g=>g.id===gastoFixoEditandoId);
   if(idx>=0){
-   lista[idx] = { ...lista[idx], nome, valor, dia: (dia && !isNaN(dia)) ? dia : null, categoria, renovacaoContrato };
+   lista[idx] = { ...lista[idx], nome, valor, dia: (dia && !isNaN(dia)) ? dia : null, diaUtil: (diaUtil && !isNaN(diaUtil)) ? diaUtil : null, categoria, renovacaoContrato };
    salvarGastosFixos(lista);
    mostrarToast('✅ Gasto fixo atualizado!');
    registrarAlteracao('Gasto fixo "'+nome+'" editado');
   }
   cancelarEdicaoGastoFixo();
  } else {
-  lista.push({ id: Date.now(), nome, valor, dia: (dia && !isNaN(dia)) ? dia : null, categoria, renovacaoContrato });
+  lista.push({ id: Date.now(), nome, valor, dia: (dia && !isNaN(dia)) ? dia : null, diaUtil: (diaUtil && !isNaN(diaUtil)) ? diaUtil : null, categoria, renovacaoContrato });
   salvarGastosFixos(lista);
   mostrarToast('✅ Gasto fixo adicionado!');
   registrarAlteracao('Gasto fixo "'+nome+'" adicionado'+(valor!==null?' ('+money(valor)+')':' (valor a definir)'));
@@ -4338,6 +4342,7 @@ function adicionarGastoFixo(){
  document.getElementById('novoGastoFixoNome').value='';
  document.getElementById('novoGastoFixoValor').value='';
  document.getElementById('novoGastoFixoDia').value='';
+ document.getElementById('novoGastoFixoDiaUtil').value='';
  document.getElementById('novoGastoFixoCategoria').value='Aluguel/Imóvel';
  document.getElementById('novoGastoFixoRenovacao').value='';
  renderGastosFixos();
@@ -4351,6 +4356,7 @@ function editarGastoFixo(id){
  document.getElementById('novoGastoFixoNome').value = g.nome;
  document.getElementById('novoGastoFixoValor').value = g.valor!==null ? String(g.valor).replace('.',',') : '';
  document.getElementById('novoGastoFixoDia').value = g.dia || '';
+ document.getElementById('novoGastoFixoDiaUtil').value = g.diaUtil || '';
  document.getElementById('novoGastoFixoCategoria').value = g.categoria || 'Outros';
  document.getElementById('novoGastoFixoRenovacao').value = g.renovacaoContrato || '';
  const btn = document.getElementById('btnAdicionarGastoFixo');
@@ -4364,6 +4370,7 @@ function cancelarEdicaoGastoFixo(){
  document.getElementById('novoGastoFixoNome').value='';
  document.getElementById('novoGastoFixoValor').value='';
  document.getElementById('novoGastoFixoDia').value='';
+ document.getElementById('novoGastoFixoDiaUtil').value='';
  document.getElementById('novoGastoFixoCategoria').value='Aluguel/Imóvel';
  document.getElementById('novoGastoFixoRenovacao').value='';
  const btn = document.getElementById('btnAdicionarGastoFixo');
@@ -4387,8 +4394,8 @@ function seedGastosFixosPadrao(){
  const lista = getGastosFixos();
  const nomesJaExistentes = lista.map(g=>g.nome.toLowerCase());
  const padroes = [
-  { nome:'Aluguel', valor: 7000.00, dia: 10, categoria:'Aluguel/Imóvel' },
-  { nome:'CLT Gabriela (salário)', valor: 1836.00, categoria:'Pessoal' },
+  { nome:'Aluguel', valor: 7000.00, dia: 5, categoria:'Aluguel/Imóvel' },
+  { nome:'CLT Gabriela (salário)', valor: 1836.00, diaUtil: 5, categoria:'Pessoal' },
   { nome:'Estagiária (Dai)', valor: 750.00, categoria:'Pessoal' },
   { nome:'Contadora', valor: null, categoria:'Serviços' },
   { nome:'Luz', valor: null, categoria:'Utilidades' },
@@ -4398,15 +4405,16 @@ function seedGastosFixosPadrao(){
   { nome:'VT Day (~4 semanas/mês, R$120/semana)', valor: 480.00, categoria:'Pessoal' }
  ];
  let mudou = false;
- padroes.forEach(({nome, valor, dia, categoria})=>{
+ padroes.forEach(({nome, valor, dia, diaUtil, categoria})=>{
   if(!nomesJaExistentes.includes(nome.toLowerCase())){
-   lista.push({ id: Date.now()+Math.floor(Math.random()*1000), nome, valor, dia: dia||null, categoria });
+   lista.push({ id: Date.now()+Math.floor(Math.random()*1000), nome, valor, dia: dia||null, diaUtil: diaUtil||null, categoria });
    mudou = true;
   }
  });
  if(mudou) salvarGastosFixos(lista);
  migrarValoresConhecidosGastosFixos();
  migrarCategoriasGastosFixos();
+ migrarVencimentosParaValoresCorretos();
 }
 function migrarCategoriasGastosFixos(){
  // Pra gastos fixos já cadastrados antes de existir o campo categoria — tenta adivinhar pelo
@@ -4436,7 +4444,7 @@ function migrarValoresConhecidosGastosFixos(){
  lista.forEach(g=>{
   const nomeNorm = g.nome.toLowerCase();
   if(g.valor===null && nomeNorm==='aluguel'){
-   g.valor = 7000.00; g.dia = g.dia || 10; mudou = true;
+   g.valor = 7000.00; g.dia = g.dia || 5; mudou = true;
   }
   if(g.valor===null && (nomeNorm==='clt gabriela' || nomeNorm==='clt gabriela (salário)')){
    g.valor = 1836.00; mudou = true;
@@ -4448,14 +4456,57 @@ function migrarValoresConhecidosGastosFixos(){
  if(mudou) salvarGastosFixos(lista);
  localStorage.setItem('biobel_adm_migracao_salarios_v2', 'yes');
 }
-function diasAteProximoVencimentoMensal(diaVencimento){
- // Calcula quantos dias faltam pro próximo vencimento de um gasto que se repete todo mês
- // (ex: aluguel todo dia 10) — olha se esse mês já passou e, se sim, calcula pro mês seguinte.
+function migrarVencimentosParaValoresCorretos(){
+ // Correção: o aluguel tinha vencimento cadastrado como dia 10 (número errado, era só um
+ // exemplo inicial) — o correto é dia 5. E o salário não é um dia fixo do calendário, é sempre
+ // no 5º dia útil do mês (que muda de data a cada mês). Roda só uma vez, sem nunca sobrescrever
+ // se a pessoa já tiver ajustado manualmente depois dessa correção.
+ const jaMigrou = localStorage.getItem('biobel_adm_migracao_vencimentos_v1');
+ if(jaMigrou) return;
+ const lista = getGastosFixos();
+ let mudou = false;
+ lista.forEach(g=>{
+  const nomeNorm = g.nome.toLowerCase();
+  if(nomeNorm==='aluguel' && g.dia===10){
+   g.dia = 5; mudou = true;
+  }
+  if((nomeNorm==='clt gabriela' || nomeNorm==='clt gabriela (salário)') && !g.diaUtil){
+   g.diaUtil = 5; g.dia = null; mudou = true;
+  }
+ });
+ if(mudou) salvarGastosFixos(lista);
+ localStorage.setItem('biobel_adm_migracao_vencimentos_v1', 'yes');
+}
+function calcularEnesimoDiaUtil(ano, mes, n){
+ // Acha o data exata do "n-ésimo dia útil" de um mês — considera sábado como dia útil (a loja
+ // funciona aos sábados) e só pula domingo, igual o resto do sistema já faz em outros cálculos.
+ let contador = 0;
+ let dia = 1;
+ const ultimoDiaDoMes = new Date(ano, mes+1, 0).getDate();
+ while(dia<=ultimoDiaDoMes){
+  const diaSemana = new Date(ano, mes, dia).getDay();
+  if(diaSemana!==0){ contador++; if(contador===n) return new Date(ano, mes, dia); }
+  dia++;
+ }
+ return new Date(ano, mes, ultimoDiaDoMes); // segurança: se o mês não tiver dias úteis suficientes
+}
+function diasAteProximoVencimentoMensal(diaVencimento, diaUtil){
+ // Calcula quantos dias faltam pro próximo vencimento de um gasto que se repete todo mês —
+ // pode ser um dia fixo do calendário (ex: aluguel todo dia 5) OU o "n-ésimo dia útil" (ex:
+ // salário sempre no 5º dia útil, que muda de data conforme cai o fim de semana em cada mês).
  const hoje = obterAgoraBrasilia();
  const hojeMs = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate()).getTime();
- let proximo = new Date(hoje.getFullYear(), hoje.getMonth(), diaVencimento);
- if(proximo.getTime() < hojeMs){
-  proximo = new Date(hoje.getFullYear(), hoje.getMonth()+1, diaVencimento);
+ let proximo;
+ if(diaUtil){
+  proximo = calcularEnesimoDiaUtil(hoje.getFullYear(), hoje.getMonth(), diaUtil);
+  if(proximo.getTime() < hojeMs){
+   proximo = calcularEnesimoDiaUtil(hoje.getFullYear(), hoje.getMonth()+1, diaUtil);
+  }
+ } else {
+  proximo = new Date(hoje.getFullYear(), hoje.getMonth(), diaVencimento);
+  if(proximo.getTime() < hojeMs){
+   proximo = new Date(hoje.getFullYear(), hoje.getMonth()+1, diaVencimento);
+  }
  }
  return Math.round((proximo.getTime()-hojeMs)/86400000);
 }
@@ -4473,7 +4524,7 @@ function renderGastosFixos(){
  el.innerHTML = lista.map(g=>{
   let avisoVencimento = '';
   if(g.dia){
-   const dias = diasAteProximoVencimentoMensal(g.dia);
+   const dias = diasAteProximoVencimentoMensal(g.dia, g.diaUtil);
    if(dias<=5) avisoVencimento = `<span style="color:${dias<=1?'#fb7185':'#fbbf24'};font-weight:800;font-size:10.5px;margin-left:6px;">${dias===0?'🔴 vence hoje':dias===1?'🔴 vence amanhã':'🟡 vence em '+dias+' dias'}</span>`;
   }
   const corCat = coresCategoria[g.categoria] || '#93a3ba';
@@ -4481,7 +4532,7 @@ function renderGastosFixos(){
   <div style="display:flex;align-items:center;justify-content:space-between;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 14px;flex-wrap:wrap;gap:8px;">
    <div>
     <span style="color:#dce5f2;font-weight:700;font-size:13px;">${g.nome}</span>
-    ${g.dia?`<span style="color:#93a3ba;font-size:11px;margin-left:8px;">vence dia ${g.dia}</span>`:''}
+    ${g.diaUtil?`<span style="color:#93a3ba;font-size:11px;margin-left:8px;">vence no ${g.diaUtil}º dia útil</span>`:g.dia?`<span style="color:#93a3ba;font-size:11px;margin-left:8px;">vence dia ${g.dia}</span>`:''}
     ${avisoVencimento}
     ${g.categoria?`<div style="margin-top:4px;"><span style="font-size:10px;font-weight:800;color:${corCat};background:${corCat}22;padding:2px 8px;border-radius:999px;">${emojiCategoria[g.categoria]||''} ${g.categoria}</span></div>`:''}
     ${g.renovacaoContrato?`<div style="margin-top:4px;font-size:10.5px;color:#93a3ba;">📄 Contrato renova em ${new Date(g.renovacaoContrato+'T00:00:00').toLocaleDateString('pt-BR')}</div>`:''}
@@ -4746,14 +4797,32 @@ function salvarNiveisComissao(lista){
  localStorage.setItem('biobel_adm_niveis_comissao', JSON.stringify(lista));
 }
 function seedNiveisComissaoPadrao(){
- // Pré-cadastra os 2 níveis já combinados: R$45 mil (R$200 cada uma) e R$50 mil
- // (R$300 + kit de R$200 a R$260 + confraternização de R$110, cada uma).
+ // Pré-cadastra os 2 níveis já combinados: Meta R$50 mil (R$200 cada uma) e Super Meta R$55 mil
+ // (R$300 + kit presente + confraternização, cada uma).
  const lista = getNiveisComissao();
- if(lista.length>0) return; // só cadastra automaticamente se ainda não tiver nenhum nível configurado
- salvarNiveisComissao([
-  { id: Date.now(), meta: 45000, dinheiro: 200, kitMin: 0, kitMax: 0, confraternizacao: 0 },
-  { id: Date.now()+1, meta: 50000, dinheiro: 300, kitMin: 200, kitMax: 260, confraternizacao: 110 }
- ]);
+ if(lista.length===0){
+  salvarNiveisComissao([
+   { id: Date.now(), meta: 50000, dinheiro: 200, kitMin: 0, kitMax: 0, confraternizacao: 0 },
+   { id: Date.now()+1, meta: 55000, dinheiro: 300, kitMin: 200, kitMax: 260, confraternizacao: 110 }
+  ]);
+  return;
+ }
+ migrarNiveisComissaoParaNovosValores();
+}
+function migrarNiveisComissaoParaNovosValores(){
+ // Quem já tinha os níveis antigos (R$45 mil e R$50 mil) configurados — atualiza pros novos
+ // valores combinados (R$50 mil "Meta" e R$55 mil "Super Meta"), só uma vez, sem nunca
+ // sobrescrever se a pessoa já tiver mexido manualmente depois dessa mudança.
+ const jaMigrou = localStorage.getItem('biobel_migracao_niveis_50_55_v1');
+ if(jaMigrou) return;
+ const lista = getNiveisComissao();
+ let mudou = false;
+ lista.forEach(n=>{
+  if(n.meta===45000){ n.meta = 50000; mudou = true; }
+  else if(n.meta===50000 && (n.kitMax>0 || n.confraternizacao>0)){ n.meta = 55000; mudou = true; }
+ });
+ if(mudou) salvarNiveisComissao(lista);
+ localStorage.setItem('biobel_migracao_niveis_50_55_v1', 'yes');
 }
 let nivelComissaoEditandoId = null;
 function adicionarNivelComissao(){
@@ -5536,8 +5605,8 @@ function atualizarTotaisAdm(){
 function calcularContasAVencerProximosDias(diasJanela){
  let total = 0;
  getGastosFixos().forEach(g=>{
-  if(!g.dia || g.valor===null) return;
-  const diasAte = diasAteProximoVencimentoMensal(g.dia);
+  if((!g.dia && !g.diaUtil) || g.valor===null) return;
+  const diasAte = diasAteProximoVencimentoMensal(g.dia, g.diaUtil);
   if(diasAte<=diasJanela) total += g.valor;
  });
  const hoje = obterAgoraBrasilia();
@@ -6277,8 +6346,8 @@ function dispararNotificacaoVencimentos(){
  const proximos = [];
 
  getGastosFixos().forEach(g=>{
-  if(!g.dia) return;
-  const dias = diasAteProximoVencimentoMensal(g.dia);
+  if(!g.dia && !g.diaUtil) return;
+  const dias = diasAteProximoVencimentoMensal(g.dia, g.diaUtil);
   if(dias<=3) proximos.push(g.nome+' (em '+dias+' dia'+(dias===1?'':'s')+')');
  });
  getBoletos().forEach(b=>{
