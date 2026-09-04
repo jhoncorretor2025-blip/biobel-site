@@ -1078,6 +1078,17 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <input id="pontoMesSelect" type="month" onchange="renderFolhaDePonto()" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
   </div>
 
+  <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:12px 14px;margin-bottom:14px;">
+   <div style="font-size:11px;font-weight:800;color:#93a3ba;text-transform:uppercase;margin-bottom:8px;">⏰ Horário padrão dela (tudo fora disso conta como hora extra)</div>
+   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+    <input id="pontoPadraoEntradaInput" type="time" value="09:00" style="background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:7px 10px;color:#dce5f2;font-size:12.5px;">
+    <span style="color:#93a3ba;font-size:12px;">até</span>
+    <input id="pontoPadraoSaidaInput" type="time" value="18:00" style="background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:7px 10px;color:#dce5f2;font-size:12.5px;">
+    <button onclick="salvarHorarioPadraoEAtualizar()" class="bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded-lg font-semibold text-xs whitespace-nowrap">💾 Salvar</button>
+   </div>
+   <p style="font-size:10px;color:#93a3ba;margin-top:6px;">💡 Chegar antes das 9h ou sair depois das 18h conta como extra — funciona pra qualquer dia, inclusive sábado (se ela sair mais tarde, a diferença já entra como extra sozinha).</p>
+  </div>
+
   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:14px;margin-bottom:16px;">
    <div style="font-size:11px;font-weight:800;color:#93a3ba;text-transform:uppercase;margin-bottom:10px;">➕ Registrar um dia</div>
    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:8px;">
@@ -3452,6 +3463,12 @@ function getRegistrosPonto(){
 function salvarRegistrosPonto(lista){
  localStorage.setItem('biobel_folha_ponto', JSON.stringify(lista));
 }
+function getHorarioPadraoPonto(){
+ try{ return JSON.parse(localStorage.getItem('biobel_horario_padrao_ponto')||'{}'); }catch(e){ return {}; }
+}
+function salvarHorarioPadraoPonto(entrada, saida){
+ localStorage.setItem('biobel_horario_padrao_ponto', JSON.stringify({ entrada, saida }));
+}
 function calcularHorasDoDia(registro){
  // Converte HH:MM em minutos, soma o período trabalhado e desconta o intervalo (se tiver).
  function paraMinutos(hhmm){
@@ -3469,8 +3486,17 @@ function calcularHorasDoDia(registro){
   minutosTrabalhados -= Math.max(0, fimIntervalo-inicioIntervalo);
  }
  const horas = Math.max(0, minutosTrabalhados/60);
- // Jornada normal considerada de 8h/dia — o que passar disso conta como hora extra.
- const extras = Math.max(0, horas-8);
+
+ // Hora extra = qualquer tempo FORA do horário padrão dela (ex: 9h às 18h) — tanto chegar mais
+ // cedo quanto sair mais tarde contam como extra. Isso vale pra qualquer dia, inclusive sábado:
+ // se o sábado tem horário de saída mais tarde que o padrão, a diferença já sai certa sozinha.
+ const padrao = getHorarioPadraoPonto();
+ const padraoEntrada = paraMinutos(padrao.entrada || '09:00');
+ const padraoSaida = paraMinutos(padrao.saida || '18:00');
+ const extraChegouCedo = Math.max(0, padraoEntrada-entrada);
+ const extraSaiuTarde = Math.max(0, saida-padraoSaida);
+ const extras = (extraChegouCedo+extraSaiuTarde)/60;
+
  return { horas, extras };
 }
 let pontoEditandoId = null;
@@ -3543,7 +3569,20 @@ function removerRegistroPonto(id){
   mostrarToast('🗑️ Removido.');
  });
 }
+function salvarHorarioPadraoEAtualizar(){
+ const entrada = document.getElementById('pontoPadraoEntradaInput').value || '09:00';
+ const saida = document.getElementById('pontoPadraoSaidaInput').value || '18:00';
+ salvarHorarioPadraoPonto(entrada, saida);
+ mostrarToast('✅ Horário padrão salvo!');
+ renderFolhaDePonto();
+}
 function renderFolhaDePonto(){
+ const padrao = getHorarioPadraoPonto();
+ const inputEntradaPadrao = document.getElementById('pontoPadraoEntradaInput');
+ const inputSaidaPadrao = document.getElementById('pontoPadraoSaidaInput');
+ if(inputEntradaPadrao && padrao.entrada) inputEntradaPadrao.value = padrao.entrada;
+ if(inputSaidaPadrao && padrao.saida) inputSaidaPadrao.value = padrao.saida;
+
  const funcionaria = document.getElementById('pontoFuncionariaSelect')?.value;
  const mesInput = document.getElementById('pontoMesSelect');
  if(!mesInput.value){
