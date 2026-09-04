@@ -849,11 +849,11 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <div style="max-width:320px;margin:0 auto 16px;"><canvas id="graficoRadarDiasSemana" role="img" aria-label="Gráfico de radar comparando o desempenho de cada dia da semana"></canvas></div>
   <div class="adv-content2" style="margin-top:0;">
    <div>
-    <div style="font-size:12px;font-weight:800;color:#27d7a0;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">🏆 3 melhores dias</div>
+    <div style="font-size:12px;font-weight:800;color:#27d7a0;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">🏆 Melhores dias (até 3)</div>
     <div id="infoMelhoresDiasSemana" style="display:flex;flex-direction:column;gap:10px;"></div>
    </div>
    <div>
-    <div style="font-size:12px;font-weight:800;color:#fb7185;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">📉 3 piores dias</div>
+    <div style="font-size:12px;font-weight:800;color:#fb7185;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">📉 Piores dias (até 3)</div>
     <div id="infoPioresDiasSemana" style="display:flex;flex-direction:column;gap:10px;"></div>
    </div>
   </div>
@@ -7761,8 +7761,9 @@ function renderMelhoresPioresDiasSemana(porDiaSemana){
  }
 
  elMelhores.innerHTML = melhores.map(item=>linhaHtml(item,'linear-gradient(90deg,#27d7a0,#0ea97a)')).join('');
- // Se tiver 6 ou menos dias distintos, os "piores" podem se sobrepor aos "melhores" — evita repetir quando há poucos dias da semana com dados.
- const piorosSemRepetir = lista.length>3 ? piores : piores.filter(p=>!melhores.some(m=>m.dow===p.dow));
+ // Nunca repete um dia que já apareceu nos "melhores" — mesmo com 4, 5 ou 6 dias distintos,
+ // o "top 3" e o "bottom 3" podem se cruzar (matemática: com só 4 dias, é impossível não cruzar).
+ const piorosSemRepetir = piores.filter(p=>!melhores.some(m=>m.dow===p.dow));
  elPiores.innerHTML = piorosSemRepetir.length
   ? piorosSemRepetir.map(item=>linhaHtml(item,'linear-gradient(90deg,#fb7185,#e11d48)')).join('')
   : '<p style="color:#93a3ba;font-size:13px;">Ainda não há dias suficientes pra separar os piores dos melhores.</p>';
