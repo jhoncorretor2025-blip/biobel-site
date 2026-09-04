@@ -1065,6 +1065,58 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
  <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
   <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
    <div>
+    <h2 class="text-xl font-bold">📋 Folha de Ponto</h2>
+    <p class="text-sm text-slate-400 mt-1">Registro de entrada, intervalo e saída — o sistema calcula as horas e a hora extra sozinho.</p>
+   </div>
+  </div>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+   <select id="pontoFuncionariaSelect" onchange="renderFolhaDePonto()" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <option value="Gabriela">Gabriela</option>
+    <option value="Day">Day</option>
+   </select>
+   <input id="pontoMesSelect" type="month" onchange="renderFolhaDePonto()" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+  </div>
+
+  <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:14px;margin-bottom:16px;">
+   <div style="font-size:11px;font-weight:800;color:#93a3ba;text-transform:uppercase;margin-bottom:10px;">➕ Registrar um dia</div>
+   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:8px;">
+    <div>
+     <label for="pontoDataInput" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Data</label>
+     <input id="pontoDataInput" type="date" style="width:100%;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12.5px;">
+    </div>
+    <div>
+     <label for="pontoEntradaInput" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Entrada</label>
+     <input id="pontoEntradaInput" type="time" style="width:100%;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12.5px;">
+    </div>
+    <div>
+     <label for="pontoInicioIntervaloInput" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Início intervalo</label>
+     <input id="pontoInicioIntervaloInput" type="time" style="width:100%;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12.5px;">
+    </div>
+    <div>
+     <label for="pontoFimIntervaloInput" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Fim intervalo</label>
+     <input id="pontoFimIntervaloInput" type="time" style="width:100%;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12.5px;">
+    </div>
+    <div>
+     <label for="pontoSaidaInput" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Saída</label>
+     <input id="pontoSaidaInput" type="time" style="width:100%;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12.5px;">
+    </div>
+   </div>
+   <input id="pontoObservacaoInput" type="text" placeholder="Observação (opcional)" style="width:100%;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12.5px;margin-bottom:8px;">
+   <button id="btnAdicionarPonto" onclick="adicionarRegistroPonto()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Registrar</button>
+   <button id="btnCancelarEdicaoPonto" onclick="cancelarEdicaoPonto()" style="display:none;margin-top:8px;background:none;border:none;color:#93a3ba;font-size:12px;text-decoration:underline;cursor:pointer;width:100%;">✕ Cancelar edição</button>
+   <p style="font-size:10.5px;color:#93a3ba;margin-top:8px;">💡 Se não tiver intervalo naquele dia, pode deixar "Início intervalo" e "Fim intervalo" em branco.</p>
+  </div>
+
+  <div id="resumoFolhaDePonto" style="margin-bottom:14px;"></div>
+  <div id="listaFolhaDePonto" style="display:flex;flex-direction:column;gap:6px;"></div>
+
+  <button onclick="imprimirFolhaDePonto()" class="no-print w-full bg-purple-600 hover:bg-purple-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="background:#8b5cf6;margin-top:14px;">🖨️ Imprimir / Exportar PDF</button>
+ </div>
+
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
+  <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
+   <div>
     <h2 class="text-xl font-bold">👩‍💼 Rotina da Equipe</h2>
     <p class="text-sm text-slate-400 mt-1">Checklist semanal de atividades — marca sozinho e fica salvo.</p>
    </div>
@@ -3308,6 +3360,7 @@ function renderEquipeHistorico(){
 }
 
 function initEquipeTab(){
+ renderFolhaDePonto();
  const savedDia = localStorage.getItem('biobel_equipe_dia_atual');
  if(savedDia && diasSemanaOrdem.includes(savedDia)) equipeDiaAtual = savedDia;
 
@@ -3389,6 +3442,239 @@ function _resetEquipeWeekReal(){
   msg.textContent = `✅ Semana reiniciada com sucesso às ${new Date().toLocaleTimeString('pt-BR')}. O resultado dessa semana (${totais.geral.pct.toFixed(0)}%) foi salvo no histórico.`;
   msg.style.display = 'block';
   setTimeout(()=>{ msg.style.display = 'none'; }, 7000);
+ }
+}
+
+/* ===== Folha de Ponto — entrada, intervalo, saída, com cálculo automático de horas ===== */
+function getRegistrosPonto(){
+ try{ return JSON.parse(localStorage.getItem('biobel_folha_ponto')||'[]'); }catch(e){ return []; }
+}
+function salvarRegistrosPonto(lista){
+ localStorage.setItem('biobel_folha_ponto', JSON.stringify(lista));
+}
+function calcularHorasDoDia(registro){
+ // Converte HH:MM em minutos, soma o período trabalhado e desconta o intervalo (se tiver).
+ function paraMinutos(hhmm){
+  if(!hhmm) return null;
+  const [h,m] = hhmm.split(':').map(Number);
+  return h*60+m;
+ }
+ const entrada = paraMinutos(registro.entrada);
+ const saida = paraMinutos(registro.saida);
+ if(entrada===null || saida===null) return { horas:0, extras:0 };
+ let minutosTrabalhados = saida-entrada;
+ const inicioIntervalo = paraMinutos(registro.inicioIntervalo);
+ const fimIntervalo = paraMinutos(registro.fimIntervalo);
+ if(inicioIntervalo!==null && fimIntervalo!==null){
+  minutosTrabalhados -= Math.max(0, fimIntervalo-inicioIntervalo);
+ }
+ const horas = Math.max(0, minutosTrabalhados/60);
+ // Jornada normal considerada de 8h/dia — o que passar disso conta como hora extra.
+ const extras = Math.max(0, horas-8);
+ return { horas, extras };
+}
+let pontoEditandoId = null;
+function adicionarRegistroPonto(){
+ const funcionaria = document.getElementById('pontoFuncionariaSelect').value;
+ const data = document.getElementById('pontoDataInput').value;
+ const entrada = document.getElementById('pontoEntradaInput').value;
+ const inicioIntervalo = document.getElementById('pontoInicioIntervaloInput').value || null;
+ const fimIntervalo = document.getElementById('pontoFimIntervaloInput').value || null;
+ const saida = document.getElementById('pontoSaidaInput').value;
+ const observacao = document.getElementById('pontoObservacaoInput').value.trim() || null;
+
+ if(!data){ mostrarToast('⚠️ Escolha a data.'); return; }
+ if(!entrada || !saida){ mostrarToast('⚠️ Preencha entrada e saída.'); return; }
+
+ const lista = getRegistrosPonto();
+ if(pontoEditandoId!==null){
+  const idx = lista.findIndex(p=>p.id===pontoEditandoId);
+  if(idx>=0){
+   lista[idx] = { ...lista[idx], funcionaria, data, entrada, inicioIntervalo, fimIntervalo, saida, observacao };
+   mostrarToast('✅ Registro atualizado!');
+  }
+  cancelarEdicaoPonto();
+ } else {
+  const jaExiste = lista.find(p=>p.funcionaria===funcionaria && p.data===data);
+  if(jaExiste){ mostrarToast('⚠️ Já existe um registro pra '+funcionaria+' nesse dia. Edite o existente.'); return; }
+  lista.push({ id: Date.now(), funcionaria, data, entrada, inicioIntervalo, fimIntervalo, saida, observacao });
+  mostrarToast('✅ Ponto registrado!');
+ }
+ salvarRegistrosPonto(lista);
+ document.getElementById('pontoDataInput').value='';
+ document.getElementById('pontoEntradaInput').value='';
+ document.getElementById('pontoInicioIntervaloInput').value='';
+ document.getElementById('pontoFimIntervaloInput').value='';
+ document.getElementById('pontoSaidaInput').value='';
+ document.getElementById('pontoObservacaoInput').value='';
+ renderFolhaDePonto();
+}
+function editarRegistroPonto(id){
+ const p = getRegistrosPonto().find(x=>x.id===id);
+ if(!p) return;
+ pontoEditandoId = id;
+ document.getElementById('pontoFuncionariaSelect').value = p.funcionaria;
+ document.getElementById('pontoDataInput').value = p.data;
+ document.getElementById('pontoEntradaInput').value = p.entrada;
+ document.getElementById('pontoInicioIntervaloInput').value = p.inicioIntervalo || '';
+ document.getElementById('pontoFimIntervaloInput').value = p.fimIntervalo || '';
+ document.getElementById('pontoSaidaInput').value = p.saida;
+ document.getElementById('pontoObservacaoInput').value = p.observacao || '';
+ document.getElementById('btnAdicionarPonto').textContent = '💾 Salvar edição';
+ document.getElementById('btnCancelarEdicaoPonto').style.display = 'inline-block';
+ document.getElementById('pontoDataInput').scrollIntoView({behavior:'smooth', block:'center'});
+}
+function cancelarEdicaoPonto(){
+ pontoEditandoId = null;
+ document.getElementById('pontoDataInput').value='';
+ document.getElementById('pontoEntradaInput').value='';
+ document.getElementById('pontoInicioIntervaloInput').value='';
+ document.getElementById('pontoFimIntervaloInput').value='';
+ document.getElementById('pontoSaidaInput').value='';
+ document.getElementById('pontoObservacaoInput').value='';
+ document.getElementById('btnAdicionarPonto').textContent = '➕ Registrar';
+ document.getElementById('btnCancelarEdicaoPonto').style.display = 'none';
+}
+function removerRegistroPonto(id){
+ confirmarBiobel('Remover esse registro de ponto?', ()=>{
+  const lista = getRegistrosPonto().filter(p=>p.id!==id);
+  salvarRegistrosPonto(lista);
+  renderFolhaDePonto();
+  mostrarToast('🗑️ Removido.');
+ });
+}
+function renderFolhaDePonto(){
+ const funcionaria = document.getElementById('pontoFuncionariaSelect')?.value;
+ const mesInput = document.getElementById('pontoMesSelect');
+ if(!mesInput.value){
+  const hoje = obterAgoraBrasilia();
+  mesInput.value = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0');
+ }
+ const [anoFiltro, mesFiltro] = mesInput.value.split('-');
+
+ const lista = getRegistrosPonto()
+  .filter(p=>p.funcionaria===funcionaria && p.data.startsWith(anoFiltro+'-'+mesFiltro))
+  .sort((a,b)=>a.data.localeCompare(b.data));
+
+ const elLista = document.getElementById('listaFolhaDePonto');
+ const elResumo = document.getElementById('resumoFolhaDePonto');
+ const nomesDiasAbrev = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+ if(lista.length===0){
+  elLista.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhum registro nesse mês ainda.</p>';
+  elResumo.innerHTML = '';
+  return;
+ }
+
+ let totalHoras = 0, totalExtras = 0;
+ elLista.innerHTML = lista.map(p=>{
+  const { horas, extras } = calcularHorasDoDia(p);
+  totalHoras += horas; totalExtras += extras;
+  const dataObj = new Date(p.data+'T00:00:00');
+  const diaSemana = nomesDiasAbrev[dataObj.getDay()];
+  const ehSabado = dataObj.getDay()===6;
+  return `
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+     <span style="color:#dce5f2;font-weight:700;font-size:13px;">${dataObj.toLocaleDateString('pt-BR')} (${diaSemana})${ehSabado?' 🔶':''}</span>
+     <div style="display:flex;align-items:center;gap:10px;">
+      <span style="color:#27d7a0;font-weight:800;font-size:12.5px;">${horas.toFixed(1)}h${extras>0?' (+'+extras.toFixed(1)+'h extra)':''}</span>
+      <button onclick="editarRegistroPonto(${p.id})" aria-label="Editar" style="background:none;border:none;color:#4f9cff;cursor:pointer;font-size:14px;">✏️</button>
+      <button onclick="removerRegistroPonto(${p.id})" aria-label="Remover" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;">🗑️</button>
+     </div>
+    </div>
+    <div style="font-size:11px;color:#93a3ba;margin-top:4px;">
+     ${p.entrada} → ${p.saida}${p.inicioIntervalo && p.fimIntervalo ? ' (intervalo '+p.inicioIntervalo+'-'+p.fimIntervalo+')' : ''}${p.observacao ? ' · '+p.observacao : ''}
+    </div>
+   </div>`;
+ }).join('');
+
+ elResumo.innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
+    <div style="font-size:10px;color:#93a3ba;">⏱️ Total de horas no mês</div>
+    <div style="font-size:18px;font-weight:900;color:#dce5f2;margin-top:2px;">${totalHoras.toFixed(1)}h</div>
+   </div>
+   <div style="background:#0b1728;border:1px solid rgba(251,191,36,.3);border-radius:10px;padding:12px 14px;">
+    <div style="font-size:10px;color:#93a3ba;">🔶 Total de hora extra</div>
+    <div style="font-size:18px;font-weight:900;color:#fbbf24;margin-top:2px;">${totalExtras.toFixed(1)}h</div>
+   </div>
+  </div>`;
+}
+async function imprimirFolhaDePonto(){
+ try{
+  await carregarJsPDFSobDemanda();
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({unit:'mm', format:'a4'});
+  const funcionaria = document.getElementById('pontoFuncionariaSelect').value;
+  const mesInput = document.getElementById('pontoMesSelect').value;
+  const [ano, mes] = mesInput.split('-');
+  const nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const nomeMes = nomesMeses[Number(mes)-1]+' de '+ano;
+
+  const lista = getRegistrosPonto().filter(p=>p.funcionaria===funcionaria && p.data.startsWith(ano+'-'+mes)).sort((a,b)=>a.data.localeCompare(b.data));
+
+  let y = 20;
+  const margem = 15;
+
+  const logoDataUrl = await obterLogoDataUrl();
+  if(logoDataUrl){
+   const formato = logoDataUrl.includes('image/jpeg') ? 'JPEG' : 'PNG';
+   try{ doc.addImage(logoDataUrl, formato, margem, y-8, 18, 18); }catch(e){}
+  }
+  doc.setFont('helvetica','bold'); doc.setFontSize(15); doc.setTextColor(20,20,20);
+  doc.text('Folha de Ponto — '+funcionaria, margem+24, y);
+  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(90,90,90);
+  doc.text('Referente a '+nomeMes, margem+24, y+7);
+  y += 20;
+
+  doc.setFontSize(9); doc.setTextColor(20,20,20);
+  doc.setFont('helvetica','bold');
+  doc.text('Data', margem, y);
+  doc.text('Entrada', margem+35, y);
+  doc.text('Intervalo', margem+62, y);
+  doc.text('Saída', margem+95, y);
+  doc.text('Horas', margem+120, y);
+  doc.text('Extra', margem+145, y);
+  y += 2;
+  doc.line(margem, y, 195, y);
+  y += 5;
+  doc.setFont('helvetica','normal');
+
+  let totalHoras = 0, totalExtras = 0;
+  lista.forEach(p=>{
+   if(y>275){ doc.addPage(); y=20; }
+   const { horas, extras } = calcularHorasDoDia(p);
+   totalHoras += horas; totalExtras += extras;
+   const dataObj = new Date(p.data+'T00:00:00');
+   doc.text(dataObj.toLocaleDateString('pt-BR'), margem, y);
+   doc.text(p.entrada, margem+35, y);
+   doc.text(p.inicioIntervalo && p.fimIntervalo ? p.inicioIntervalo+'-'+p.fimIntervalo : '—', margem+62, y);
+   doc.text(p.saida, margem+95, y);
+   doc.text(horas.toFixed(1)+'h', margem+120, y);
+   doc.text(extras>0 ? extras.toFixed(1)+'h' : '—', margem+145, y);
+   y += 6;
+  });
+
+  y += 4;
+  doc.line(margem, y, 195, y);
+  y += 8;
+  doc.setFont('helvetica','bold'); doc.setFontSize(11);
+  doc.text('Total de horas: '+totalHoras.toFixed(1)+'h', margem, y);
+  y += 7;
+  doc.text('Total de hora extra: '+totalExtras.toFixed(1)+'h', margem, y);
+  y += 20;
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(90,90,90);
+  doc.text('_______________________________', margem, y);
+  doc.text('_______________________________', margem+100, y);
+  y += 5;
+  doc.text('Assinatura da funcionária', margem, y);
+  doc.text('Assinatura da gerência', margem+100, y);
+
+  doc.save('folha-ponto-'+funcionaria.toLowerCase()+'-'+ano+'-'+mes+'.pdf');
+  mostrarToast('✅ Folha de ponto exportada!');
+ }catch(e){
+  console.error(e);
+  mostrarToast('⚠️ Não foi possível gerar o PDF.');
  }
 }
 
