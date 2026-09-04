@@ -7093,6 +7093,14 @@ function renderAlertaDiasFaltando(){
 }
 
 function renderInfoTab(){
+ // Se a sub-aba "Por Dia da Semana" estiver aberta quando os dados mudarem sozinhos (troca de
+ // planilha, atualização automática), reatualiza ela também — antes disso, essa tela ficava
+ // "congelada" mostrando os dados de antes da troca até a pessoa clicar em algo manualmente.
+ const secaoPorDiaSemana = document.getElementById('infoSecaoPorDiaSemana');
+ if(secaoPorDiaSemana && secaoPorDiaSemana.style.display==='block' && diaSemanaViewAtual!==null){
+  renderPorDiaSemanaView(diaSemanaViewAtual);
+ }
+
  const totalSales = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
  const goal = getSalesGoal();
  const pct = goal>0 ? Math.min(100, (totalSales/goal)*100) : 0;
