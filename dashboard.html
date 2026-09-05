@@ -3511,21 +3511,22 @@ function adicionarRegistroPonto(){
  const observacao = document.getElementById('pontoObservacaoInput').value.trim() || null;
 
  if(!data){ mostrarToast('⚠️ Escolha a data.'); return; }
- if(!entrada || !saida){ mostrarToast('⚠️ Preencha entrada e saída.'); return; }
+ if(!entrada){ mostrarToast('⚠️ Preencha ao menos a entrada.'); return; }
+ const saidaFinal = saida || null;
 
  const lista = getRegistrosPonto();
  if(pontoEditandoId!==null){
   const idx = lista.findIndex(p=>p.id===pontoEditandoId);
   if(idx>=0){
-   lista[idx] = { ...lista[idx], funcionaria, data, entrada, inicioIntervalo, fimIntervalo, saida, observacao };
+   lista[idx] = { ...lista[idx], funcionaria, data, entrada, inicioIntervalo, fimIntervalo, saida: saidaFinal, observacao };
    mostrarToast('✅ Registro atualizado!');
   }
   cancelarEdicaoPonto();
  } else {
   const jaExiste = lista.find(p=>p.funcionaria===funcionaria && p.data===data);
   if(jaExiste){ mostrarToast('⚠️ Já existe um registro pra '+funcionaria+' nesse dia. Edite o existente.'); return; }
-  lista.push({ id: Date.now(), funcionaria, data, entrada, inicioIntervalo, fimIntervalo, saida, observacao });
-  mostrarToast('✅ Ponto registrado!');
+  lista.push({ id: Date.now(), funcionaria, data, entrada, inicioIntervalo, fimIntervalo, saida: saidaFinal, observacao });
+  mostrarToast(saidaFinal ? '✅ Ponto registrado!' : '✅ Ponto registrado! (saída pendente — pode editar depois)');
  }
  salvarRegistrosPonto(lista);
  document.getElementById('pontoDataInput').value='';
@@ -3609,22 +3610,23 @@ function renderFolhaDePonto(){
  let totalHoras = 0, totalExtras = 0;
  elLista.innerHTML = lista.map(p=>{
   const { horas, extras } = calcularHorasDoDia(p);
-  totalHoras += horas; totalExtras += extras;
+  const semSaida = !p.saida;
+  if(!semSaida){ totalHoras += horas; totalExtras += extras; }
   const dataObj = new Date(p.data+'T00:00:00');
   const diaSemana = nomesDiasAbrev[dataObj.getDay()];
   const ehSabado = dataObj.getDay()===6;
   return `
-   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 14px;">
+   <div style="background:#0b1728;border:1px solid ${semSaida?'rgba(251,191,36,.4)':'#1e2c42'};border-radius:10px;padding:10px 14px;">
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
      <span style="color:#dce5f2;font-weight:700;font-size:13px;">${dataObj.toLocaleDateString('pt-BR')} (${diaSemana})${ehSabado?' 🔶':''}</span>
      <div style="display:flex;align-items:center;gap:10px;">
-      <span style="color:#27d7a0;font-weight:800;font-size:12.5px;">${horas.toFixed(1)}h${extras>0?' (+'+extras.toFixed(1)+'h extra)':''}</span>
+      <span style="color:${semSaida?'#fbbf24':'#27d7a0'};font-weight:800;font-size:12.5px;">${semSaida?'⚠️ Saída pendente':horas.toFixed(1)+'h'+(extras>0?' (+'+extras.toFixed(1)+'h extra)':'')}</span>
       <button onclick="editarRegistroPonto(${p.id})" aria-label="Editar" style="background:none;border:none;color:#4f9cff;cursor:pointer;font-size:14px;">✏️</button>
       <button onclick="removerRegistroPonto(${p.id})" aria-label="Remover" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;">🗑️</button>
      </div>
     </div>
     <div style="font-size:11px;color:#93a3ba;margin-top:4px;">
-     ${p.entrada} → ${p.saida}${p.inicioIntervalo && p.fimIntervalo ? ' (intervalo '+p.inicioIntervalo+'-'+p.fimIntervalo+')' : ''}${p.observacao ? ' · '+p.observacao : ''}
+     ${p.entrada} → ${p.saida || '?'}${p.inicioIntervalo && p.fimIntervalo ? ' (intervalo '+p.inicioIntervalo+'-'+p.fimIntervalo+')' : ''}${p.observacao ? ' · '+p.observacao : ''}
     </div>
    </div>`;
  }).join('');
@@ -3641,14 +3643,15 @@ function renderFolhaDePonto(){
   </div>`;
 }
 function carregarExemploCartaoPontoAgosto(){
- // Carrega exatamente os dados do cartão de ponto físico que você me mandou (dias com leitura
- // clara — o dia 30 estava riscado no papel e o dia 31 não tinha a saída visível, então ficaram
- // de fora pra não inventar valor). É só pra testar o cálculo, sem precisar digitar nada.
- confirmarBiobel('Isso vai adicionar 3 dias de exemplo (27, 28 e 29 de agosto/2026) da Gabriela, baseados no cartão de ponto que você me mandou. Continuar?', ()=>{
+ // Carrega exatamente os dados do cartão de ponto físico que você me mandou. O dia 30 é domingo
+ // (loja fechada, sem ponto) e fica de fora de propósito. O dia 31 entra com a saída da tarde
+ // pendente, exatamente como está na folha física — dá pra completar depois quando você souber.
+ confirmarBiobel('Isso vai adicionar 4 dias de exemplo (27, 28, 29 e 31 de agosto/2026) da Gabriela, baseados no cartão de ponto que você me mandou. Continuar?', ()=>{
   const exemplos = [
-   { funcionaria:'Gabriela', data:'2026-08-27', entrada:'08:40', inicioIntervalo:'13:47', fimIntervalo:'14:47', saida:'18:00', observacao:'Exemplo do cartão físico' },
+   { funcionaria:'Gabriela', data:'2026-08-27', entrada:'08:40', inicioIntervalo:'13:41', fimIntervalo:'14:47', saida:'18:00', observacao:'Exemplo do cartão físico' },
    { funcionaria:'Gabriela', data:'2026-08-28', entrada:'08:03', inicioIntervalo:null, fimIntervalo:null, saida:'18:10', observacao:'Exemplo do cartão físico' },
    { funcionaria:'Gabriela', data:'2026-08-29', entrada:'08:32', inicioIntervalo:null, fimIntervalo:null, saida:'16:10', observacao:'Exemplo do cartão físico' },
+   { funcionaria:'Gabriela', data:'2026-08-31', entrada:'08:45', inicioIntervalo:'13:51', fimIntervalo:'14:57', saida:null, observacao:'Saída da tarde não registrada na folha física' },
   ];
   let lista = getRegistrosPonto();
   let adicionados = 0;
@@ -3707,14 +3710,15 @@ async function imprimirFolhaDePonto(){
   lista.forEach(p=>{
    if(y>275){ doc.addPage(); y=20; }
    const { horas, extras } = calcularHorasDoDia(p);
-   totalHoras += horas; totalExtras += extras;
+   const semSaida = !p.saida;
+   if(!semSaida){ totalHoras += horas; totalExtras += extras; }
    const dataObj = new Date(p.data+'T00:00:00');
    doc.text(dataObj.toLocaleDateString('pt-BR'), margem, y);
    doc.text(p.entrada, margem+35, y);
    doc.text(p.inicioIntervalo && p.fimIntervalo ? p.inicioIntervalo+'-'+p.fimIntervalo : '—', margem+62, y);
-   doc.text(p.saida, margem+95, y);
-   doc.text(horas.toFixed(1)+'h', margem+120, y);
-   doc.text(extras>0 ? extras.toFixed(1)+'h' : '—', margem+145, y);
+   doc.text(semSaida ? 'pendente' : p.saida, margem+95, y);
+   doc.text(semSaida ? '—' : horas.toFixed(1)+'h', margem+120, y);
+   doc.text(semSaida ? '—' : (extras>0 ? extras.toFixed(1)+'h' : '—'), margem+145, y);
    y += 6;
   });
 
