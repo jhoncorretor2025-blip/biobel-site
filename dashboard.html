@@ -436,7 +436,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     style="width:100%;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;font-size:12px;color:#dce5f2;outline:none;">
    <div id="resultadosBuscaGlobal" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border:1px solid #1e2c42;border-radius:10px;margin-top:4px;max-height:320px;overflow-y:auto;z-index:50;box-shadow:0 12px 32px rgba(0,0,0,.4);"></div>
   </div>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v2.6</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v2.7</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -1137,7 +1137,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <div id="listaFolhaDePonto" style="display:flex;flex-direction:column;gap:6px;"></div>
 
   <button onclick="carregarExemploCartaoPontoAgosto()" class="no-print w-full bg-blue-600 hover:bg-blue-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="margin-top:6px;">🧪 Carregar exemplo do cartão de ponto (agosto) pra testar</button>
-  <button onclick="imprimirFolhaDePonto()" class="no-print w-full bg-purple-600 hover:bg-purple-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="background:#8b5cf6;margin-top:8px;">🖨️ Imprimir / Exportar PDF</button>
+  <button id="btnImprimirFolhaPonto" onclick="imprimirFolhaDePonto()" class="no-print w-full bg-purple-600 hover:bg-purple-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="background:#8b5cf6;margin-top:8px;">🖨️ Imprimir / Exportar PDF</button>
  </div>
 
  <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
@@ -3616,7 +3616,7 @@ function renderFolhaDePonto(){
  const nomesDiasAbrev = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 
  if(lista.length===0){
-  elLista.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhum registro nesse mês ainda.</p>';
+  elLista.innerHTML = '<div style="text-align:center;padding:24px 12px;"><div style="font-size:34px;opacity:.5;margin-bottom:8px;">🗓️</div><p style="color:#93a3ba;font-size:12.5px;">Nenhum registro nesse mês ainda.</p></div>';
   elResumo.innerHTML = '';
   return;
  }
@@ -3681,6 +3681,9 @@ function carregarExemploCartaoPontoAgosto(){
  });
 }
 async function imprimirFolhaDePonto(){
+ const btn = document.getElementById('btnImprimirFolhaPonto');
+ const textoOriginal = btn ? btn.textContent : '';
+ if(btn){ btn.disabled=true; btn.textContent='⏳ Gerando...'; }
  try{
   await carregarJsPDFSobDemanda();
   const { jsPDF } = window.jspdf;
@@ -3752,6 +3755,8 @@ async function imprimirFolhaDePonto(){
  }catch(e){
   console.error(e);
   mostrarToast('⚠️ Não foi possível gerar o PDF.');
+ }finally{
+  if(btn){ btn.disabled=false; btn.textContent=textoOriginal; }
  }
 }
 
@@ -4405,7 +4410,7 @@ function renderMensagensProgramadas(){
  const lista = getMensagensProgramadas();
  const nomesMeses = ['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
  if(lista.length===0){
-  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhuma mensagem programada ainda.</p>';
+  el.innerHTML = '<div style="text-align:center;padding:24px 12px;"><div style="font-size:34px;opacity:.5;margin-bottom:8px;">💬</div><p style="color:#93a3ba;font-size:12.5px;">Nenhuma mensagem programada ainda.</p></div>';
   return;
  }
  el.innerHTML = lista.map(m=>{
@@ -4879,7 +4884,7 @@ function renderGastosFixos(){
  seedGastosFixosPadrao();
  const lista = getGastosFixos();
  if(lista.length===0){
-  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhum gasto fixo cadastrado ainda.</p>';
+  el.innerHTML = '<div style="text-align:center;padding:24px 12px;"><div style="font-size:34px;opacity:.5;margin-bottom:8px;">🏠</div><p style="color:#93a3ba;font-size:12.5px;">Nenhum gasto fixo cadastrado ainda.</p></div>';
   return;
  }
  const coresCategoria = {'Aluguel/Imóvel':'#fb7185','Pessoal':'#4f9cff','Utilidades':'#fbbf24','Serviços':'#a78bfa','Outros':'#93a3ba'};
@@ -7596,6 +7601,9 @@ function renderRecordesComparacao(){
 
 /* ===== Exportar a comparação em PDF (item 6) ===== */
 async function exportarComparacaoPeriodoPDF(){
+ const btn = document.getElementById('btnExportarComparacaoPdf');
+ const textoOriginal = btn ? btn.textContent : '';
+ if(btn){ btn.disabled=true; btn.textContent='⏳ Gerando...'; }
  try{
   await carregarJsPDFSobDemanda();
   const { jsPDF } = window.jspdf;
@@ -7618,6 +7626,8 @@ async function exportarComparacaoPeriodoPDF(){
  }catch(e){
   console.error(e);
   mostrarToast('⚠️ Não foi possível gerar o PDF.');
+ }finally{
+  if(btn){ btn.disabled=false; btn.textContent=textoOriginal; }
  }
 }
 
@@ -7821,7 +7831,7 @@ function renderComparacaoMesmoPeriodo(){
    ${nomesDiasSemanaComp.map((nome,i)=>linhaDiaSemana(nome,i)).join('')}
   </div>
 
-  <button onclick="exportarComparacaoPeriodoPDF()" class="w-full bg-purple-600 hover:bg-purple-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="background:#8b5cf6;margin-top:8px;">📑 Exportar essa comparação em PDF</button>
+  <button id="btnExportarComparacaoPdf" onclick="exportarComparacaoPeriodoPDF()" class="w-full bg-purple-600 hover:bg-purple-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="background:#8b5cf6;margin-top:8px;">📑 Exportar essa comparação em PDF</button>
   <div id="conteudoRecordesComparacao" style="margin-top:16px;"></div>
  `;
  renderRecordesComparacao();
@@ -9547,22 +9557,7 @@ async function gerarResumoAdmPDF(){
   const doc = new jsPDF({unit:'mm', format:'a4'});
   const larguraPagina = doc.internal.pageSize.getWidth();
   const margem = 15;
-  let y = 20;
-
-  const logoDataUrl = await obterLogoDataUrl();
-  if(logoDataUrl){
-   const formatoImagem = logoDataUrl.includes('image/jpeg') || logoDataUrl.includes('image/jpg') ? 'JPEG' : 'PNG';
-   try{ doc.addImage(logoDataUrl, formatoImagem, margem, y-8, 22, 22); }catch(e){}
-  }
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(18);
-  doc.setTextColor(20,20,20);
-  doc.text('BIOBEL', margem+28, y);
-  doc.setFontSize(11);
-  doc.setFont('helvetica','normal');
-  doc.setTextColor(90,90,90);
-  doc.text('Resumo da Área da Gerência — Confidencial', margem+28, y+7);
-  y += 22;
+  let y = await desenharCabecalhoPDF(doc, 'BIOBEL', 'Resumo da Área da Gerência — Confidencial');
   doc.setDrawColor(220,220,220);
   doc.line(margem, y, larguraPagina-margem, y);
   y += 10;
