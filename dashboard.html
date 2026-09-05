@@ -350,6 +350,20 @@ body.light-mode [style*="border-top:1px solid #1e2c42"]{border-top-color:#dde3ea
 body.light-mode [style*="border-bottom:1px solid #1e2c42"]{border-bottom-color:#dde3ea!important;}
 body.light-mode [style*="color:#f6f9fd"]{color:#0f172a!important;}
 
+/* Melhoria de design 1: padroniza os cantos arredondados — 12px e 14px eram usados quase por
+   acidente em cards e botões pequenos ao longo de várias atualizações; unifica com o padrão
+   dominante (10px) pra ficar mais coeso visualmente. Não mexe em pills (999px) nem em cards
+   grandes (16-20px), que são propositalmente diferentes. */
+[style*="border-radius:12px"]:not(.adv-card):not([class*="card"]){ border-radius:10px!important; }
+[style*="border-radius:14px"]:not(.adv-card):not([class*="card"]){ border-radius:10px!important; }
+
+/* Melhoria de design 2: transições suaves em botões, cards e campos — hoje quase tudo aparece/
+   muda de cor de forma seca. Isso dá uma sensação de mais polimento sem mudar nenhuma função. */
+button, .adv-card, .adv-kpi, input, select, textarea, .tab-btn, .config-chip{
+ transition: background-color .15s ease, border-color .15s ease, opacity .15s ease, transform .1s ease;
+}
+button:active{ transform: scale(.97); }
+
 /* Melhoria 1+4: botões de ação (editar/excluir/pago) em listas densas ganham mais área de toque
    e mais espaçamento entre si no celular, evitando toque errado sem querer. */
 @media(max-width:640px){
@@ -422,7 +436,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     style="width:100%;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;font-size:12px;color:#dce5f2;outline:none;">
    <div id="resultadosBuscaGlobal" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border:1px solid #1e2c42;border-radius:10px;margin-top:4px;max-height:320px;overflow-y:auto;z-index:50;box-shadow:0 12px 32px rgba(0,0,0,.4);"></div>
   </div>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v2.5</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v2.6</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -3679,19 +3693,8 @@ async function imprimirFolhaDePonto(){
 
   const lista = getRegistrosPonto().filter(p=>p.funcionaria===funcionaria && p.data.startsWith(ano+'-'+mes)).sort((a,b)=>a.data.localeCompare(b.data));
 
-  let y = 20;
   const margem = 15;
-
-  const logoDataUrl = await obterLogoDataUrl();
-  if(logoDataUrl){
-   const formato = logoDataUrl.includes('image/jpeg') ? 'JPEG' : 'PNG';
-   try{ doc.addImage(logoDataUrl, formato, margem, y-8, 18, 18); }catch(e){}
-  }
-  doc.setFont('helvetica','bold'); doc.setFontSize(15); doc.setTextColor(20,20,20);
-  doc.text('Folha de Ponto — '+funcionaria, margem+24, y);
-  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(90,90,90);
-  doc.text('Referente a '+nomeMes, margem+24, y+7);
-  y += 20;
+  let y = await desenharCabecalhoPDF(doc, 'Folha de Ponto — '+funcionaria, 'Referente a '+nomeMes);
 
   doc.setFontSize(9); doc.setTextColor(20,20,20);
   doc.setFont('helvetica','bold');
@@ -7599,18 +7602,7 @@ async function exportarComparacaoPeriodoPDF(){
   const doc = new jsPDF({unit:'mm', format:'a4'});
   const largura = doc.internal.pageSize.getWidth();
   const margem = 15;
-  let y = 20;
-
-  const logoDataUrl = await obterLogoDataUrl();
-  if(logoDataUrl){
-   const formato = logoDataUrl.includes('image/jpeg') ? 'JPEG' : 'PNG';
-   try{ doc.addImage(logoDataUrl, formato, margem, y-8, 20, 20); }catch(e){}
-  }
-  doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.setTextColor(20,20,20);
-  doc.text('Comparação — Mesmo Período', margem+26, y);
-  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(90,90,90);
-  doc.text('Gerado em '+new Date().toLocaleString('pt-BR'), margem+26, y+7);
-  y += 22;
+  let y = await desenharCabecalhoPDF(doc, 'Comparação — Mesmo Período', 'Gerado em '+new Date().toLocaleString('pt-BR'));
 
   const texto = document.getElementById('conteudoComparacaoMesmoPeriodo').innerText;
   doc.setFontSize(10); doc.setTextColor(20,20,20);
@@ -9314,6 +9306,28 @@ async function carregarJsPDFSobDemanda(){
   s.onload=resolve; s.onerror=reject;
   document.head.appendChild(s);
  });
+}
+
+/* Melhoria de design: dá uma identidade visual às cores da Biobel nos PDFs — uma faixa verde no
+   topo com a logo, em vez de só texto preto no fundo branco. Usada por todos os relatórios,
+   pra ficar todos com a mesma cara. Devolve a posição Y onde o conteúdo pode começar a ser escrito. */
+async function desenharCabecalhoPDF(doc, titulo, subtitulo){
+ const largura = doc.internal.pageSize.getWidth();
+ doc.setFillColor(14,169,122); // verde da marca
+ doc.rect(0, 0, largura, 28, 'F');
+
+ const logoDataUrl = await obterLogoDataUrl();
+ if(logoDataUrl){
+  const formato = logoDataUrl.includes('image/jpeg') ? 'JPEG' : 'PNG';
+  try{ doc.addImage(logoDataUrl, formato, 15, 5, 18, 18); }catch(e){}
+ }
+ doc.setFont('helvetica','bold'); doc.setFontSize(15); doc.setTextColor(255,255,255);
+ doc.text(titulo, 38, 14);
+ doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(230,255,245);
+ doc.text(subtitulo, 38, 21);
+
+ doc.setTextColor(20,20,20); // volta pro preto padrão, pro resto do conteúdo
+ return 38;
 }
 
 /* ===== Fechamento Mensal Formal (retrato travado dos números, guardado no histórico) ===== */
