@@ -436,7 +436,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     style="width:100%;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;font-size:12px;color:#dce5f2;outline:none;">
    <div id="resultadosBuscaGlobal" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border:1px solid #1e2c42;border-radius:10px;margin-top:4px;max-height:320px;overflow-y:auto;z-index:50;box-shadow:0 12px 32px rgba(0,0,0,.4);"></div>
   </div>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v2.9</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v3.0</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -1314,6 +1314,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <div class="config-chips no-print" style="margin:0;">
     <button type="button" id="chipMetas" onclick="mostrarSecaoConfig('Metas')" class="config-chip" role="tab" aria-selected="false">🎯 Metas</button>
     <button type="button" id="chipHorarios" onclick="mostrarSecaoConfig('Horarios')" class="config-chip" role="tab" aria-selected="false">🕘 Horários</button>
+    <button type="button" id="chipEmpresa" onclick="mostrarSecaoConfig('Empresa')" class="config-chip" role="tab" aria-selected="false">🏢 Empresa</button>
    </div>
   </div>
   <div style="margin-bottom:10px;">
@@ -1503,6 +1504,23 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <div id="horarioFuncionamentoStatus" class="mt-3 text-sm text-slate-400"></div>
  </div>
 
+ <div id="configSecaoEmpresa" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6" style="display:none;">
+  <div class="mb-4">
+   <h2 class="text-xl font-bold">🏢 Dados da Empresa</h2>
+   <p class="text-sm text-slate-400 mt-1">CNPJ e razão social, pra usar automaticamente em documentos e relatórios sem precisar digitar toda vez.</p>
+  </div>
+  <label class="block text-sm font-semibold mb-2" for="empresaRazaoSocialInput">Razão Social</label>
+  <input id="empresaRazaoSocialInput" type="text" placeholder="Ex: Biobel Comércio de Cosméticos Ltda" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500 mb-4">
+  <label class="block text-sm font-semibold mb-2" for="empresaNomeFantasiaInput">Nome Fantasia</label>
+  <input id="empresaNomeFantasiaInput" type="text" placeholder="Ex: Biobel Cosméticos" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500 mb-4">
+  <label class="block text-sm font-semibold mb-2" for="empresaCnpjInput">CNPJ</label>
+  <input id="empresaCnpjInput" type="text" placeholder="00.000.000/0000-00" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500 mb-4">
+  <label class="block text-sm font-semibold mb-2" for="empresaEnderecoInput">Endereço</label>
+  <input id="empresaEnderecoInput" type="text" placeholder="Rua, número, bairro, cidade - UF" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500 mb-4">
+  <button onclick="saveDadosEmpresa()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-xl font-semibold text-sm">Salvar dados da empresa</button>
+  <div id="empresaDadosStatus" class="mt-3 text-sm text-slate-400"></div>
+ </div>
+
  <div id="configSecaoLog" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6" style="display:none;">
   <div class="mb-4 flex items-center justify-between gap-3 flex-wrap">
    <div>
@@ -1522,6 +1540,13 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <button onclick="baixarBackupCompleto()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-xl font-semibold text-sm">💾 Baixar backup completo (.json)</button>
   <div class="mt-4 text-xs text-slate-500 leading-relaxed">
    <strong class="text-slate-300">Importante:</strong> esse backup guarda só as <em>configurações</em> do painel (metas, planilhas salvas, etc.) — os dados de vendas em si continuam sempre seguros na sua planilha do Google, esse backup não substitui isso.
+  </div>
+
+  <div style="border-top:1px solid #1e2c42;margin-top:20px;padding-top:16px;">
+   <div style="font-size:13px;font-weight:800;color:#dce5f2;margin-bottom:6px;">🔄 Backup automático</div>
+   <p style="font-size:12px;color:#93a3ba;margin-bottom:10px;">O sistema guarda sozinho um retrato de segurança dentro do próprio navegador, uma vez por semana — sem precisar clicar em nada. Não substitui o backup baixado acima (que fica fora do navegador), mas ajuda numa emergência no meio da semana.</p>
+   <div id="statusBackupAutomatico" style="font-size:12px;color:#93a3ba;margin-bottom:10px;"></div>
+   <button onclick="restaurarBackupAutomatico()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2.5 rounded-xl font-semibold text-sm">↺ Restaurar do backup automático</button>
   </div>
  </div>
 
@@ -1754,6 +1779,35 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     </div>
     <div id="topVendasDoDia" style="margin-bottom:14px;"></div>
     <div id="rankingVendedorasDoDia"></div>
+   </div>
+
+   <div class="rounded-xl border border-slate-800 bg-slate-950 px-4 py-4">
+    <div class="flex items-center justify-between flex-wrap gap-2 mb-3">
+     <span class="font-semibold text-slate-200 text-sm">🔄 Devoluções e Trocas</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:8px;">
+     <div>
+      <label for="devolucaoDataInput" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Data</label>
+      <input id="devolucaoDataInput" type="date" style="width:100%;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12.5px;">
+     </div>
+     <div>
+      <label for="devolucaoValorInput" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Valor (R$)</label>
+      <input id="devolucaoValorInput" type="text" inputmode="decimal" placeholder="0,00" style="width:100%;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12.5px;">
+     </div>
+     <div>
+      <label for="devolucaoTipoSelect" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Tipo</label>
+      <select id="devolucaoTipoSelect" style="width:100%;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12.5px;">
+       <option value="Devolução">↩️ Devolução</option>
+       <option value="Troca">🔄 Troca</option>
+      </select>
+     </div>
+    </div>
+    <input id="devolucaoProdutoInput" type="text" placeholder="Produto" style="width:100%;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12.5px;margin-bottom:8px;">
+    <input id="devolucaoMotivoInput" type="text" placeholder="Motivo (opcional)" style="width:100%;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12.5px;margin-bottom:8px;">
+    <button id="btnAdicionarDevolucao" onclick="adicionarDevolucao()" class="w-full bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl font-semibold text-sm">➕ Registrar</button>
+    <button id="btnCancelarEdicaoDevolucao" onclick="cancelarEdicaoDevolucao()" style="display:none;margin-top:8px;background:none;border:none;color:#93a3ba;font-size:12px;text-decoration:underline;cursor:pointer;width:100%;">✕ Cancelar edição</button>
+    <div id="listaDevolucoes" style="margin-top:12px;"></div>
+    <p style="font-size:10px;color:#93a3ba;margin-top:8px;">💡 Isso é só um registro pra controle — não altera o faturamento que vem da planilha.</p>
    </div>
 
    <div class="rounded-xl border border-emerald-500/30 bg-slate-950 px-4 py-5">
@@ -2679,6 +2733,7 @@ function alternarPeriodoTopVendas(periodo){
  if(btnHoje){ btnHoje.style.background = periodo==='hoje' ? '#27d7a0' : 'transparent'; btnHoje.style.color = periodo==='hoje' ? '#04241a' : '#93a3ba'; }
  if(btnAcum){ btnAcum.style.background = periodo==='acumulado' ? '#27d7a0' : 'transparent'; btnAcum.style.color = periodo==='acumulado' ? '#04241a' : '#93a3ba'; }
  renderTopVendasVendedoras();
+ renderListaDevolucoes();
 }
 function getHorasTrabalhadasVendedora(nome){
  // Alesandra e Gabriela trabalham 8h/dia, a Day (estagiária) trabalha 6h/dia — importante pra
@@ -2687,6 +2742,102 @@ function getHorasTrabalhadasVendedora(nome){
  if(nomeNorm.includes('day') || nomeNorm.includes('dai')) return 6;
  return 8;
 }
+/* ===== Devoluções e Trocas — só registro, não mexe no faturamento da planilha ===== */
+function getDevolucoes(){
+ try{ return JSON.parse(localStorage.getItem('biobel_devolucoes')||'[]'); }catch(e){ return []; }
+}
+function salvarDevolucoes(lista){
+ localStorage.setItem('biobel_devolucoes', JSON.stringify(lista));
+}
+let devolucaoEditandoId = null;
+function adicionarDevolucao(){
+ const data = document.getElementById('devolucaoDataInput').value;
+ const valorTexto = document.getElementById('devolucaoValorInput').value.trim();
+ const tipo = document.getElementById('devolucaoTipoSelect').value;
+ const produto = document.getElementById('devolucaoProdutoInput').value.trim();
+ const motivo = document.getElementById('devolucaoMotivoInput').value.trim() || null;
+
+ if(!data){ mostrarToast('⚠️ Escolha a data.'); return; }
+ if(!produto){ mostrarToast('⚠️ Digite o produto.'); return; }
+ const valor = valorTexto ? parseValorSimples(valorTexto) : 0;
+ if(isNaN(valor) || valor<0){ mostrarToast('⚠️ Digite um valor válido.'); return; }
+
+ const lista = getDevolucoes();
+ if(devolucaoEditandoId!==null){
+  const idx = lista.findIndex(d=>d.id===devolucaoEditandoId);
+  if(idx>=0){
+   lista[idx] = { ...lista[idx], data, valor, tipo, produto, motivo };
+   mostrarToast('✅ Registro atualizado!');
+  }
+  cancelarEdicaoDevolucao();
+ } else {
+  lista.push({ id: Date.now(), data, valor, tipo, produto, motivo });
+  mostrarToast('✅ '+tipo+' registrada!');
+ }
+ salvarDevolucoes(lista);
+ document.getElementById('devolucaoDataInput').value='';
+ document.getElementById('devolucaoValorInput').value='';
+ document.getElementById('devolucaoProdutoInput').value='';
+ document.getElementById('devolucaoMotivoInput').value='';
+ renderListaDevolucoes();
+}
+function editarDevolucao(id){
+ const d = getDevolucoes().find(x=>x.id===id);
+ if(!d) return;
+ devolucaoEditandoId = id;
+ document.getElementById('devolucaoDataInput').value = d.data;
+ document.getElementById('devolucaoValorInput').value = d.valor>0 ? String(d.valor).replace('.',',') : '';
+ document.getElementById('devolucaoTipoSelect').value = d.tipo;
+ document.getElementById('devolucaoProdutoInput').value = d.produto;
+ document.getElementById('devolucaoMotivoInput').value = d.motivo || '';
+ document.getElementById('btnAdicionarDevolucao').textContent = '💾 Salvar edição';
+ document.getElementById('btnCancelarEdicaoDevolucao').style.display = 'inline-block';
+}
+function cancelarEdicaoDevolucao(){
+ devolucaoEditandoId = null;
+ document.getElementById('devolucaoDataInput').value='';
+ document.getElementById('devolucaoValorInput').value='';
+ document.getElementById('devolucaoProdutoInput').value='';
+ document.getElementById('devolucaoMotivoInput').value='';
+ document.getElementById('btnAdicionarDevolucao').textContent = '➕ Registrar';
+ document.getElementById('btnCancelarEdicaoDevolucao').style.display = 'none';
+}
+function removerDevolucao(id){
+ confirmarBiobel('Remover esse registro?', ()=>{
+  const lista = getDevolucoes().filter(d=>d.id!==id);
+  salvarDevolucoes(lista);
+  renderListaDevolucoes();
+  mostrarToast('🗑️ Removido.');
+ });
+}
+function renderListaDevolucoes(){
+ const el = document.getElementById('listaDevolucoes');
+ if(!el) return;
+ const diaAtual = window._diaAtualCaixaCompleto;
+ if(!diaAtual) return;
+ const [diaNum, mesNum] = diaAtual.split('.').map(Number);
+ const lista = getDevolucoes()
+  .filter(d=>{ const dt=new Date(d.data+'T00:00:00'); return dt.getMonth()+1===mesNum; })
+  .sort((a,b)=>b.data.localeCompare(a.data));
+ if(lista.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:11.5px;">Nenhuma devolução/troca registrada esse mês.</p>';
+  return;
+ }
+ const total = lista.reduce((s,d)=>s+d.valor,0);
+ el.innerHTML = `<div style="font-size:11px;color:#93a3ba;margin-bottom:8px;">${lista.length} registro${lista.length===1?'':'s'} esse mês · total ${money(total)}</div>` +
+  lista.map(d=>{
+   const dataObj = new Date(d.data+'T00:00:00');
+   return `<div style="display:flex;justify-content:space-between;align-items:center;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:8px 12px;margin-bottom:6px;">
+     <span style="font-size:11.5px;color:#dce5f2;">${dataObj.toLocaleDateString('pt-BR')} — ${d.tipo==='Troca'?'🔄':'↩️'} ${d.produto}${d.motivo?' · '+d.motivo:''}</span>
+     <div style="display:flex;align-items:center;gap:8px;">
+      <span style="font-size:12px;font-weight:700;color:#fb7185;">${money(d.valor)}</span>
+      <button onclick="editarDevolucao(${d.id})" aria-label="Editar" style="background:none;border:none;color:#4f9cff;cursor:pointer;font-size:13px;">✏️</button>
+      <button onclick="removerDevolucao(${d.id})" aria-label="Remover" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:13px;">🗑️</button>
+     </div>
+    </div>`;
+  }).join('');
+}
+
 function renderTopVendasVendedoras(){
  const card = document.getElementById('cardTopVendasVendedoras');
  const diaAtual = window._diaAtualCaixaCompleto;
@@ -2783,6 +2934,7 @@ function renderTopVendasVendedoras(){
 function alternarOrdemRanking(ordem){
  window._ordenarRankingPor = ordem;
  renderTopVendasVendedoras();
+ renderListaDevolucoes();
 }
 
 function updateCompleteDay(day){
@@ -2829,6 +2981,7 @@ function updateCompleteDay(day){
  updateGoalBanner('completeGoalBanner', Number(d.sales)||0);
  atualizarBadgeDia('completo', d.dia);
  renderTopVendasVendedoras();
+ renderListaDevolucoes();
  flashCard('valoresCompletoWrap');
  carregarObservacaoDia(d.dia);
 }
@@ -3079,6 +3232,7 @@ function showTab(tab){
   renderMensagensProgramadas();
   renderPlanilhasSalvas();
   initHorarioFuncionamentoUI();
+  initDadosEmpresaUI();
   initAppsScriptUrlUI();
   const emailInput = document.getElementById('emailContadora');
   if(emailInput) emailInput.value = getEmailContadora();
@@ -6370,6 +6524,55 @@ function renderHistoricoComissoes(){
   }).join('');
 }
 
+/* ===== Backup automático (roda sozinho 1x por semana, guardado dentro do próprio navegador) ===== */
+function verificarBackupAutomatico(){
+ const ultimoBackupAuto = localStorage.getItem('biobel_ultimo_backup_automatico');
+ const agora = Date.now();
+ if(ultimoBackupAuto && (agora-Number(ultimoBackupAuto)) < 7*24*60*60*1000) return;
+
+ try{
+  const snapshot = {};
+  for(let i=0; i<localStorage.length; i++){
+   const chave = localStorage.key(i);
+   if(chave && chave.startsWith('biobel_') && chave!=='biobel_snapshot_automatico' && chave!=='biobel_ultimo_backup_automatico'){
+    snapshot[chave] = localStorage.getItem(chave);
+   }
+  }
+  localStorage.setItem('biobel_snapshot_automatico', JSON.stringify({ data: new Date().toISOString(), dados: snapshot }));
+  localStorage.setItem('biobel_ultimo_backup_automatico', String(agora));
+ }catch(e){
+  // Se o navegador estiver com pouco espaço de armazenamento, só ignora — o backup manual
+  // continua funcionando normalmente, essa é só uma camada extra de segurança.
+  console.error('Não foi possível criar o backup automático:', e);
+ }
+}
+function renderStatusBackupAutomatico(){
+ const el = document.getElementById('statusBackupAutomatico');
+ if(!el) return;
+ const snapshotStr = localStorage.getItem('biobel_snapshot_automatico');
+ if(!snapshotStr){ el.textContent = 'Ainda não foi feito nenhum backup automático nesse navegador.'; return; }
+ try{
+  const snapshot = JSON.parse(snapshotStr);
+  el.innerHTML = 'Último backup automático: <strong style="color:#dce5f2;">'+new Date(snapshot.data).toLocaleString('pt-BR')+'</strong>';
+ }catch(e){ el.textContent = ''; }
+}
+function restaurarBackupAutomatico(){
+ const snapshotStr = localStorage.getItem('biobel_snapshot_automatico');
+ if(!snapshotStr){ mostrarToast('⚠️ Ainda não existe nenhum backup automático guardado.'); return; }
+ confirmarBiobel('Isso vai substituir as configurações atuais pelas do último backup automático. Tem certeza?', ()=>{
+  try{
+   const snapshot = JSON.parse(snapshotStr);
+   Object.entries(snapshot.dados).forEach(([chave, valor])=>{
+    localStorage.setItem(chave, valor);
+   });
+   mostrarToast('✅ Restaurado! Recarregando a página...');
+   setTimeout(()=>location.reload(), 1200);
+  }catch(e){
+   mostrarToast('⚠️ Não foi possível restaurar o backup.');
+  }
+ });
+}
+
 function baixarBackupCompleto(){
  const backup = {
   geradoEm: new Date().toISOString(),
@@ -6746,6 +6949,33 @@ function horaParaNumero(hhmm){
  const h = Number(partes[0]);
  return isNaN(h) ? null : h;
 }
+/* ===== Dados da Empresa (CNPJ, razão social) ===== */
+function getDadosEmpresa(){
+ try{ return JSON.parse(localStorage.getItem('biobel_dados_empresa')||'{}'); }catch(e){ return {}; }
+}
+function saveDadosEmpresa(){
+ const dados = {
+  razaoSocial: document.getElementById('empresaRazaoSocialInput').value.trim(),
+  nomeFantasia: document.getElementById('empresaNomeFantasiaInput').value.trim(),
+  cnpj: document.getElementById('empresaCnpjInput').value.trim(),
+  endereco: document.getElementById('empresaEnderecoInput').value.trim(),
+ };
+ localStorage.setItem('biobel_dados_empresa', JSON.stringify(dados));
+ const statusEl = document.getElementById('empresaDadosStatus');
+ if(statusEl) statusEl.innerHTML = '<span class="text-emerald-400">✅ Dados salvos!</span>';
+ mostrarToast('✅ Dados da empresa salvos!');
+ registrarAlteracao('Dados da empresa atualizados');
+ renderLogAlteracoes();
+}
+function initDadosEmpresaUI(){
+ const dados = getDadosEmpresa();
+ const campos = { empresaRazaoSocialInput:'razaoSocial', empresaNomeFantasiaInput:'nomeFantasia', empresaCnpjInput:'cnpj', empresaEnderecoInput:'endereco' };
+ Object.entries(campos).forEach(([id, chave])=>{
+  const el = document.getElementById(id);
+  if(el && dados[chave]) el.value = dados[chave];
+ });
+}
+
 function saveHorarioFuncionamento(){
  const abertura = document.getElementById('horarioAbertura').value;
  const fechamentoSemana = document.getElementById('horarioFechamentoSemana').value;
@@ -10029,7 +10259,7 @@ function extractSpreadsheetId(url){
  return m?m[1]:'';
 }
 function mostrarSecaoConfig(secao){
- const secoes = ['Conexao','Planilhas','Metas','Email','Horarios','Log','Backup','Logo','SitePublico','Mensagens'];
+ const secoes = ['Conexao','Planilhas','Metas','Email','Horarios','Empresa','Log','Backup','Logo','SitePublico','Mensagens'];
  secoes.forEach(s=>{
   const el = document.getElementById('configSecao'+s);
   const chip = document.getElementById('chip'+s);
@@ -10041,6 +10271,7 @@ function mostrarSecaoConfig(secao){
   }
  });
  try{ localStorage.setItem('biobel_config_secao_ativa', secao); }catch(e){}
+ if(secao==='Backup') renderStatusBackupAutomatico();
 }
 
 function saveGoogleConfig(){
@@ -11303,6 +11534,7 @@ document.addEventListener('keydown', e=>{
 aplicarLogoPersonalizadaNoSistema();
 inicializarBotoesCompartilharNativo();
 atualizarBotaoModoCompacto();
+verificarBackupAutomatico();
 render();
 </script>
 </body>
