@@ -436,7 +436,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     style="width:100%;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;font-size:12px;color:#dce5f2;outline:none;">
    <div id="resultadosBuscaGlobal" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border:1px solid #1e2c42;border-radius:10px;margin-top:4px;max-height:320px;overflow-y:auto;z-index:50;box-shadow:0 12px 32px rgba(0,0,0,.4);"></div>
   </div>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v2.7</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v2.8</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -1131,6 +1131,27 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <button id="btnAdicionarPonto" onclick="adicionarRegistroPonto()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Registrar</button>
    <button id="btnCancelarEdicaoPonto" onclick="cancelarEdicaoPonto()" style="display:none;margin-top:8px;background:none;border:none;color:#93a3ba;font-size:12px;text-decoration:underline;cursor:pointer;width:100%;">✕ Cancelar edição</button>
    <p style="font-size:10.5px;color:#93a3ba;margin-top:8px;">💡 Se não tiver intervalo naquele dia, pode deixar "Início intervalo" e "Fim intervalo" em branco.</p>
+  </div>
+
+  <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:14px;margin-bottom:16px;">
+   <div style="font-size:11px;font-weight:800;color:#93a3ba;text-transform:uppercase;margin-bottom:10px;">🚫 Registrar uma falta</div>
+   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:8px;">
+    <div>
+     <label for="faltaDataInput" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Data</label>
+     <input id="faltaDataInput" type="date" style="width:100%;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12.5px;">
+    </div>
+    <div>
+     <label for="faltaJustificadaSelect" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Foi justificada?</label>
+     <select id="faltaJustificadaSelect" style="width:100%;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12.5px;">
+      <option value="sim">✅ Sim, justificada</option>
+      <option value="nao">❌ Não justificada</option>
+     </select>
+    </div>
+   </div>
+   <input id="faltaMotivoInput" type="text" placeholder="Motivo (ex: atestado médico, sem aviso, etc.)" style="width:100%;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12.5px;margin-bottom:8px;">
+   <button id="btnAdicionarFalta" onclick="adicionarFalta()" class="w-full bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/40 text-rose-300 px-4 py-2.5 rounded-xl font-semibold text-sm">🚫 Registrar falta</button>
+   <button id="btnCancelarEdicaoFalta" onclick="cancelarEdicaoFalta()" style="display:none;margin-top:8px;background:none;border:none;color:#93a3ba;font-size:12px;text-decoration:underline;cursor:pointer;width:100%;">✕ Cancelar edição</button>
+   <div id="listaFaltas" style="margin-top:12px;display:flex;flex-direction:column;gap:6px;"></div>
   </div>
 
   <div id="resumoFolhaDePonto" style="margin-bottom:14px;"></div>
@@ -3592,6 +3613,88 @@ function salvarHorarioPadraoEAtualizar(){
  mostrarToast('✅ Horário padrão salvo!');
  renderFolhaDePonto();
 }
+/* ===== Registro de Faltas — justificadas ou não ===== */
+function getFaltas(){
+ try{ return JSON.parse(localStorage.getItem('biobel_faltas')||'[]'); }catch(e){ return []; }
+}
+function salvarFaltas(lista){
+ localStorage.setItem('biobel_faltas', JSON.stringify(lista));
+}
+let faltaEditandoId = null;
+function adicionarFalta(){
+ const funcionaria = document.getElementById('pontoFuncionariaSelect').value;
+ const data = document.getElementById('faltaDataInput').value;
+ const justificada = document.getElementById('faltaJustificadaSelect').value === 'sim';
+ const motivo = document.getElementById('faltaMotivoInput').value.trim() || null;
+ if(!data){ mostrarToast('⚠️ Escolha a data da falta.'); return; }
+
+ const lista = getFaltas();
+ if(faltaEditandoId!==null){
+  const idx = lista.findIndex(f=>f.id===faltaEditandoId);
+  if(idx>=0){
+   lista[idx] = { ...lista[idx], funcionaria, data, justificada, motivo };
+   mostrarToast('✅ Falta atualizada!');
+  }
+  cancelarEdicaoFalta();
+ } else {
+  const jaExiste = lista.find(f=>f.funcionaria===funcionaria && f.data===data);
+  if(jaExiste){ mostrarToast('⚠️ Já existe uma falta registrada pra '+funcionaria+' nesse dia.'); return; }
+  lista.push({ id: Date.now(), funcionaria, data, justificada, motivo });
+  mostrarToast('✅ Falta registrada.');
+ }
+ salvarFaltas(lista);
+ document.getElementById('faltaDataInput').value='';
+ document.getElementById('faltaMotivoInput').value='';
+ renderListaFaltas();
+ renderFolhaDePonto();
+}
+function editarFalta(id){
+ const f = getFaltas().find(x=>x.id===id);
+ if(!f) return;
+ faltaEditandoId = id;
+ document.getElementById('pontoFuncionariaSelect').value = f.funcionaria;
+ document.getElementById('faltaDataInput').value = f.data;
+ document.getElementById('faltaJustificadaSelect').value = f.justificada ? 'sim' : 'nao';
+ document.getElementById('faltaMotivoInput').value = f.motivo || '';
+ document.getElementById('btnAdicionarFalta').textContent = '💾 Salvar edição';
+ document.getElementById('btnCancelarEdicaoFalta').style.display = 'inline-block';
+}
+function cancelarEdicaoFalta(){
+ faltaEditandoId = null;
+ document.getElementById('faltaDataInput').value='';
+ document.getElementById('faltaMotivoInput').value='';
+ document.getElementById('btnAdicionarFalta').textContent = '🚫 Registrar falta';
+ document.getElementById('btnCancelarEdicaoFalta').style.display = 'none';
+}
+function removerFalta(id){
+ confirmarBiobel('Remover esse registro de falta?', ()=>{
+  const lista = getFaltas().filter(f=>f.id!==id);
+  salvarFaltas(lista);
+  renderListaFaltas();
+  renderFolhaDePonto();
+  mostrarToast('🗑️ Removido.');
+ });
+}
+function renderListaFaltas(){
+ const funcionaria = document.getElementById('pontoFuncionariaSelect')?.value;
+ const mesInput = document.getElementById('pontoMesSelect')?.value;
+ const el = document.getElementById('listaFaltas');
+ if(!el || !mesInput) return;
+ const [ano, mes] = mesInput.split('-');
+ const lista = getFaltas().filter(f=>f.funcionaria===funcionaria && f.data.startsWith(ano+'-'+mes)).sort((a,b)=>a.data.localeCompare(b.data));
+ if(lista.length===0){ el.innerHTML=''; return; }
+ el.innerHTML = lista.map(f=>{
+  const dataObj = new Date(f.data+'T00:00:00');
+  return `<div style="display:flex;justify-content:space-between;align-items:center;background:#0f172a;border:1px solid ${f.justificada?'rgba(39,215,160,.3)':'rgba(251,113,133,.3)'};border-radius:8px;padding:8px 12px;">
+    <span style="font-size:12px;color:#dce5f2;">${dataObj.toLocaleDateString('pt-BR')} — ${f.justificada?'✅ Justificada':'❌ Não justificada'}${f.motivo?' · '+f.motivo:''}</span>
+    <div style="display:flex;gap:8px;">
+     <button onclick="editarFalta(${f.id})" aria-label="Editar" style="background:none;border:none;color:#4f9cff;cursor:pointer;font-size:13px;">✏️</button>
+     <button onclick="removerFalta(${f.id})" aria-label="Remover" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:13px;">🗑️</button>
+    </div>
+   </div>`;
+ }).join('');
+}
+
 function renderFolhaDePonto(){
  const padrao = getHorarioPadraoPonto();
  const inputEntradaPadrao = document.getElementById('pontoPadraoEntradaInput');
@@ -3611,13 +3714,26 @@ function renderFolhaDePonto(){
   .filter(p=>p.funcionaria===funcionaria && p.data.startsWith(anoFiltro+'-'+mesFiltro))
   .sort((a,b)=>a.data.localeCompare(b.data));
 
+ renderListaFaltas();
+ const faltasDoMes = getFaltas().filter(f=>f.funcionaria===funcionaria && f.data.startsWith(anoFiltro+'-'+mesFiltro));
+ const faltasJustificadas = faltasDoMes.filter(f=>f.justificada).length;
+ const faltasNaoJustificadas = faltasDoMes.filter(f=>!f.justificada).length;
+
  const elLista = document.getElementById('listaFolhaDePonto');
  const elResumo = document.getElementById('resumoFolhaDePonto');
  const nomesDiasAbrev = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 
+ function htmlResumoFaltas(){
+  if(faltasDoMes.length===0) return '';
+  return `<div style="background:#0b1728;border:1px solid ${faltasNaoJustificadas>0?'rgba(251,113,133,.3)':'#1e2c42'};border-radius:10px;padding:12px 14px;margin-top:10px;">
+    <div style="font-size:10px;color:#93a3ba;">🚫 Faltas no mês</div>
+    <div style="font-size:15px;font-weight:900;color:#dce5f2;margin-top:2px;">${faltasDoMes.length} total <span style="font-size:11px;font-weight:600;color:#93a3ba;">(${faltasJustificadas} justificada${faltasJustificadas===1?'':'s'}, ${faltasNaoJustificadas} não justificada${faltasNaoJustificadas===1?'':'s'})</span></div>
+   </div>`;
+ }
+
  if(lista.length===0){
   elLista.innerHTML = '<div style="text-align:center;padding:24px 12px;"><div style="font-size:34px;opacity:.5;margin-bottom:8px;">🗓️</div><p style="color:#93a3ba;font-size:12.5px;">Nenhum registro nesse mês ainda.</p></div>';
-  elResumo.innerHTML = '';
+  elResumo.innerHTML = htmlResumoFaltas();
   return;
  }
 
@@ -3654,7 +3770,7 @@ function renderFolhaDePonto(){
     <div style="font-size:10px;color:#93a3ba;">🔶 Total de hora extra</div>
     <div style="font-size:18px;font-weight:900;color:#fbbf24;margin-top:2px;">${totalExtras.toFixed(1)}h</div>
    </div>
-  </div>`;
+  </div>${htmlResumoFaltas()}`;
 }
 function carregarExemploCartaoPontoAgosto(){
  // Carrega exatamente os dados do cartão de ponto físico que você me mandou. O dia 30 é domingo
@@ -3742,7 +3858,23 @@ async function imprimirFolhaDePonto(){
   doc.text('Total de horas: '+totalHoras.toFixed(1)+'h', margem, y);
   y += 7;
   doc.text('Total de hora extra: '+totalExtras.toFixed(1)+'h', margem, y);
-  y += 20;
+  y += 10;
+
+  const faltasDoMes = getFaltas().filter(f=>f.funcionaria===funcionaria && f.data.startsWith(ano+'-'+mes)).sort((a,b)=>a.data.localeCompare(b.data));
+  if(faltasDoMes.length>0){
+   doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(20,20,20);
+   doc.text('Faltas no mês', margem, y);
+   y += 7;
+   doc.setFont('helvetica','normal'); doc.setFontSize(9);
+   faltasDoMes.forEach(f=>{
+    if(y>275){ doc.addPage(); y=20; }
+    const dataObj = new Date(f.data+'T00:00:00');
+    doc.text('• '+dataObj.toLocaleDateString('pt-BR')+' — '+(f.justificada?'Justificada':'Não justificada')+(f.motivo?' ('+f.motivo+')':''), margem, y);
+    y += 6;
+   });
+   y += 8;
+  }
+
   doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(90,90,90);
   doc.text('_______________________________', margem, y);
   doc.text('_______________________________', margem+100, y);
