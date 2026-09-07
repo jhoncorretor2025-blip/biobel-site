@@ -436,7 +436,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     style="width:100%;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;font-size:12px;color:#dce5f2;outline:none;">
    <div id="resultadosBuscaGlobal" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border:1px solid #1e2c42;border-radius:10px;margin-top:4px;max-height:320px;overflow-y:auto;z-index:50;box-shadow:0 12px 32px rgba(0,0,0,.4);"></div>
   </div>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v3.0</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v3.1</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -1032,6 +1032,20 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
  <!-- fim infoSecaoComparar -->
 
  <div id="infoSecaoPorDiaSemana" style="display:none;">
+
+  <div class="adv-card" style="margin-bottom:16px;">
+   <div class="adv-card-title">
+    <h3>⚠️ Dias Atípicos (excluídos das médias por dia da semana)</h3>
+    <span>tipo um feriado com venda isolada — o dia continua contando no faturamento total, só não entra na comparação por dia da semana, pra não distorcer</span>
+   </div>
+   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+    <input id="diaAtipicoDataInput" type="date" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <input id="diaAtipicoMotivoInput" type="text" placeholder="Motivo (ex: feriado, venda isolada)" style="flex:1;min-width:180px;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="adicionarDiaAtipico()" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">➕ Marcar</button>
+   </div>
+   <div id="listaDiasAtipicos"></div>
+  </div>
+
   <div class="config-chips no-print" style="position:static;top:auto;background:transparent;padding:0 0 10px;margin-bottom:4px;">
    <button type="button" class="config-chip" data-dow="1" onclick="selecionarDiaSemanaView(1)">Segunda</button>
    <button type="button" class="config-chip" data-dow="2" onclick="selecionarDiaSemanaView(2)">Terça</button>
@@ -7159,6 +7173,7 @@ function diaParaNumeroSemana(diaStr){
 }
 
 function initPorDiaSemanaView(){
+ renderListaDiasAtipicos();
  // Abre automaticamente no dia da semana de HOJE (horário real de Brasília) — assim, amanhã
  // a pessoa já vê direto os cards de quarta, sem precisar clicar em nada.
  const hoje = obterAgoraBrasilia();
@@ -7179,7 +7194,8 @@ function selecionarDiaSemanaView(dow){
 function renderPorDiaSemanaView(dow){
  const nomesDiasSemana = {1:'Segunda',2:'Terça',3:'Quarta',4:'Quinta',5:'Sexta',6:'Sábado'};
  const nomeDia = nomesDiasSemana[dow] || '';
- const ocorrencias = daysData.filter(d=>diaParaNumeroSemana(d.dia)===dow);
+ const diasAtipicos = getDiasAtipicos().map(d=>d.dia);
+ const ocorrencias = daysData.filter(d=>diaParaNumeroSemana(d.dia)===dow && !diasAtipicos.includes(String(d.dia)));
 
  const elHall = document.getElementById('hallDaFamaDiaSemana');
  const elCards = document.getElementById('cardsDiaSemanaWrap');
@@ -8441,11 +8457,58 @@ function renderNovasMetricas(){
  }
 }
 
+/* ===== Dias Atípicos — excluídos das médias por dia da semana, sem sumir do faturamento total ===== */
+function getDiasAtipicos(){
+ try{ return JSON.parse(localStorage.getItem('biobel_dias_atipicos')||'[]'); }catch(e){ return []; }
+}
+function salvarDiasAtipicos(lista){
+ localStorage.setItem('biobel_dias_atipicos', JSON.stringify(lista));
+}
+function adicionarDiaAtipico(){
+ const dataInput = document.getElementById('diaAtipicoDataInput').value;
+ const motivo = document.getElementById('diaAtipicoMotivoInput').value.trim() || null;
+ if(!dataInput){ mostrarToast('⚠️ Escolha a data.'); return; }
+ const [ano, mes, dia] = dataInput.split('-');
+ const chaveDia = dia+'.'+mes;
+ const lista = getDiasAtipicos();
+ if(lista.some(d=>d.dia===chaveDia)){ mostrarToast('⚠️ Esse dia já está marcado como atípico.'); return; }
+ lista.push({ dia: chaveDia, motivo });
+ salvarDiasAtipicos(lista);
+ document.getElementById('diaAtipicoDataInput').value='';
+ document.getElementById('diaAtipicoMotivoInput').value='';
+ renderListaDiasAtipicos();
+ renderInfoTab();
+ mostrarToast('✅ Dia marcado como atípico — excluído das médias por dia da semana.');
+}
+function removerDiaAtipico(chaveDia){
+ const lista = getDiasAtipicos().filter(d=>d.dia!==chaveDia);
+ salvarDiasAtipicos(lista);
+ renderListaDiasAtipicos();
+ renderInfoTab();
+ mostrarToast('✅ Dia voltou a contar normalmente.');
+}
+function renderListaDiasAtipicos(){
+ const el = document.getElementById('listaDiasAtipicos');
+ if(!el) return;
+ const lista = getDiasAtipicos();
+ if(lista.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12px;">Nenhum dia marcado como atípico ainda.</p>';
+  return;
+ }
+ el.innerHTML = lista.map(d=>`
+   <div style="display:flex;justify-content:space-between;align-items:center;background:#0b1728;border:1px solid #1e2c42;border-radius:8px;padding:8px 12px;margin-bottom:6px;">
+    <span style="font-size:12.5px;color:#dce5f2;">📅 ${d.dia}${d.motivo?' — '+d.motivo:''}</span>
+    <button onclick="removerDiaAtipico('${d.dia}')" aria-label="Remover" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:13px;">🗑️</button>
+   </div>`).join('');
+}
+
 function calcularMediaPorDiaSemana(){
+ const diasAtipicos = getDiasAtipicos().map(d=>d.dia);
  const porDiaSemana = {};
  daysData.forEach(d=>{
   const partes = String(d.dia||'').split('.');
   if(partes.length<2) return;
+  if(diasAtipicos.includes(String(d.dia))) return; // dia marcado como atípico — não entra na média
   const dia = Number(partes[0]), mes = Number(partes[1]);
   if(!dia||!mes) return;
   const dt = new Date(2026, mes-1, dia);
