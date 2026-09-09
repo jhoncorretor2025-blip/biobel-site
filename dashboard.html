@@ -436,7 +436,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     style="width:100%;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;font-size:12px;color:#dce5f2;outline:none;">
    <div id="resultadosBuscaGlobal" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border:1px solid #1e2c42;border-radius:10px;margin-top:4px;max-height:320px;overflow-y:auto;z-index:50;box-shadow:0 12px 32px rgba(0,0,0,.4);"></div>
   </div>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v3.4</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v3.5</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -8214,14 +8214,21 @@ function renderComparacaoMesmoPeriodo(){
  const totaisAnteriorPorNome = somarPorVendedora(primeirosDiasAnterior);
  const rankingAtual = Object.entries(totaisAtualPorNome).sort((a,b)=>b[1]-a[1]);
  const rankingAnterior = Object.entries(totaisAnteriorPorNome).sort((a,b)=>b[1]-a[1]);
- // Comparação individual por vendedora: mesma pessoa, este mês vs mês passado, lado a lado.
+ // Comparação individual por vendedora: mesma pessoa, este mês vs mês passado, com a posição
+ // no ranking de cada período — pra ver quem subiu, quem caiu, e se a "melhor vendedora" mudou.
  const todosOsNomes = [...new Set([...Object.keys(totaisAtualPorNome), ...Object.keys(totaisAnteriorPorNome)])];
+ const posicaoAtual = {}; rankingAtual.forEach(([nome], i)=>{ posicaoAtual[nome] = i+1; });
+ const posicaoAnterior = {}; rankingAnterior.forEach(([nome], i)=>{ posicaoAnterior[nome] = i+1; });
  const comparacaoPorVendedora = todosOsNomes.map(nome=>{
   const atual = totaisAtualPorNome[nome]||0;
   const anterior = totaisAnteriorPorNome[nome]||0;
   const diferencaVend = atual-anterior;
   const percentualVend = anterior>0 ? (diferencaVend/anterior*100) : null;
-  return { nome, atual, anterior, diferencaVend, percentualVend };
+  const posAtual = posicaoAtual[nome] || null;
+  const posAnterior = posicaoAnterior[nome] || null;
+  let mudancaPosicao = null;
+  if(posAtual!==null && posAnterior!==null) mudancaPosicao = posAnterior - posAtual; // positivo = subiu
+  return { nome, atual, anterior, diferencaVend, percentualVend, posAtual, posAnterior, mudancaPosicao };
  }).sort((a,b)=>b.atual-a.atual);
 
  // Ticket médio: faturamento total ÷ quantidade de vendas, em cada período.
@@ -8281,8 +8288,22 @@ function renderComparacaoMesmoPeriodo(){
  function linhaComparacaoVendedora(c){
   const cor = c.percentualVend===null ? '#93a3ba' : c.diferencaVend>=0 ? '#27d7a0' : '#fb7185';
   const seta = c.percentualVend===null ? '' : c.diferencaVend>=0 ? '📈' : '📉';
+  const medalha = c.posAtual===1 ? '🥇' : c.posAtual===2 ? '🥈' : c.posAtual===3 ? '🥉' : '';
+  let indicadorPosicao = '';
+  if(c.mudancaPosicao===null){
+   indicadorPosicao = c.posAtual ? `<span style="color:#93a3ba;">(${c.posAtual}º lugar — não vendeu em ${nomeMesAnterior})</span>` : '';
+  } else if(c.mudancaPosicao>0){
+   indicadorPosicao = `<span style="color:#27d7a0;">⬆️ Subiu do ${c.posAnterior}º pro ${c.posAtual}º lugar</span>`;
+  } else if(c.mudancaPosicao<0){
+   indicadorPosicao = `<span style="color:#fb7185;">⬇️ Caiu do ${c.posAnterior}º pro ${c.posAtual}º lugar</span>`;
+  } else {
+   indicadorPosicao = `<span style="color:#93a3ba;">➡️ Manteve o ${c.posAtual}º lugar</span>`;
+  }
   return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #1e2c42;">
-    <span style="font-size:12.5px;color:#dce5f2;font-weight:600;">${c.nome}</span>
+    <div>
+     <span style="font-size:12.5px;color:#dce5f2;font-weight:600;">${medalha} ${c.nome}</span>
+     <div style="font-size:10px;margin-top:2px;">${indicadorPosicao}</div>
+    </div>
     <div style="text-align:right;">
      <div style="font-size:12.5px;color:#dce5f2;"><strong>${money(c.atual)}</strong> <span style="color:#93a3ba;">vs</span> ${money(c.anterior)}</div>
      <div style="font-size:10.5px;color:${cor};">${seta} ${c.percentualVend!==null ? (c.diferencaVend>=0?'+':'')+c.percentualVend.toFixed(1)+'%' : 'novo'}</div>
