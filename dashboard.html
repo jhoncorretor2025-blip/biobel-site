@@ -436,7 +436,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     style="width:100%;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;font-size:12px;color:#dce5f2;outline:none;">
    <div id="resultadosBuscaGlobal" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border:1px solid #1e2c42;border-radius:10px;margin-top:4px;max-height:320px;overflow-y:auto;z-index:50;box-shadow:0 12px 32px rgba(0,0,0,.4);"></div>
   </div>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v3.1</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v3.2</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -907,6 +907,22 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
  <!-- fim infoSecaoVendedoras -->
 
  <div id="infoSecaoDias" style="display:none;">
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>📊 Acima ou Abaixo da Média</h3>
+    <span>separa os dias que venderam mais ou menos que a média do mês</span>
+   </div>
+   <div id="conteudoAcimaAbaixoMedia"></div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>📆 Melhor e Pior Semana do Mês</h3>
+    <span>agrupa os dias por semana (1ª, 2ª, 3ª...) e compara o total de cada uma</span>
+   </div>
+   <div id="conteudoSemanasDoMes"></div>
+  </div>
+
   <div class="adv-card">
    <div class="adv-card-title">
     <h3>📅 Dias que mais venderam</h3>
@@ -7160,6 +7176,7 @@ function mostrarSecaoInfo(secao){
  });
  try{ localStorage.setItem('biobel_info_secao_ativa', secao); }catch(e){}
  if(secao==='PorDiaSemana') initPorDiaSemanaView();
+ if(secao==='Dias'){ renderAcimaAbaixoMedia(); renderSemanasDoMes(); }
 }
 
 /* ===== Tela "Por Dia da Semana" — compara todas as ocorrências do mesmo dia da semana ===== */
@@ -7926,6 +7943,70 @@ function montarSeletorMeses(){
 
 /* ===== Comparar meses arquivados lado a lado ===== */
 /* ===== Comparar Mesmo Período — este mês (em andamento) x mês passado (arquivado) ===== */
+/* ===== Acima/Abaixo da Média, e Melhor/Pior Semana do Mês (aba Dias) ===== */
+function renderAcimaAbaixoMedia(){
+ const el = document.getElementById('conteudoAcimaAbaixoMedia');
+ if(!el) return;
+ if(daysData.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Sem dados carregados ainda.</p>'; return; }
+ const totalSales = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const media = totalSales/daysData.length;
+ const acima = daysData.filter(d=>(Number(d.sales)||0)>=media).sort((a,b)=>(Number(b.sales)||0)-(Number(a.sales)||0));
+ const abaixo = daysData.filter(d=>(Number(d.sales)||0)<media).sort((a,b)=>(Number(a.sales)||0)-(Number(b.sales)||0));
+
+ function linha(d){
+  return `<div style="display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px solid #1e2c42;">
+    <span style="color:#dce5f2;">${d.dia}</span>
+    <span style="color:#93a3ba;">${money(Number(d.sales)||0)}</span>
+   </div>`;
+ }
+
+ el.innerHTML = `
+  <div style="text-align:center;margin-bottom:14px;">
+   <span style="font-size:11px;color:#93a3ba;">Média do mês: </span><strong style="color:#dce5f2;">${money(media)}</strong>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+   <div>
+    <div style="font-size:10.5px;font-weight:800;color:#27d7a0;text-transform:uppercase;margin-bottom:8px;">📈 Acima (${acima.length})</div>
+    <div style="max-height:280px;overflow-y:auto;">${acima.map(linha).join('') || '<p style="color:#93a3ba;font-size:11.5px;">Nenhum dia.</p>'}</div>
+   </div>
+   <div>
+    <div style="font-size:10.5px;font-weight:800;color:#fb7185;text-transform:uppercase;margin-bottom:8px;">📉 Abaixo (${abaixo.length})</div>
+    <div style="max-height:280px;overflow-y:auto;">${abaixo.map(linha).join('') || '<p style="color:#93a3ba;font-size:11.5px;">Nenhum dia.</p>'}</div>
+   </div>
+  </div>
+ `;
+}
+function renderSemanasDoMes(){
+ const el = document.getElementById('conteudoSemanasDoMes');
+ if(!el) return;
+ if(daysData.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Sem dados carregados ainda.</p>'; return; }
+ const semanas = {};
+ daysData.forEach(d=>{
+  const diaNum = Number(String(d.dia).split('.')[0]);
+  const semanaNum = Math.ceil(diaNum/7);
+  if(!semanas[semanaNum]) semanas[semanaNum] = { total:0, qtd:0, dias:[] };
+  semanas[semanaNum].total += Number(d.sales)||0;
+  semanas[semanaNum].qtd += 1;
+  semanas[semanaNum].dias.push(d.dia);
+ });
+ const listaSemanas = Object.entries(semanas).sort((a,b)=>Number(a[0])-Number(b[0]));
+ if(listaSemanas.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Sem dados suficientes ainda.</p>'; return; }
+ const melhorSemana = [...listaSemanas].sort((a,b)=>b[1].total-a[1].total)[0];
+ const piorSemana = [...listaSemanas].sort((a,b)=>a[1].total-b[1].total)[0];
+
+ el.innerHTML = listaSemanas.map(([num, dados])=>{
+  const ehMelhor = melhorSemana && num===melhorSemana[0];
+  const ehPior = piorSemana && num===piorSemana[0] && listaSemanas.length>1 && !ehMelhor;
+  return `<div style="background:#0b1728;border:1px solid ${ehMelhor?'rgba(39,215,160,.4)':ehPior?'rgba(251,113,133,.4)':'#1e2c42'};border-radius:10px;padding:12px 14px;margin-bottom:8px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+     <span style="font-size:12.5px;color:#dce5f2;font-weight:700;">${num}ª semana (dias ${dados.dias[0]} a ${dados.dias[dados.dias.length-1]})${ehMelhor?' 🏆':''}${ehPior?' ⚠️':''}</span>
+     <span style="font-size:14px;font-weight:900;color:${ehMelhor?'#27d7a0':ehPior?'#fb7185':'#dce5f2'};">${money(dados.total)}</span>
+    </div>
+    <div style="font-size:10.5px;color:#93a3ba;margin-top:4px;">${dados.qtd} dia${dados.qtd===1?'':'s'} lançado${dados.qtd===1?'':'s'} · média de ${money(dados.total/dados.qtd)}/dia</div>
+   </div>`;
+ }).join('');
+}
+
 function calcularQuedaMesmoPeriodo(){
  // Versão independente (sem depender de nenhuma tela estar aberta) — usada tanto pela Central
  // de Alertas quanto pela tela de comparação, pra sempre calcular a mesma coisa do mesmo jeito.
@@ -8012,13 +8093,37 @@ async function exportarComparacaoPeriodoPDF(){
  }
 }
 
+function alternarDiaAtipicoRapido(diaStr, marcado){
+ const lista = getDiasAtipicos();
+ if(marcado){
+  if(!lista.some(d=>d.dia===diaStr)) lista.push({ dia: diaStr, motivo: 'Marcado na comparação de período' });
+ } else {
+  const idx = lista.findIndex(d=>d.dia===diaStr);
+  if(idx>=0) lista.splice(idx,1);
+ }
+ salvarDiasAtipicos(lista);
+ mostrarToast(marcado ? '✅ Dia marcado como atípico.' : '✅ Dia voltou a contar normalmente.');
+ renderComparacaoMesmoPeriodo();
+}
+
 function renderComparacaoMesmoPeriodo(){
  const el = document.getElementById('conteudoComparacaoMesmoPeriodo');
  if(!el) return;
 
- const diasEsteMes = daysData.length;
- if(diasEsteMes===0){
+ if(daysData.length===0){
   el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Sem dados carregados no mês atual ainda.</p>';
+  return;
+ }
+
+ // Dias marcados como atípicos (ex: feriado com venda isolada) saem da conta dos dois períodos,
+ // pra dar uma visão real de como a loja está indo, sem esses dias distorcendo a comparação.
+ const diasAtipicos = getDiasAtipicos().map(d=>d.dia);
+ const diasEsteMesTodos = daysData;
+ const diasEsteMesFiltrados = daysData.filter(d=>!diasAtipicos.includes(String(d.dia)));
+ const diasEsteMes = diasEsteMesFiltrados.length;
+
+ if(diasEsteMes===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Todos os dias desse mês estão marcados como atípicos — nada sobrou pra comparar.</p>';
   return;
  }
 
@@ -8031,22 +8136,25 @@ function renderComparacaoMesmoPeriodo(){
 
  let arquivo = {};
  try{ arquivo = JSON.parse(localStorage.getItem('biobel_arquivo_meses')||'{}'); }catch(e){}
- const diasMesAnterior = arquivo[mesAnteriorStr] || [];
+ const diasMesAnteriorTodos = (arquivo[mesAnteriorStr] || []).filter(d=>!diasAtipicos.includes(String(d.dia)));
 
- if(diasMesAnterior.length===0){
+ if(diasMesAnteriorTodos.length===0){
   el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Ainda não há dados arquivados do mês anterior pra comparar. Isso é guardado automaticamente quando você troca de planilha.</p>';
   return;
  }
 
- // Pega só os primeiros N dias do mês anterior (N = quantos dias já foram lançados nesse mês).
- const diasOrdenadosAnterior = [...diasMesAnterior].sort((a,b)=>Number(String(a.dia).split('.')[0])-Number(String(b.dia).split('.')[0]));
+ // Pega só os primeiros N dias do mês anterior (N = quantos dias já foram lançados nesse mês,
+ // já sem contar os atípicos).
+ const diasOrdenadosAnterior = [...diasMesAnteriorTodos].sort((a,b)=>Number(String(a.dia).split('.')[0])-Number(String(b.dia).split('.')[0]));
  const primeirosDiasAnterior = diasOrdenadosAnterior.slice(0, diasEsteMes);
+ const daysData_original = daysData; // guarda a referência original só pra clareza
+ const daysDataFiltrado = diasEsteMesFiltrados; // usado no lugar de "daysData" daqui pra baixo
 
  const nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
  const nomeMesAtual = nomesMeses[mesAtualNum-1];
  const nomeMesAnterior = nomesMeses[mesAnteriorNum-1];
 
- const faturamentoAtual = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const faturamentoAtual = daysDataFiltrado.reduce((s,d)=>s+(Number(d.sales)||0),0);
  const faturamentoAnterior = primeirosDiasAnterior.reduce((s,d)=>s+(Number(d.sales)||0),0);
  const diferenca = faturamentoAtual - faturamentoAnterior;
  const percentual = faturamentoAnterior>0 ? (diferenca/faturamentoAnterior*100) : null;
@@ -8062,7 +8170,7 @@ function renderComparacaoMesmoPeriodo(){
  function somarItensVendidos(dias){
   return dias.reduce((s,d)=>s+(d.registrosVendas||[]).reduce((s2,r)=>s2+(r.qtdItens||0),0),0);
  }
- const itensAtual = somarItensVendidos(daysData);
+ const itensAtual = somarItensVendidos(daysDataFiltrado);
  const itensAnterior = somarItensVendidos(primeirosDiasAnterior);
 
  // Item 2: horário de pico de cada período (soma o valor de cada hora, entre todos os dias).
@@ -8078,7 +8186,7 @@ function renderComparacaoMesmoPeriodo(){
   const [horaPico, valorPico] = entradas.sort((a,b)=>b[1]-a[1])[0];
   return { hora: Number(horaPico), valor: valorPico };
  }
- const picoAtual = acharHorarioPico(daysData);
+ const picoAtual = acharHorarioPico(daysDataFiltrado);
  const picoAnterior = acharHorarioPico(primeirosDiasAnterior);
 
  function somarPorVendedora(dias){
@@ -8088,13 +8196,24 @@ function renderComparacaoMesmoPeriodo(){
     totais[nome] = (totais[nome]||0) + (det.total||0);
    });
   });
-  return Object.entries(totais).sort((a,b)=>b[1]-a[1]);
+  return totais;
  }
- const rankingAtual = somarPorVendedora(daysData);
- const rankingAnterior = somarPorVendedora(primeirosDiasAnterior);
+ const totaisAtualPorNome = somarPorVendedora(daysDataFiltrado);
+ const totaisAnteriorPorNome = somarPorVendedora(primeirosDiasAnterior);
+ const rankingAtual = Object.entries(totaisAtualPorNome).sort((a,b)=>b[1]-a[1]);
+ const rankingAnterior = Object.entries(totaisAnteriorPorNome).sort((a,b)=>b[1]-a[1]);
+ // Comparação individual por vendedora: mesma pessoa, este mês vs mês passado, lado a lado.
+ const todosOsNomes = [...new Set([...Object.keys(totaisAtualPorNome), ...Object.keys(totaisAnteriorPorNome)])];
+ const comparacaoPorVendedora = todosOsNomes.map(nome=>{
+  const atual = totaisAtualPorNome[nome]||0;
+  const anterior = totaisAnteriorPorNome[nome]||0;
+  const diferencaVend = atual-anterior;
+  const percentualVend = anterior>0 ? (diferencaVend/anterior*100) : null;
+  return { nome, atual, anterior, diferencaVend, percentualVend };
+ }).sort((a,b)=>b.atual-a.atual);
 
  // Ticket médio: faturamento total ÷ quantidade de vendas, em cada período.
- const qtdVendasAtual = daysData.reduce((s,d)=>s+(Number(d.qtdVendas)||0),0);
+ const qtdVendasAtual = daysDataFiltrado.reduce((s,d)=>s+(Number(d.qtdVendas)||0),0);
  const qtdVendasAnterior = primeirosDiasAnterior.reduce((s,d)=>s+(Number(d.qtdVendas)||0),0);
  const ticketAtual = qtdVendasAtual>0 ? faturamentoAtual/qtdVendasAtual : 0;
  const ticketAnterior = qtdVendasAnterior>0 ? faturamentoAnterior/qtdVendasAnterior : 0;
@@ -8108,7 +8227,7 @@ function renderComparacaoMesmoPeriodo(){
    pix: dias.reduce((s,d)=>s+(Number(d.pix)||0),0),
   };
  }
- const pagAtual = somarFormasPagamento(daysData);
+ const pagAtual = somarFormasPagamento(daysDataFiltrado);
  const pagAnterior = somarFormasPagamento(primeirosDiasAnterior);
 
  // Dias da semana: agrupa o faturamento por dia da semana em cada período.
@@ -8122,7 +8241,7 @@ function renderComparacaoMesmoPeriodo(){
   });
   return totais;
  }
- const semanaAtual = somarPorDiaSemana(daysData, mesAtualNum);
+ const semanaAtual = somarPorDiaSemana(daysDataFiltrado, mesAtualNum);
  const semanaAnterior = somarPorDiaSemana(primeirosDiasAnterior, mesAnteriorNum);
 
  function listaRanking(ranking){
@@ -8147,7 +8266,31 @@ function renderComparacaoMesmoPeriodo(){
    </div>`;
  }
 
+ function linhaComparacaoVendedora(c){
+  const cor = c.percentualVend===null ? '#93a3ba' : c.diferencaVend>=0 ? '#27d7a0' : '#fb7185';
+  const seta = c.percentualVend===null ? '' : c.diferencaVend>=0 ? '📈' : '📉';
+  return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #1e2c42;">
+    <span style="font-size:12.5px;color:#dce5f2;font-weight:600;">${c.nome}</span>
+    <div style="text-align:right;">
+     <div style="font-size:12.5px;color:#dce5f2;"><strong>${money(c.atual)}</strong> <span style="color:#93a3ba;">vs</span> ${money(c.anterior)}</div>
+     <div style="font-size:10.5px;color:${cor};">${seta} ${c.percentualVend!==null ? (c.diferencaVend>=0?'+':'')+c.percentualVend.toFixed(1)+'%' : 'novo'}</div>
+    </div>
+   </div>`;
+ }
+ function linhaCheckboxDiaAtipico(d){
+  const marcado = diasAtipicos.includes(String(d.dia));
+  return `<label style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:11.5px;color:#dce5f2;cursor:pointer;">
+    <input type="checkbox" ${marcado?'checked':''} onchange="alternarDiaAtipicoRapido('${d.dia}', this.checked)">
+    ${d.dia} — ${money(Number(d.sales)||0)}${marcado?' <span style="color:#fbbf24;">(feriado/atípico)</span>':''}
+   </label>`;
+ }
+
  el.innerHTML = `
+  <details style="margin-bottom:14px;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 14px;">
+   <summary style="cursor:pointer;font-size:12px;color:#93a3ba;font-weight:700;">📋 Foi feriado em algum desses dias? (clique pra marcar)</summary>
+   <div style="margin-top:8px;">${diasEsteMesTodos.map(linhaCheckboxDiaAtipico).join('')}</div>
+  </details>
+
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
    <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:14px;">
     <div style="font-size:10.5px;color:#93a3ba;font-weight:800;text-transform:uppercase;">📆 ${nomeMesAtual} (${diasEsteMes} dia${diasEsteMes===1?'':'s'})</div>
@@ -8171,6 +8314,11 @@ function renderComparacaoMesmoPeriodo(){
     <div style="font-size:10.5px;color:#93a3ba;font-weight:800;text-transform:uppercase;margin-bottom:6px;">👥 Quem vendeu mais — ${nomeMesAnterior}</div>
     ${listaRanking(rankingAnterior)}
    </div>
+  </div>
+
+  <div style="border-top:1px solid #1e2c42;padding-top:14px;margin-bottom:16px;">
+   <div style="font-size:10.5px;color:#93a3ba;font-weight:800;text-transform:uppercase;margin-bottom:8px;">🆚 Cada Vendedora: Este Mês x Mês Passado</div>
+   ${comparacaoPorVendedora.map(linhaComparacaoVendedora).join('') || '<p style="color:#93a3ba;font-size:11.5px;">Sem dados suficientes.</p>'}
   </div>
 
   <div style="border-top:1px solid #1e2c42;padding-top:14px;margin-bottom:16px;">
