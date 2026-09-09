@@ -436,7 +436,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     style="width:100%;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;font-size:12px;color:#dce5f2;outline:none;">
    <div id="resultadosBuscaGlobal" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border:1px solid #1e2c42;border-radius:10px;margin-top:4px;max-height:320px;overflow-y:auto;z-index:50;box-shadow:0 12px 32px rgba(0,0,0,.4);"></div>
   </div>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v3.2</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v3.3</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -3236,13 +3236,16 @@ function showTab(tab){
   b4.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
   b4.setAttribute('aria-selected','true');
   montarSeletorMeses();
-  renderListaMesesComparar();
-  renderComparacaoMesmoPeriodo();
-  renderTop30Dias();
-  renderInfoTab();
+  // Cada chamada é blindada com try/catch — assim, se uma delas der um erro inesperado, ela não
+  // trava as outras junto (isso já causou um problema real: "Análises avançadas" e "Dias" pararam
+  // de aparecer porque uma chamada anterior travava a sequência toda).
+  try{ renderListaMesesComparar(); }catch(e){ console.error('Erro em renderListaMesesComparar:', e); }
+  try{ renderComparacaoMesmoPeriodo(); }catch(e){ console.error('Erro em renderComparacaoMesmoPeriodo:', e); }
+  try{ renderTop30Dias(); }catch(e){ console.error('Erro em renderTop30Dias:', e); }
+  try{ renderInfoTab(); }catch(e){ console.error('Erro em renderInfoTab:', e); }
   let secaoInfoLembrada = 'Financeiro';
   try{ secaoInfoLembrada = localStorage.getItem('biobel_info_secao_ativa') || 'Financeiro'; }catch(e){}
-  mostrarSecaoInfo(secaoInfoLembrada);
+  try{ mostrarSecaoInfo(secaoInfoLembrada); }catch(e){ console.error('Erro em mostrarSecaoInfo:', e); }
  } else if(tab==='config'){
   config.classList.remove('hidden');
   b3.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
@@ -7176,7 +7179,10 @@ function mostrarSecaoInfo(secao){
  });
  try{ localStorage.setItem('biobel_info_secao_ativa', secao); }catch(e){}
  if(secao==='PorDiaSemana') initPorDiaSemanaView();
- if(secao==='Dias'){ renderAcimaAbaixoMedia(); renderSemanasDoMes(); }
+ if(secao==='Dias'){
+  try{ renderAcimaAbaixoMedia(); }catch(e){ console.error('Erro em renderAcimaAbaixoMedia:', e); }
+  try{ renderSemanasDoMes(); }catch(e){ console.error('Erro em renderSemanasDoMes:', e); }
+ }
 }
 
 /* ===== Tela "Por Dia da Semana" — compara todas as ocorrências do mesmo dia da semana ===== */
@@ -7707,7 +7713,8 @@ function renderCentralDeAlertas(){
  }
 
  // Queda grande (20%+) comparando o mesmo período do mês atual com o mês passado.
- const quedaComparacao = calcularQuedaMesmoPeriodo();
+ let quedaComparacao = null;
+ try{ quedaComparacao = calcularQuedaMesmoPeriodo(); }catch(e){ console.error('Erro em calcularQuedaMesmoPeriodo:', e); }
  if(quedaComparacao){
   alertas.push({
    severidade:'atencao', emoji:'📉', titulo:'Queda forte comparado ao mês passado',
@@ -11670,12 +11677,16 @@ function updateAdvancedSelected(day){
 // O Dashboard Avançado usa uma renderização própria; as abas simples/configuração
 // continuam usando suas funções originais.
 render = function(){
-  renderAdvancedDashboard();
-  renderCentralDeAlertas();
-  renderDatasComerciais(); // calendário comercial fica visível pra todo mundo, não só a gerência
-  renderFaixaMensagemProgramada(); // mensagens programadas (ex: aniversário) aparecem pra quem estiver logado, sem precisar da senha da área ADM
+  // Cada chamada blindada com try/catch — essa função roda sozinha a cada atualização automática
+  // (a cada minuto), então um erro em qualquer uma delas nunca pode travar as outras.
+  try{ renderAdvancedDashboard(); }catch(e){ console.error('Erro em renderAdvancedDashboard:', e); }
+  try{ renderCentralDeAlertas(); }catch(e){ console.error('Erro em renderCentralDeAlertas:', e); }
+  try{ renderDatasComerciais(); }catch(e){ console.error('Erro em renderDatasComerciais:', e); } // calendário comercial fica visível pra todo mundo, não só a gerência
+  try{ renderFaixaMensagemProgramada(); }catch(e){ console.error('Erro em renderFaixaMensagemProgramada:', e); } // mensagens programadas (ex: aniversário) aparecem pra quem estiver logado, sem precisar da senha da área ADM
   const infoTab = document.getElementById('infoTab');
-  if(infoTab && !infoTab.classList.contains('hidden')) renderInfoTab();
+  if(infoTab && !infoTab.classList.contains('hidden')){
+   try{ renderInfoTab(); }catch(e){ console.error('Erro em renderInfoTab:', e); }
+  }
 
   // Mantém os seletores de dia da Caixa Simples e Caixa Completo sempre com a lista mais recente,
   // mesmo se a pessoa já estiver com a aba aberta quando a planilha atualizar sozinha.
