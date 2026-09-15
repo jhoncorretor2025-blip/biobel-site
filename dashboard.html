@@ -459,7 +459,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     style="width:100%;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;font-size:12px;color:#dce5f2;outline:none;">
    <div id="resultadosBuscaGlobal" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border:1px solid #1e2c42;border-radius:10px;margin-top:4px;max-height:320px;overflow-y:auto;z-index:50;box-shadow:0 12px 32px rgba(0,0,0,.4);"></div>
   </div>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v4.0</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v4.1</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -538,6 +538,8 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <div id="metaDestaqueBar" style="height:100%;width:0%;background:linear-gradient(90deg,#27d7a0,#0ea97a);transition:width .4s;"></div>
    </div>
    <div style="font-size:13px;color:#93a3ba;margin-top:10px;">Faltam <strong id="metaDestaqueFaltam" style="color:#dce5f2;">R$ 0,00</strong> para bater a meta.</div>
+   <div style="font-size:12.5px;color:#93a3ba;margin-top:6px;">📅 Faltam <strong id="metaDiasRestantes" style="color:#dce5f2;">0</strong> dias pra fechar o mês.</div>
+   <div id="metaProjecaoTexto" style="font-size:12px;margin-top:6px;"></div>
   </div>
 
   <div class="adv-card no-print" style="margin-bottom:16px;">
@@ -1738,7 +1740,10 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <div class="rounded-xl border border-emerald-500/30 bg-slate-950 px-4 py-5">
     <div class="flex items-center justify-between caixa-row">
      <span class="font-semibold text-slate-200">🔒 Valor que ficou no caixa</span>
-     <strong id="simpleClosing" class="text-2xl text-emerald-400" aria-live="polite">R$ 0,00</strong>
+     <div style="display:flex;align-items:center;gap:8px;">
+      <strong id="simpleClosing" class="text-2xl text-emerald-400" aria-live="polite">R$ 0,00</strong>
+      <button onclick="copiarValorTela('simpleClosing')" class="no-print" aria-label="Copiar valor" style="background:none;border:none;color:#93a3ba;cursor:pointer;font-size:15px;">📋</button>
+     </div>
     </div>
     <div id="simpleClosingData" style="font-size:11px;color:#93a3ba;text-align:right;margin-top:4px;"></div>
    </div>
@@ -1880,7 +1885,10 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <div class="rounded-xl border border-emerald-500/30 bg-slate-950 px-4 py-5">
     <div class="flex items-center justify-between caixa-row">
      <span class="font-semibold text-slate-200">🔒 Valor que ficou no caixa</span>
-     <strong id="completeClosing" class="text-2xl text-emerald-400" aria-live="polite">R$ 0,00</strong>
+     <div style="display:flex;align-items:center;gap:8px;">
+      <strong id="completeClosing" class="text-2xl text-emerald-400" aria-live="polite">R$ 0,00</strong>
+      <button onclick="copiarValorTela('completeClosing')" class="no-print" aria-label="Copiar valor" style="background:none;border:none;color:#93a3ba;cursor:pointer;font-size:15px;">📋</button>
+     </div>
     </div>
     <div id="completeClosingData" style="font-size:11px;color:#93a3ba;text-align:right;margin-top:4px;"></div>
     <p class="simple-legend text-xs text-slate-500 mt-1">Quanto tinha na gaveta quando a loja <strong class="text-slate-400">fechou</strong> — o valor final, contado na hora de fechar.</p>
@@ -2701,6 +2709,12 @@ document.addEventListener('keydown', e=>{
  if(e.key==='Escape'){
   const overlay = document.getElementById('modoApresentacaoOverlay');
   if(overlay && overlay.style.display!=='none') sairModoApresentacao();
+ }
+ // Atalho "/" pra ir direto na busca global — mas só se não estiver digitando em outro campo.
+ if(e.key==='/' && document.activeElement.tagName!=='INPUT' && document.activeElement.tagName!=='TEXTAREA' && document.activeElement.tagName!=='SELECT'){
+  e.preventDefault();
+  const inputBusca = document.getElementById('inputBuscaGlobal');
+  if(inputBusca) inputBusca.focus();
  }
 });
 
@@ -4637,6 +4651,37 @@ function renderChavesPixLista(){
  if(elAdm) elAdm.innerHTML = html;
  if(elEquipe) elEquipe.innerHTML = html;
 }
+/* ===== Aviso antes de sair com algo digitado e não salvo ===== */
+window.addEventListener('beforeunload', function(e){
+ const camposMonitorados = [
+  'novoGastoFixoNome','novoBoletoFornecedor','pontoDataInput','pontoEntradaInput',
+  'faltaDataInput','devolucaoProdutoInput'
+ ];
+ const temAlgoPreenchido = camposMonitorados.some(id=>{
+  const el = document.getElementById(id);
+  return el && el.value && String(el.value).trim().length>0;
+ });
+ if(temAlgoPreenchido){
+  e.preventDefault();
+  e.returnValue = '';
+ }
+});
+
+function copiarValorTela(id){
+ const el = document.getElementById(id);
+ if(!el) return;
+ const texto = el.textContent.trim();
+ if(navigator.clipboard && navigator.clipboard.writeText){
+  navigator.clipboard.writeText(texto).then(()=>{
+   mostrarToast('✅ Copiado: '+texto);
+  }).catch(()=>{
+   mostrarToast('⚠️ Não copiou sozinho — valor: '+texto);
+  });
+ } else {
+  mostrarToast('⚠️ Não copiou sozinho — valor: '+texto);
+ }
+}
+
 function copiarChavePix(chave, nome){
  if(navigator.clipboard && navigator.clipboard.writeText){
   navigator.clipboard.writeText(chave).then(()=>{
@@ -7915,6 +7960,23 @@ function renderCentralDeAlertas(){
    aba:'info', secao:'Comparar'
   });
  }
+
+ // Folha de ponto sem preenchimento há muitos dias — pra ninguém esquecer de lançar.
+ try{
+  const registrosPonto = getRegistrosPonto();
+  if(registrosPonto.length>0){
+   const ultimaData = registrosPonto.map(p=>p.data).sort().reverse()[0];
+   const hojeChave = obterAgoraBrasilia().paraChaveISO();
+   const diasSemLancar = Math.round((new Date(hojeChave+'T00:00:00').getTime()-new Date(ultimaData+'T00:00:00').getTime())/86400000);
+   if(diasSemLancar>=7){
+    alertas.push({
+     severidade:'atencao', emoji:'📋', titulo:'Folha de ponto sem lançamento',
+     descricao:`Faz ${diasSemLancar} dias que ninguém registra a folha de ponto. Último lançamento: ${new Date(ultimaData+'T00:00:00').toLocaleDateString('pt-BR')}.`,
+     aba:'equipe', secao:''
+    });
+   }
+  }
+ }catch(e){ console.error('Erro ao verificar folha de ponto:', e); }
 
  // Ordena por severidade: crítico primeiro, depois atenção, depois informativo.
  const ordemSeveridade = {critico:0, atencao:1, informativo:2};
@@ -11701,6 +11763,34 @@ function renderAdvancedDashboard(){
   if(elMP) elMP.textContent = metaPct.toFixed(1)+'%';
   if(elMB) elMB.style.width = metaPct.toFixed(1)+'%';
   if(elMF) elMF.textContent = money(metaFaltam);
+
+  // Dias restantes do mês, e projeção de "no ritmo atual, dá tempo de bater a meta?"
+  const elDiasRestantes = document.getElementById('metaDiasRestantes');
+  const elProjecao = document.getElementById('metaProjecaoTexto');
+  if(elDiasRestantes && daysData.length>0){
+   const mesRef = Number(String(daysData[0].dia).split('.')[1]);
+   const anoRef = 2026;
+   const ultimoDiaDoMes = new Date(anoRef, mesRef, 0).getDate();
+   const hoje = obterAgoraBrasilia();
+   const diaAtual = hoje.getMonth()+1===mesRef ? hoje.getDate() : ultimoDiaDoMes;
+   const diasRestantes = Math.max(0, ultimoDiaDoMes-diaAtual);
+   elDiasRestantes.textContent = diasRestantes;
+
+   if(elProjecao){
+    if(metaFaltam<=0){
+     elProjecao.innerHTML = '<span style="color:#27d7a0;">🎉 Meta já batida!</span>';
+    } else if(diasRestantes===0){
+     elProjecao.innerHTML = '<span style="color:#fb7185;">⚠️ Hoje é o último dia do mês.</span>';
+    } else {
+     const mediaAtual = totalSales/daysData.length;
+     const projecaoTotal = totalSales + (mediaAtual*diasRestantes);
+     const vaiBater = projecaoTotal >= metaGoal;
+     elProjecao.innerHTML = vaiBater
+      ? `<span style="color:#27d7a0;">📈 No ritmo atual (${money(mediaAtual)}/dia), a projeção é fechar em ${money(projecaoTotal)} — deve bater a meta.</span>`
+      : `<span style="color:#fbbf24;">📉 No ritmo atual (${money(mediaAtual)}/dia), a projeção é fechar em ${money(projecaoTotal)} — abaixo da meta, precisa acelerar.</span>`;
+    }
+   }
+  }
 
   const ids = {
     advTotalSales: totalSales, advTotalClosing: totalClosing,
