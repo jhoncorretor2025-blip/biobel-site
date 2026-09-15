@@ -113,6 +113,13 @@ body{
 }
 .adv-pill b{color:#fff}
 .adv-grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px}
+
+/* Minimizar/Maximizar cards — esconde tudo dentro do card, menos o título, quando colapsado. */
+.adv-card-colapsado > *:not(.adv-card-title){ display:none!important; }
+.adv-card-title{ position:relative; }
+.btn-colapsar-card{ background:none; border:none; color:#93a3ba; cursor:pointer; font-size:16px; padding:2px 6px; float:right; line-height:1; }
+.btn-colapsar-card:hover{ color:#dce5f2; }
+
 .adv-kpi{
   background:linear-gradient(180deg,rgba(15,31,52,.98),rgba(10,22,38,.98));
   border:1px solid var(--line);border-radius:17px;padding:16px;min-height:128px;position:relative;overflow:hidden;
@@ -436,7 +443,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     style="width:100%;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;font-size:12px;color:#dce5f2;outline:none;">
    <div id="resultadosBuscaGlobal" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border:1px solid #1e2c42;border-radius:10px;margin-top:4px;max-height:320px;overflow-y:auto;z-index:50;box-shadow:0 12px 32px rgba(0,0,0,.4);"></div>
   </div>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v3.7</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v3.8</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -3147,6 +3154,38 @@ window.addEventListener('scroll', function(){
 });
 
 /* ===== Modo Compacto (reduz espaçamento entre cards, pra caber mais informação na tela) ===== */
+/* ===== Minimizar/Maximizar cards — aplica um botão em todo card automaticamente ===== */
+function inicializarColapsoCards(){
+ document.querySelectorAll('.adv-card').forEach((card, idx)=>{
+  if(card.dataset.colapsavelInit) return; // já processado antes, não duplica o botão
+  const titulo = card.querySelector(':scope > .adv-card-title');
+  if(!titulo) return;
+  card.dataset.colapsavelInit = 'yes';
+
+  // Chave estável baseada no texto do título, pra lembrar o estado entre sessões e atualizações.
+  const textoTitulo = titulo.querySelector('h3')?.textContent?.trim() || ('card_'+idx);
+  const chave = 'biobel_card_colapsado_'+textoTitulo.replace(/[^a-zA-Z0-9]/g,'_');
+
+  const btn = document.createElement('button');
+  btn.className = 'btn-colapsar-card no-print';
+  btn.setAttribute('aria-label', 'Minimizar ou maximizar esse card');
+  btn.setAttribute('type', 'button');
+  btn.textContent = '▾';
+  btn.onclick = function(e){
+   e.stopPropagation();
+   const colapsado = card.classList.toggle('adv-card-colapsado');
+   btn.textContent = colapsado ? '▸' : '▾';
+   localStorage.setItem(chave, colapsado ? 'yes' : 'no');
+  };
+  titulo.appendChild(btn);
+
+  if(localStorage.getItem(chave)==='yes'){
+   card.classList.add('adv-card-colapsado');
+   btn.textContent = '▸';
+  }
+ });
+}
+
 function alternarModoCompacto(){
  const ativo = document.body.classList.toggle('modo-compacto');
  localStorage.setItem('biobel_modo_compacto', ativo?'yes':'no');
@@ -11798,6 +11837,7 @@ function updateAdvancedSelected(day){
 render = function(){
   // Cada chamada blindada com try/catch — essa função roda sozinha a cada atualização automática
   // (a cada minuto), então um erro em qualquer uma delas nunca pode travar as outras.
+  try{ inicializarColapsoCards(); }catch(e){ console.error('Erro em inicializarColapsoCards:', e); }
   try{ renderAdvancedDashboard(); }catch(e){ console.error('Erro em renderAdvancedDashboard:', e); }
   try{ renderCentralDeAlertas(); }catch(e){ console.error('Erro em renderCentralDeAlertas:', e); }
   try{ renderDatasComerciais(); }catch(e){ console.error('Erro em renderDatasComerciais:', e); } // calendário comercial fica visível pra todo mundo, não só a gerência
