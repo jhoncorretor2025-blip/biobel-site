@@ -431,6 +431,7 @@ body.modo-compacto .space-y-4 > * + *{ margin-top:8px!important; }
 </head>
 <body class="min-h-screen bg-slate-950 text-slate-100">
 <div id="faixaMensagemProgramada" style="display:none;"></div>
+<div id="tourGuiadoOverlay" style="display:none;"></div>
 <button id="btnVoltarTopo" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Voltar ao topo">↑</button>
 <a href="#dashboardTab" style="position:absolute;left:-9999px;top:0;z-index:9999;background:#0ea97a;color:#04241a;padding:12px 18px;border-radius:0 0 10px 0;font-weight:700;text-decoration:none" onfocus="this.style.left='0'" onblur="this.style.left='-9999px'">Pular para o conteúdo</a>
 <script>
@@ -459,7 +460,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     style="width:100%;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;font-size:12px;color:#dce5f2;outline:none;">
    <div id="resultadosBuscaGlobal" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border:1px solid #1e2c42;border-radius:10px;margin-top:4px;max-height:320px;overflow-y:auto;z-index:50;box-shadow:0 12px 32px rgba(0,0,0,.4);"></div>
   </div>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v4.3</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v4.4</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -472,6 +473,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </button>
   <button id="btnModoCompacto" onclick="alternarModoCompacto()" class="no-print text-xs text-slate-300 hover:text-white" style="background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Reduzir o espaçamento pra caber mais informação na tela">↕️ Compacto</button>
   <button id="btnColapsarTudo" onclick="alternarColapsoTodosCards()" class="no-print text-xs text-slate-300 hover:text-white" style="background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Minimizar ou expandir todos os cards visíveis de uma vez">▾ Minimizar tudo</button>
+  <button onclick="iniciarTourGuiado()" class="no-print text-xs text-slate-400 hover:text-slate-200 underline" title="Rever a introdução do sistema">❓ Tour</button>
   <button onclick="confirmLogout()" class="no-print text-xs text-slate-400 hover:text-rose-400 underline">Sair</button>
  </div>
  <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row gap-4 justify-between items-center">
@@ -3249,6 +3251,66 @@ function inicializarColapsoCards(){
    btn.textContent = '▸';
   }
  });
+}
+
+/* ===== Tour Guiado — aparece sozinho na primeira vez, explica as abas principais ===== */
+const TOUR_PASSOS_BIOBEL = [
+ { titulo:'👋 Bem-vindo(a) ao painel da Biobel!', texto:'Esse é um tour rápido pra você conhecer as principais partes do sistema — leva menos de 1 minuto.' },
+ { titulo:'📊 Dashboard', texto:'Aqui você vê a meta do mês, o calendário comercial e um resumo geral de como as vendas estão indo.' },
+ { titulo:'🎯 Informação Geral', texto:'Análises mais detalhadas: quem vendeu mais, comparação entre meses, melhores dias da semana, e muito mais.' },
+ { titulo:'🚨 Alertas', texto:'Fica de olho em tudo que precisa de atenção — vencimentos, quedas de faturamento, e outros avisos importantes.' },
+ { titulo:'⚡ Fechamento Rápido e 📊 Detalhamento do Dia', texto:'Duas formas de ver o fechamento de caixa: rápido (só o essencial) ou completo (tudo aberto, com gráficos e mais detalhes).' },
+ { titulo:'👩‍💼 Equipe', texto:'Aqui fica a folha de ponto, as chaves PIX pra pagamento, e a rotina semanal da equipe.' },
+ { titulo:'⋯ Mais', texto:'No menu "Mais" (canto direito), você encontra Configuração e a Área da Gerência (ADM), que é protegida por senha.' },
+ { titulo:'🔍 Dica final', texto:'Use a busca no topo da tela (ou aperte a tecla "/") pra achar qualquer coisa rapidinho, tipo "aluguel" ou "meta". Pronto — você já sabe o essencial!' },
+];
+let tourPassoAtual = 0;
+function iniciarTourGuiado(){
+ tourPassoAtual = 0;
+ renderPassoTour();
+}
+function renderPassoTour(){
+ const el = document.getElementById('tourGuiadoOverlay');
+ if(!el) return;
+ const passo = TOUR_PASSOS_BIOBEL[tourPassoAtual];
+ const ultimoPasso = tourPassoAtual===TOUR_PASSOS_BIOBEL.length-1;
+ el.style.cssText = 'display:flex;position:fixed;inset:0;z-index:9998;background:rgba(7,17,31,.82);align-items:center;justify-content:center;padding:20px;';
+ el.innerHTML = `<div style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid #1e2c42;border-radius:20px;padding:30px 28px;max-width:400px;width:100%;box-shadow:0 24px 70px rgba(0,0,0,.55);">
+   <div style="font-size:11px;color:#93a3ba;font-weight:800;margin-bottom:10px;">PASSO ${tourPassoAtual+1} DE ${TOUR_PASSOS_BIOBEL.length}</div>
+   <div style="font-size:17px;font-weight:900;color:#dce5f2;margin-bottom:10px;">${passo.titulo}</div>
+   <div style="font-size:13.5px;color:#93a3ba;line-height:1.6;margin-bottom:22px;">${passo.texto}</div>
+   <div style="background:#0b1728;border-radius:999px;height:5px;overflow:hidden;margin-bottom:18px;">
+    <div style="height:100%;width:${((tourPassoAtual+1)/TOUR_PASSOS_BIOBEL.length*100)}%;background:linear-gradient(90deg,#27d7a0,#0ea97a);"></div>
+   </div>
+   <div style="display:flex;justify-content:space-between;align-items:center;">
+    <button onclick="pularTourGuiado()" style="background:none;border:none;color:#93a3ba;font-size:12.5px;cursor:pointer;text-decoration:underline;">Pular tour</button>
+    <div style="display:flex;gap:8px;">
+     ${tourPassoAtual>0 ? `<button onclick="voltarPassoTour()" style="background:#0b1728;border:1px solid #1e2c42;color:#dce5f2;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;">← Voltar</button>` : ''}
+     <button onclick="${ultimoPasso ? 'finalizarTourGuiado()' : 'avancarPassoTour()'}" style="background:#0ea97a;border:none;color:#04241a;border-radius:10px;padding:9px 18px;font-size:13px;font-weight:800;cursor:pointer;">${ultimoPasso ? '✅ Concluir' : 'Próximo →'}</button>
+    </div>
+   </div>
+  </div>`;
+}
+function avancarPassoTour(){
+ tourPassoAtual = Math.min(TOUR_PASSOS_BIOBEL.length-1, tourPassoAtual+1);
+ renderPassoTour();
+}
+function voltarPassoTour(){
+ tourPassoAtual = Math.max(0, tourPassoAtual-1);
+ renderPassoTour();
+}
+function finalizarTourGuiado(){
+ document.getElementById('tourGuiadoOverlay').style.display = 'none';
+ localStorage.setItem('biobel_tour_concluido', 'yes');
+}
+function pularTourGuiado(){
+ document.getElementById('tourGuiadoOverlay').style.display = 'none';
+ localStorage.setItem('biobel_tour_concluido', 'yes');
+}
+function verificarPrimeiroAcessoTour(){
+ if(!localStorage.getItem('biobel_tour_concluido')){
+  setTimeout(iniciarTourGuiado, 800);
+ }
 }
 
 function alternarColapsoTodosCards(){
@@ -12149,6 +12211,7 @@ aplicarLogoPersonalizadaNoSistema();
 inicializarBotoesCompartilharNativo();
 atualizarBotaoModoCompacto();
 verificarBackupAutomatico();
+verificarPrimeiroAcessoTour();
 render();
 </script>
 </body>
