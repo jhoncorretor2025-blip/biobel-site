@@ -436,7 +436,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     style="width:100%;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;font-size:12px;color:#dce5f2;outline:none;">
    <div id="resultadosBuscaGlobal" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border:1px solid #1e2c42;border-radius:10px;margin-top:4px;max-height:320px;overflow-y:auto;z-index:50;box-shadow:0 12px 32px rgba(0,0,0,.4);"></div>
   </div>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v3.6</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v3.7</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -1105,6 +1105,14 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 </section>
 
 <section id="equipeTab" class="hidden max-w-5xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabEquipe">
+
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7" style="border-color:rgba(79,156,255,.35);">
+  <div class="mb-4">
+   <h2 class="text-xl font-bold">💳 Chaves PIX — Pagamento Rápido</h2>
+   <p class="text-sm text-slate-400 mt-1">Pra pagar a Gabriela e a Day sem precisar procurar em outro lugar.</p>
+  </div>
+  <div id="conteudoChavesPixEquipe"></div>
+ </div>
 
  <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
   <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
@@ -1898,6 +1906,14 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
   <div id="admResumoAtencao" style="display:none;"></div>
   <div id="admAncoraResumo"></div>
+
+  <div class="adv-card" style="border-color:rgba(79,156,255,.35);">
+   <div class="adv-card-title">
+    <h3>💳 Chaves PIX — Pagamento Rápido</h3>
+    <span>pra pagar a Gabriela e a Day sem precisar procurar em outro lugar</span>
+   </div>
+   <div id="conteudoChavesPixAdm"></div>
+  </div>
 
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">
    <div class="adv-kpi red" id="admKpiGastosFixos">
@@ -3610,6 +3626,8 @@ function renderEquipeHistorico(){
 
 function initEquipeTab(){
  renderFolhaDePonto();
+ seedChavesPix();
+ renderChavesPixLista();
  const savedDia = localStorage.getItem('biobel_equipe_dia_atual');
  if(savedDia && diasSemanaOrdem.includes(savedDia)) equipeDiaAtual = savedDia;
 
@@ -4499,6 +4517,36 @@ function initChavesPixUI(){
  const inputDay = document.getElementById('chavePixDayInput');
  if(inputGabriela) inputGabriela.value = getChavePix('gabriela');
  if(inputDay) inputDay.value = getChavePix('day');
+ renderChavesPixLista();
+}
+function renderChavesPixLista(){
+ const pessoas = [
+  { nome:'Gabriela', chave: getChavePix('gabriela') },
+  { nome:'Day', chave: getChavePix('day') },
+ ];
+ const html = pessoas.map(p=>`
+   <div style="display:flex;justify-content:space-between;align-items:center;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
+    <div>
+     <div style="font-size:12.5px;color:#dce5f2;font-weight:700;">${p.nome}</div>
+     <div style="font-size:13px;color:${p.chave?'#4f9cff':'#fbbf24'};font-family:monospace;margin-top:2px;">${p.chave || '⚠️ Chave não cadastrada ainda'}</div>
+    </div>
+    ${p.chave ? `<button onclick="copiarChavePix('${p.chave}','${p.nome}')" style="background:#2f78e0;color:#fff;border:0;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">📋 Copiar</button>` : ''}
+   </div>`).join('');
+ const elAdm = document.getElementById('conteudoChavesPixAdm');
+ const elEquipe = document.getElementById('conteudoChavesPixEquipe');
+ if(elAdm) elAdm.innerHTML = html;
+ if(elEquipe) elEquipe.innerHTML = html;
+}
+function copiarChavePix(chave, nome){
+ if(navigator.clipboard && navigator.clipboard.writeText){
+  navigator.clipboard.writeText(chave).then(()=>{
+   mostrarToast('✅ Chave PIX de '+nome+' copiada!');
+  }).catch(()=>{
+   mostrarToast('⚠️ Não copiou sozinho — chave de '+nome+': '+chave);
+  });
+ } else {
+  mostrarToast('⚠️ Não copiou sozinho — chave de '+nome+': '+chave);
+ }
 }
 
 function seedDadosPessoaisEquipe(){
