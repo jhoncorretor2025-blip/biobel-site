@@ -459,7 +459,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     style="width:100%;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;font-size:12px;color:#dce5f2;outline:none;">
    <div id="resultadosBuscaGlobal" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border:1px solid #1e2c42;border-radius:10px;margin-top:4px;max-height:320px;overflow-y:auto;z-index:50;box-shadow:0 12px 32px rgba(0,0,0,.4);"></div>
   </div>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v4.2</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v4.3</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -1228,6 +1228,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
   <button onclick="carregarExemploCartaoPontoAgosto()" class="no-print w-full bg-blue-600 hover:bg-blue-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="margin-top:6px;">🧪 Carregar exemplo do cartão de ponto (agosto) pra testar</button>
   <button id="btnImprimirFolhaPonto" onclick="imprimirFolhaDePonto()" class="no-print w-full bg-purple-600 hover:bg-purple-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="background:#8b5cf6;margin-top:8px;">🖨️ Imprimir / Exportar PDF</button>
+  <button onclick="exportarFolhaDePontoCSV()" class="no-print w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="margin-top:8px;">📊 Exportar CSV (abre no Excel)</button>
  </div>
 
  <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
@@ -1808,6 +1809,12 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     </div>
    </div>
    <p class="simple-legend text-xs text-slate-500">Só a parte em <strong class="text-slate-400">dinheiro</strong> passa pela gaveta física. Débito, crédito e Pix vão direto pro banco.</p>
+
+   <div class="rounded-xl border border-slate-800 bg-slate-950 px-4 py-4">
+    <div class="text-slate-300 text-sm font-semibold mb-2">🥧 Formas de pagamento (visual)</div>
+    <div style="max-width:220px;margin:0 auto;"><canvas id="graficoPizzaFormaPagamento" role="img" aria-label="Gráfico de pizza das formas de pagamento do dia"></canvas></div>
+   </div>
+
    <div class="rounded-xl border border-rose-500/20 bg-slate-950 px-4 py-4">
     <div class="flex items-center justify-between caixa-row">
      <span class="text-slate-300">💸 Retiradas / despesas do dia</span>
@@ -3040,6 +3047,26 @@ function alternarOrdemRanking(ordem){
  renderListaDevolucoes();
 }
 
+let chartPizzaFormaPagamento = null;
+function renderGraficoPizzaFormaPagamento(d){
+ const canvas = document.getElementById('graficoPizzaFormaPagamento');
+ if(!canvas || typeof Chart==='undefined') return;
+ const valores = [Number(d.dinheiro)||0, Number(d.debito)||0, Number(d.credito)||0, Number(d.pix)||0];
+ if(chartPizzaFormaPagamento){ chartPizzaFormaPagamento.destroy(); chartPizzaFormaPagamento=null; }
+ if(valores.every(v=>v===0)) return;
+ chartPizzaFormaPagamento = new Chart(canvas, {
+  type: 'pie',
+  data: {
+   labels: ['💵 Dinheiro','💳 Débito','💳 Crédito','📲 Pix'],
+   datasets: [{ data: valores, backgroundColor: ['#fbbf24','#22d3ee','#a78bfa','#2dd4bf'] }]
+  },
+  options: {
+   responsive:true,
+   plugins:{ legend:{ position:'bottom', labels:{ color:'#93a3ba', font:{size:10}, boxWidth:10 } } }
+  }
+ });
+}
+
 function updateCompleteDay(day){
  const d=daysData.find(x=>x.dia===day);
  if(!d) return;
@@ -3050,6 +3077,7 @@ function updateCompleteDay(day){
  document.getElementById('completeDebito').textContent=money(d.debito);
  document.getElementById('completeCredito').textContent=money(d.credito);
  document.getElementById('completePix').textContent=money(d.pix);
+ renderGraficoPizzaFormaPagamento(d);
  document.getElementById('completeWithdrawals').textContent=money(d.withdrawals);
  document.getElementById('completeClosing').textContent=money(d.closing);
  const dow = nomeDiaSemanaAbrev(d.dia);
@@ -4131,6 +4159,51 @@ function carregarExemploCartaoPontoAgosto(){
   mostrarToast(adicionados>0 ? '✅ '+adicionados+' dia(s) de exemplo carregado(s)!' : 'ℹ️ Esses dias já estavam cadastrados.');
  });
 }
+function exportarFolhaDePontoCSV(){
+ const funcionaria = document.getElementById('pontoFuncionariaSelect').value;
+ const mesInput = document.getElementById('pontoMesSelect').value;
+ if(!mesInput){ mostrarToast('⚠️ Escolha o mês primeiro.'); return; }
+ const [ano, mes] = mesInput.split('-');
+ const lista = getRegistrosPonto().filter(p=>p.funcionaria===funcionaria && p.data.startsWith(ano+'-'+mes)).sort((a,b)=>a.data.localeCompare(b.data));
+ if(lista.length===0){ mostrarToast('⚠️ Sem registros nesse mês pra exportar.'); return; }
+
+ const linhas = [['Data','Entrada','Início Intervalo','Fim Intervalo','Saída','Horas Trabalhadas','Hora Extra','Observação']];
+ let totalHoras=0, totalExtras=0;
+ lista.forEach(p=>{
+  const { horas, extras } = calcularHorasDoDia(p);
+  const semSaida = !p.saida;
+  if(!semSaida){ totalHoras+=horas; totalExtras+=extras; }
+  const dataObj = new Date(p.data+'T00:00:00');
+  linhas.push([
+   dataObj.toLocaleDateString('pt-BR'),
+   p.entrada || '',
+   p.inicioIntervalo || '',
+   p.fimIntervalo || '',
+   semSaida ? 'PENDENTE' : p.saida,
+   semSaida ? '' : horas.toFixed(1).replace('.',','),
+   semSaida ? '' : extras.toFixed(1).replace('.',','),
+   p.observacao || ''
+  ]);
+ });
+ linhas.push([]);
+ linhas.push(['Total de horas', totalHoras.toFixed(1).replace('.',',')]);
+ linhas.push(['Total de hora extra', totalExtras.toFixed(1).replace('.',',')]);
+
+ // Ponto-e-vírgula como separador e BOM no início — assim o Excel brasileiro abre certinho,
+ // com acentuação correta e sem misturar com a vírgula decimal dos números.
+ const csv = linhas.map(linha=>linha.map(campo=>'"'+String(campo).replace(/"/g,'""')+'"').join(';')).join('\r\n');
+ const blob = new Blob(['\ufeff'+csv], { type:'text/csv;charset=utf-8;' });
+ const url = URL.createObjectURL(blob);
+ const a = document.createElement('a');
+ a.href = url;
+ a.download = 'folha-ponto-'+funcionaria.toLowerCase()+'-'+ano+'-'+mes+'.csv';
+ document.body.appendChild(a);
+ a.click();
+ document.body.removeChild(a);
+ URL.revokeObjectURL(url);
+ mostrarToast('✅ CSV exportado!');
+}
+
 async function imprimirFolhaDePonto(){
  const btn = document.getElementById('btnImprimirFolhaPonto');
  const textoOriginal = btn ? btn.textContent : '';
