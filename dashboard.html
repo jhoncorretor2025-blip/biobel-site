@@ -443,7 +443,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     style="width:100%;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;font-size:12px;color:#dce5f2;outline:none;">
    <div id="resultadosBuscaGlobal" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border:1px solid #1e2c42;border-radius:10px;margin-top:4px;max-height:320px;overflow-y:auto;z-index:50;box-shadow:0 12px 32px rgba(0,0,0,.4);"></div>
   </div>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v3.8</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v3.9</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -846,6 +846,11 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <div class="label">✅ Dias que Bateram a Meta</div>
     <div class="value" id="infoDiasMetaBatida">0 de 0</div>
     <div class="sub" id="infoDiasMetaBatidaSub">meta diária considerada</div>
+   </div>
+   <div class="adv-kpi blue">
+    <div class="label">🧾 Média de Atendimentos por Dia</div>
+    <div class="value" id="infoMediaAtendimentos">0</div>
+    <div class="sub" id="infoMediaAtendimentosSub">quantidade de vendas, não valor em R$</div>
    </div>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px;">
@@ -8956,6 +8961,14 @@ function renderMaisNumerosDoMes(){
  const media = totalSales/daysData.length;
  const elMedia=document.getElementById('infoMediaDiaria');
  if(elMedia) elMedia.textContent = money(media);
+
+ // Média de atendimentos (quantidade de vendas, não valor em R$) por dia
+ const totalAtendimentos = daysData.reduce((s,d)=>s+(Number(d.qtdVendas)||0),0);
+ const mediaAtendimentos = totalAtendimentos/daysData.length;
+ const elMediaAtend = document.getElementById('infoMediaAtendimentos');
+ const elMediaAtendSub = document.getElementById('infoMediaAtendimentosSub');
+ if(elMediaAtend) elMediaAtend.textContent = mediaAtendimentos.toFixed(1);
+ if(elMediaAtendSub) elMediaAtendSub.textContent = totalAtendimentos+' atendimento'+(totalAtendimentos===1?'':'s')+' no total, em '+daysData.length+' dia'+(daysData.length===1?'':'s');
 
  // Maior e menor venda do mês
  const ordenado = [...daysData].sort((a,b)=>(Number(a.sales)||0)-(Number(b.sales)||0));
