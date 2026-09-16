@@ -461,7 +461,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     style="width:100%;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;font-size:12px;color:#dce5f2;outline:none;">
    <div id="resultadosBuscaGlobal" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border:1px solid #1e2c42;border-radius:10px;margin-top:4px;max-height:320px;overflow-y:auto;z-index:50;box-shadow:0 12px 32px rgba(0,0,0,.4);"></div>
   </div>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v4.7</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v4.8</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -543,6 +543,8 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <div style="font-size:13px;color:#93a3ba;margin-top:10px;">Faltam <strong id="metaDestaqueFaltam" style="color:#dce5f2;">R$ 0,00</strong> para bater a meta.</div>
    <div style="font-size:12.5px;color:#93a3ba;margin-top:6px;">📅 Faltam <strong id="metaDiasRestantes" style="color:#dce5f2;">0</strong> dias pra fechar o mês.</div>
    <div id="metaProjecaoTexto" style="font-size:12px;margin-top:6px;"></div>
+   <div id="bannerEmailMetaBatida" style="display:none;margin-top:12px;"></div>
+   <div id="bannerResumoSemanalEmail" style="display:none;margin-top:12px;"></div>
   </div>
 
   <div class="adv-card no-print" style="margin-bottom:16px;">
@@ -7581,6 +7583,83 @@ function updateGoalBanner(bannerId, sales){
  }
 }
 
+/* ===== E-mail quando bater a meta do mês (item 10) ===== */
+function verificarMetaMensalBatidaEmail(totalSales, metaGoal){
+ const el = document.getElementById('bannerEmailMetaBatida');
+ if(!el) return;
+ if(metaGoal<=0 || totalSales<metaGoal || daysData.length===0){ el.style.display='none'; return; }
+
+ const mesRef = String(daysData[0].dia).split('.')[1];
+ const chaveMes = '2026-'+mesRef;
+ if(localStorage.getItem('biobel_email_meta_enviado_mes')===chaveMes){ el.style.display='none'; return; }
+
+ const email = getEmailContadora();
+ if(!email){ el.style.display='none'; return; }
+
+ el.style.display = 'block';
+ el.innerHTML = `<button onclick="enviarEmailMetaBatida(${totalSales},${metaGoal},'${chaveMes}')" style="background:#0ea97a;color:#04241a;border:none;border-radius:10px;padding:10px 16px;font-size:12.5px;font-weight:800;cursor:pointer;width:100%;">🎉 Avisar por e-mail que bateu a meta do mês!</button>`;
+}
+/* ===== Resumo semanal automático por e-mail (item 11) — só segunda-feira, uma vez por semana ===== */
+function verificarResumoSemanalEmail(){
+ const el = document.getElementById('bannerResumoSemanalEmail');
+ if(!el) return;
+ const hoje = obterAgoraBrasilia();
+ if(hoje.getDay()!==1){ el.style.display='none'; return; } // só mostra na segunda-feira
+
+ const domingoPassado = new Date(hoje); domingoPassado.setDate(hoje.getDate()-1);
+ const segundaPassada = new Date(domingoPassado); segundaPassada.setDate(domingoPassado.getDate()-6);
+ const chaveSemanaISO = segundaPassada.toISOString().slice(0,10);
+ const chaveFimSemanaISO = domingoPassado.toISOString().slice(0,10);
+
+ if(localStorage.getItem('biobel_email_semanal_enviado')===chaveSemanaISO){ el.style.display='none'; return; }
+
+ const email = getEmailContadora();
+ if(!email){ el.style.display='none'; return; }
+
+ const diasDaSemana = daysData.filter(d=>{
+  const iso = dataDoDiaParaISO(d.dia);
+  return iso>=chaveSemanaISO && iso<=chaveFimSemanaISO;
+ });
+ if(diasDaSemana.length===0){ el.style.display='none'; return; }
+
+ el.style.display = 'block';
+ el.innerHTML = `<button onclick="enviarResumoSemanalEmail('${chaveSemanaISO}','${chaveFimSemanaISO}')" style="background:#4f9cff;color:#04182e;border:none;border-radius:10px;padding:10px 16px;font-size:12.5px;font-weight:800;cursor:pointer;width:100%;">📧 Enviar resumo da semana passada por e-mail</button>`;
+}
+function enviarResumoSemanalEmail(chaveSemanaISO, chaveFimSemanaISO){
+ const email = getEmailContadora();
+ if(!email) return;
+ const diasDaSemana = daysData.filter(d=>{
+  const iso = dataDoDiaParaISO(d.dia);
+  return iso>=chaveSemanaISO && iso<=chaveFimSemanaISO;
+ });
+ const total = diasDaSemana.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const media = diasDaSemana.length>0 ? total/diasDaSemana.length : 0;
+ const assunto = '📊 Resumo da semana ('+new Date(chaveSemanaISO+'T00:00:00').toLocaleDateString('pt-BR')+' a '+new Date(chaveFimSemanaISO+'T00:00:00').toLocaleDateString('pt-BR')+')';
+ let corpo = 'Resumo da semana passada:\n\n';
+ diasDaSemana.forEach(d=>{ corpo += d.dia+': '+money(Number(d.sales)||0)+'\n'; });
+ corpo += '\nTotal da semana: '+money(total)+'\nMédia diária: '+money(media);
+ abrirEmailPronto(email, assunto, corpo);
+ localStorage.setItem('biobel_email_semanal_enviado', chaveSemanaISO);
+ const el = document.getElementById('bannerResumoSemanalEmail');
+ if(el) el.style.display='none';
+ mostrarToast('✅ Resumo semanal preparado — confirme e clique em Enviar.');
+}
+
+function enviarEmailMetaBatida(totalSales, metaGoal, chaveMes){
+ const email = getEmailContadora();
+ if(!email) return;
+ const hoje = obterAgoraBrasilia();
+ const nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+ const nomeMes = nomesMeses[hoje.getMonth()]+' de 2026';
+ const assunto = '🎉 Meta batida — '+nomeMes;
+ const corpo = 'Boa notícia! A meta de '+money(metaGoal)+' foi batida em '+nomeMes+'.\n\nFaturamento até agora: '+money(totalSales)+'.';
+ abrirEmailPronto(email, assunto, corpo);
+ localStorage.setItem('biobel_email_meta_enviado_mes', chaveMes);
+ const el = document.getElementById('bannerEmailMetaBatida');
+ if(el) el.style.display = 'none';
+ mostrarToast('✅ E-mail preparado — confirme e clique em Enviar.');
+}
+
 function dispararNotificacaoMetaBatida(sales, goal){
  const ativado = localStorage.getItem('biobel_notificacoes_ativas') === 'yes';
  if(!ativado) return;
@@ -12170,6 +12249,8 @@ function renderAdvancedDashboard(){
   if(elMP) elMP.textContent = metaPct.toFixed(1)+'%';
   if(elMB) elMB.style.width = metaPct.toFixed(1)+'%';
   if(elMF) elMF.textContent = money(metaFaltam);
+  try{ verificarMetaMensalBatidaEmail(totalSales, metaGoal); }catch(e){ console.error('Erro em verificarMetaMensalBatidaEmail:', e); }
+  try{ verificarResumoSemanalEmail(); }catch(e){ console.error('Erro em verificarResumoSemanalEmail:', e); }
 
   // Dias restantes do mês, e projeção de "no ritmo atual, dá tempo de bater a meta?"
   const elDiasRestantes = document.getElementById('metaDiasRestantes');
