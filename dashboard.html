@@ -2,7 +2,12 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0ea97a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Biobel">
+<link rel="apple-touch-icon" href="/logo_biobel_gravatai.png">
 <title>Biobel — Fechamento de Caixa Diário</title>
 <link rel="icon" type="image/png" href="/logo_biobel_gravatai.png">
 <link rel="manifest" href="manifest.json">
@@ -119,6 +124,40 @@ body{
 .adv-card-colapsado > *:not(.adv-card-title){ display:none!important; }
 .adv-card-title{ position:relative; }
 .btn-colapsar-card{ background:none; border:none; color:#93a3ba; cursor:pointer; font-size:16px; padding:2px 6px; float:right; line-height:1; }
+
+/* Melhoria mobile 1: evita o zoom automático que o iPhone/Safari faz sozinho quando o campo
+   de texto tocado tem fonte menor que 16px — um comportamento nativo do iOS, não um bug do site,
+   mas incômodo. Aplica só no celular, sem mudar a aparência no computador. */
+@media(max-width:640px){
+ input, select, textarea{ font-size:16px!important; }
+}
+/* Melhoria mobile 2: evita o duplo-toque dar zoom sem querer em botões e links. */
+button, a, .config-chip, .tab-btn{ touch-action:manipulation; }
+/* Melhoria mobile 3: respeita quem tem sensibilidade a movimento/animação (enjoo, tontura). */
+@media(prefers-reduced-motion:reduce){
+ *{ animation-duration:0.01ms!important; animation-iteration-count:1!important; transition-duration:0.01ms!important; }
+}
+/* Melhoria mobile 4: área segura do iPhone (notch e barra de gestos), sem sobrepor conteúdo. */
+body{ padding-left:env(safe-area-inset-left); padding-right:env(safe-area-inset-right); }
+header{ padding-top:env(safe-area-inset-top); }
+
+/* Melhoria mobile 5: mais respiro entre botões colados em fileira, em telas bem estreitas
+   (tipo iPhone SE), evitando toque errado no botão vizinho. */
+@media(max-width:380px){
+ .flex.gap-2, .flex.gap-3{ gap:10px!important; }
+}
+/* Melhoria mobile 6: aumenta um pouco o espaço entre linhas de texto pequeno, mais confortável
+   de ler numa tela pequena. */
+@media(max-width:640px){
+ p{ line-height:1.5; }
+}
+/* Melhoria mobile 7: ajusta o modo paisagem (celular deitado) pra não desperdiçar tanto espaço
+   vertical, já que a tela fica bem baixa nessa orientação. */
+@media(max-height:500px) and (orientation:landscape){
+ header{ position:relative!important; } /* tira o "sticky" do cabeçalho, que ocuparia espaço demais numa tela tão baixa */
+ .adv-card{ padding:12px!important; }
+}
+
 .btn-colapsar-card:hover{ color:#dce5f2; }
 @media(max-width:640px){
  .btn-colapsar-card{ font-size:20px; padding:8px 12px; min-width:40px; min-height:40px; }
@@ -461,7 +500,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     style="width:100%;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;font-size:12px;color:#dce5f2;outline:none;">
    <div id="resultadosBuscaGlobal" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border:1px solid #1e2c42;border-radius:10px;margin-top:4px;max-height:320px;overflow-y:auto;z-index:50;box-shadow:0 12px 32px rgba(0,0,0,.4);"></div>
   </div>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v4.8</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v4.9</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
