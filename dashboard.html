@@ -461,7 +461,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     style="width:100%;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;font-size:12px;color:#dce5f2;outline:none;">
    <div id="resultadosBuscaGlobal" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border:1px solid #1e2c42;border-radius:10px;margin-top:4px;max-height:320px;overflow-y:auto;z-index:50;box-shadow:0 12px 32px rgba(0,0,0,.4);"></div>
   </div>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v4.6</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v4.7</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -2023,6 +2023,14 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
   <div class="adv-card">
    <div class="adv-card-title">
+    <h3>📅 Projeção de Fluxo de Caixa (3 meses)</h3>
+    <span>estimativa baseada na média diária atual e nos gastos fixos conhecidos — não conta reajustes nem imprevistos</span>
+   </div>
+   <div id="conteudoProjecao3Meses"></div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
     <h3>📋 DRE Simplificado</h3>
     <span>resumo formal do período — bom pra imprimir e levar direto pra contadora</span>
    </div>
@@ -2157,6 +2165,17 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <button id="btnAdicionarBoleto" onclick="adicionarBoleto()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Adicionar boleto</button>
     <button id="btnCancelarEdicaoBoleto" onclick="cancelarEdicaoBoleto()" style="display:none;margin-top:8px;background:none;border:none;color:#93a3ba;font-size:12px;text-decoration:underline;cursor:pointer;width:100%;">✕ Cancelar edição</button>
    </div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>📈 Histórico de Preços por Fornecedor</h3>
+    <span>veja se um fornecedor está cobrando mais caro ao longo do tempo</span>
+   </div>
+   <select id="fornecedorHistoricoSelect" onchange="renderHistoricoPrecoFornecedor()" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:12px;">
+    <option value="">Escolha um fornecedor...</option>
+   </select>
+   <div id="conteudoHistoricoPrecoFornecedor"></div>
   </div>
 
   <div id="admAncoraComissoes"></div>
@@ -5805,7 +5824,47 @@ function removerBoleto(id){
   mostrarToast('🗑️ Removido.');
  });
 }
+/* ===== Histórico de Preços por Fornecedor (item 7) ===== */
+function renderSeletorFornecedorHistorico(){
+ const select = document.getElementById('fornecedorHistoricoSelect');
+ if(!select) return;
+ const valorAtual = select.value;
+ const fornecedores = [...new Set(getBoletos().map(b=>String(b.fornecedor||'').trim()).filter(Boolean))].sort();
+ select.innerHTML = '<option value="">Escolha um fornecedor...</option>' + fornecedores.map(f=>`<option value="${f}">${f}</option>`).join('');
+ if(fornecedores.includes(valorAtual)) select.value = valorAtual;
+}
+function renderHistoricoPrecoFornecedor(){
+ const select = document.getElementById('fornecedorHistoricoSelect');
+ const el = document.getElementById('conteudoHistoricoPrecoFornecedor');
+ if(!select || !el) return;
+ const fornecedor = select.value;
+ if(!fornecedor){ el.innerHTML = ''; return; }
+
+ const boletosDele = getBoletos()
+  .filter(b=>String(b.fornecedor||'').trim()===fornecedor)
+  .sort((a,b)=>(a.criadoEm||'').localeCompare(b.criadoEm||''));
+
+ if(boletosDele.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12px;">Sem boletos desse fornecedor ainda.</p>'; return; }
+
+ const primeiro = Number(boletosDele[0].valor)||0;
+ const ultimo = Number(boletosDele[boletosDele.length-1].valor)||0;
+ const variacao = primeiro>0 ? ((ultimo-primeiro)/primeiro*100) : null;
+
+ el.innerHTML = `
+  ${boletosDele.length>1 && variacao!==null ? `<div style="background:${variacao>10?'rgba(251,113,133,.1)':'#0b1728'};border:1px solid ${variacao>10?'rgba(251,113,133,.3)':'#1e2c42'};border-radius:10px;padding:10px 14px;margin-bottom:10px;">
+    <span style="font-size:12.5px;color:${variacao>10?'#fb7185':'#93a3ba'};">${variacao>=0?'📈':'📉'} Do primeiro (${money(primeiro)}) pro último boleto (${money(ultimo)}): <strong>${variacao>=0?'+':''}${variacao.toFixed(1)}%</strong></span>
+   </div>` : ''}
+  <div style="max-height:280px;overflow-y:auto;">
+   ${boletosDele.map(b=>`
+    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1e2c42;font-size:12px;">
+     <span style="color:#93a3ba;">${b.criadoEm ? new Date(b.criadoEm).toLocaleDateString('pt-BR') : '—'}${b.marca?' · '+b.marca:''}</span>
+     <span style="color:#dce5f2;font-weight:700;">${money(Number(b.valor)||0)}</span>
+    </div>`).join('')}
+  </div>`;
+}
+
 function renderBoletos(){
+ renderSeletorFornecedorHistorico();
  const el = document.getElementById('listaBoletos');
  if(!el) return;
  let lista = getBoletos();
@@ -6694,6 +6753,7 @@ function atualizarTotaisAdm(){
  renderTaxasCartao();
  renderDRE(faturamento, gastosFixos, boletos, totalComissoesEBonus, custoImposto, custoTaxasCartao, lucroEstimado);
  renderAlertaFluxoCaixa();
+ renderProjecao3Meses();
  const elUltimoSalvo = document.getElementById('admUltimoSalvo');
  if(elUltimoSalvo) elUltimoSalvo.textContent = '💾 Atualizado às '+obterAgoraBrasilia().getHours().toString().padStart(2,'0')+':'+obterAgoraBrasilia().getMinutes().toString().padStart(2,'0');
 }
@@ -6726,6 +6786,38 @@ function getSaldoGavetaAtual(){
  });
  return Number(ordenadoPorData[0].closing)||0;
 }
+/* ===== Projeção de Fluxo de Caixa — 3 meses (item 14) ===== */
+function renderProjecao3Meses(){
+ const el = document.getElementById('conteudoProjecao3Meses');
+ if(!el) return;
+ if(daysData.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Sem dados carregados ainda.</p>'; return; }
+
+ const totalSales = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const mediaDiaria = totalSales/daysData.length;
+ const gastosFixosTotal = getGastosFixos().reduce((s,g)=>s+(Number(g.valor)||0),0);
+ const mesAtualNum = Number(String(daysData[0].dia).split('.')[1]);
+ const nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+ let html = '';
+ for(let i=1; i<=3; i++){
+  let mesProjetado = mesAtualNum+i;
+  let anoProjetado = 2026;
+  if(mesProjetado>12){ mesProjetado -= 12; anoProjetado++; }
+  const diasDoMes = new Date(anoProjetado, mesProjetado, 0).getDate();
+  const receitaEstimada = mediaDiaria*diasDoMes;
+  const saldoEstimado = receitaEstimada-gastosFixosTotal;
+  html += `<div style="background:#0b1728;border:1px solid ${saldoEstimado>=0?'#1e2c42':'rgba(251,113,133,.35)'};border-radius:10px;padding:12px 14px;margin-bottom:8px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+     <span style="font-size:12.5px;color:#dce5f2;font-weight:700;">${nomesMeses[mesProjetado-1]} de ${anoProjetado}</span>
+     <span style="font-size:14px;font-weight:900;color:${saldoEstimado>=0?'#27d7a0':'#fb7185'};">${money(saldoEstimado)}</span>
+    </div>
+    <div style="font-size:10.5px;color:#93a3ba;margin-top:4px;">Receita estimada: ${money(receitaEstimada)} · Gastos fixos: ${money(gastosFixosTotal)}</div>
+   </div>`;
+ }
+ html += `<p style="font-size:10px;color:#93a3ba;margin-top:8px;">💡 A receita é uma simples extrapolação da média diária de ${money(mediaDiaria)} — não considera sazonalidade (ex: dezembro tende a vender mais) nem boletos variáveis futuros.</p>`;
+ el.innerHTML = html;
+}
+
 function renderAlertaFluxoCaixa(){
  const el = document.getElementById('admAlertaFluxoCaixa');
  if(!el) return;
