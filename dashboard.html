@@ -527,7 +527,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v6.1</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v6.2</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -1913,6 +1913,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraFechamento')">🔒 Fechamento</button>
    <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraGastos')">🏠 Gastos</button>
    <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraComissoes')">🎯 Comissões</button>
+   <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraFuncionarios')">👥 Funcionários</button>
    <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraAgenda')">🤝 Fornecedores</button>
   </nav>
 
@@ -2047,6 +2048,18 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <p style="font-size:11px;color:#93a3ba;margin-top:8px;">💡 Pode deixar o valor em branco pra cadastrar o nome agora e preencher o valor depois — vai aparecer como "⚠️ A definir".</p>
   </div>
 
+  <div class="grupo-adm-header" data-grupo="fornecedores" onclick="alternarGrupoAdm('fornecedores')" style="display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#1a1408,#150f06);border:1px solid rgba(251,191,36,.35);border-radius:16px;padding:16px 20px;cursor:pointer;">
+   <div>
+    <h2 style="font-size:17px;font-weight:900;color:#dce5f2;">🤝 Fornecedores</h2>
+    <p style="font-size:12px;color:#93a3ba;margin-top:2px;">Boletos e histórico de preços por fornecedor</p>
+   </div>
+   <div style="display:flex;align-items:center;gap:10px;">
+    <span id="contadorGrupo-fornecedores" style="font-size:11px;color:#fbbf24;background:rgba(251,191,36,.12);border-radius:999px;padding:3px 10px;"></span>
+    <span id="setaGrupo-fornecedores" style="font-size:22px;color:#93a3ba;">▸</span>
+   </div>
+  </div>
+  <div id="conteudoGrupo-fornecedores" style="display:none;">
+
   <div class="adv-card">
    <div class="adv-card-title">
     <h3>📦 Boletos de Fornecedores</h3>
@@ -2111,6 +2124,8 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <div id="conteudoHistoricoPrecoFornecedor"></div>
   </div>
 
+  </div>
+
   <div id="admAncoraComissoes"></div>
   <div class="adv-card">
    <div class="adv-card-title">
@@ -2150,14 +2165,19 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    </div>
   </div>
 
-  <div id="grupoFuncionariosHeader" onclick="alternarGrupoFuncionarios()" style="display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(79,156,255,.35);border-radius:16px;padding:16px 20px;cursor:pointer;">
+  <div id="admAncoraFuncionarios"></div>
+  <button onclick="exportarTodosDesligamentos()" class="no-print w-full bg-purple-600 hover:bg-purple-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="margin-bottom:10px;">🖨️ Exportar todos os PDFs de desligamento registrados</button>
+  <div class="grupo-adm-header" data-grupo="funcionarios" onclick="alternarGrupoAdm('funcionarios')" style="display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(79,156,255,.35);border-radius:16px;padding:16px 20px;cursor:pointer;">
    <div>
     <h2 style="font-size:17px;font-weight:900;color:#dce5f2;">👥 Funcionários</h2>
     <p style="font-size:12px;color:#93a3ba;margin-top:2px;">Dados, PIX, desligamento, férias/recesso e hora extra de cada uma — clique pra abrir</p>
    </div>
-   <span id="setaGrupoFuncionarios" style="font-size:22px;color:#93a3ba;">▸</span>
+   <div style="display:flex;align-items:center;gap:10px;">
+    <span id="contadorGrupo-funcionarios" style="font-size:11px;color:#4f9cff;background:rgba(79,156,255,.12);border-radius:999px;padding:3px 10px;"></span>
+    <span id="setaGrupo-funcionarios" style="font-size:22px;color:#93a3ba;">▸</span>
+   </div>
   </div>
-  <div id="grupoFuncionariosConteudo" style="display:none;">
+  <div id="conteudoGrupo-funcionarios" style="display:none;">
 
   <div class="adv-card">
    <div class="adv-card-title">
@@ -2192,7 +2212,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    </div>
   </div>
 
-  <div class="adv-card" style="border-color:rgba(251,113,133,.35);">
+  <div class="adv-card" id="cardDesligamentoGabriela">
    <div class="adv-card-title">
     <h3>🚪 Desligamento — Gabriela</h3>
     <span>registra a saída da funcionária e gera um resumo em PDF pra contadora</span>
@@ -2212,6 +2232,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <button onclick="salvarDadosPessoaisDesligamento('gabriela')" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl font-semibold text-sm" style="margin-bottom:14px;">💾 Salvar dados pessoais</button>
 
    <div style="border-top:1px solid #1e2c42;padding-top:14px;">
+    <div style="font-size:11px;font-weight:800;color:#fb7185;text-transform:uppercase;letter-spacing:.03em;margin-bottom:10px;">🚪 Detalhes da Saída</div>
     <label class="block text-sm font-semibold mb-2" for="dataDesligamentoGabrielaInput">Data do desligamento</label>
     <input id="dataDesligamentoGabrielaInput" type="date" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:8px;">
 
@@ -2301,7 +2322,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    </div>
   </div>
 
-  <div class="adv-card" style="border-color:rgba(251,113,133,.35);">
+  <div class="adv-card" id="cardDesligamentoDay">
    <div class="adv-card-title">
     <h3>🚪 Desligamento — Day</h3>
     <span>registra o fim do estágio e gera um resumo em PDF pra contadora</span>
@@ -2321,6 +2342,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <button onclick="salvarDadosPessoaisDesligamento('day')" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl font-semibold text-sm" style="margin-bottom:14px;">💾 Salvar dados pessoais</button>
 
    <div style="border-top:1px solid #1e2c42;padding-top:14px;">
+    <div style="font-size:11px;font-weight:800;color:#fb7185;text-transform:uppercase;letter-spacing:.03em;margin-bottom:10px;">🚪 Detalhes da Saída</div>
     <label class="block text-sm font-semibold mb-2" for="dataDesligamentoDayInput">Data do desligamento</label>
     <input id="dataDesligamentoDayInput" type="date" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:8px;">
 
@@ -3104,23 +3126,29 @@ function verificarPrimeiroAcessoTour(){
  }
 }
 
-/* ===== Grupo colapsável "Funcionários" na ADM — agrupa os cards da Gabriela e da Day ===== */
-function alternarGrupoFuncionarios(){
- const conteudo = document.getElementById('grupoFuncionariosConteudo');
- const seta = document.getElementById('setaGrupoFuncionarios');
+/* ===== Grupos colapsáveis genéricos na ADM (Funcionários, Fornecedores, etc.) ===== */
+function alternarGrupoAdm(grupo){
+ const conteudo = document.getElementById('conteudoGrupo-'+grupo);
+ const seta = document.getElementById('setaGrupo-'+grupo);
  if(!conteudo) return;
  const estaAberto = conteudo.style.display !== 'none';
  conteudo.style.display = estaAberto ? 'none' : 'block';
  if(seta) seta.textContent = estaAberto ? '▸' : '▾';
- localStorage.setItem('biobel_grupo_funcionarios_aberto', estaAberto ? 'no' : 'yes');
+ localStorage.setItem('biobel_grupo_adm_'+grupo, estaAberto ? 'no' : 'yes');
 }
-function initGrupoFuncionarios(){
- const conteudo = document.getElementById('grupoFuncionariosConteudo');
- const seta = document.getElementById('setaGrupoFuncionarios');
- if(!conteudo) return;
- const aberto = localStorage.getItem('biobel_grupo_funcionarios_aberto') === 'yes';
- conteudo.style.display = aberto ? 'block' : 'none';
- if(seta) seta.textContent = aberto ? '▾' : '▸';
+function initGruposAdm(){
+ document.querySelectorAll('[id^="conteudoGrupo-"]').forEach(conteudo=>{
+  const grupo = conteudo.id.replace('conteudoGrupo-','');
+  const seta = document.getElementById('setaGrupo-'+grupo);
+  const aberto = localStorage.getItem('biobel_grupo_adm_'+grupo) === 'yes';
+  conteudo.style.display = aberto ? 'block' : 'none';
+  if(seta) seta.textContent = aberto ? '▾' : '▸';
+  const contador = document.getElementById('contadorGrupo-'+grupo);
+  if(contador){
+   const qtdCards = conteudo.querySelectorAll(':scope > .adv-card').length;
+   contador.textContent = qtdCards+' card'+(qtdCards===1?'':'s');
+  }
+ });
 }
 
 function alternarColapsoTodosCards(){
@@ -5019,7 +5047,7 @@ function mostrarConteudoAdm(){
  renderNascimento('day');
  renderEstagioDay();
  renderRecessoDay();
- initGrupoFuncionarios();
+ initGruposAdm();
  renderResumoDesligamento('gabriela');
  renderResumoDesligamento('day');
  renderReunioes();
@@ -5036,7 +5064,16 @@ function mostrarConteudoAdm(){
 /* ===== Índice de navegação (chips) da área ADM ===== */
 function irParaSecaoAdm(idAncora){
  const el = document.getElementById(idAncora);
- if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+ if(!el) return;
+ // Se a âncora estiver logo antes de um grupo colapsável, abre ele automaticamente — senão a
+ // pessoa cairia numa seção fechada, sem ver nada do que veio buscar.
+ const proximoIrmao = el.nextElementSibling;
+ if(proximoIrmao && proximoIrmao.classList.contains('grupo-adm-header')){
+  const grupo = proximoIrmao.dataset.grupo;
+  const conteudo = document.getElementById('conteudoGrupo-'+grupo);
+  if(conteudo && conteudo.style.display==='none') alternarGrupoAdm(grupo);
+ }
+ el.scrollIntoView({behavior:'smooth', block:'start'});
 }
 
 /* ===== Resumo de "o que precisa de atenção", logo no topo ===== */
@@ -6041,6 +6078,8 @@ function renderResumoDesligamento(pessoa){
  const inputMotivo = document.getElementById(idMotivo);
  const inputQuemPediu = document.getElementById(idQuemPediu);
  const el = document.getElementById(idResumo);
+ const card = document.getElementById(pessoa==='gabriela' ? 'cardDesligamentoGabriela' : 'cardDesligamentoDay');
+ if(card) card.style.borderColor = desligamento ? 'rgba(251,113,133,.35)' : '';
  if(inputData) inputData.value = desligamento ? desligamento.data : '';
  if(inputMotivo) inputMotivo.value = desligamento ? (desligamento.motivo||'') : '';
  if(inputQuemPediu && desligamento) inputQuemPediu.value = desligamento.quemPediu || 'funcionaria';
@@ -6064,6 +6103,18 @@ function renderResumoDesligamento(pessoa){
    ${desligamento.motivo ? `<div style="font-size:11.5px;color:#93a3ba;margin-top:4px;">Observação: ${desligamento.motivo}</div>` : ''}
   </div>`;
 }
+async function exportarTodosDesligamentos(){
+ const pessoasComDesligamento = ['gabriela','day'].filter(p=>getDesligamento(p));
+ if(pessoasComDesligamento.length===0){ mostrarToast('⚠️ Nenhum desligamento registrado ainda.'); return; }
+ for(const pessoa of pessoasComDesligamento){
+  await gerarPdfDesligamento(pessoa);
+  // Um pequeno intervalo entre um PDF e outro, pra dar tempo do navegador processar o download
+  // anterior antes de começar o próximo.
+  await new Promise(resolve=>setTimeout(resolve, 600));
+ }
+ mostrarToast('✅ '+pessoasComDesligamento.length+' PDF(s) exportado(s)!');
+}
+
 async function gerarPdfDesligamento(pessoa){
  const desligamento = getDesligamento(pessoa);
  if(!desligamento){ mostrarToast('⚠️ Registre a data de desligamento primeiro.'); return; }
@@ -6081,6 +6132,9 @@ async function gerarPdfDesligamento(pessoa){
   doc.setFontSize(11); doc.setTextColor(20,20,20);
   function linhaInfo(rotulo, valor){
    if(!valor) return;
+   // Quebra de página automática — se não tiver mais espaço na página atual, começa uma nova
+   // em vez de deixar o texto cortado feio na borda inferior.
+   if(y>270){ doc.addPage(); y=20; doc.setFontSize(11); doc.setTextColor(20,20,20); }
    doc.setFont('helvetica','bold'); doc.text(rotulo+':', margem, y);
    doc.setFont('helvetica','normal'); doc.text(String(valor), margem+58, y);
    y += 8;
@@ -6126,6 +6180,7 @@ async function gerarPdfDesligamento(pessoa){
   }
 
   y += 6;
+  if(y>270){ doc.addPage(); y=20; }
   doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(90,90,90);
   doc.text('Documento gerado automaticamente pelo sistema, com base nos dados cadastrados. Não substitui', margem, y);
   y += 5;
