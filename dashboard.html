@@ -527,7 +527,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v5.6</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v5.7</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -1772,12 +1772,16 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
  <div id="configSecaoMensagens" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6" style="display:none;">
   <div class="mb-4">
    <h2 class="text-xl font-bold">💬 Mensagens Programadas</h2>
-   <p class="text-sm text-slate-400 mt-1">Mensagens que aparecem sozinhas na área ADM em datas específicas — aniversários, datas comemorativas, avisos da equipe. Cada uma aparece até 3 vezes de manhã e 3 vezes à tarde, com botão de fechar.</p>
+   <p class="text-sm text-slate-400 mt-1">Recados que aparecem sozinhos pra quem estiver usando o sistema — aniversários, datas comemorativas, ou um lembrete fixo da equipe. Escolha em quais turnos aparece e quantas vezes.</p>
   </div>
   <div id="listaMensagensProgramadas" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;"></div>
   <div style="border-top:1px solid #1e2c42;padding-top:14px;">
    <div style="font-size:12px;font-weight:800;color:#93a3ba;margin-bottom:10px;" id="tituloFormMensagem">➕ Adicionar mensagem programada</div>
-   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:8px;">
+   <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#dce5f2;margin-bottom:10px;cursor:pointer;">
+    <input id="mensagemSemDataCheckbox" type="checkbox" onchange="alternarCamposDataMensagem()">
+    🔁 Recado fixo da equipe (sem data — fica sempre ativo até você desativar)
+   </label>
+   <div id="camposDataMensagem" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:8px;">
     <div>
      <label for="mensagemDiaInicioInput" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Dia início</label>
      <input id="mensagemDiaInicioInput" type="number" min="1" max="31" placeholder="28" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
@@ -1794,6 +1798,19 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
       <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
       <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
      </select>
+    </div>
+   </div>
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+    <div>
+     <label style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Em quais turnos aparece?</label>
+     <div style="display:flex;gap:12px;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;">
+      <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;color:#dce5f2;cursor:pointer;"><input id="mensagemTurnoManha" type="checkbox" checked> ☀️ Manhã</label>
+      <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;color:#dce5f2;cursor:pointer;"><input id="mensagemTurnoTarde" type="checkbox" checked> 🌇 Tarde</label>
+     </div>
+    </div>
+    <div>
+     <label for="mensagemVezesPorTurnoInput" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Quantas vezes por turno?</label>
+     <input id="mensagemVezesPorTurnoInput" type="number" min="1" max="20" value="3" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
     </div>
    </div>
    <label class="block text-sm font-semibold mb-2" for="mensagemTextoInput">Mensagem</label>
@@ -4663,6 +4680,10 @@ function renderReunioes(){
 }
 
 /* ===== Mensagens Programadas (aniversários, avisos, datas especiais) ===== */
+function alternarCamposDataMensagem(){
+ const semData = document.getElementById('mensagemSemDataCheckbox').checked;
+ document.getElementById('camposDataMensagem').style.display = semData ? 'none' : 'grid';
+}
 function getMensagensProgramadas(){
  try{ return JSON.parse(localStorage.getItem('biobel_mensagens_programadas')||'[]'); }catch(e){ return []; }
 }
@@ -4687,34 +4708,48 @@ function seedMensagemAniversarioAlessandra(){
 }
 let mensagemEditandoId = null;
 function adicionarMensagemProgramada(){
- const diaInicio = parseInt(document.getElementById('mensagemDiaInicioInput').value, 10);
- const diaFim = parseInt(document.getElementById('mensagemDiaFimInput').value, 10);
- const mes = parseInt(document.getElementById('mensagemMesSelect').value, 10);
+ const semData = document.getElementById('mensagemSemDataCheckbox').checked;
+ const diaInicio = semData ? null : parseInt(document.getElementById('mensagemDiaInicioInput').value, 10);
+ const diaFim = semData ? null : parseInt(document.getElementById('mensagemDiaFimInput').value, 10);
+ const mes = semData ? null : parseInt(document.getElementById('mensagemMesSelect').value, 10);
  const mensagem = document.getElementById('mensagemTextoInput').value.trim();
- if(isNaN(diaInicio) || diaInicio<1 || diaInicio>31){ mostrarToast('⚠️ Digite um dia de início válido.'); return; }
- if(isNaN(diaFim) || diaFim<1 || diaFim>31){ mostrarToast('⚠️ Digite um dia de fim válido.'); return; }
- if(diaFim<diaInicio){ mostrarToast('⚠️ O dia de fim não pode ser antes do dia de início.'); return; }
+ const turnos = [];
+ if(document.getElementById('mensagemTurnoManha').checked) turnos.push('manha');
+ if(document.getElementById('mensagemTurnoTarde').checked) turnos.push('tarde');
+ const vezesPorTurno = Math.max(1, parseInt(document.getElementById('mensagemVezesPorTurnoInput').value, 10) || 3);
+
+ if(!semData){
+  if(isNaN(diaInicio) || diaInicio<1 || diaInicio>31){ mostrarToast('⚠️ Digite um dia de início válido.'); return; }
+  if(isNaN(diaFim) || diaFim<1 || diaFim>31){ mostrarToast('⚠️ Digite um dia de fim válido.'); return; }
+  if(diaFim<diaInicio){ mostrarToast('⚠️ O dia de fim não pode ser antes do dia de início.'); return; }
+ }
  if(!mensagem){ mostrarToast('⚠️ Digite a mensagem.'); return; }
+ if(turnos.length===0){ mostrarToast('⚠️ Marque pelo menos um turno (manhã ou tarde).'); return; }
 
  const lista = getMensagensProgramadas();
  if(mensagemEditandoId!==null){
   const idx = lista.findIndex(m=>m.id===mensagemEditandoId);
   if(idx>=0){
-   lista[idx] = { ...lista[idx], diaInicio, diaFim, mes, mensagem };
+   lista[idx] = { ...lista[idx], diaInicio, diaFim, mes, mensagem, semData, turnos, vezesPorTurno };
    salvarMensagensProgramadas(lista);
    mostrarToast('✅ Mensagem atualizada!');
    registrarAlteracao('Mensagem programada editada');
   }
   cancelarEdicaoMensagem();
  } else {
-  lista.push({ id: Date.now(), diaInicio, diaFim, mes, mensagem });
+  lista.push({ id: Date.now(), diaInicio, diaFim, mes, mensagem, semData, turnos, vezesPorTurno });
   salvarMensagensProgramadas(lista);
-  mostrarToast('✅ Mensagem programada adicionada!');
-  registrarAlteracao('Mensagem programada adicionada ('+diaInicio+' a '+diaFim+')');
+  mostrarToast('✅ '+(semData?'Recado fixo':'Mensagem programada')+' adicionado'+(semData?'':'a')+'!');
+  registrarAlteracao(semData ? 'Recado fixo da equipe adicionado' : 'Mensagem programada adicionada ('+diaInicio+' a '+diaFim+')');
  }
  document.getElementById('mensagemDiaInicioInput').value='';
  document.getElementById('mensagemDiaFimInput').value='';
  document.getElementById('mensagemTextoInput').value='';
+ document.getElementById('mensagemSemDataCheckbox').checked=false;
+ document.getElementById('mensagemTurnoManha').checked=true;
+ document.getElementById('mensagemTurnoTarde').checked=true;
+ document.getElementById('mensagemVezesPorTurnoInput').value=3;
+ alternarCamposDataMensagem();
  renderMensagensProgramadas();
  renderLogAlteracoes();
 }
@@ -4722,10 +4757,16 @@ function editarMensagemProgramada(id){
  const m = getMensagensProgramadas().find(x=>x.id===id);
  if(!m) return;
  mensagemEditandoId = id;
- document.getElementById('mensagemDiaInicioInput').value = m.diaInicio;
- document.getElementById('mensagemDiaFimInput').value = m.diaFim;
- document.getElementById('mensagemMesSelect').value = m.mes;
+ document.getElementById('mensagemSemDataCheckbox').checked = !!m.semData;
+ document.getElementById('mensagemDiaInicioInput').value = m.diaInicio || '';
+ document.getElementById('mensagemDiaFimInput').value = m.diaFim || '';
+ if(m.mes) document.getElementById('mensagemMesSelect').value = m.mes;
  document.getElementById('mensagemTextoInput').value = m.mensagem;
+ const turnos = m.turnos || ['manha','tarde']; // mensagens antigas (antes dessa opção existir) valem pros dois turnos
+ document.getElementById('mensagemTurnoManha').checked = turnos.includes('manha');
+ document.getElementById('mensagemTurnoTarde').checked = turnos.includes('tarde');
+ document.getElementById('mensagemVezesPorTurnoInput').value = m.vezesPorTurno || 3;
+ alternarCamposDataMensagem();
  const btn = document.getElementById('btnAdicionarMensagem');
  if(btn) btn.textContent = '💾 Salvar edição';
  const btnCancelar = document.getElementById('btnCancelarEdicaoMensagem');
@@ -4737,6 +4778,11 @@ function cancelarEdicaoMensagem(){
  document.getElementById('mensagemDiaInicioInput').value='';
  document.getElementById('mensagemDiaFimInput').value='';
  document.getElementById('mensagemTextoInput').value='';
+ document.getElementById('mensagemSemDataCheckbox').checked=false;
+ document.getElementById('mensagemTurnoManha').checked=true;
+ document.getElementById('mensagemTurnoTarde').checked=true;
+ document.getElementById('mensagemVezesPorTurnoInput').value=3;
+ alternarCamposDataMensagem();
  const btn = document.getElementById('btnAdicionarMensagem');
  if(btn) btn.textContent = '➕ Adicionar mensagem';
  const btnCancelar = document.getElementById('btnCancelarEdicaoMensagem');
@@ -4762,15 +4808,19 @@ function renderMensagensProgramadas(){
  }
  el.innerHTML = lista.map(m=>{
   const preview = m.mensagem.length>100 ? m.mensagem.slice(0,100)+'...' : m.mensagem;
+  const turnos = m.turnos || ['manha','tarde'];
+  const nomesTurnos = turnos.map(t=>t==='manha'?'☀️ Manhã':'🌇 Tarde').join(' + ');
+  const cabecalho = m.semData ? '🔁 Recado fixo (sempre ativo)' : '📅 '+m.diaInicio+' a '+m.diaFim+' de '+nomesMeses[m.mes];
   return `
-  <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
+  <div style="background:#0b1728;border:1px solid ${m.semData?'rgba(79,156,255,.35)':'#1e2c42'};border-radius:10px;padding:12px 14px;">
    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;">
-    <span style="color:#dce5f2;font-weight:800;font-size:13px;">📅 ${m.diaInicio} a ${m.diaFim} de ${nomesMeses[m.mes]}</span>
+    <span style="color:#dce5f2;font-weight:800;font-size:13px;">${cabecalho}</span>
     <div style="display:flex;align-items:center;gap:8px;">
      <button onclick="editarMensagemProgramada(${m.id})" aria-label="Editar mensagem" style="background:none;border:none;color:#4f9cff;cursor:pointer;font-size:14px;">✏️</button>
      <button onclick="removerMensagemProgramada(${m.id})" aria-label="Remover mensagem" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;">🗑️</button>
     </div>
    </div>
+   <div style="font-size:10.5px;color:#93a3ba;margin-top:4px;">${nomesTurnos} · ${m.vezesPorTurno||3}x por turno</div>
    <div style="font-size:11.5px;color:#93a3ba;margin-top:6px;white-space:pre-line;">${preview}</div>
   </div>`;
  }).join('');
@@ -4786,7 +4836,7 @@ function encontrarMensagemAtivaHoje(){
  const mesAtual = hoje.getMonth()+1;
  const diaAtual = hoje.getDate();
  return getMensagensProgramadas().find(m=>
-  Number(m.mes)===mesAtual && diaAtual>=Number(m.diaInicio) && diaAtual<=Number(m.diaFim)
+  m.semData || (Number(m.mes)===mesAtual && diaAtual>=Number(m.diaInicio) && diaAtual<=Number(m.diaFim))
  );
 }
 function renderFaixaMensagemProgramada(){
@@ -4797,10 +4847,16 @@ function renderFaixaMensagemProgramada(){
 
  const hoje = obterAgoraBrasilia();
  const periodo = obterPeriodoSimplificadoDoDia(hoje.getHours());
+ // Mensagens antigas (de antes dessa opção existir) valem pros dois turnos, pra não quebrar
+ // o que já estava configurado.
+ const turnosPermitidos = msg.turnos || ['manha','tarde'];
+ if(!turnosPermitidos.includes(periodo)){ el.style.display='none'; return; }
+
+ const limiteVezes = msg.vezesPorTurno || 3;
  const chaveContador = 'biobel_msg_contador_'+msg.id+'_'+hoje.paraChaveISO()+'_'+periodo;
  const contadorAtual = parseInt(localStorage.getItem(chaveContador)||'0', 10);
 
- if(contadorAtual>=3){ el.style.display='none'; return; }
+ if(contadorAtual>=limiteVezes){ el.style.display='none'; return; }
  localStorage.setItem(chaveContador, String(contadorAtual+1));
 
  // Popup de verdade: fundo escurecido cobrindo a tela toda, card centralizado por cima de tudo.
