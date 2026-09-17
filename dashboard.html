@@ -527,7 +527,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v5.7</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v5.8</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -2177,6 +2177,22 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    </div>
   </div>
 
+  <div class="adv-card" style="border-color:rgba(251,113,133,.35);">
+   <div class="adv-card-title">
+    <h3>🚪 Desligamento — Gabriela</h3>
+    <span>registra a saída da funcionária e gera um resumo em PDF pra contadora</span>
+   </div>
+   <label class="block text-sm font-semibold mb-2" for="dataDesligamentoGabrielaInput">Data do desligamento</label>
+   <div style="display:flex;gap:8px;margin-bottom:12px;">
+    <input id="dataDesligamentoGabrielaInput" type="date" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="salvarDesligamento('gabriela')" class="bg-rose-600 hover:bg-rose-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+   </div>
+   <label class="block text-sm font-semibold mb-2" for="motivoDesligamentoGabrielaInput">Motivo (opcional)</label>
+   <input id="motivoDesligamentoGabrielaInput" type="text" placeholder="Ex: pedido de demissão, término de contrato, etc." style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:12px;">
+   <div id="resumoDesligamentoGabriela" style="margin-bottom:12px;"></div>
+   <button onclick="gerarPdfDesligamento('gabriela')" class="w-full bg-purple-600 hover:bg-purple-500 px-4 py-2.5 rounded-xl font-semibold text-sm">🖨️ Gerar PDF de Desligamento</button>
+  </div>
+
   <div class="adv-card">
    <div class="adv-card-title">
     <h3>🏖️ Férias — Gabriela</h3>
@@ -2231,6 +2247,22 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
      <button onclick="salvarChavePix('day')" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
     </div>
    </div>
+  </div>
+
+  <div class="adv-card" style="border-color:rgba(251,113,133,.35);">
+   <div class="adv-card-title">
+    <h3>🚪 Desligamento — Day</h3>
+    <span>registra o fim do estágio e gera um resumo em PDF pra contadora</span>
+   </div>
+   <label class="block text-sm font-semibold mb-2" for="dataDesligamentoDayInput">Data do desligamento</label>
+   <div style="display:flex;gap:8px;margin-bottom:12px;">
+    <input id="dataDesligamentoDayInput" type="date" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="salvarDesligamento('day')" class="bg-rose-600 hover:bg-rose-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+   </div>
+   <label class="block text-sm font-semibold mb-2" for="motivoDesligamentoDayInput">Motivo (opcional)</label>
+   <input id="motivoDesligamentoDayInput" type="text" placeholder="Ex: fim do contrato de estágio, etc." style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:12px;">
+   <div id="resumoDesligamentoDay" style="margin-bottom:12px;"></div>
+   <button onclick="gerarPdfDesligamento('day')" class="w-full bg-purple-600 hover:bg-purple-500 px-4 py-2.5 rounded-xl font-semibold text-sm">🖨️ Gerar PDF de Desligamento</button>
   </div>
 
   <div class="adv-card">
@@ -4892,6 +4924,8 @@ function mostrarConteudoAdm(){
  renderNascimento('day');
  renderEstagioDay();
  renderRecessoDay();
+ renderResumoDesligamento('gabriela');
+ renderResumoDesligamento('day');
  renderReunioes();
  initImpostoUI();
  renderUltimaAtualizacaoEstoque();
@@ -5830,6 +5864,110 @@ function calcularCustoMensalHoraExtra(){
  return valorHora>0 ? valorHora*2*semanasPorMes : 0;
 }
 /* ===== Data de Admissão — Gabriela (CLT), pra calcular férias e FGTS ===== */
+/* ===== Desligamento — Gabriela e Day, com resumo em PDF pra contadora ===== */
+function getDataInicioTrabalho(pessoa){
+ return pessoa==='gabriela' ? getDataAdmissaoGabriela() : getDataInicioEstagio();
+}
+function getDesligamento(pessoa){
+ try{ return JSON.parse(localStorage.getItem('biobel_desligamento_'+pessoa)||'null'); }catch(e){ return null; }
+}
+function calcularTempoEntreDatas(dataInicioStr, dataFimStr){
+ const inicio = new Date(dataInicioStr+'T00:00:00');
+ const fim = new Date(dataFimStr+'T00:00:00');
+ let anos = fim.getFullYear()-inicio.getFullYear();
+ let meses = fim.getMonth()-inicio.getMonth();
+ let dias = fim.getDate()-inicio.getDate();
+ if(dias<0){ meses--; dias += new Date(fim.getFullYear(), fim.getMonth(), 0).getDate(); }
+ if(meses<0){ anos--; meses += 12; }
+ return { anos, meses, dias, texto: (anos>0?anos+' ano'+(anos===1?'':'s')+', ':'')+meses+' mês'+(meses===1?'':'es')+' e '+dias+' dia'+(dias===1?'':'s') };
+}
+function salvarDesligamento(pessoa){
+ const idData = pessoa==='gabriela' ? 'dataDesligamentoGabrielaInput' : 'dataDesligamentoDayInput';
+ const idMotivo = pessoa==='gabriela' ? 'motivoDesligamentoGabrielaInput' : 'motivoDesligamentoDayInput';
+ const data = document.getElementById(idData).value;
+ const motivo = document.getElementById(idMotivo).value.trim() || null;
+ if(!data){ mostrarToast('⚠️ Escolha a data do desligamento.'); return; }
+ const dataInicio = getDataInicioTrabalho(pessoa);
+ if(dataInicio && data<dataInicio){ mostrarToast('⚠️ A data de desligamento não pode ser antes da data de admissão/início.'); return; }
+ localStorage.setItem('biobel_desligamento_'+pessoa, JSON.stringify({ data, motivo }));
+ const nomeExibicao = pessoa==='gabriela' ? 'Gabriela' : 'Day';
+ mostrarToast('✅ Desligamento de '+nomeExibicao+' registrado.');
+ registrarAlteracao('Desligamento de '+nomeExibicao+' registrado em '+new Date(data+'T00:00:00').toLocaleDateString('pt-BR'));
+ renderLogAlteracoes();
+ renderResumoDesligamento(pessoa);
+}
+function renderResumoDesligamento(pessoa){
+ const idData = pessoa==='gabriela' ? 'dataDesligamentoGabrielaInput' : 'dataDesligamentoDayInput';
+ const idMotivo = pessoa==='gabriela' ? 'motivoDesligamentoGabrielaInput' : 'motivoDesligamentoDayInput';
+ const idResumo = pessoa==='gabriela' ? 'resumoDesligamentoGabriela' : 'resumoDesligamentoDay';
+ const desligamento = getDesligamento(pessoa);
+ const inputData = document.getElementById(idData);
+ const inputMotivo = document.getElementById(idMotivo);
+ const el = document.getElementById(idResumo);
+ if(inputData) inputData.value = desligamento ? desligamento.data : '';
+ if(inputMotivo) inputMotivo.value = desligamento ? (desligamento.motivo||'') : '';
+ if(!el) return;
+ if(!desligamento){ el.innerHTML = ''; return; }
+
+ const dataInicio = getDataInicioTrabalho(pessoa);
+ const tempo = dataInicio ? calcularTempoEntreDatas(dataInicio, desligamento.data) : null;
+ el.innerHTML = `<div style="background:rgba(251,113,133,.08);border:1px solid rgba(251,113,133,.3);border-radius:10px;padding:12px 14px;">
+   <div style="font-size:12.5px;color:#fb7185;font-weight:800;">🚪 Desligamento em ${new Date(desligamento.data+'T00:00:00').toLocaleDateString('pt-BR')}</div>
+   ${tempo ? `<div style="font-size:11.5px;color:#93a3ba;margin-top:4px;">Tempo total trabalhado: ${tempo.texto}</div>` : ''}
+   ${desligamento.motivo ? `<div style="font-size:11.5px;color:#93a3ba;margin-top:4px;">Motivo: ${desligamento.motivo}</div>` : ''}
+  </div>`;
+}
+async function gerarPdfDesligamento(pessoa){
+ const desligamento = getDesligamento(pessoa);
+ if(!desligamento){ mostrarToast('⚠️ Registre a data de desligamento primeiro.'); return; }
+ const dataInicio = getDataInicioTrabalho(pessoa);
+ const nomeExibicao = pessoa==='gabriela' ? 'Gabriela' : 'Day';
+ const vinculo = pessoa==='gabriela' ? 'CLT' : 'Estágio';
+ try{
+  await carregarJsPDFSobDemanda();
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({unit:'mm', format:'a4'});
+  const margem = 15;
+  let y = await desenharCabecalhoPDF(doc, 'Resumo de Desligamento — '+nomeExibicao, 'Vínculo: '+vinculo+' — documento informativo, não substitui o cálculo oficial da contabilidade');
+
+  doc.setFontSize(11); doc.setTextColor(20,20,20);
+  function linhaInfo(rotulo, valor){
+   doc.setFont('helvetica','bold'); doc.text(rotulo+':', margem, y);
+   doc.setFont('helvetica','normal'); doc.text(String(valor), margem+55, y);
+   y += 8;
+  }
+  linhaInfo('Funcionária', nomeExibicao);
+  linhaInfo('Vínculo', vinculo);
+  if(dataInicio) linhaInfo('Data de admissão/início', new Date(dataInicio+'T00:00:00').toLocaleDateString('pt-BR'));
+  linhaInfo('Data de desligamento', new Date(desligamento.data+'T00:00:00').toLocaleDateString('pt-BR'));
+  if(dataInicio){
+   const tempo = calcularTempoEntreDatas(dataInicio, desligamento.data);
+   linhaInfo('Tempo total trabalhado', tempo.texto);
+  }
+  if(desligamento.motivo) linhaInfo('Motivo', desligamento.motivo);
+  const chavePix = getChavePix(pessoa);
+  if(chavePix) linhaInfo('Chave PIX', chavePix);
+
+  // Salário base (Gabriela) — puxado dos Gastos Fixos, se cadastrado com esse nome.
+  if(pessoa==='gabriela'){
+   const gastoSalario = getGastosFixos().find(g=>String(g.nome||'').toLowerCase().includes('gabriela'));
+   if(gastoSalario) linhaInfo('Último salário-base cadastrado', money(Number(gastoSalario.valor)||0));
+  }
+
+  y += 6;
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(90,90,90);
+  doc.text('Documento gerado automaticamente pelo sistema, com base nos dados cadastrados. Não substitui', margem, y);
+  y += 5;
+  doc.text('o cálculo oficial de rescisão, que deve ser feito pela contabilidade.', margem, y);
+
+  doc.save('desligamento-'+pessoa+'-'+desligamento.data+'.pdf');
+  mostrarToast('✅ PDF de desligamento gerado!');
+ }catch(e){
+  console.error(e);
+  mostrarToast('⚠️ Não foi possível gerar o PDF.');
+ }
+}
+
 function getDataAdmissaoGabriela(){
  return localStorage.getItem('biobel_adm_data_admissao_gabriela') || '';
 }
