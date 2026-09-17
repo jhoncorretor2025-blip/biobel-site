@@ -527,7 +527,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v5.9</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v6.0</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -2150,6 +2150,15 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    </div>
   </div>
 
+  <div id="grupoFuncionariosHeader" onclick="alternarGrupoFuncionarios()" style="display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(79,156,255,.35);border-radius:16px;padding:16px 20px;cursor:pointer;">
+   <div>
+    <h2 style="font-size:17px;font-weight:900;color:#dce5f2;">👥 Funcionários</h2>
+    <p style="font-size:12px;color:#93a3ba;margin-top:2px;">Dados, PIX, desligamento, férias/recesso e hora extra de cada uma — clique pra abrir</p>
+   </div>
+   <span id="setaGrupoFuncionarios" style="font-size:22px;color:#93a3ba;">▸</span>
+  </div>
+  <div id="grupoFuncionariosConteudo" style="display:none;">
+
   <div class="adv-card">
    <div class="adv-card-title">
     <h3>📅 Dados de Gabriela (CLT)</h3>
@@ -2371,6 +2380,8 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     </div>
     <div style="font-size:11px;color:#93a3ba;margin-top:8px;">Pra saber o custo total exato com esses encargos, confirme com a contadora — esse painel mostra só a base, não substitui o cálculo oficial da folha.</div>
    </div>
+  </div>
+
   </div>
 
   <div class="adv-card">
@@ -3085,6 +3096,25 @@ function verificarPrimeiroAcessoTour(){
  if(!localStorage.getItem('biobel_tour_concluido')){
   setTimeout(iniciarTourGuiado, 800);
  }
+}
+
+/* ===== Grupo colapsável "Funcionários" na ADM — agrupa os cards da Gabriela e da Day ===== */
+function alternarGrupoFuncionarios(){
+ const conteudo = document.getElementById('grupoFuncionariosConteudo');
+ const seta = document.getElementById('setaGrupoFuncionarios');
+ if(!conteudo) return;
+ const estaAberto = conteudo.style.display !== 'none';
+ conteudo.style.display = estaAberto ? 'none' : 'block';
+ if(seta) seta.textContent = estaAberto ? '▸' : '▾';
+ localStorage.setItem('biobel_grupo_funcionarios_aberto', estaAberto ? 'no' : 'yes');
+}
+function initGrupoFuncionarios(){
+ const conteudo = document.getElementById('grupoFuncionariosConteudo');
+ const seta = document.getElementById('setaGrupoFuncionarios');
+ if(!conteudo) return;
+ const aberto = localStorage.getItem('biobel_grupo_funcionarios_aberto') === 'yes';
+ conteudo.style.display = aberto ? 'block' : 'none';
+ if(seta) seta.textContent = aberto ? '▾' : '▸';
 }
 
 function alternarColapsoTodosCards(){
@@ -4983,6 +5013,7 @@ function mostrarConteudoAdm(){
  renderNascimento('day');
  renderEstagioDay();
  renderRecessoDay();
+ initGrupoFuncionarios();
  renderResumoDesligamento('gabriela');
  renderResumoDesligamento('day');
  renderReunioes();
