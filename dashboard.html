@@ -524,7 +524,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v5.2</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v5.3</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -605,6 +605,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <div style="font-size:13px;color:#93a3ba;margin-top:10px;">Faltam <strong id="metaDestaqueFaltam" style="color:#dce5f2;">R$ 0,00</strong> para bater a meta.</div>
    <div style="font-size:12.5px;color:#93a3ba;margin-top:6px;">📅 <span id="metaDiasRestantes">0</span></div>
    <div id="metaProjecaoTexto" style="font-size:12px;margin-top:6px;"></div>
+   <div id="metaPorDiaTexto" style="font-size:12.5px;margin-top:8px;font-weight:700;"></div>
    <div id="bannerEmailMetaBatida" style="display:none;margin-top:12px;"></div>
    <div id="bannerResumoSemanalEmail" style="display:none;margin-top:12px;"></div>
   </div>
@@ -7067,6 +7068,29 @@ function renderListaMetasVendedoras(){
  `).join('');
 }
 
+/* ===== Fração do dia de hoje que ainda resta, baseada no horário de funcionamento real =====
+   No começo do expediente, hoje conta quase inteiro; no fim da tarde, quase nada — dá uma
+   contagem de "dias restantes" bem mais precisa do que só contar dias inteiros. */
+function calcularFracaoHojeRestante(){
+ const agora = obterAgoraBrasilia();
+ const dow = agora.getDay();
+ if(dow===0) return 0; // domingo, loja fechada — hoje não vale nada pra meta
+ const horarios = getHorarioFuncionamento();
+ const abertura = horarios.abertura;
+ const fechamento = dow===6 ? horarios.fechamentoSabado : horarios.fechamentoSemana;
+ const [hA,mA] = String(abertura).split(':').map(Number);
+ const [hF,mF] = String(fechamento).split(':').map(Number);
+ if(isNaN(hA) || isNaN(hF)) return 0.5; // sem horário configurado — usa meio-dia como estimativa neutra
+ const minutosAbertura = hA*60+(mA||0);
+ const minutosFechamento = hF*60+(mF||0);
+ const minutosAgora = agora.getHours()*60+agora.getMinutes();
+ if(minutosAgora<=minutosAbertura) return 1; // ainda não abriu — dia conta inteiro
+ if(minutosAgora>=minutosFechamento) return 0; // já fechou — dia já era
+ const totalMinutos = minutosFechamento-minutosAbertura;
+ const decorridos = minutosAgora-minutosAbertura;
+ return Math.max(0, Math.min(1, (totalMinutos-decorridos)/totalMinutos));
+}
+
 function getHorarioFuncionamento(){
  return {
   abertura: localStorage.getItem('biobel_horario_abertura') || '09:00',
@@ -11881,21 +11905,38 @@ function renderAdvancedDashboard(){
    const hoje = obterAgoraBrasilia();
    const diaAtual = hoje.getMonth()+1===mesRef ? hoje.getDate() : ultimoDiaDoMes;
    const diasRestantes = contarDiasUteisRestantes(mesRef, diaAtual, ultimoDiaDoMes);
+   // Fração de hoje que ainda resta (baseado no horário de funcionamento real) — no começo do
+   // expediente hoje conta quase inteiro, no fim da tarde quase nada. Somado aos dias úteis
+   // futuros, dá uma contagem bem mais precisa de "quanto tempo de venda ainda resta".
+   const fracaoHoje = calcularFracaoHojeRestante();
+   const diasRestantesPrecisos = diasRestantes + fracaoHoje;
    // Frase explícita, sem ambiguidade: mostra o dia de hoje, o total do mês, e deixa claro que
    // a conta NÃO inclui o dia de hoje, NÃO conta domingo (loja fechada) nem feriado marcado —
    // assim a pessoa consegue conferir a matemática sozinha.
    elDiasRestantes.innerHTML = diasRestantes===0
     ? 'Hoje (dia '+diaAtual+') é o último dia útil do mês.'
-    : 'Hoje é dia '+diaAtual+' de '+ultimoDiaDoMes+'. Faltam mais <strong style="color:#dce5f2;">'+diasRestantes+'</strong> dia'+(diasRestantes===1?' útil':'s úteis')+' (sem contar hoje, domingo ou feriado marcado) pra fechar o mês.';
+    : 'Hoje é dia '+diaAtual+' de '+ultimoDiaDoMes+'. Faltam mais <strong style="color:#dce5f2;">'+diasRestantes+'</strong> dia'+(diasRestantes===1?' útil':'s úteis')+' (sem contar hoje, domingo ou feriado marcado) pra fechar o mês. Contando o que ainda dá pra vender hoje, são <strong style="color:#dce5f2;">'+diasRestantesPrecisos.toFixed(1).replace('.',',')+'</strong> dias de trabalho pela frente.';
+
+   const elMetaPorDia = document.getElementById('metaPorDiaTexto');
+   if(elMetaPorDia){
+    if(metaFaltam<=0){
+     elMetaPorDia.innerHTML = '';
+    } else if(diasRestantesPrecisos<=0){
+     elMetaPorDia.innerHTML = '<span style="color:#fb7185;">⚠️ Não sobrou tempo de venda nesse mês pra calcular uma meta diária.</span>';
+    } else {
+     const metaPorDia = metaFaltam/diasRestantesPrecisos;
+     elMetaPorDia.innerHTML = '🎯 Pra bater a meta, precisa vender em média <span style="color:#27d7a0;">'+money(metaPorDia)+'</span>/dia daqui pra frente (contando o resto de hoje).';
+    }
+   }
 
    if(elProjecao){
     if(metaFaltam<=0){
      elProjecao.innerHTML = '<span style="color:#27d7a0;">🎉 Meta já batida!</span>';
-    } else if(diasRestantes===0){
+    } else if(diasRestantesPrecisos<=0){
      elProjecao.innerHTML = '<span style="color:#fb7185;">⚠️ Hoje é o último dia do mês.</span>';
     } else {
      const mediaAtual = totalSales/daysData.length;
-     const projecaoTotal = totalSales + (mediaAtual*diasRestantes);
+     const projecaoTotal = totalSales + (mediaAtual*diasRestantesPrecisos);
      const vaiBater = projecaoTotal >= metaGoal;
      elProjecao.innerHTML = vaiBater
       ? `<span style="color:#27d7a0;">📈 No ritmo atual (${money(mediaAtual)}/dia), a projeção é fechar em ${money(projecaoTotal)} — deve bater a meta.</span>`
