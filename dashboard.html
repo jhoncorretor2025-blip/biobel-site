@@ -527,7 +527,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v5.8</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v5.9</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -2182,14 +2182,51 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <h3>🚪 Desligamento — Gabriela</h3>
     <span>registra a saída da funcionária e gera um resumo em PDF pra contadora</span>
    </div>
-   <label class="block text-sm font-semibold mb-2" for="dataDesligamentoGabrielaInput">Data do desligamento</label>
-   <div style="display:flex;gap:8px;margin-bottom:12px;">
-    <input id="dataDesligamentoGabrielaInput" type="date" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
-    <button onclick="salvarDesligamento('gabriela')" class="bg-rose-600 hover:bg-rose-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+    <div>
+     <label class="block text-sm font-semibold mb-2" for="nomeCompletoGabrielaInput">Nome completo</label>
+     <input id="nomeCompletoGabrielaInput" type="text" placeholder="Nome completo" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    </div>
+    <div>
+     <label class="block text-sm font-semibold mb-2" for="cpfGabrielaInput">CPF</label>
+     <input id="cpfGabrielaInput" type="text" placeholder="000.000.000-00" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    </div>
    </div>
-   <label class="block text-sm font-semibold mb-2" for="motivoDesligamentoGabrielaInput">Motivo (opcional)</label>
-   <input id="motivoDesligamentoGabrielaInput" type="text" placeholder="Ex: pedido de demissão, término de contrato, etc." style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:12px;">
-   <div id="resumoDesligamentoGabriela" style="margin-bottom:12px;"></div>
+   <label class="block text-sm font-semibold mb-2" for="cargoGabrielaInput">Cargo/função</label>
+   <input id="cargoGabrielaInput" type="text" placeholder="Ex: Vendedora" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:8px;">
+   <button onclick="salvarDadosPessoaisDesligamento('gabriela')" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl font-semibold text-sm" style="margin-bottom:14px;">💾 Salvar dados pessoais</button>
+
+   <div style="border-top:1px solid #1e2c42;padding-top:14px;">
+    <label class="block text-sm font-semibold mb-2" for="dataDesligamentoGabrielaInput">Data do desligamento</label>
+    <input id="dataDesligamentoGabrielaInput" type="date" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:8px;">
+
+    <label class="block text-sm font-semibold mb-2">Tipo de contrato</label>
+    <select id="tipoContratoGabrielaSelect" onchange="alternarAvisoPrevioGabriela()" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:8px;">
+     <option value="normal">CLT normal</option>
+     <option value="experiencia">Contrato de experiência (não precisa de aviso-prévio)</option>
+    </select>
+
+    <label class="block text-sm font-semibold mb-2">Quem pediu o desligamento?</label>
+    <select id="quemPediuGabrielaSelect" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:8px;">
+     <option value="funcionaria">A funcionária pediu demissão</option>
+     <option value="empresa">A empresa decidiu desligar</option>
+    </select>
+
+    <div id="wrapperAvisoPrevioGabriela">
+     <label class="block text-sm font-semibold mb-2">Aviso-prévio</label>
+     <select id="avisoPrevioGabrielaSelect" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:8px;">
+      <option value="trabalhado">Trabalhado</option>
+      <option value="indenizado">Indenizado</option>
+      <option value="dispensado_empresa">Dispensado pela empresa</option>
+      <option value="dispensa_pedida">A funcionária pediu dispensa do aviso</option>
+     </select>
+    </div>
+
+    <label class="block text-sm font-semibold mb-2" for="motivoDesligamentoGabrielaInput">Motivo/observação (opcional)</label>
+    <input id="motivoDesligamentoGabrielaInput" type="text" placeholder="Alguma observação adicional..." style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:10px;">
+    <button onclick="salvarDesligamento('gabriela')" class="w-full bg-rose-600 hover:bg-rose-500 px-4 py-2 rounded-xl font-semibold text-sm">💾 Salvar desligamento</button>
+   </div>
+   <div id="resumoDesligamentoGabriela" style="margin:12px 0;"></div>
    <button onclick="gerarPdfDesligamento('gabriela')" class="w-full bg-purple-600 hover:bg-purple-500 px-4 py-2.5 rounded-xl font-semibold text-sm">🖨️ Gerar PDF de Desligamento</button>
   </div>
 
@@ -2254,14 +2291,36 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <h3>🚪 Desligamento — Day</h3>
     <span>registra o fim do estágio e gera um resumo em PDF pra contadora</span>
    </div>
-   <label class="block text-sm font-semibold mb-2" for="dataDesligamentoDayInput">Data do desligamento</label>
-   <div style="display:flex;gap:8px;margin-bottom:12px;">
-    <input id="dataDesligamentoDayInput" type="date" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
-    <button onclick="salvarDesligamento('day')" class="bg-rose-600 hover:bg-rose-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+    <div>
+     <label class="block text-sm font-semibold mb-2" for="nomeCompletoDayInput">Nome completo</label>
+     <input id="nomeCompletoDayInput" type="text" placeholder="Nome completo" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    </div>
+    <div>
+     <label class="block text-sm font-semibold mb-2" for="cpfDayInput">CPF</label>
+     <input id="cpfDayInput" type="text" placeholder="000.000.000-00" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    </div>
    </div>
-   <label class="block text-sm font-semibold mb-2" for="motivoDesligamentoDayInput">Motivo (opcional)</label>
-   <input id="motivoDesligamentoDayInput" type="text" placeholder="Ex: fim do contrato de estágio, etc." style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:12px;">
-   <div id="resumoDesligamentoDay" style="margin-bottom:12px;"></div>
+   <label class="block text-sm font-semibold mb-2" for="cargoDayInput">Cargo/função</label>
+   <input id="cargoDayInput" type="text" placeholder="Ex: Estagiária de Vendas" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:8px;">
+   <button onclick="salvarDadosPessoaisDesligamento('day')" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl font-semibold text-sm" style="margin-bottom:14px;">💾 Salvar dados pessoais</button>
+
+   <div style="border-top:1px solid #1e2c42;padding-top:14px;">
+    <label class="block text-sm font-semibold mb-2" for="dataDesligamentoDayInput">Data do desligamento</label>
+    <input id="dataDesligamentoDayInput" type="date" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:8px;">
+
+    <label class="block text-sm font-semibold mb-2">Quem pediu o desligamento?</label>
+    <select id="quemPediuDaySelect" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:8px;">
+     <option value="funcionaria">A estagiária pediu o desligamento</option>
+     <option value="empresa">A empresa decidiu desligar</option>
+    </select>
+    <p style="font-size:10px;color:#93a3ba;margin-bottom:10px;">💡 Contrato de estágio não tem aviso-prévio no sentido da CLT — por isso esse campo não aparece aqui.</p>
+
+    <label class="block text-sm font-semibold mb-2" for="motivoDesligamentoDayInput">Motivo/observação (opcional)</label>
+    <input id="motivoDesligamentoDayInput" type="text" placeholder="Ex: fim do contrato de estágio, etc." style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:10px;">
+    <button onclick="salvarDesligamento('day')" class="w-full bg-rose-600 hover:bg-rose-500 px-4 py-2 rounded-xl font-semibold text-sm">💾 Salvar desligamento</button>
+   </div>
+   <div id="resumoDesligamentoDay" style="margin:12px 0;"></div>
    <button onclick="gerarPdfDesligamento('day')" class="w-full bg-purple-600 hover:bg-purple-500 px-4 py-2.5 rounded-xl font-semibold text-sm">🖨️ Gerar PDF de Desligamento</button>
   </div>
 
@@ -5871,6 +5930,28 @@ function getDataInicioTrabalho(pessoa){
 function getDesligamento(pessoa){
  try{ return JSON.parse(localStorage.getItem('biobel_desligamento_'+pessoa)||'null'); }catch(e){ return null; }
 }
+function getDadosPessoaisDesligamento(pessoa){
+ try{ return JSON.parse(localStorage.getItem('biobel_dados_pessoais_'+pessoa)||'{}'); }catch(e){ return {}; }
+}
+function salvarDadosPessoaisDesligamento(pessoa){
+ const idNome = pessoa==='gabriela' ? 'nomeCompletoGabrielaInput' : 'nomeCompletoDayInput';
+ const idCpf = pessoa==='gabriela' ? 'cpfGabrielaInput' : 'cpfDayInput';
+ const idCargo = pessoa==='gabriela' ? 'cargoGabrielaInput' : 'cargoDayInput';
+ const dados = {
+  nomeCompleto: document.getElementById(idNome).value.trim(),
+  cpf: document.getElementById(idCpf).value.trim(),
+  cargo: document.getElementById(idCargo).value.trim()
+ };
+ localStorage.setItem('biobel_dados_pessoais_'+pessoa, JSON.stringify(dados));
+ mostrarToast('✅ Dados pessoais salvos!');
+ registrarAlteracao('Dados pessoais de '+(pessoa==='gabriela'?'Gabriela':'Day')+' atualizados');
+ renderLogAlteracoes();
+}
+function alternarAvisoPrevioGabriela(){
+ const tipo = document.getElementById('tipoContratoGabrielaSelect').value;
+ const wrapper = document.getElementById('wrapperAvisoPrevioGabriela');
+ if(wrapper) wrapper.style.display = tipo==='experiencia' ? 'none' : 'block';
+}
 function calcularTempoEntreDatas(dataInicioStr, dataFimStr){
  const inicio = new Date(dataInicioStr+'T00:00:00');
  const fim = new Date(dataFimStr+'T00:00:00');
@@ -5884,12 +5965,20 @@ function calcularTempoEntreDatas(dataInicioStr, dataFimStr){
 function salvarDesligamento(pessoa){
  const idData = pessoa==='gabriela' ? 'dataDesligamentoGabrielaInput' : 'dataDesligamentoDayInput';
  const idMotivo = pessoa==='gabriela' ? 'motivoDesligamentoGabrielaInput' : 'motivoDesligamentoDayInput';
+ const idQuemPediu = pessoa==='gabriela' ? 'quemPediuGabrielaSelect' : 'quemPediuDaySelect';
  const data = document.getElementById(idData).value;
  const motivo = document.getElementById(idMotivo).value.trim() || null;
+ const quemPediu = document.getElementById(idQuemPediu).value;
  if(!data){ mostrarToast('⚠️ Escolha a data do desligamento.'); return; }
  const dataInicio = getDataInicioTrabalho(pessoa);
  if(dataInicio && data<dataInicio){ mostrarToast('⚠️ A data de desligamento não pode ser antes da data de admissão/início.'); return; }
- localStorage.setItem('biobel_desligamento_'+pessoa, JSON.stringify({ data, motivo }));
+
+ const registro = { data, motivo, quemPediu };
+ if(pessoa==='gabriela'){
+  registro.tipoContrato = document.getElementById('tipoContratoGabrielaSelect').value;
+  registro.avisoPrevio = registro.tipoContrato==='experiencia' ? null : document.getElementById('avisoPrevioGabrielaSelect').value;
+ }
+ localStorage.setItem('biobel_desligamento_'+pessoa, JSON.stringify(registro));
  const nomeExibicao = pessoa==='gabriela' ? 'Gabriela' : 'Day';
  mostrarToast('✅ Desligamento de '+nomeExibicao+' registrado.');
  registrarAlteracao('Desligamento de '+nomeExibicao+' registrado em '+new Date(data+'T00:00:00').toLocaleDateString('pt-BR'));
@@ -5899,44 +5988,71 @@ function salvarDesligamento(pessoa){
 function renderResumoDesligamento(pessoa){
  const idData = pessoa==='gabriela' ? 'dataDesligamentoGabrielaInput' : 'dataDesligamentoDayInput';
  const idMotivo = pessoa==='gabriela' ? 'motivoDesligamentoGabrielaInput' : 'motivoDesligamentoDayInput';
+ const idQuemPediu = pessoa==='gabriela' ? 'quemPediuGabrielaSelect' : 'quemPediuDaySelect';
  const idResumo = pessoa==='gabriela' ? 'resumoDesligamentoGabriela' : 'resumoDesligamentoDay';
  const desligamento = getDesligamento(pessoa);
+ const dadosPessoais = getDadosPessoaisDesligamento(pessoa);
+
+ const inputNome = document.getElementById(pessoa==='gabriela'?'nomeCompletoGabrielaInput':'nomeCompletoDayInput');
+ const inputCpf = document.getElementById(pessoa==='gabriela'?'cpfGabrielaInput':'cpfDayInput');
+ const inputCargo = document.getElementById(pessoa==='gabriela'?'cargoGabrielaInput':'cargoDayInput');
+ if(inputNome) inputNome.value = dadosPessoais.nomeCompleto || '';
+ if(inputCpf) inputCpf.value = dadosPessoais.cpf || '';
+ if(inputCargo) inputCargo.value = dadosPessoais.cargo || '';
+
  const inputData = document.getElementById(idData);
  const inputMotivo = document.getElementById(idMotivo);
+ const inputQuemPediu = document.getElementById(idQuemPediu);
  const el = document.getElementById(idResumo);
  if(inputData) inputData.value = desligamento ? desligamento.data : '';
  if(inputMotivo) inputMotivo.value = desligamento ? (desligamento.motivo||'') : '';
+ if(inputQuemPediu && desligamento) inputQuemPediu.value = desligamento.quemPediu || 'funcionaria';
+ if(pessoa==='gabriela' && desligamento){
+  const selTipo = document.getElementById('tipoContratoGabrielaSelect');
+  const selAviso = document.getElementById('avisoPrevioGabrielaSelect');
+  if(selTipo) selTipo.value = desligamento.tipoContrato || 'normal';
+  if(selAviso && desligamento.avisoPrevio) selAviso.value = desligamento.avisoPrevio;
+  alternarAvisoPrevioGabriela();
+ }
  if(!el) return;
  if(!desligamento){ el.innerHTML = ''; return; }
 
  const dataInicio = getDataInicioTrabalho(pessoa);
  const tempo = dataInicio ? calcularTempoEntreDatas(dataInicio, desligamento.data) : null;
+ const nomesQuemPediu = { funcionaria:'A funcionária pediu', empresa:'A empresa decidiu desligar' };
  el.innerHTML = `<div style="background:rgba(251,113,133,.08);border:1px solid rgba(251,113,133,.3);border-radius:10px;padding:12px 14px;">
    <div style="font-size:12.5px;color:#fb7185;font-weight:800;">🚪 Desligamento em ${new Date(desligamento.data+'T00:00:00').toLocaleDateString('pt-BR')}</div>
    ${tempo ? `<div style="font-size:11.5px;color:#93a3ba;margin-top:4px;">Tempo total trabalhado: ${tempo.texto}</div>` : ''}
-   ${desligamento.motivo ? `<div style="font-size:11.5px;color:#93a3ba;margin-top:4px;">Motivo: ${desligamento.motivo}</div>` : ''}
+   <div style="font-size:11.5px;color:#93a3ba;margin-top:4px;">${nomesQuemPediu[desligamento.quemPediu]||''}</div>
+   ${desligamento.motivo ? `<div style="font-size:11.5px;color:#93a3ba;margin-top:4px;">Observação: ${desligamento.motivo}</div>` : ''}
   </div>`;
 }
 async function gerarPdfDesligamento(pessoa){
  const desligamento = getDesligamento(pessoa);
  if(!desligamento){ mostrarToast('⚠️ Registre a data de desligamento primeiro.'); return; }
  const dataInicio = getDataInicioTrabalho(pessoa);
- const nomeExibicao = pessoa==='gabriela' ? 'Gabriela' : 'Day';
- const vinculo = pessoa==='gabriela' ? 'CLT' : 'Estágio';
+ const dadosPessoais = getDadosPessoaisDesligamento(pessoa);
+ const nomeExibicao = dadosPessoais.nomeCompleto || (pessoa==='gabriela' ? 'Gabriela' : 'Day');
+ const vinculo = pessoa==='gabriela' ? (desligamento.tipoContrato==='experiencia' ? 'CLT — Contrato de Experiência' : 'CLT') : 'Estágio';
  try{
   await carregarJsPDFSobDemanda();
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({unit:'mm', format:'a4'});
   const margem = 15;
-  let y = await desenharCabecalhoPDF(doc, 'Resumo de Desligamento — '+nomeExibicao, 'Vínculo: '+vinculo+' — documento informativo, não substitui o cálculo oficial da contabilidade');
+  let y = await desenharCabecalhoPDF(doc, 'Resumo de Desligamento', 'Vínculo: '+vinculo+' — documento informativo, não substitui o cálculo oficial da contabilidade');
 
   doc.setFontSize(11); doc.setTextColor(20,20,20);
   function linhaInfo(rotulo, valor){
+   if(!valor) return;
    doc.setFont('helvetica','bold'); doc.text(rotulo+':', margem, y);
-   doc.setFont('helvetica','normal'); doc.text(String(valor), margem+55, y);
+   doc.setFont('helvetica','normal'); doc.text(String(valor), margem+58, y);
    y += 8;
   }
-  linhaInfo('Funcionária', nomeExibicao);
+  linhaInfo('Nome completo', nomeExibicao);
+  linhaInfo('CPF', dadosPessoais.cpf);
+  const nascimento = getDataNascimento(pessoa);
+  if(nascimento) linhaInfo('Data de nascimento', new Date(nascimento+'T00:00:00').toLocaleDateString('pt-BR'));
+  linhaInfo('Cargo/função', dadosPessoais.cargo);
   linhaInfo('Vínculo', vinculo);
   if(dataInicio) linhaInfo('Data de admissão/início', new Date(dataInicio+'T00:00:00').toLocaleDateString('pt-BR'));
   linhaInfo('Data de desligamento', new Date(desligamento.data+'T00:00:00').toLocaleDateString('pt-BR'));
@@ -5944,7 +6060,17 @@ async function gerarPdfDesligamento(pessoa){
    const tempo = calcularTempoEntreDatas(dataInicio, desligamento.data);
    linhaInfo('Tempo total trabalhado', tempo.texto);
   }
-  if(desligamento.motivo) linhaInfo('Motivo', desligamento.motivo);
+  const nomesQuemPediu = { funcionaria:'A funcionária pediu o desligamento', empresa:'A empresa decidiu desligar' };
+  linhaInfo('Quem pediu o desligamento', nomesQuemPediu[desligamento.quemPediu]);
+  if(pessoa==='gabriela'){
+   if(desligamento.tipoContrato==='experiencia'){
+    linhaInfo('Aviso-prévio', 'Não se aplica (contrato de experiência)');
+   } else {
+    const nomesAviso = { trabalhado:'Trabalhado', indenizado:'Indenizado', dispensado_empresa:'Dispensado pela empresa', dispensa_pedida:'A funcionária pediu dispensa do aviso' };
+    linhaInfo('Aviso-prévio', nomesAviso[desligamento.avisoPrevio]);
+   }
+  }
+  if(desligamento.motivo) linhaInfo('Observação', desligamento.motivo);
   const chavePix = getChavePix(pessoa);
   if(chavePix) linhaInfo('Chave PIX', chavePix);
 
