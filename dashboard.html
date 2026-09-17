@@ -158,6 +158,28 @@ header{ padding-top:env(safe-area-inset-top); }
  .adv-card{ padding:12px!important; }
 }
 
+/* Melhoria Android 5: deixa a barra de rolagem mais discreta, mais parecida com o iOS,
+   já que o Android costuma mostrar uma barra mais grossa e visível por padrão. */
+::-webkit-scrollbar{ width:8px; height:8px; }
+::-webkit-scrollbar-track{ background:transparent; }
+::-webkit-scrollbar-thumb{ background:#1e2c42; border-radius:99px; }
+html{ scrollbar-width:thin; scrollbar-color:#1e2c42 transparent; }
+
+/* Melhoria Android 6: evita o gesto nativo de "puxar pra atualizar" do Chrome, que recarregaria
+   a página inteira — o sistema já atualiza sozinho a cada minuto, então esse gesto só confunde. */
+html, body{ overscroll-behavior-y: contain; }
+
+/* Melhoria Android 7: suaviza um pouco o desenho da fonte Roboto (padrão do Android), deixando
+   o texto com uma leitura mais parecida com a do iPhone. */
+body{ -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; }
+
+/* Melhoria Android 10: quando o sistema estiver aberto como app instalado (não no navegador),
+   mostra um selinho discreto "App" no cabeçalho, só pra confirmar visualmente que instalou certo. */
+.selo-app-instalado{ display:none; }
+@media(display-mode:standalone){
+ .selo-app-instalado{ display:inline-block!important; }
+}
+
 .btn-colapsar-card:hover{ color:#dce5f2; }
 @media(max-width:640px){
  .btn-colapsar-card{ font-size:20px; padding:8px 12px; min-width:40px; min-height:40px; }
@@ -500,7 +522,9 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     style="width:100%;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;font-size:12px;color:#dce5f2;outline:none;">
    <div id="resultadosBuscaGlobal" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border:1px solid #1e2c42;border-radius:10px;margin-top:4px;max-height:320px;overflow-y:auto;z-index:50;box-shadow:0 12px 32px rgba(0,0,0,.4);"></div>
   </div>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v4.9</span>
+  <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
+  <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v5.0</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -580,7 +604,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <div id="metaDestaqueBar" style="height:100%;width:0%;background:linear-gradient(90deg,#27d7a0,#0ea97a);transition:width .4s;"></div>
    </div>
    <div style="font-size:13px;color:#93a3ba;margin-top:10px;">Faltam <strong id="metaDestaqueFaltam" style="color:#dce5f2;">R$ 0,00</strong> para bater a meta.</div>
-   <div style="font-size:12.5px;color:#93a3ba;margin-top:6px;">📅 Faltam <strong id="metaDiasRestantes" style="color:#dce5f2;">0</strong> dias pra fechar o mês.</div>
+   <div style="font-size:12.5px;color:#93a3ba;margin-top:6px;">📅 <span id="metaDiasRestantes">0</span></div>
    <div id="metaProjecaoTexto" style="font-size:12px;margin-top:6px;"></div>
    <div id="bannerEmailMetaBatida" style="display:none;margin-top:12px;"></div>
    <div id="bannerResumoSemanalEmail" style="display:none;margin-top:12px;"></div>
@@ -914,6 +938,11 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <div class="label">🧾 Média de Atendimentos por Dia</div>
     <div class="value" id="infoMediaAtendimentos">0</div>
     <div class="sub" id="infoMediaAtendimentosSub">quantidade de vendas, não valor em R$</div>
+   </div>
+   <div class="adv-kpi gold">
+    <div class="label">📅 Dias Restantes do Mês</div>
+    <div class="value" id="infoDiasRestantesValor">0</div>
+    <div class="sub" id="infoDiasRestantesSub" style="line-height:1.4;">—</div>
    </div>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px;">
@@ -2639,6 +2668,11 @@ function confirmarBiobelAsync(msg){
 }
 
 function mostrarToast(texto){
+ // Vibração curta em confirmações de sucesso (✅) — Android tem bom suporte a isso, dá um
+ // feedback físico gostoso ao salvar algo. iPhone geralmente ignora silenciosamente, sem erro.
+ if(texto.includes('✅') && navigator.vibrate){
+  try{ navigator.vibrate(15); }catch(e){}
+ }
  let el = document.getElementById('toastBiobel');
  if(!el){
   el = document.createElement('div');
@@ -9613,6 +9647,20 @@ function renderMaisNumerosDoMes(){
  if(elMediaAtend) elMediaAtend.textContent = mediaAtendimentos.toFixed(1);
  if(elMediaAtendSub) elMediaAtendSub.textContent = totalAtendimentos+' atendimento'+(totalAtendimentos===1?'':'s')+' no total, em '+daysData.length+' dia'+(daysData.length===1?'':'s');
 
+ // Dias restantes do mês — mesma conta usada no Dashboard, explicada com todos os detalhes
+ // aqui também, pra não ter dúvida se o dia de hoje entra ou não na contagem.
+ const elDiasRestantesValor = document.getElementById('infoDiasRestantesValor');
+ const elDiasRestantesSub = document.getElementById('infoDiasRestantesSub');
+ if(elDiasRestantesValor && daysData.length>0){
+  const mesRefDR = Number(String(daysData[0].dia).split('.')[1]);
+  const ultimoDiaDoMesDR = new Date(2026, mesRefDR, 0).getDate();
+  const hojeDR = obterAgoraBrasilia();
+  const diaAtualDR = hojeDR.getMonth()+1===mesRefDR ? hojeDR.getDate() : ultimoDiaDoMesDR;
+  const diasRestantesDR = Math.max(0, ultimoDiaDoMesDR-diaAtualDR);
+  elDiasRestantesValor.textContent = diasRestantesDR;
+  elDiasRestantesSub.textContent = 'Hoje é dia '+diaAtualDR+' de '+ultimoDiaDoMesDR+' — essa conta não inclui o dia de hoje, só os dias completos que ainda faltam.';
+ }
+
  // Maior e menor venda do mês
  const ordenado = [...daysData].sort((a,b)=>(Number(a.sales)||0)-(Number(b.sales)||0));
  const menor = ordenado[0];
@@ -12301,7 +12349,11 @@ function renderAdvancedDashboard(){
    const hoje = obterAgoraBrasilia();
    const diaAtual = hoje.getMonth()+1===mesRef ? hoje.getDate() : ultimoDiaDoMes;
    const diasRestantes = Math.max(0, ultimoDiaDoMes-diaAtual);
-   elDiasRestantes.textContent = diasRestantes;
+   // Frase explícita, sem ambiguidade: mostra o dia de hoje, o total do mês, e deixa claro que
+   // a conta NÃO inclui o dia de hoje — assim a pessoa consegue conferir a matemática sozinha.
+   elDiasRestantes.innerHTML = diasRestantes===0
+    ? 'Hoje (dia '+diaAtual+') é o último dia do mês.'
+    : 'Hoje é dia '+diaAtual+' de '+ultimoDiaDoMes+'. Faltam mais <strong style="color:#dce5f2;">'+diasRestantes+'</strong> dia'+(diasRestantes===1?'':'s')+' (sem contar hoje) pra fechar o mês.';
 
    if(elProjecao){
     if(metaFaltam<=0){
@@ -12606,6 +12658,31 @@ verificarPrimeiroAcessoTour();
 
 // Registra o service worker (permite abrir o sistema mesmo sem internet, mostrando a última
 // versão salva) — se o navegador não suportar, simplesmente ignora, sem quebrar nada.
+// Captura o prompt nativo de instalação do Android/Chrome — em vez de depender só do banner
+// automático (que aparece num momento aleatório), guarda o evento e mostra um botão fixo,
+// pra pessoa instalar quando ela quiser.
+let promptDeInstalacaoGuardado = null;
+window.addEventListener('beforeinstallprompt', function(evento){
+ evento.preventDefault();
+ promptDeInstalacaoGuardado = evento;
+ const btn = document.getElementById('btnInstalarApp');
+ if(btn) btn.style.display = 'inline-block';
+});
+function instalarAppBiobel(){
+ if(!promptDeInstalacaoGuardado) return;
+ promptDeInstalacaoGuardado.prompt();
+ promptDeInstalacaoGuardado.userChoice.then(function(){
+  promptDeInstalacaoGuardado = null;
+  const btn = document.getElementById('btnInstalarApp');
+  if(btn) btn.style.display = 'none';
+ });
+}
+window.addEventListener('appinstalled', function(){
+ const btn = document.getElementById('btnInstalarApp');
+ if(btn) btn.style.display = 'none';
+ mostrarToast('✅ Biobel instalado!');
+});
+
 if('serviceWorker' in navigator){
  window.addEventListener('load', function(){
   navigator.serviceWorker.register('service-worker.js').catch(function(e){
