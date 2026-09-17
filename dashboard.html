@@ -524,7 +524,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v5.1</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v5.2</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -8976,6 +8976,20 @@ function renderNovasMetricas(){
 }
 
 /* ===== Dias Atípicos — excluídos das médias por dia da semana, sem sumir do faturamento total ===== */
+/* ===== Contagem de dias úteis restantes — pula domingo (loja fechada) e feriados marcados ===== */
+function contarDiasUteisRestantes(mesRef, diaAtual, ultimoDiaDoMes){
+ const diasAtipicos = getDiasAtipicos().map(d=>d.dia);
+ let contador = 0;
+ for(let dia=diaAtual+1; dia<=ultimoDiaDoMes; dia++){
+  const dow = new Date(2026, mesRef-1, dia).getDay();
+  if(dow===0) continue; // domingo — loja fechada, não conta como dia útil
+  const diaStr = String(dia).padStart(2,'0')+'.'+String(mesRef).padStart(2,'0');
+  if(diasAtipicos.includes(diaStr)) continue; // feriado marcado — também não conta
+  contador++;
+ }
+ return contador;
+}
+
 function getDiasAtipicos(){
  try{ return JSON.parse(localStorage.getItem('biobel_dias_atipicos')||'[]'); }catch(e){ return []; }
 }
@@ -9179,9 +9193,9 @@ function renderMaisNumerosDoMes(){
   const ultimoDiaDoMesDR = new Date(2026, mesRefDR, 0).getDate();
   const hojeDR = obterAgoraBrasilia();
   const diaAtualDR = hojeDR.getMonth()+1===mesRefDR ? hojeDR.getDate() : ultimoDiaDoMesDR;
-  const diasRestantesDR = Math.max(0, ultimoDiaDoMesDR-diaAtualDR);
+  const diasRestantesDR = contarDiasUteisRestantes(mesRefDR, diaAtualDR, ultimoDiaDoMesDR);
   elDiasRestantesValor.textContent = diasRestantesDR;
-  elDiasRestantesSub.textContent = 'Hoje é dia '+diaAtualDR+' de '+ultimoDiaDoMesDR+' — essa conta não inclui o dia de hoje, só os dias completos que ainda faltam.';
+  elDiasRestantesSub.textContent = 'Hoje é dia '+diaAtualDR+' de '+ultimoDiaDoMesDR+' — conta só os dias úteis restantes (sem domingo, sem feriado marcado, e sem contar hoje).';
  }
 
  // Maior e menor venda do mês
@@ -11866,12 +11880,13 @@ function renderAdvancedDashboard(){
    const ultimoDiaDoMes = new Date(anoRef, mesRef, 0).getDate();
    const hoje = obterAgoraBrasilia();
    const diaAtual = hoje.getMonth()+1===mesRef ? hoje.getDate() : ultimoDiaDoMes;
-   const diasRestantes = Math.max(0, ultimoDiaDoMes-diaAtual);
+   const diasRestantes = contarDiasUteisRestantes(mesRef, diaAtual, ultimoDiaDoMes);
    // Frase explícita, sem ambiguidade: mostra o dia de hoje, o total do mês, e deixa claro que
-   // a conta NÃO inclui o dia de hoje — assim a pessoa consegue conferir a matemática sozinha.
+   // a conta NÃO inclui o dia de hoje, NÃO conta domingo (loja fechada) nem feriado marcado —
+   // assim a pessoa consegue conferir a matemática sozinha.
    elDiasRestantes.innerHTML = diasRestantes===0
-    ? 'Hoje (dia '+diaAtual+') é o último dia do mês.'
-    : 'Hoje é dia '+diaAtual+' de '+ultimoDiaDoMes+'. Faltam mais <strong style="color:#dce5f2;">'+diasRestantes+'</strong> dia'+(diasRestantes===1?'':'s')+' (sem contar hoje) pra fechar o mês.';
+    ? 'Hoje (dia '+diaAtual+') é o último dia útil do mês.'
+    : 'Hoje é dia '+diaAtual+' de '+ultimoDiaDoMes+'. Faltam mais <strong style="color:#dce5f2;">'+diasRestantes+'</strong> dia'+(diasRestantes===1?' útil':'s úteis')+' (sem contar hoje, domingo ou feriado marcado) pra fechar o mês.';
 
    if(elProjecao){
     if(metaFaltam<=0){
