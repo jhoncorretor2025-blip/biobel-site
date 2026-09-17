@@ -124,6 +124,9 @@ body{
 .adv-card-colapsado > *:not(.adv-card-title){ display:none!important; }
 .adv-card-title{ position:relative; }
 .btn-colapsar-card{ background:none; border:none; color:#93a3ba; cursor:pointer; font-size:16px; padding:2px 6px; float:right; line-height:1; }
+@media(max-width:640px){
+ .grid-3-colunas-dias{ grid-template-columns:1fr!important; }
+}
 
 /* Melhoria mobile 1: evita o zoom automático que o iPhone/Safari faz sozinho quando o campo
    de texto tocado tem fonte menor que 16px — um comportamento nativo do iOS, não um bug do site,
@@ -524,7 +527,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v5.4</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v5.5</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -8321,10 +8324,23 @@ function renderAcimaAbaixoMedia(){
  const el = document.getElementById('conteudoAcimaAbaixoMedia');
  if(!el) return;
  if(daysData.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Sem dados carregados ainda.</p>'; return; }
- const totalSales = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
- const media = totalSales/daysData.length;
- const acima = daysData.filter(d=>(Number(d.sales)||0)>=media).sort((a,b)=>(Number(b.sales)||0)-(Number(a.sales)||0));
- const abaixo = daysData.filter(d=>(Number(d.sales)||0)<media).sort((a,b)=>(Number(a.sales)||0)-(Number(b.sales)||0));
+
+ // Dias marcados como atípicos (ex: feriado com venda isolada) ficam de fora da média e não
+ // entram em nenhuma das colunas — eles aparecem separados, sem contar como "dia fraco".
+ const diasAtipicos = getDiasAtipicos().map(d=>d.dia);
+ const diasNormais = daysData.filter(d=>!diasAtipicos.includes(String(d.dia)));
+ const diasAtipicosDoMes = daysData.filter(d=>diasAtipicos.includes(String(d.dia)));
+
+ if(diasNormais.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Todos os dias desse mês estão marcados como atípicos — nada sobrou pra comparar.</p>'; return; }
+
+ const totalSales = diasNormais.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const media = totalSales/diasNormais.length;
+ const acima = diasNormais.filter(d=>(Number(d.sales)||0)>=media).sort((a,b)=>(Number(b.sales)||0)-(Number(a.sales)||0));
+ // Abaixo da média divide em duas faixas: "perto da média" (até 30% abaixo) e "muito abaixo"
+ // (mais de 30% abaixo) — separar isso ajuda a ver quais dias precisam de mais atenção de verdade.
+ const limitePertoDaMedia = media*0.7;
+ const pertoDaMedia = diasNormais.filter(d=>{ const v=Number(d.sales)||0; return v<media && v>=limitePertoDaMedia; }).sort((a,b)=>(Number(b.sales)||0)-(Number(a.sales)||0));
+ const muitoAbaixo = diasNormais.filter(d=>(Number(d.sales)||0)<limitePertoDaMedia).sort((a,b)=>(Number(a.sales)||0)-(Number(b.sales)||0));
 
  function linha(d){
   return `<div style="display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px solid #1e2c42;">
@@ -8337,14 +8353,22 @@ function renderAcimaAbaixoMedia(){
   <div style="text-align:center;margin-bottom:14px;">
    <span style="font-size:11px;color:#93a3ba;">Média do mês: </span><strong style="color:#dce5f2;">${money(media)}</strong>
   </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+  ${diasAtipicosDoMes.length>0 ? `<div style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:10px;padding:10px 14px;margin-bottom:14px;">
+    <div style="font-size:10.5px;font-weight:800;color:#fbbf24;text-transform:uppercase;margin-bottom:6px;">⚠️ Dias Atípicos (fora da média)</div>
+    ${diasAtipicosDoMes.map(linha).join('')}
+   </div>` : ''}
+  <div class="grid-3-colunas-dias" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
    <div>
-    <div style="font-size:10.5px;font-weight:800;color:#27d7a0;text-transform:uppercase;margin-bottom:8px;">📈 Acima (${acima.length})</div>
-    <div style="max-height:280px;overflow-y:auto;">${acima.map(linha).join('') || '<p style="color:#93a3ba;font-size:11.5px;">Nenhum dia.</p>'}</div>
+    <div style="font-size:10px;font-weight:800;color:#27d7a0;text-transform:uppercase;margin-bottom:8px;">📈 Acima (${acima.length})</div>
+    <div style="max-height:280px;overflow-y:auto;">${acima.map(linha).join('') || '<p style="color:#93a3ba;font-size:11px;">Nenhum dia.</p>'}</div>
    </div>
    <div>
-    <div style="font-size:10.5px;font-weight:800;color:#fb7185;text-transform:uppercase;margin-bottom:8px;">📉 Abaixo (${abaixo.length})</div>
-    <div style="max-height:280px;overflow-y:auto;">${abaixo.map(linha).join('') || '<p style="color:#93a3ba;font-size:11.5px;">Nenhum dia.</p>'}</div>
+    <div style="font-size:10px;font-weight:800;color:#fbbf24;text-transform:uppercase;margin-bottom:8px;">➖ Perto da média (${pertoDaMedia.length})</div>
+    <div style="max-height:280px;overflow-y:auto;">${pertoDaMedia.map(linha).join('') || '<p style="color:#93a3ba;font-size:11px;">Nenhum dia.</p>'}</div>
+   </div>
+   <div>
+    <div style="font-size:10px;font-weight:800;color:#fb7185;text-transform:uppercase;margin-bottom:8px;">📉 Muito abaixo (${muitoAbaixo.length})</div>
+    <div style="max-height:280px;overflow-y:auto;">${muitoAbaixo.map(linha).join('') || '<p style="color:#93a3ba;font-size:11px;">Nenhum dia.</p>'}</div>
    </div>
   </div>
  `;
