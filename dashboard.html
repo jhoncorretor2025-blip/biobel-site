@@ -527,7 +527,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v6.0</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v6.1</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -2164,6 +2164,12 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <h3>📅 Dados de Gabriela (CLT)</h3>
     <span>admissão (pra férias e FGTS) e nascimento (pro aniversário)</span>
    </div>
+   <label class="block text-sm font-semibold mb-2" for="dataInicioInformalGabrielaInput">Data de início informal (antes de assinar a carteira, se houve)</label>
+   <div style="display:flex;gap:8px;margin-bottom:12px;">
+    <input id="dataInicioInformalGabrielaInput" type="date" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="salvarDataInicioInformalGabriela()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+   </div>
+   <p style="font-size:10px;color:#93a3ba;margin-top:-8px;margin-bottom:12px;">💡 Só preencha se ela trabalhou um tempo antes de assinar a carteira. Esse período <strong>não conta</strong> pra férias/FGTS (que usam a data de admissão oficial abaixo) — serve só pra registro do tempo total que ela ficou na loja.</p>
    <label class="block text-sm font-semibold mb-2" for="dataAdmissaoGabrielaInput">Data de admissão (carteira assinada)</label>
    <div style="display:flex;gap:8px;margin-bottom:12px;">
     <input id="dataAdmissaoGabrielaInput" type="date" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
@@ -6089,7 +6095,15 @@ async function gerarPdfDesligamento(pessoa){
   linhaInfo('Data de desligamento', new Date(desligamento.data+'T00:00:00').toLocaleDateString('pt-BR'));
   if(dataInicio){
    const tempo = calcularTempoEntreDatas(dataInicio, desligamento.data);
-   linhaInfo('Tempo total trabalhado', tempo.texto);
+   linhaInfo(pessoa==='gabriela'?'Tempo de carteira assinada (CLT)':'Tempo total trabalhado', tempo.texto);
+  }
+  if(pessoa==='gabriela'){
+   const dataInformal = getDataInicioInformalGabriela();
+   if(dataInformal){
+    linhaInfo('Data de início informal (antes da carteira)', new Date(dataInformal+'T00:00:00').toLocaleDateString('pt-BR'));
+    const tempoTotalLoja = calcularTempoEntreDatas(dataInformal, desligamento.data);
+    linhaInfo('Tempo total na loja (informal + CLT)', tempoTotalLoja.texto);
+   }
   }
   const nomesQuemPediu = { funcionaria:'A funcionária pediu o desligamento', empresa:'A empresa decidiu desligar' };
   linhaInfo('Quem pediu o desligamento', nomesQuemPediu[desligamento.quemPediu]);
@@ -6125,6 +6139,20 @@ async function gerarPdfDesligamento(pessoa){
  }
 }
 
+function getDataInicioInformalGabriela(){
+ return localStorage.getItem('biobel_adm_inicio_informal_gabriela') || '';
+}
+function salvarDataInicioInformalGabriela(){
+ const data = document.getElementById('dataInicioInformalGabrielaInput').value;
+ if(!data){ mostrarToast('⚠️ Escolha a data de início informal.'); return; }
+ const dataAdmissao = getDataAdmissaoGabriela();
+ if(dataAdmissao && data>dataAdmissao){ mostrarToast('⚠️ A data informal deveria ser antes (ou igual) da data de admissão oficial.'); return; }
+ localStorage.setItem('biobel_adm_inicio_informal_gabriela', data);
+ mostrarToast('✅ Data de início informal salva!');
+ registrarAlteracao('Data de início informal da Gabriela definida em '+new Date(data+'T00:00:00').toLocaleDateString('pt-BR'));
+ renderLogAlteracoes();
+ renderAdmissaoGabriela();
+}
 function getDataAdmissaoGabriela(){
  return localStorage.getItem('biobel_adm_data_admissao_gabriela') || '';
 }
@@ -6138,6 +6166,10 @@ function salvarDataAdmissaoGabriela(){
  renderAdmissaoGabriela();
 }
 function renderAdmissaoGabriela(){
+ const inputInformal = document.getElementById('dataInicioInformalGabrielaInput');
+ const dataInformal = getDataInicioInformalGabriela();
+ if(inputInformal) inputInformal.value = dataInformal;
+
  const input = document.getElementById('dataAdmissaoGabrielaInput');
  const el = document.getElementById('resumoAdmissaoGabriela');
  const dataAdmissao = getDataAdmissaoGabriela();
@@ -6157,6 +6189,14 @@ function renderAdmissaoGabriela(){
  if(meses<0){ anos--; meses += 12; }
  const mesesTotais = anos*12 + meses;
 
+ // Tempo total na loja, contando o período informal (se houver) — não afeta férias/FGTS, é só
+ // pra mostrar quanto tempo ela realmente está na Biobel desde antes da carteira assinada.
+ let tempoTotalLojaTexto = null;
+ if(dataInformal){
+  const tempo = calcularTempoEntreDatas(dataInformal, hojeData.toISOString().slice(0,10));
+  tempoTotalLojaTexto = tempo.texto;
+ }
+
  // Próximo período aquisitivo de férias (completa a cada 12 meses desde a admissão)
  const periodosCompletos = Math.floor(mesesTotais/12);
  const proximoAniversario = new Date(admissao);
@@ -6172,9 +6212,13 @@ function renderAdmissaoGabriela(){
  const fgtsEstimado = salario>0 ? salario*0.08*mesesTotais : 0;
 
  el.innerHTML = `
+  ${tempoTotalLojaTexto ? `<div style="background:rgba(79,156,255,.08);border:1px solid rgba(79,156,255,.3);border-radius:10px;padding:10px 14px;margin-bottom:10px;">
+    <div style="font-size:11px;color:#4f9cff;font-weight:800;">🏪 Tempo total na loja (contando o período informal)</div>
+    <div style="font-size:13px;color:#dce5f2;margin-top:2px;">${tempoTotalLojaTexto} — desde ${new Date(dataInformal+'T00:00:00').toLocaleDateString('pt-BR')}</div>
+   </div>` : ''}
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;">
    <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 12px;">
-    <div style="font-size:10px;color:#93a3ba;">⏳ Tempo de casa</div>
+    <div style="font-size:10px;color:#93a3ba;">⏳ Tempo de casa (CLT)</div>
     <div style="font-size:15px;font-weight:800;color:#dce5f2;margin-top:2px;">${anos>0?anos+'a ':''}${meses}m ${dias}d</div>
    </div>
    <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 12px;">
