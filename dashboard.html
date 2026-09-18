@@ -527,7 +527,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v6.7</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v6.8</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -2050,7 +2050,8 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <p style="font-size:11px;color:#93a3ba;margin-top:8px;">💡 Pode deixar o valor em branco pra cadastrar o nome agora e preencher o valor depois — vai aparecer como "⚠️ A definir".</p>
   </div>
 
-  <div class="grupo-adm-header" data-grupo="fornecedores" onclick="alternarGrupoAdm('fornecedores')" style="display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#1a1408,#150f06);border:1px solid rgba(251,191,36,.35);border-radius:16px;padding:16px 20px;cursor:pointer;">
+  <div class="grupo-adm-header" data-grupo="fornecedores" onclick="alternarGrupoAdm('fornecedores')" style="display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#1a1408,#150f06);border:1px solid rgba(251,191,36,.35);border-radius:16px;padding:16px 20px;cursor:pointer;position:relative;overflow:hidden;">
+   <span style="position:absolute;right:-10px;top:-10px;font-size:70px;opacity:.08;pointer-events:none;">🤝</span>
    <div>
     <h2 style="font-size:17px;font-weight:900;color:#dce5f2;">🤝 Fornecedores</h2>
     <p style="font-size:12px;color:#93a3ba;margin-top:2px;">Boletos e histórico de preços por fornecedor</p>
@@ -2074,8 +2075,8 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <button type="button" id="btnFiltroBoletoPagos" onclick="filtrarBoletos('pagos')" style="border:0;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer;background:transparent;color:#93a3ba;">Pagos</button>
    </div>
    <div id="listaBoletos" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;"></div>
-   <div style="border-top:1px solid #1e2c42;padding-top:14px;">
-    <div style="font-size:12px;font-weight:800;color:#93a3ba;margin-bottom:10px;">➕ Adicionar novo boleto</div>
+   <div id="formWrapperBoleto" style="border-top:1px solid #1e2c42;padding-top:14px;transition:background-color .2s;">
+    <div id="tituloFormBoleto" style="font-size:12px;font-weight:800;color:#93a3ba;margin-bottom:10px;">➕ Adicionar novo boleto</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:8px;">
      <input id="novoBoletoFornecedor" type="text" placeholder="Fornecedor" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
      <input id="novoBoletoMarca" type="text" placeholder="Marca" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
@@ -2170,7 +2171,8 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
   <div id="admAncoraFuncionarios"></div>
   <button onclick="exportarTodosDesligamentos()" class="no-print w-full bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="margin-bottom:10px;">🖨️ Exportar todos os PDFs de desligamento registrados</button>
-  <div class="grupo-adm-header" data-grupo="funcionarios" onclick="alternarGrupoAdm('funcionarios')" style="display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(79,156,255,.35);border-radius:16px;padding:16px 20px;cursor:pointer;">
+  <div class="grupo-adm-header" data-grupo="funcionarios" onclick="alternarGrupoAdm('funcionarios')" style="display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(79,156,255,.35);border-radius:16px;padding:16px 20px;cursor:pointer;position:relative;overflow:hidden;">
+   <span style="position:absolute;right:-10px;top:-10px;font-size:70px;opacity:.08;pointer-events:none;">👥</span>
    <div>
     <h2 style="font-size:17px;font-weight:900;color:#dce5f2;">👥 Funcionários</h2>
     <p style="font-size:12px;color:#93a3ba;margin-top:2px;">Dados, PIX, desligamento, férias/recesso e hora extra de cada uma — clique pra abrir</p>
@@ -2434,7 +2436,8 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
   </div>
 
-  <div class="grupo-adm-header" data-grupo="exfuncionarios" onclick="alternarGrupoAdm('exfuncionarios')" style="display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#1a1414,#150e0e);border:1px solid rgba(148,163,184,.35);border-radius:16px;padding:16px 20px;cursor:pointer;">
+  <div class="grupo-adm-header" data-grupo="exfuncionarios" onclick="alternarGrupoAdm('exfuncionarios')" style="display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#1a1414,#150e0e);border:1px solid rgba(148,163,184,.35);border-radius:16px;padding:16px 20px;cursor:pointer;position:relative;overflow:hidden;">
+   <span style="position:absolute;right:-10px;top:-10px;font-size:70px;opacity:.08;pointer-events:none;">🗄️</span>
    <div>
     <h2 style="font-size:17px;font-weight:900;color:#dce5f2;">🗄️ Ex-Funcionários</h2>
     <p style="font-size:12px;color:#93a3ba;margin-top:2px;">Registro histórico de quem já trabalhou aqui — pra consultar se precisar de alguma informação depois</p>
@@ -5710,6 +5713,10 @@ function editarBoleto(id){
  if(btn) btn.textContent = '💾 Salvar edição';
  const btnCancelar = document.getElementById('btnCancelarEdicaoBoleto');
  if(btnCancelar) btnCancelar.style.display = 'inline-block';
+ const wrapper = document.getElementById('formWrapperBoleto');
+ if(wrapper){ wrapper.style.background='rgba(79,156,255,.06)'; wrapper.style.borderRadius='12px'; wrapper.style.padding='14px'; wrapper.style.margin='0 -4px'; }
+ const titulo = document.getElementById('tituloFormBoleto');
+ if(titulo){ titulo.textContent = '✏️ Editando boleto'; titulo.style.color = '#4f9cff'; }
  document.getElementById('novoBoletoFornecedor').scrollIntoView({behavior:'smooth', block:'center'});
 }
 function duplicarBoleto(id){
@@ -5742,6 +5749,10 @@ function cancelarEdicaoBoleto(){
  if(btn) btn.textContent = '➕ Adicionar boleto';
  const btnCancelar = document.getElementById('btnCancelarEdicaoBoleto');
  if(btnCancelar) btnCancelar.style.display = 'none';
+ const wrapper = document.getElementById('formWrapperBoleto');
+ if(wrapper){ wrapper.style.background=''; wrapper.style.borderRadius=''; wrapper.style.padding=''; wrapper.style.margin=''; }
+ const titulo = document.getElementById('tituloFormBoleto');
+ if(titulo){ titulo.textContent = '➕ Adicionar novo boleto'; titulo.style.color = ''; }
 }
 function alternarPagoBoleto(id){
  const lista = getBoletos();
