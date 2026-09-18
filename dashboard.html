@@ -527,7 +527,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v6.5</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v6.6</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -1917,6 +1917,8 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraAgenda')">🤝 Fornecedores</button>
   </nav>
 
+  <button id="btnAlternarTodosGrupos" onclick="alternarTodosGruposAdm()" class="no-print text-xs text-slate-300 hover:text-white" style="background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:6px 12px;margin-bottom:14px;">▾ Expandir todos os grupos</button>
+
   <div id="admResumoAtencao" style="display:none;"></div>
   <div id="admAncoraResumo"></div>
 
@@ -2166,7 +2168,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
 
   <div id="admAncoraFuncionarios"></div>
-  <button onclick="exportarTodosDesligamentos()" class="no-print w-full bg-purple-600 hover:bg-purple-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="margin-bottom:10px;">🖨️ Exportar todos os PDFs de desligamento registrados</button>
+  <button onclick="exportarTodosDesligamentos()" class="no-print w-full bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="margin-bottom:10px;">🖨️ Exportar todos os PDFs de desligamento registrados</button>
   <div class="grupo-adm-header" data-grupo="funcionarios" onclick="alternarGrupoAdm('funcionarios')" style="display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(79,156,255,.35);border-radius:16px;padding:16px 20px;cursor:pointer;">
    <div>
     <h2 style="font-size:17px;font-weight:900;color:#dce5f2;">👥 Funcionários</h2>
@@ -2189,7 +2191,9 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <input id="dataInicioInformalGabrielaInput" type="date" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
     <button onclick="salvarDataInicioInformalGabriela()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
    </div>
-   <p style="font-size:10px;color:#93a3ba;margin-top:-8px;margin-bottom:12px;">💡 Só preencha se ela trabalhou um tempo antes de assinar a carteira. Esse período <strong>não conta</strong> pra férias/FGTS (que usam a data de admissão oficial abaixo) — serve só pra registro do tempo total que ela ficou na loja.</p>
+   <div style="background:rgba(79,156,255,.06);border-left:2px solid rgba(79,156,255,.4);border-radius:6px;padding:8px 10px;margin-top:-4px;margin-bottom:12px;">
+    <p style="font-size:10px;color:#93a3ba;margin:0;">💡 Só preencha se ela trabalhou um tempo antes de assinar a carteira. Esse período <strong>não conta</strong> pra férias/FGTS (que usam a data de admissão oficial abaixo) — serve só pra registro do tempo total que ela ficou na loja.</p>
+   </div>
    <label class="block text-sm font-semibold mb-2" for="dataAdmissaoGabrielaInput">Data de admissão (carteira assinada)</label>
    <div style="display:flex;gap:8px;margin-bottom:12px;">
     <input id="dataAdmissaoGabrielaInput" type="date" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
@@ -2317,7 +2321,9 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
    <div id="blocoPromoverDayEstagio" style="border-top:1px solid #1e2c42;margin-top:14px;padding-top:14px;">
     <div style="font-size:11px;font-weight:800;color:#27d7a0;text-transform:uppercase;letter-spacing:.03em;margin-bottom:10px;">🎓 Promoção pra CLT</div>
-    <p style="font-size:11px;color:#93a3ba;margin-bottom:10px;">Se um dia ela virar funcionária CLT, registra a data aqui — o tempo de estágio fica guardado como histórico, e a partir dessa data os cálculos de férias/FGTS passam a valer.</p>
+    <div style="background:rgba(39,215,160,.06);border-left:2px solid rgba(39,215,160,.4);border-radius:6px;padding:8px 10px;margin-bottom:10px;">
+     <p style="font-size:11px;color:#93a3ba;margin:0;">Se um dia ela virar funcionária CLT, registra a data aqui — o tempo de estágio fica guardado como histórico, e a partir dessa data os cálculos de férias/FGTS passam a valer.</p>
+    </div>
     <label class="block text-sm font-semibold mb-2" for="dataPromocaoCltDayInput">Data da promoção pra CLT</label>
     <div style="display:flex;gap:8px;">
      <input id="dataPromocaoCltDayInput" type="date" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
@@ -3169,6 +3175,7 @@ function alternarGrupoAdm(grupo){
  conteudo.style.display = estaAberto ? 'none' : 'block';
  if(seta) seta.textContent = estaAberto ? '▸' : '▾';
  localStorage.setItem('biobel_grupo_adm_'+grupo, estaAberto ? 'no' : 'yes');
+ atualizarTextoBotaoTodosGrupos();
 }
 function initGruposAdm(){
  document.querySelectorAll('[id^="conteudoGrupo-"]').forEach(conteudo=>{
@@ -3183,6 +3190,30 @@ function initGruposAdm(){
    contador.textContent = qtdCards+' card'+(qtdCards===1?'':'s');
   }
  });
+ atualizarTextoBotaoTodosGrupos();
+}
+function atualizarTextoBotaoTodosGrupos(){
+ const btn = document.getElementById('btnAlternarTodosGrupos');
+ if(!btn) return;
+ const grupos = Array.from(document.querySelectorAll('[id^="conteudoGrupo-"]'));
+ const algumFechado = grupos.some(g=>g.style.display==='none');
+ btn.textContent = algumFechado ? '▾ Expandir todos os grupos' : '▴ Recolher todos os grupos';
+}
+function alternarTodosGruposAdm(){
+ // Diferente do comportamento "sanfona" normal (que só deixa 1 grupo aberto por vez) — esse
+ // botão é uma exceção deliberada, pra quando a pessoa realmente quiser ver tudo de uma vez
+ // (ex: revisão geral, ou antes de imprimir a página inteira).
+ const grupos = Array.from(document.querySelectorAll('[id^="conteudoGrupo-"]'));
+ if(grupos.length===0) return;
+ const algumFechado = grupos.some(g=>g.style.display==='none');
+ grupos.forEach(conteudo=>{
+  const grupo = conteudo.id.replace('conteudoGrupo-','');
+  const seta = document.getElementById('setaGrupo-'+grupo);
+  conteudo.style.display = algumFechado ? 'block' : 'none';
+  if(seta) seta.textContent = algumFechado ? '▾' : '▸';
+  localStorage.setItem('biobel_grupo_adm_'+grupo, algumFechado ? 'yes' : 'no');
+ });
+ atualizarTextoBotaoTodosGrupos();
 }
 
 function alternarColapsoTodosCards(){
