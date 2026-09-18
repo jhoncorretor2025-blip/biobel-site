@@ -527,7 +527,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v6.9</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v7.0</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -1508,6 +1508,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <div class="config-chips no-print" style="margin:0;">
     <button type="button" id="chipEmail" onclick="mostrarSecaoConfig('Email')" class="config-chip" role="tab" aria-selected="false">📧 E-mail</button>
     <button type="button" id="chipMensagens" onclick="mostrarSecaoConfig('Mensagens')" class="config-chip" role="tab" aria-selected="false">💬 Mensagens</button>
+    <button type="button" id="chipVagas" onclick="mostrarSecaoConfig('Vagas')" class="config-chip" role="tab" aria-selected="false">📢 Textos de Vaga</button>
     <button type="button" id="chipSitePublico" onclick="mostrarSecaoConfig('SitePublico')" class="config-chip" role="tab" aria-selected="false">🌐 Site</button>
    </div>
   </div>
@@ -1825,6 +1826,38 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <textarea id="mensagemTextoInput" rows="4" placeholder="Digite a mensagem que vai aparecer..." style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;resize:vertical;margin-bottom:10px;"></textarea>
    <button id="btnAdicionarMensagem" onclick="adicionarMensagemProgramada()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Adicionar mensagem</button>
    <button id="btnCancelarEdicaoMensagem" onclick="cancelarEdicaoMensagem()" style="display:none;margin-top:8px;background:none;border:none;color:#93a3ba;font-size:12px;text-decoration:underline;cursor:pointer;width:100%;">✕ Cancelar edição</button>
+  </div>
+ </div>
+
+ <div id="configSecaoVagas" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6" style="display:none;">
+  <div class="mb-4">
+   <h2 class="text-xl font-bold">📢 Textos de Vaga</h2>
+   <p class="text-sm text-slate-400 mt-1">Textos prontos pra copiar e colar nas redes sociais (status do WhatsApp, Facebook, Instagram, grupos) quando precisar abrir uma vaga. Edite à vontade — o sistema guarda suas alterações.</p>
+  </div>
+
+  <div style="display:flex;gap:8px;margin-bottom:14px;">
+   <button type="button" id="btnAbaVagaEstagio" onclick="mostrarAbaVaga('estagio')" class="config-chip active">🎓 Estágio</button>
+   <button type="button" id="btnAbaVagaClt" onclick="mostrarAbaVaga('clt')" class="config-chip">💼 CLT (Efetiva)</button>
+  </div>
+
+  <div id="blocoVagaEstagio">
+   <label class="block text-sm font-semibold mb-2" for="textoVagaEstagioInput">Texto da vaga de Estágio</label>
+   <textarea id="textoVagaEstagioInput" rows="12" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 12px;color:#dce5f2;font-size:13px;resize:vertical;margin-bottom:10px;line-height:1.5;"></textarea>
+   <div style="display:flex;gap:8px;">
+    <button onclick="salvarTextoVaga('estagio')" class="flex-1 bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">💾 Salvar</button>
+    <button onclick="copiarTextoVaga('estagio')" class="flex-1 bg-blue-600 hover:bg-blue-500 px-4 py-2.5 rounded-xl font-semibold text-sm">📋 Copiar</button>
+    <button onclick="restaurarTextoVagaPadrao('estagio')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl font-semibold text-sm whitespace-nowrap">↺ Restaurar padrão</button>
+   </div>
+  </div>
+
+  <div id="blocoVagaClt" style="display:none;">
+   <label class="block text-sm font-semibold mb-2" for="textoVagaCltInput">Texto da vaga CLT (Efetiva)</label>
+   <textarea id="textoVagaCltInput" rows="12" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 12px;color:#dce5f2;font-size:13px;resize:vertical;margin-bottom:10px;line-height:1.5;"></textarea>
+   <div style="display:flex;gap:8px;">
+    <button onclick="salvarTextoVaga('clt')" class="flex-1 bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">💾 Salvar</button>
+    <button onclick="copiarTextoVaga('clt')" class="flex-1 bg-blue-600 hover:bg-blue-500 px-4 py-2.5 rounded-xl font-semibold text-sm">📋 Copiar</button>
+    <button onclick="restaurarTextoVagaPadrao('clt')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl font-semibold text-sm whitespace-nowrap">↺ Restaurar padrão</button>
+   </div>
   </div>
  </div>
 </section>
@@ -4763,6 +4796,94 @@ window.addEventListener('beforeunload', function(e){
   e.returnValue = '';
  }
 });
+
+/* ===== Textos de Vaga — prontos pra copiar e colar nas redes sociais ===== */
+const TEXTOS_VAGA_PADRAO = {
+ estagio: `🌸 Vaga de Estágio — Biobel Cosméticos (Gravataí) 🌸
+
+A Biobel está com vaga aberta pra estágio em vendas! 💄✨
+
+O que você vai fazer:
+Atendimento ao cliente, organização da loja, apoio nas vendas e no dia a dia da equipe.
+
+O que buscamos:
+📌 Simpatia e vontade de aprender
+📌 Interesse por cosméticos e atendimento
+📌 Disponibilidade de horário (combinamos os detalhes na entrevista)
+📌 Estar cursando ou pronto(a) pra iniciar estágio
+
+Como se candidatar:
+Manda seu currículo ou chama a gente aqui pelo direct! 💌
+
+📍 Biobel Cosméticos — Gravataí/RS`,
+ clt: `💼 Vaga CLT — Vendedora (Biobel Cosméticos, Gravataí) 💼
+
+A Biobel está contratando! Vaga de vendedora com carteira assinada.
+
+O que você vai fazer:
+Atendimento ao cliente, vendas, organização da loja, participação nas metas da equipe.
+
+O que buscamos:
+📌 Experiência em vendas (desejável, não obrigatório)
+📌 Simpatia e vontade de crescer com a gente
+📌 Disponibilidade de horário comercial, incluindo sábados
+📌 Interesse por cosméticos e atendimento
+
+Benefícios:
+📌 Salário + comissão por metas batidas
+📌 Vale-transporte
+
+Como se candidatar:
+Manda seu currículo ou chama a gente aqui pelo direct! 💌
+
+📍 Biobel Cosméticos — Gravataí/RS`
+};
+function getTextoVaga(tipo){
+ const salvo = localStorage.getItem('biobel_texto_vaga_'+tipo);
+ return salvo!==null ? salvo : TEXTOS_VAGA_PADRAO[tipo];
+}
+function salvarTextoVaga(tipo){
+ const texto = document.getElementById('textoVaga'+(tipo==='clt'?'Clt':'Estagio')+'Input').value;
+ localStorage.setItem('biobel_texto_vaga_'+tipo, texto);
+ mostrarToast('✅ Texto salvo!');
+ registrarAlteracao('Texto de vaga ('+(tipo==='clt'?'CLT':'Estágio')+') atualizado');
+ renderLogAlteracoes();
+}
+function restaurarTextoVagaPadrao(tipo){
+ confirmarBiobel('Isso vai substituir o texto atual pelo modelo padrão. As suas edições atuais serão perdidas. Confirma?', ()=>{
+  localStorage.removeItem('biobel_texto_vaga_'+tipo);
+  document.getElementById('textoVaga'+(tipo==='clt'?'Clt':'Estagio')+'Input').value = TEXTOS_VAGA_PADRAO[tipo];
+  mostrarToast('✅ Texto restaurado pro padrão!');
+ });
+}
+function copiarTextoVaga(tipo){
+ const texto = document.getElementById('textoVaga'+(tipo==='clt'?'Clt':'Estagio')+'Input').value;
+ if(navigator.clipboard && navigator.clipboard.writeText){
+  navigator.clipboard.writeText(texto).then(()=>{
+   mostrarToast('✅ Texto copiado! Já pode colar no WhatsApp, Facebook, Instagram...');
+  }).catch(()=>{
+   mostrarToast('⚠️ Não copiou sozinho — selecione e copie manualmente.');
+  });
+ } else {
+  mostrarToast('⚠️ Não copiou sozinho — selecione e copie manualmente.');
+ }
+}
+function mostrarAbaVaga(tipo){
+ const blocoEstagio = document.getElementById('blocoVagaEstagio');
+ const blocoClt = document.getElementById('blocoVagaClt');
+ const btnEstagio = document.getElementById('btnAbaVagaEstagio');
+ const btnClt = document.getElementById('btnAbaVagaClt');
+ if(blocoEstagio) blocoEstagio.style.display = tipo==='estagio' ? 'block' : 'none';
+ if(blocoClt) blocoClt.style.display = tipo==='clt' ? 'block' : 'none';
+ if(btnEstagio) btnEstagio.classList.toggle('active', tipo==='estagio');
+ if(btnClt) btnClt.classList.toggle('active', tipo==='clt');
+}
+function initTextosVaga(){
+ const inputEstagio = document.getElementById('textoVagaEstagioInput');
+ const inputClt = document.getElementById('textoVagaCltInput');
+ if(inputEstagio) inputEstagio.value = getTextoVaga('estagio');
+ if(inputClt) inputClt.value = getTextoVaga('clt');
+}
 
 function copiarValorTela(id){
  const el = document.getElementById(id);
@@ -11663,7 +11784,7 @@ function extractSpreadsheetId(url){
  return m?m[1]:'';
 }
 function mostrarSecaoConfig(secao){
- const secoes = ['Conexao','Planilhas','Metas','Email','Horarios','Empresa','Log','Backup','Logo','SitePublico','Mensagens'];
+ const secoes = ['Conexao','Planilhas','Metas','Email','Horarios','Empresa','Log','Backup','Logo','SitePublico','Mensagens','Vagas'];
  secoes.forEach(s=>{
   const el = document.getElementById('configSecao'+s);
   const chip = document.getElementById('chip'+s);
@@ -11676,6 +11797,7 @@ function mostrarSecaoConfig(secao){
  });
  try{ localStorage.setItem('biobel_config_secao_ativa', secao); }catch(e){}
  if(secao==='Backup') renderStatusBackupAutomatico();
+ if(secao==='Vagas') initTextosVaga();
 }
 
 function saveGoogleConfig(){
