@@ -527,7 +527,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v6.3</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v6.4</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -8934,6 +8934,7 @@ function renderAcimaAbaixoMedia(){
 
  const totalSales = diasNormais.reduce((s,d)=>s+(Number(d.sales)||0),0);
  const media = totalSales/diasNormais.length;
+ const metaDiariaFixa = getDailyGoal();
  const acima = diasNormais.filter(d=>(Number(d.sales)||0)>=media).sort((a,b)=>(Number(b.sales)||0)-(Number(a.sales)||0));
  // Abaixo da média divide em duas faixas: "perto da média" (até 30% abaixo) e "muito abaixo"
  // (mais de 30% abaixo) — separar isso ajuda a ver quais dias precisam de mais atenção de verdade.
@@ -8941,17 +8942,24 @@ function renderAcimaAbaixoMedia(){
  const pertoDaMedia = diasNormais.filter(d=>{ const v=Number(d.sales)||0; return v<media && v>=limitePertoDaMedia; }).sort((a,b)=>(Number(b.sales)||0)-(Number(a.sales)||0));
  const muitoAbaixo = diasNormais.filter(d=>(Number(d.sales)||0)<limitePertoDaMedia).sort((a,b)=>(Number(a.sales)||0)-(Number(b.sales)||0));
 
+ // Importante: se um dia bateu a META fixa (o valor que você configurou) mas ainda assim aparece
+ // "abaixo da média", isso NÃO é erro — são duas contas diferentes. A média é calculada com os
+ // dias DESSE mês (muda toda vez que entra um dia novo); a meta é o número fixo que você define.
+ // Um mês com muitos dias ótimos pode ter uma média mais alta que a sua meta.
  function linha(d){
+  const valor = Number(d.sales)||0;
+  const bateuMeta = metaDiariaFixa>0 && valor>=metaDiariaFixa;
   return `<div style="display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px solid #1e2c42;">
-    <span style="color:#dce5f2;">${d.dia}</span>
-    <span style="color:#93a3ba;">${money(Number(d.sales)||0)}</span>
+    <span style="color:#dce5f2;">${d.dia}${bateuMeta?' <span style="color:#27d7a0;font-size:10px;" title="Bateu a meta diária fixa">🎯</span>':''}</span>
+    <span style="color:#93a3ba;">${money(valor)}</span>
    </div>`;
  }
 
  el.innerHTML = `
-  <div style="text-align:center;margin-bottom:14px;">
-   <span style="font-size:11px;color:#93a3ba;">Média do mês: </span><strong style="color:#dce5f2;">${money(media)}</strong>
+  <div style="text-align:center;margin-bottom:6px;">
+   <span style="font-size:11px;color:#93a3ba;">Média DESTE MÊS (recalculada com os dias já lançados): </span><strong style="color:#dce5f2;">${money(media)}</strong>
   </div>
+  ${metaDiariaFixa>0 ? `<div style="text-align:center;margin-bottom:10px;"><span style="font-size:10.5px;color:#93a3ba;">Sua meta diária fixa (configurada em Metas): <strong style="color:#dce5f2;">${money(metaDiariaFixa)}</strong> — 🎯 marca quem bateu ela, mesmo que apareça "abaixo da média"</span></div>` : ''}
   ${diasAtipicosDoMes.length>0 ? `<div style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:10px;padding:10px 14px;margin-bottom:14px;">
     <div style="font-size:10.5px;font-weight:800;color:#fbbf24;text-transform:uppercase;margin-bottom:6px;">⚠️ Dias Atípicos (fora da média)</div>
     ${diasAtipicosDoMes.map(linha).join('')}
