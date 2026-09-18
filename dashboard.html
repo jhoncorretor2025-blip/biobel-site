@@ -527,7 +527,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v6.4</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v6.5</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -3162,6 +3162,10 @@ function alternarGrupoAdm(grupo){
  const seta = document.getElementById('setaGrupo-'+grupo);
  if(!conteudo) return;
  const estaAberto = conteudo.style.display !== 'none';
+ // Funciona tipo "sanfona" — ao abrir um grupo, fecha os outros automaticamente. Assim nunca
+ // fica informação de assuntos diferentes (Fornecedores, Funcionários, etc.) aberta ao mesmo
+ // tempo, e a pessoa não se depara com "outras informações" ao rolar a tela sem esperar.
+ if(!estaAberto) fecharTodosGruposAdmExceto(grupo);
  conteudo.style.display = estaAberto ? 'none' : 'block';
  if(seta) seta.textContent = estaAberto ? '▸' : '▾';
  localStorage.setItem('biobel_grupo_adm_'+grupo, estaAberto ? 'no' : 'yes');
@@ -5094,16 +5098,37 @@ function mostrarConteudoAdm(){
 }
 
 /* ===== Índice de navegação (chips) da área ADM ===== */
+function fecharTodosGruposAdmExceto(grupoQueFicaAberto){
+ // Isso resolve um problema real: o sistema lembra se um grupo ficou aberto de uma sessão
+ // anterior — então se a pessoa tinha aberto "Funcionários" há um tempo e agora busca
+ // "fornecedor", o Funcionários continuava aberto do jeito que ficou, aparecendo junto
+ // enquanto ela rolava a tela, mesmo sem ter pedido por aquilo.
+ document.querySelectorAll('[id^="conteudoGrupo-"]').forEach(conteudo=>{
+  const grupo = conteudo.id.replace('conteudoGrupo-','');
+  if(grupo===grupoQueFicaAberto) return;
+  const seta = document.getElementById('setaGrupo-'+grupo);
+  if(conteudo.style.display!=='none'){
+   conteudo.style.display = 'none';
+   if(seta) seta.textContent = '▸';
+   localStorage.setItem('biobel_grupo_adm_'+grupo, 'no');
+  }
+ });
+}
 function irParaSecaoAdm(idAncora){
  const el = document.getElementById(idAncora);
  if(!el) return;
- // Se a âncora estiver logo antes de um grupo colapsável, abre ele automaticamente — senão a
- // pessoa cairia numa seção fechada, sem ver nada do que veio buscar.
+ // Se a âncora estiver logo antes de um grupo colapsável, abre só ele — fecha todos os outros
+ // grupos, pra não misturar assunto de outra área enquanto a pessoa rola a tela.
  const proximoIrmao = el.nextElementSibling;
  if(proximoIrmao && proximoIrmao.classList.contains('grupo-adm-header')){
   const grupo = proximoIrmao.dataset.grupo;
+  fecharTodosGruposAdmExceto(grupo);
   const conteudo = document.getElementById('conteudoGrupo-'+grupo);
   if(conteudo && conteudo.style.display==='none') alternarGrupoAdm(grupo);
+ } else {
+  // Não é um grupo (ex: Comissões, Resumo) — mesmo assim fecha os grupos que estejam abertos,
+  // pra a pessoa achar só o que ela buscou, sem sobra de outra seção.
+  fecharTodosGruposAdmExceto(null);
  }
  el.scrollIntoView({behavior:'smooth', block:'start'});
 }
