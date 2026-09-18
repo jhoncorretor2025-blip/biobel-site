@@ -527,7 +527,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v6.2</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v6.3</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -2264,6 +2264,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    </div>
    <div id="resumoDesligamentoGabriela" style="margin:12px 0;"></div>
    <button onclick="gerarPdfDesligamento('gabriela')" class="w-full bg-purple-600 hover:bg-purple-500 px-4 py-2.5 rounded-xl font-semibold text-sm">🖨️ Gerar PDF de Desligamento</button>
+   <button id="btnArquivarGabriela" onclick="arquivarExFuncionaria('gabriela')" style="display:none;margin-top:8px;" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl font-semibold text-sm">🗄️ Mover pro Arquivo de Ex-Funcionários</button>
   </div>
 
   <div class="adv-card">
@@ -2292,7 +2293,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
   <div class="adv-card">
    <div class="adv-card-title">
-    <h3>📋 Dados de Day (Estágio)</h3>
+    <h3 id="tituloCardDadosDay">📋 Dados de Day (Estágio)</h3>
     <span>início do contrato (pra saber quando renovar) e nascimento</span>
    </div>
    <label class="block text-sm font-semibold mb-2" for="dataInicioEstagioInput">Data de início do estágio</label>
@@ -2313,6 +2314,18 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <div id="resumoEstagioDay" style="margin-top:12px;"></div>
    <div id="resumoNascimentoDay" style="margin-top:10px;"></div>
    <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">⚠️ A lei do estágio (Lei 11.788/2008) limita o contrato a no máximo 2 anos (24 meses) com a mesma empresa, exceto pra pessoas com deficiência. O sistema avisa quando estiver chegando perto desse limite.</p>
+
+   <div id="blocoPromoverDayEstagio" style="border-top:1px solid #1e2c42;margin-top:14px;padding-top:14px;">
+    <div style="font-size:11px;font-weight:800;color:#27d7a0;text-transform:uppercase;letter-spacing:.03em;margin-bottom:10px;">🎓 Promoção pra CLT</div>
+    <p style="font-size:11px;color:#93a3ba;margin-bottom:10px;">Se um dia ela virar funcionária CLT, registra a data aqui — o tempo de estágio fica guardado como histórico, e a partir dessa data os cálculos de férias/FGTS passam a valer.</p>
+    <label class="block text-sm font-semibold mb-2" for="dataPromocaoCltDayInput">Data da promoção pra CLT</label>
+    <div style="display:flex;gap:8px;">
+     <input id="dataPromocaoCltDayInput" type="date" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     <button onclick="promoverDayParaClt()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🎓 Promover</button>
+    </div>
+   </div>
+   <div id="resumoPromocaoDay" style="margin-top:12px;"></div>
+
    <div style="border-top:1px solid #1e2c42;margin-top:14px;padding-top:14px;">
     <label class="block text-sm font-semibold mb-2" for="chavePixDayInput">💳 Chave PIX (pra pagamento)</label>
     <div style="display:flex;gap:8px;">
@@ -2359,6 +2372,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    </div>
    <div id="resumoDesligamentoDay" style="margin:12px 0;"></div>
    <button onclick="gerarPdfDesligamento('day')" class="w-full bg-purple-600 hover:bg-purple-500 px-4 py-2.5 rounded-xl font-semibold text-sm">🖨️ Gerar PDF de Desligamento</button>
+   <button id="btnArquivarDay" onclick="arquivarExFuncionaria('day')" style="display:none;margin-top:8px;" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl font-semibold text-sm">🗄️ Mover pro Arquivo de Ex-Funcionários</button>
   </div>
 
   <div class="adv-card">
@@ -2410,6 +2424,22 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    </div>
   </div>
 
+  </div>
+
+  <div class="grupo-adm-header" data-grupo="exfuncionarios" onclick="alternarGrupoAdm('exfuncionarios')" style="display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#1a1414,#150e0e);border:1px solid rgba(148,163,184,.35);border-radius:16px;padding:16px 20px;cursor:pointer;">
+   <div>
+    <h2 style="font-size:17px;font-weight:900;color:#dce5f2;">🗄️ Ex-Funcionários</h2>
+    <p style="font-size:12px;color:#93a3ba;margin-top:2px;">Registro histórico de quem já trabalhou aqui — pra consultar se precisar de alguma informação depois</p>
+   </div>
+   <div style="display:flex;align-items:center;gap:10px;">
+    <span id="contadorGrupo-exfuncionarios" style="font-size:11px;color:#94a3b8;background:rgba(148,163,184,.12);border-radius:999px;padding:3px 10px;"></span>
+    <span id="setaGrupo-exfuncionarios" style="font-size:22px;color:#93a3ba;">▸</span>
+   </div>
+  </div>
+  <div id="conteudoGrupo-exfuncionarios" style="display:none;">
+   <div class="adv-card">
+    <div id="listaExFuncionarios"></div>
+   </div>
   </div>
 
   <div class="adv-card">
@@ -5047,7 +5077,9 @@ function mostrarConteudoAdm(){
  renderNascimento('day');
  renderEstagioDay();
  renderRecessoDay();
+ renderPromocaoDay();
  initGruposAdm();
+ renderListaExFuncionarios();
  renderResumoDesligamento('gabriela');
  renderResumoDesligamento('day');
  renderReunioes();
@@ -5999,7 +6031,8 @@ function calcularCustoMensalHoraExtra(){
 /* ===== Data de Admissão — Gabriela (CLT), pra calcular férias e FGTS ===== */
 /* ===== Desligamento — Gabriela e Day, com resumo em PDF pra contadora ===== */
 function getDataInicioTrabalho(pessoa){
- return pessoa==='gabriela' ? getDataAdmissaoGabriela() : getDataInicioEstagio();
+ if(pessoa==='gabriela') return getDataAdmissaoGabriela();
+ return getPromocaoCltDay() || getDataInicioEstagio();
 }
 function getDesligamento(pessoa){
  try{ return JSON.parse(localStorage.getItem('biobel_desligamento_'+pessoa)||'null'); }catch(e){ return null; }
@@ -6080,6 +6113,8 @@ function renderResumoDesligamento(pessoa){
  const el = document.getElementById(idResumo);
  const card = document.getElementById(pessoa==='gabriela' ? 'cardDesligamentoGabriela' : 'cardDesligamentoDay');
  if(card) card.style.borderColor = desligamento ? 'rgba(251,113,133,.35)' : '';
+ const btnArquivar = document.getElementById(pessoa==='gabriela' ? 'btnArquivarGabriela' : 'btnArquivarDay');
+ if(btnArquivar) btnArquivar.style.display = desligamento ? 'block' : 'none';
  if(inputData) inputData.value = desligamento ? desligamento.data : '';
  if(inputMotivo) inputMotivo.value = desligamento ? (desligamento.motivo||'') : '';
  if(inputQuemPediu && desligamento) inputQuemPediu.value = desligamento.quemPediu || 'funcionaria';
@@ -6103,6 +6138,72 @@ function renderResumoDesligamento(pessoa){
    ${desligamento.motivo ? `<div style="font-size:11.5px;color:#93a3ba;margin-top:4px;">Observação: ${desligamento.motivo}</div>` : ''}
   </div>`;
 }
+/* ===== Arquivo de Ex-Funcionários — registro histórico de quem já trabalhou aqui ===== */
+function getArquivoExFuncionarios(){
+ try{ return JSON.parse(localStorage.getItem('biobel_arquivo_ex_funcionarios')||'[]'); }catch(e){ return []; }
+}
+function salvarArquivoExFuncionarios(lista){
+ localStorage.setItem('biobel_arquivo_ex_funcionarios', JSON.stringify(lista));
+}
+function arquivarExFuncionaria(pessoa){
+ const desligamento = getDesligamento(pessoa);
+ if(!desligamento){ mostrarToast('⚠️ Registre o desligamento antes de arquivar.'); return; }
+ const dadosPessoais = getDadosPessoaisDesligamento(pessoa);
+ const dataInicio = getDataInicioTrabalho(pessoa);
+ const nomeExibicao = dadosPessoais.nomeCompleto || (pessoa==='gabriela' ? 'Gabriela' : 'Day');
+ confirmarBiobel('Isso vai guardar '+nomeExibicao+' no Arquivo de Ex-Funcionários. Os dados continuam salvos, só saem da lista ativa. Confirma?', ()=>{
+  const tempo = dataInicio ? calcularTempoEntreDatas(dataInicio, desligamento.data) : null;
+  const arquivo = getArquivoExFuncionarios();
+  arquivo.unshift({
+   id: Date.now(),
+   nomeCompleto: nomeExibicao,
+   cpf: dadosPessoais.cpf || null,
+   cargo: dadosPessoais.cargo || null,
+   dataInicio: dataInicio || null,
+   dataDesligamento: desligamento.data,
+   tempoTrabalhado: tempo ? tempo.texto : null,
+   motivo: desligamento.motivo || null,
+   quemPediu: desligamento.quemPediu || null,
+   pessoaOrigem: pessoa
+  });
+  salvarArquivoExFuncionarios(arquivo);
+  mostrarToast('✅ '+nomeExibicao+' movida pro arquivo.');
+  registrarAlteracao(nomeExibicao+' arquivada como ex-funcionária');
+  renderLogAlteracoes();
+  renderListaExFuncionarios();
+ });
+}
+function removerExFuncionaria(id){
+ confirmarBiobel('Remover esse registro do arquivo? Essa ação não pode ser desfeita.', ()=>{
+  salvarArquivoExFuncionarios(getArquivoExFuncionarios().filter(f=>f.id!==id));
+  renderListaExFuncionarios();
+  mostrarToast('🗑️ Removido do arquivo.');
+ });
+}
+function renderListaExFuncionarios(){
+ const el = document.getElementById('listaExFuncionarios');
+ const contador = document.getElementById('contadorGrupo-exfuncionarios');
+ const lista = getArquivoExFuncionarios();
+ if(contador) contador.textContent = lista.length+' registro'+(lista.length===1?'':'s');
+ if(!el) return;
+ if(lista.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhuma ex-funcionária arquivada ainda.</p>'; return; }
+ el.innerHTML = lista.map(f=>`
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;margin-bottom:8px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+     <div>
+      <div style="font-size:13px;color:#dce5f2;font-weight:800;">${f.nomeCompleto}${f.cargo?' — '+f.cargo:''}</div>
+      <div style="font-size:11px;color:#93a3ba;margin-top:4px;">
+       ${f.dataInicio ? 'De '+new Date(f.dataInicio+'T00:00:00').toLocaleDateString('pt-BR')+' até ' : 'Até '}${new Date(f.dataDesligamento+'T00:00:00').toLocaleDateString('pt-BR')}
+       ${f.tempoTrabalhado ? ' ('+f.tempoTrabalhado+')' : ''}
+      </div>
+      ${f.cpf ? `<div style="font-size:11px;color:#93a3ba;margin-top:2px;">CPF: ${f.cpf}</div>` : ''}
+      ${f.motivo ? `<div style="font-size:11px;color:#93a3ba;margin-top:2px;">Observação: ${f.motivo}</div>` : ''}
+     </div>
+     <button onclick="removerExFuncionaria(${f.id})" aria-label="Remover do arquivo" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;">🗑️</button>
+    </div>
+   </div>`).join('');
+}
+
 async function exportarTodosDesligamentos(){
  const pessoasComDesligamento = ['gabriela','day'].filter(p=>getDesligamento(p));
  if(pessoasComDesligamento.length===0){ mostrarToast('⚠️ Nenhum desligamento registrado ainda.'); return; }
@@ -6121,7 +6222,7 @@ async function gerarPdfDesligamento(pessoa){
  const dataInicio = getDataInicioTrabalho(pessoa);
  const dadosPessoais = getDadosPessoaisDesligamento(pessoa);
  const nomeExibicao = dadosPessoais.nomeCompleto || (pessoa==='gabriela' ? 'Gabriela' : 'Day');
- const vinculo = pessoa==='gabriela' ? (desligamento.tipoContrato==='experiencia' ? 'CLT — Contrato de Experiência' : 'CLT') : 'Estágio';
+ const vinculo = pessoa==='gabriela' ? (desligamento.tipoContrato==='experiencia' ? 'CLT — Contrato de Experiência' : 'CLT') : (ehDayClt() ? 'CLT (promovida de Estágio)' : 'Estágio');
  try{
   await carregarJsPDFSobDemanda();
   const { jsPDF } = window.jspdf;
@@ -6149,7 +6250,8 @@ async function gerarPdfDesligamento(pessoa){
   linhaInfo('Data de desligamento', new Date(desligamento.data+'T00:00:00').toLocaleDateString('pt-BR'));
   if(dataInicio){
    const tempo = calcularTempoEntreDatas(dataInicio, desligamento.data);
-   linhaInfo(pessoa==='gabriela'?'Tempo de carteira assinada (CLT)':'Tempo total trabalhado', tempo.texto);
+   const rotuloTempo = pessoa==='gabriela' ? 'Tempo de carteira assinada (CLT)' : (ehDayClt() ? 'Tempo de CLT (desde a promoção)' : 'Tempo total trabalhado');
+   linhaInfo(rotuloTempo, tempo.texto);
   }
   if(pessoa==='gabriela'){
    const dataInformal = getDataInicioInformalGabriela();
@@ -6157,6 +6259,14 @@ async function gerarPdfDesligamento(pessoa){
     linhaInfo('Data de início informal (antes da carteira)', new Date(dataInformal+'T00:00:00').toLocaleDateString('pt-BR'));
     const tempoTotalLoja = calcularTempoEntreDatas(dataInformal, desligamento.data);
     linhaInfo('Tempo total na loja (informal + CLT)', tempoTotalLoja.texto);
+   }
+  }
+  if(pessoa==='day' && ehDayClt()){
+   const inicioEstagio = getDataInicioEstagio();
+   if(inicioEstagio){
+    linhaInfo('Data de início do estágio', new Date(inicioEstagio+'T00:00:00').toLocaleDateString('pt-BR'));
+    const tempoTotalLoja = calcularTempoEntreDatas(inicioEstagio, desligamento.data);
+    linhaInfo('Tempo total na loja (estágio + CLT)', tempoTotalLoja.texto);
    }
   }
   const nomesQuemPediu = { funcionaria:'A funcionária pediu o desligamento', empresa:'A empresa decidiu desligar' };
@@ -6488,6 +6598,45 @@ function renderNascimento(pessoa){
 }
 
 /* ===== Contrato de Estágio — Day (início e prazo de renovação) ===== */
+/* ===== Promoção de Day: Estágio -> CLT ===== */
+function getPromocaoCltDay(){
+ return localStorage.getItem('biobel_promocao_clt_day') || '';
+}
+function ehDayClt(){
+ return !!getPromocaoCltDay();
+}
+function promoverDayParaClt(){
+ const data = document.getElementById('dataPromocaoCltDayInput').value;
+ if(!data){ mostrarToast('⚠️ Escolha a data da promoção.'); return; }
+ const inicioEstagio = getDataInicioEstagio();
+ if(inicioEstagio && data<inicioEstagio){ mostrarToast('⚠️ A data de promoção não pode ser antes do início do estágio.'); return; }
+ confirmarBiobel('Confirma a promoção da Day pra CLT a partir de '+new Date(data+'T00:00:00').toLocaleDateString('pt-BR')+'? O tempo de estágio fica guardado como histórico.', ()=>{
+  localStorage.setItem('biobel_promocao_clt_day', data);
+  mostrarToast('🎉 Day promovida pra CLT!');
+  registrarAlteracao('Day promovida de Estágio pra CLT em '+new Date(data+'T00:00:00').toLocaleDateString('pt-BR'));
+  renderLogAlteracoes();
+  renderPromocaoDay();
+ });
+}
+function renderPromocaoDay(){
+ const input = document.getElementById('dataPromocaoCltDayInput');
+ const el = document.getElementById('resumoPromocaoDay');
+ const bloco = document.getElementById('blocoPromoverDayEstagio');
+ const titulo = document.getElementById('tituloCardDadosDay');
+ const dataPromocao = getPromocaoCltDay();
+ if(input) input.value = dataPromocao;
+ if(bloco) bloco.style.display = dataPromocao ? 'none' : 'block';
+ if(titulo) titulo.textContent = dataPromocao ? '📋 Dados de Day (CLT)' : '📋 Dados de Day (Estágio)';
+ if(!el) return;
+ if(!dataPromocao){ el.innerHTML = ''; return; }
+ const inicioEstagio = getDataInicioEstagio();
+ const tempoEstagio = inicioEstagio ? calcularTempoEntreDatas(inicioEstagio, dataPromocao) : null;
+ el.innerHTML = `<div style="background:rgba(39,215,160,.08);border:1px solid rgba(39,215,160,.3);border-radius:10px;padding:12px 14px;">
+   <div style="font-size:12.5px;color:#27d7a0;font-weight:800;">🎉 Promovida pra CLT em ${new Date(dataPromocao+'T00:00:00').toLocaleDateString('pt-BR')}</div>
+   ${tempoEstagio ? `<div style="font-size:11.5px;color:#93a3ba;margin-top:4px;">Foi estagiária por ${tempoEstagio.texto} antes da promoção.</div>` : ''}
+  </div>`;
+}
+
 function getDataInicioEstagio(){
  return localStorage.getItem('biobel_adm_inicio_estagio_day') || '';
 }
