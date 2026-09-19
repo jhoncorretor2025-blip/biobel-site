@@ -497,6 +497,7 @@ body.modo-compacto .space-y-4 > * + *{ margin-top:8px!important; }
 <body class="min-h-screen bg-slate-950 text-slate-100">
 <div id="faixaMensagemProgramada" style="display:none;"></div>
 <div id="tourGuiadoOverlay" style="display:none;"></div>
+<div id="dicaDoDiaOverlay" style="display:none;"></div>
 <button id="btnVoltarTopo" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Voltar ao topo">↑</button>
 <a href="#dashboardTab" style="position:absolute;left:-9999px;top:0;z-index:9999;background:#0ea97a;color:#04241a;padding:12px 18px;border-radius:0 0 10px 0;font-weight:700;text-decoration:none" onfocus="this.style.left='0'" onblur="this.style.left='-9999px'">Pular para o conteúdo</a>
 <script>
@@ -527,7 +528,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v7.0</span>
+  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v7.1</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -1509,6 +1510,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <button type="button" id="chipEmail" onclick="mostrarSecaoConfig('Email')" class="config-chip" role="tab" aria-selected="false">📧 E-mail</button>
     <button type="button" id="chipMensagens" onclick="mostrarSecaoConfig('Mensagens')" class="config-chip" role="tab" aria-selected="false">💬 Mensagens</button>
     <button type="button" id="chipVagas" onclick="mostrarSecaoConfig('Vagas')" class="config-chip" role="tab" aria-selected="false">📢 Textos de Vaga</button>
+    <button type="button" id="chipDicas" onclick="mostrarSecaoConfig('Dicas')" class="config-chip" role="tab" aria-selected="false">💡 Dica do Dia</button>
     <button type="button" id="chipSitePublico" onclick="mostrarSecaoConfig('SitePublico')" class="config-chip" role="tab" aria-selected="false">🌐 Site</button>
    </div>
   </div>
@@ -1859,6 +1861,19 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <button onclick="restaurarTextoVagaPadrao('clt')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl font-semibold text-sm whitespace-nowrap">↺ Restaurar padrão</button>
    </div>
   </div>
+ </div>
+
+ <div id="configSecaoDicas" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6" style="display:none;">
+  <div class="mb-4">
+   <h2 class="text-xl font-bold">💡 Dica do Dia</h2>
+   <p class="text-sm text-slate-400 mt-1">Uma vez por dia, o sistema mostra sozinho uma dica aleatória dessa lista, pra quem estiver usando — tipo um lembrete rápido do que vale a pena conferir. Adicione ou remova dicas à vontade.</p>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:14px;">
+   <input id="novaDicaInput" type="text" placeholder="Ex: 📦 Já checou seu estoque hoje?" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+   <button onclick="adicionarDicaDoDia()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">➕ Adicionar</button>
+  </div>
+  <div id="listaDicasDoDia" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
+  <button onclick="testarDicaDoDia()" class="w-full bg-blue-600 hover:bg-blue-500 px-4 py-2.5 rounded-xl font-semibold text-sm">👁️ Ver como fica (testar agora)</button>
  </div>
 </section>
 
@@ -4883,6 +4898,91 @@ function initTextosVaga(){
  const inputClt = document.getElementById('textoVagaCltInput');
  if(inputEstagio) inputEstagio.value = getTextoVaga('estagio');
  if(inputClt) inputClt.value = getTextoVaga('clt');
+}
+
+/* ===== Dica do Dia — mensagem aleatória, uma vez por dia, lista editável ===== */
+const DICAS_DO_DIA_PADRAO = [
+ '📦 Já checou seu estoque hoje?',
+ '🪟 Já arrumou a vitrine essa semana?',
+ '📱 Já postou nas redes sociais hoje?',
+ '💰 Já conferiu o caixa de ontem com calma?',
+ '🧹 Já organizou as prateleiras da loja hoje?',
+ '📞 Já respondeu as mensagens dos clientes?',
+ '🎯 Já checou se a meta do dia está no caminho certo?',
+ '📋 Já revisou a agenda da semana?',
+ '🎁 Que tal pensar numa promoção pra essa semana?',
+ '👩‍💼 Já bateu um papo com a equipe hoje?'
+];
+function getDicasDoDia(){
+ try{
+  const salvo = localStorage.getItem('biobel_dicas_do_dia');
+  return salvo ? JSON.parse(salvo) : [...DICAS_DO_DIA_PADRAO];
+ }catch(e){ return [...DICAS_DO_DIA_PADRAO]; }
+}
+function salvarDicasDoDia(lista){
+ localStorage.setItem('biobel_dicas_do_dia', JSON.stringify(lista));
+}
+function adicionarDicaDoDia(){
+ const input = document.getElementById('novaDicaInput');
+ const texto = input.value.trim();
+ if(!texto){ mostrarToast('⚠️ Digite uma dica antes de adicionar.'); return; }
+ const lista = getDicasDoDia();
+ lista.push(texto);
+ salvarDicasDoDia(lista);
+ input.value = '';
+ renderListaDicasDoDia();
+ mostrarToast('✅ Dica adicionada!');
+}
+function removerDicaDoDia(indice){
+ confirmarBiobel('Remover essa dica da lista?', ()=>{
+  const lista = getDicasDoDia();
+  lista.splice(indice,1);
+  salvarDicasDoDia(lista);
+  renderListaDicasDoDia();
+  mostrarToast('🗑️ Removida.');
+ });
+}
+function renderListaDicasDoDia(){
+ const el = document.getElementById('listaDicasDoDia');
+ if(!el) return;
+ const lista = getDicasDoDia();
+ if(lista.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhuma dica cadastrada — o sistema não vai mostrar nada até você adicionar pelo menos uma.</p>'; return; }
+ el.innerHTML = lista.map((texto,i)=>`
+   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 14px;">
+    <span style="font-size:13px;color:#dce5f2;">${texto}</span>
+    <button onclick="removerDicaDoDia(${i})" aria-label="Remover dica" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;flex-shrink:0;">🗑️</button>
+   </div>`).join('');
+}
+function renderDicaDoDiaPopup(texto){
+ const el = document.getElementById('dicaDoDiaOverlay');
+ if(!el) return;
+ el.style.cssText = 'display:flex;position:fixed;inset:0;z-index:9997;background:rgba(7,17,31,.82);align-items:center;justify-content:center;padding:20px;';
+ el.innerHTML = `<div style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(251,191,36,.35);border-radius:20px;padding:30px 28px;max-width:380px;width:100%;box-shadow:0 24px 70px rgba(0,0,0,.55);text-align:center;">
+   <div style="font-size:11px;color:#fbbf24;font-weight:800;text-transform:uppercase;margin-bottom:14px;">💡 Dica do Dia</div>
+   <div style="font-size:17px;font-weight:800;color:#dce5f2;margin-bottom:24px;line-height:1.5;">${texto}</div>
+   <button onclick="document.getElementById('dicaDoDiaOverlay').style.display='none';" style="background:#fbbf24;border:none;color:#1a1408;border-radius:10px;padding:10px 24px;font-size:13px;font-weight:800;cursor:pointer;">Entendi!</button>
+  </div>`;
+}
+function verificarDicaDoDia(){
+ const hoje = obterAgoraBrasilia().paraChaveISO();
+ const ultimaVez = localStorage.getItem('biobel_dica_do_dia_ultima_data');
+ if(ultimaVez===hoje) return; // já mostrou hoje, não mostra de novo
+ const lista = getDicasDoDia();
+ if(lista.length===0) return;
+ const escolhida = lista[Math.floor(Math.random()*lista.length)];
+ localStorage.setItem('biobel_dica_do_dia_ultima_data', hoje);
+ setTimeout(()=>{
+  // Se o tour guiado (primeiro acesso) estiver aberto, espera mais um pouco pra não sobrepor.
+  const tourAberto = document.getElementById('tourGuiadoOverlay')?.style.display === 'flex';
+  if(tourAberto){ setTimeout(()=>renderDicaDoDiaPopup(escolhida), 5000); }
+  else{ renderDicaDoDiaPopup(escolhida); }
+ }, 1200);
+}
+function testarDicaDoDia(){
+ const lista = getDicasDoDia();
+ if(lista.length===0){ mostrarToast('⚠️ Adicione pelo menos uma dica primeiro.'); return; }
+ const escolhida = lista[Math.floor(Math.random()*lista.length)];
+ renderDicaDoDiaPopup(escolhida);
 }
 
 function copiarValorTela(id){
@@ -11784,7 +11884,7 @@ function extractSpreadsheetId(url){
  return m?m[1]:'';
 }
 function mostrarSecaoConfig(secao){
- const secoes = ['Conexao','Planilhas','Metas','Email','Horarios','Empresa','Log','Backup','Logo','SitePublico','Mensagens','Vagas'];
+ const secoes = ['Conexao','Planilhas','Metas','Email','Horarios','Empresa','Log','Backup','Logo','SitePublico','Mensagens','Vagas','Dicas'];
  secoes.forEach(s=>{
   const el = document.getElementById('configSecao'+s);
   const chip = document.getElementById('chip'+s);
@@ -11798,6 +11898,7 @@ function mostrarSecaoConfig(secao){
  try{ localStorage.setItem('biobel_config_secao_ativa', secao); }catch(e){}
  if(secao==='Backup') renderStatusBackupAutomatico();
  if(secao==='Vagas') initTextosVaga();
+ if(secao==='Dicas') renderListaDicasDoDia();
 }
 
 function saveGoogleConfig(){
@@ -13107,6 +13208,7 @@ inicializarBotoesCompartilharNativo();
 atualizarBotaoModoCompacto();
 verificarBackupAutomatico();
 verificarPrimeiroAcessoTour();
+verificarDicaDoDia();
 
 // Registra o service worker (permite abrir o sistema mesmo sem internet, mostrando a última
 // versão salva) — se o navegador não suportar, simplesmente ignora, sem quebrar nada.
