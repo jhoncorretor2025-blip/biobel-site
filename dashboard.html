@@ -530,7 +530,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 20/09/2026 — versão v7.3')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 20/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v7.3</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 20/09/2026 — versão v7.4')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 20/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v7.4</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -596,6 +596,10 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
 <main id="dashboardTab" class="max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabDashboard">
 
+  <div class="no-print" style="display:flex;justify-content:flex-end;margin-bottom:-6px;">
+   <button id="btnAlternarModoDashboard" onclick="alternarModoDashboard()" style="background:#0b1728;border:1px solid #1e2c42;border-radius:999px;padding:6px 14px;font-size:12px;color:#93a3ba;cursor:pointer;font-weight:700;">🔍 Ver modo completo</button>
+  </div>
+
   <div id="avisoMesDivergente" class="no-print" style="display:none;"></div>
   <div id="avisoProximaPlanilha" class="no-print" style="display:none;"></div>
   <div id="metaDestaqueTopo" class="no-print" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid #1e2c42;border-radius:20px;padding:24px 28px;margin-bottom:16px;">
@@ -624,7 +628,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <div id="listaDatasComerciaisDashboard" style="display:flex;flex-direction:column;gap:8px;"></div>
   </div>
 
-  <div class="adv-shell">
+  <div class="adv-shell" id="dashboardModoAvancado">
 
     <aside class="adv-sidebar no-print">
       <div class="adv-brand">Resumo</div>
@@ -3347,6 +3351,28 @@ function alternarColapsoTodosCards(){
  mostrarToast(deveColapsar ? '✅ Cards minimizados.' : '✅ Cards expandidos.');
 }
 
+/* ===== Modo Simples/Completo do Dashboard — esconde graficos e tabelas tecnicas ===== */
+function alternarModoDashboard(){
+ const shell = document.getElementById('dashboardModoAvancado');
+ const btn = document.getElementById('btnAlternarModoDashboard');
+ if(!shell) return;
+ const estaEscondido = shell.style.display === 'none';
+ shell.style.display = estaEscondido ? '' : 'none';
+ if(btn) btn.textContent = estaEscondido ? '🔎 Ver modo simples' : '🔍 Ver modo completo';
+ localStorage.setItem('biobel_dashboard_modo', estaEscondido ? 'completo' : 'simples');
+}
+function initModoDashboard(){
+ const shell = document.getElementById('dashboardModoAvancado');
+ const btn = document.getElementById('btnAlternarModoDashboard');
+ if(!shell) return;
+ // Padrão é o modo simples — quem quiser ver tudo (gráficos, tabela detalhada, resumo técnico)
+ // clica pra abrir; a preferência fica guardada nesse aparelho.
+ const modo = localStorage.getItem('biobel_dashboard_modo') || 'simples';
+ const simples = modo==='simples';
+ shell.style.display = simples ? 'none' : '';
+ if(btn) btn.textContent = simples ? '🔍 Ver modo completo' : '🔎 Ver modo simples';
+}
+
 function alternarModoCompacto(){
  const ativo = document.body.classList.toggle('modo-compacto');
  localStorage.setItem('biobel_modo_compacto', ativo?'yes':'no');
@@ -3496,6 +3522,7 @@ function showTab(tab){
   dash.classList.remove('hidden');
   b1.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
   b1.setAttribute('aria-selected','true');
+  initModoDashboard();
  }
 }
 document.getElementById('simpleDaySelect').addEventListener('change',e=>updateSimpleDay(e.target.value));
@@ -13351,6 +13378,7 @@ document.addEventListener('keydown', e=>{
 aplicarLogoPersonalizadaNoSistema();
 inicializarBotoesCompartilharNativo();
 atualizarBotaoModoCompacto();
+initModoDashboard();
 verificarBackupAutomatico();
 verificarPrimeiroAcessoTour();
 verificarDicaDoDia();
