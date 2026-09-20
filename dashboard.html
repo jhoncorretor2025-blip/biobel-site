@@ -498,6 +498,7 @@ body.modo-compacto .space-y-4 > * + *{ margin-top:8px!important; }
 <div id="faixaMensagemProgramada" style="display:none;"></div>
 <div id="tourGuiadoOverlay" style="display:none;"></div>
 <div id="dicaDoDiaOverlay" style="display:none;"></div>
+<div id="assistenteDesligamentoOverlay" style="display:none;"></div>
 <button id="btnVoltarTopo" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Voltar ao topo">↑</button>
 <a href="#dashboardTab" style="position:absolute;left:-9999px;top:0;z-index:9999;background:#0ea97a;color:#04241a;padding:12px 18px;border-radius:0 0 10px 0;font-weight:700;text-decoration:none" onfocus="this.style.left='0'" onblur="this.style.left='-9999px'">Pular para o conteúdo</a>
 <script>
@@ -529,7 +530,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 20/09/2026 — versão v7.2')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 20/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v7.2</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 20/09/2026 — versão v7.3')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 20/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v7.3</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -1252,7 +1253,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <h2 class="text-xl font-bold">🚪 Uma funcionária está saindo da empresa?</h2>
    <p class="text-sm text-slate-400 mt-1">Clique aqui pra ir direto no lugar certo de registrar o desligamento — precisa da senha da área da gerência.</p>
   </div>
-  <button onclick="irParaDesligamentoDireto()" class="w-full bg-rose-600 hover:bg-rose-500 px-4 py-3 rounded-xl font-semibold text-sm">🚪 Registrar desligamento de funcionária</button>
+  <button onclick="iniciarProcessoDesligamentoGuiado()" class="w-full bg-rose-600 hover:bg-rose-500 px-4 py-3 rounded-xl font-semibold text-sm">🚪 Registrar desligamento de funcionária</button>
  </div>
 
  <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7" style="border-color:rgba(79,156,255,.35);">
@@ -5429,10 +5430,10 @@ function mostrarConteudoAdm(){
  renderResumoAtencaoAdm();
 
  // Se a pessoa clicou em "Registrar desligamento" na aba Equipe antes de fazer login, agora que
- // ela já está logada, leva ela direto pro lugar certo, sem precisar procurar sozinha.
- if(sessionStorage.getItem('biobel_navegar_desligamento_apos_login')==='yes'){
-  sessionStorage.removeItem('biobel_navegar_desligamento_apos_login');
-  setTimeout(()=>irParaSecaoAdm('admAncoraFuncionarios'), 300);
+ // ela já está logada, o assistente guiado abre sozinho, sem precisar procurar nada depois.
+ if(sessionStorage.getItem('biobel_abrir_assistente_desligamento_apos_login')==='yes'){
+  sessionStorage.removeItem('biobel_abrir_assistente_desligamento_apos_login');
+  setTimeout(iniciarAssistenteDesligamento, 300);
  }
 }
 
@@ -5623,12 +5624,132 @@ function filtrarBoletos(modo){
  });
  renderBoletos();
 }
-function irParaDesligamentoDireto(){
- // Marca que, assim que o login da ADM for concluído (ou se já estiver logada), a pessoa deve
- // ser levada direto pro grupo "Funcionários", onde fica o Desligamento — sem precisar caçar.
- sessionStorage.setItem('biobel_navegar_desligamento_apos_login', 'yes');
- showTab('adm');
- mostrarToast('👉 Faça login (se pedir) e você já vai cair no lugar certo.');
+/* ===== Assistente Guiado de Desligamento — passo a passo, bem simples, uma pergunta por vez ===== */
+let assistenteDesligamentoEstado = { passo:1, pessoa:null, data:null, motivo:null, quemPediu:'funcionaria' };
+function iniciarAssistenteDesligamento(){
+ assistenteDesligamentoEstado = { passo:1, pessoa:null, data:null, motivo:null, quemPediu:'funcionaria' };
+ renderAssistenteDesligamento();
+}
+function fecharAssistenteDesligamento(){
+ const el = document.getElementById('assistenteDesligamentoOverlay');
+ if(el) el.style.display = 'none';
+}
+function assistenteDesligamentoVoltar(){
+ assistenteDesligamentoEstado.passo = Math.max(1, assistenteDesligamentoEstado.passo-1);
+ renderAssistenteDesligamento();
+}
+function assistenteDesligamentoEscolherPessoa(pessoa){
+ assistenteDesligamentoEstado.pessoa = pessoa;
+ assistenteDesligamentoEstado.passo = 2;
+ renderAssistenteDesligamento();
+}
+function assistenteDesligamentoProximoPasso2(){
+ const data = document.getElementById('assistenteDesligamentoDataInput').value;
+ if(!data){ mostrarToast('⚠️ Escolha a data antes de continuar.'); return; }
+ assistenteDesligamentoEstado.data = data;
+ assistenteDesligamentoEstado.passo = 3;
+ renderAssistenteDesligamento();
+}
+function assistenteDesligamentoProximoPasso3(){
+ assistenteDesligamentoEstado.quemPediu = document.getElementById('assistenteDesligamentoQuemPediuSelect').value;
+ assistenteDesligamentoEstado.motivo = document.getElementById('assistenteDesligamentoMotivoInput').value.trim() || null;
+ // Salva de verdade o desligamento agora, usando os mesmos campos do sistema completo — o
+ // assistente é só uma forma mais simples de preencher a mesma coisa, passo a passo.
+ const registro = { data: assistenteDesligamentoEstado.data, motivo: assistenteDesligamentoEstado.motivo, quemPediu: assistenteDesligamentoEstado.quemPediu };
+ localStorage.setItem('biobel_desligamento_'+assistenteDesligamentoEstado.pessoa, JSON.stringify(registro));
+ registrarAlteracao('Desligamento de '+(assistenteDesligamentoEstado.pessoa==='gabriela'?'Gabriela':'Day')+' registrado pelo assistente guiado');
+ renderLogAlteracoes();
+ try{ renderResumoDesligamento(assistenteDesligamentoEstado.pessoa); }catch(e){}
+ assistenteDesligamentoEstado.passo = 4;
+ renderAssistenteDesligamento();
+}
+function assistenteDesligamentoGerarPdf(){
+ gerarPdfDesligamento(assistenteDesligamentoEstado.pessoa);
+}
+function assistenteDesligamentoConcluir(){
+ // Arquiva direto, sem pedir confirmação de novo — a pessoa já passou pelas telas do assistente,
+ // que já é a confirmação em si. Uma segunda pergunta só deixaria o processo mais cansativo.
+ const pessoa = assistenteDesligamentoEstado.pessoa;
+ const desligamento = getDesligamento(pessoa);
+ if(desligamento){
+  const dadosPessoais = getDadosPessoaisDesligamento(pessoa);
+  const dataInicio = getDataInicioTrabalho(pessoa);
+  const nomeExibicao = dadosPessoais.nomeCompleto || (pessoa==='gabriela' ? 'Gabriela' : 'Day');
+  const tempo = dataInicio ? calcularTempoEntreDatas(dataInicio, desligamento.data) : null;
+  const arquivo = getArquivoExFuncionarios();
+  arquivo.unshift({
+   id: Date.now(), nomeCompleto: nomeExibicao, cpf: dadosPessoais.cpf||null, cargo: dadosPessoais.cargo||null,
+   dataInicio: dataInicio||null, dataDesligamento: desligamento.data, tempoTrabalhado: tempo?tempo.texto:null,
+   motivo: desligamento.motivo||null, quemPediu: desligamento.quemPediu||null, pessoaOrigem: pessoa
+  });
+  salvarArquivoExFuncionarios(arquivo);
+  try{ renderListaExFuncionarios(); }catch(e){}
+ }
+ fecharAssistenteDesligamento();
+ mostrarToast('✅ Prontinho! Já foi guardado no histórico.');
+}
+function renderAssistenteDesligamento(){
+ const el = document.getElementById('assistenteDesligamentoOverlay');
+ if(!el) return;
+ const passo = assistenteDesligamentoEstado.passo;
+ el.style.cssText = 'display:flex;position:fixed;inset:0;z-index:9996;background:rgba(7,17,31,.9);align-items:center;justify-content:center;padding:20px;';
+
+ let conteudo = '';
+ if(passo===1){
+  conteudo = `
+   <div style="font-size:19px;font-weight:900;color:#dce5f2;margin-bottom:8px;">🚪 Quem está saindo da empresa?</div>
+   <p style="font-size:13px;color:#93a3ba;margin-bottom:24px;">Escolha uma das duas.</p>
+   <div style="display:flex;flex-direction:column;gap:12px;">
+    <button onclick="assistenteDesligamentoEscolherPessoa('gabriela')" style="background:#0ea97a;color:#04241a;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:800;cursor:pointer;">Gabriela</button>
+    <button onclick="assistenteDesligamentoEscolherPessoa('day')" style="background:#0ea97a;color:#04241a;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:800;cursor:pointer;">Day</button>
+   </div>
+   <button onclick="fecharAssistenteDesligamento()" style="background:none;border:none;color:#93a3ba;font-size:12.5px;cursor:pointer;text-decoration:underline;margin-top:20px;">Cancelar</button>`;
+ } else if(passo===2){
+  const nome = assistenteDesligamentoEstado.pessoa==='gabriela' ? 'Gabriela' : 'Day';
+  conteudo = `
+   <div style="font-size:19px;font-weight:900;color:#dce5f2;margin-bottom:8px;">📅 Qual foi o último dia de trabalho da ${nome}?</div>
+   <p style="font-size:13px;color:#93a3ba;margin-bottom:20px;">Só isso já é suficiente pra continuar.</p>
+   <input id="assistenteDesligamentoDataInput" type="date" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:14px;color:#dce5f2;font-size:16px;margin-bottom:20px;text-align:center;">
+   <button onclick="assistenteDesligamentoProximoPasso2()" style="background:#0ea97a;color:#04241a;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:800;cursor:pointer;width:100%;">Próximo →</button>
+   <button onclick="assistenteDesligamentoVoltar()" style="background:none;border:none;color:#93a3ba;font-size:12.5px;cursor:pointer;text-decoration:underline;margin-top:16px;">← Voltar</button>`;
+ } else if(passo===3){
+  conteudo = `
+   <div style="font-size:19px;font-weight:900;color:#dce5f2;margin-bottom:8px;">📝 Mais alguma coisa?</div>
+   <p style="font-size:12.5px;color:#93a3ba;margin-bottom:16px;">É opcional — pode continuar sem preencher.</p>
+   <label style="font-size:12px;color:#93a3ba;display:block;margin-bottom:6px;text-align:left;">Quem pediu o desligamento?</label>
+   <select id="assistenteDesligamentoQuemPediuSelect" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px;color:#dce5f2;font-size:13px;margin-bottom:14px;">
+    <option value="funcionaria">Ela pediu</option>
+    <option value="empresa">A empresa decidiu</option>
+   </select>
+   <label style="font-size:12px;color:#93a3ba;display:block;margin-bottom:6px;text-align:left;">Motivo (opcional)</label>
+   <input id="assistenteDesligamentoMotivoInput" type="text" placeholder="Ex: pedido de demissão" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px;color:#dce5f2;font-size:13px;margin-bottom:20px;">
+   <button onclick="assistenteDesligamentoProximoPasso3()" style="background:#0ea97a;color:#04241a;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:800;cursor:pointer;width:100%;">Continuar →</button>
+   <button onclick="assistenteDesligamentoVoltar()" style="background:none;border:none;color:#93a3ba;font-size:12.5px;cursor:pointer;text-decoration:underline;margin-top:16px;">← Voltar</button>`;
+ } else if(passo===4){
+  const nome = assistenteDesligamentoEstado.pessoa==='gabriela' ? 'Gabriela' : 'Day';
+  const dataFormatada = new Date(assistenteDesligamentoEstado.data+'T00:00:00').toLocaleDateString('pt-BR');
+  conteudo = `
+   <div style="font-size:40px;margin-bottom:10px;">✅</div>
+   <div style="font-size:19px;font-weight:900;color:#dce5f2;margin-bottom:8px;">Tudo pronto!</div>
+   <p style="font-size:13.5px;color:#93a3ba;margin-bottom:24px;">${nome} foi desligada em <strong style="color:#dce5f2;">${dataFormatada}</strong>. As informações dela continuam guardadas, só saem da lista do dia a dia.</p>
+   <button onclick="assistenteDesligamentoGerarPdf()" style="background:#8b5cf6;color:#fff;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;cursor:pointer;width:100%;margin-bottom:10px;">🖨️ Gerar PDF pra contadora</button>
+   <button onclick="assistenteDesligamentoConcluir()" style="background:#0ea97a;color:#04241a;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;cursor:pointer;width:100%;">Concluir</button>`;
+ }
+
+ el.innerHTML = `<div style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(251,113,133,.35);border-radius:20px;padding:30px 28px;max-width:400px;width:100%;box-shadow:0 24px 70px rgba(0,0,0,.55);text-align:center;">${conteudo}</div>`;
+}
+
+function iniciarProcessoDesligamentoGuiado(){
+ // Se já estiver logada, abre o assistente na hora. Senão, pede login primeiro e abre sozinho
+ // assim que o login for concluído — a pessoa não precisa procurar nada depois de entrar.
+ if(sessionStorage.getItem('biobel_adm_autenticado')==='yes'){
+  showTab('adm');
+  setTimeout(iniciarAssistenteDesligamento, 300);
+ } else {
+  sessionStorage.setItem('biobel_abrir_assistente_desligamento_apos_login', 'yes');
+  showTab('adm');
+  mostrarToast('👉 Faça login que o assistente já abre sozinho.');
+ }
 }
 
 function initAdmTab(){
