@@ -528,7 +528,8 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
-  <span id="versaoSistema" class="no-print" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;" title="Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v7.1</span>
+  <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 20/09/2026 — versão v7.2')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 20/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v7.2</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -1245,6 +1246,14 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 </section>
 
 <section id="equipeTab" class="hidden max-w-5xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabEquipe">
+
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7" style="border-color:rgba(251,113,133,.35);">
+  <div class="mb-3">
+   <h2 class="text-xl font-bold">🚪 Uma funcionária está saindo da empresa?</h2>
+   <p class="text-sm text-slate-400 mt-1">Clique aqui pra ir direto no lugar certo de registrar o desligamento — precisa da senha da área da gerência.</p>
+  </div>
+  <button onclick="irParaDesligamentoDireto()" class="w-full bg-rose-600 hover:bg-rose-500 px-4 py-3 rounded-xl font-semibold text-sm">🚪 Registrar desligamento de funcionária</button>
+ </div>
 
  <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7" style="border-color:rgba(79,156,255,.35);">
   <div class="mb-4">
@@ -5418,6 +5427,13 @@ function mostrarConteudoAdm(){
  renderHistoricoFechamentosMensais();
  renderRelatorioAnual();
  renderResumoAtencaoAdm();
+
+ // Se a pessoa clicou em "Registrar desligamento" na aba Equipe antes de fazer login, agora que
+ // ela já está logada, leva ela direto pro lugar certo, sem precisar procurar sozinha.
+ if(sessionStorage.getItem('biobel_navegar_desligamento_apos_login')==='yes'){
+  sessionStorage.removeItem('biobel_navegar_desligamento_apos_login');
+  setTimeout(()=>irParaSecaoAdm('admAncoraFuncionarios'), 300);
+ }
 }
 
 /* ===== Índice de navegação (chips) da área ADM ===== */
@@ -5607,6 +5623,14 @@ function filtrarBoletos(modo){
  });
  renderBoletos();
 }
+function irParaDesligamentoDireto(){
+ // Marca que, assim que o login da ADM for concluído (ou se já estiver logada), a pessoa deve
+ // ser levada direto pro grupo "Funcionários", onde fica o Desligamento — sem precisar caçar.
+ sessionStorage.setItem('biobel_navegar_desligamento_apos_login', 'yes');
+ showTab('adm');
+ mostrarToast('👉 Faça login (se pedir) e você já vai cair no lugar certo.');
+}
+
 function initAdmTab(){
  if(sessionStorage.getItem('biobel_adm_autenticado')==='yes'){
   mostrarConteudoAdm();
