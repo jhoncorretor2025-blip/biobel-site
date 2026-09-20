@@ -450,7 +450,7 @@ body.light-mode [style*="color:#f6f9fd"]{color:#0f172a!important;}
 button, .adv-card, .adv-kpi, input, select, textarea, .tab-btn, .config-chip{
  transition: background-color .15s ease, border-color .15s ease, opacity .15s ease, transform .1s ease;
 }
-button:active{ transform: scale(.97); }
+button:active{ transform: scale(.95); filter:brightness(1.15); }
 
 /* Melhoria 1+4: botões de ação (editar/excluir/pago) em listas densas ganham mais área de toque
    e mais espaçamento entre si no celular, evitando toque errado sem querer. */
@@ -530,7 +530,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 20/09/2026 — versão v7.4')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 20/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v7.4</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 20/09/2026 — versão v7.5')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 20/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v7.5</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -595,6 +595,13 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 </nav>
 
 <main id="dashboardTab" class="max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabDashboard">
+
+  <div class="no-print" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:6px;">
+   <button onclick="showTab('caixa')" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(39,215,160,.35);border-radius:14px;padding:16px 10px;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;text-align:center;">⚡<br>Fechar Caixa</button>
+   <button onclick="showTab('equipe')" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(79,156,255,.35);border-radius:14px;padding:16px 10px;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;text-align:center;">📋<br>Folha de Ponto</button>
+   <button onclick="showTab('alertas')" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(251,191,36,.35);border-radius:14px;padding:16px 10px;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;text-align:center;">🚨<br>Ver Alertas</button>
+   <button onclick="showTab('info')" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(139,92,246,.35);border-radius:14px;padding:16px 10px;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;text-align:center;">📊<br>Como Estou Indo?</button>
+  </div>
 
   <div class="no-print" style="display:flex;justify-content:flex-end;margin-bottom:-6px;">
    <button id="btnAlternarModoDashboard" onclick="alternarModoDashboard()" style="background:#0b1728;border:1px solid #1e2c42;border-radius:999px;padding:6px 14px;font-size:12px;color:#93a3ba;cursor:pointer;font-weight:700;">🔍 Ver modo completo</button>
@@ -2097,6 +2104,10 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <h3>🏠 Gastos Fixos</h3>
     <span>as contas que se repetem todo mês</span>
    </div>
+   <label style="display:flex;align-items:center;gap:8px;font-size:11.5px;color:#93a3ba;margin-bottom:12px;cursor:pointer;background:#0b1728;border:1px solid #1e2c42;border-radius:8px;padding:8px 12px;">
+    <input id="modoTravadoGastosCheckbox" type="checkbox" onchange="salvarModoTravadoGastos()">
+    🔒 Proteger contra edição sem querer (pede confirmação antes de mudar um valor já cadastrado)
+   </label>
    <div id="listaGastosFixos" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
    <div style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:8px;margin-bottom:8px;">
     <input id="novoGastoFixoNome" type="text" placeholder="Nome (ex: Aluguel)" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
@@ -2771,6 +2782,40 @@ function confirmarBiobelAsync(msg){
  });
 }
 
+/* ===== Toast com "Desfazer" — pra remoções, dá uma segunda chance rápida sem precisar recriar tudo ===== */
+let _callbackDesfazer = null;
+function mostrarToastComDesfazer(mensagem, callbackDesfazer){
+ _callbackDesfazer = callbackDesfazer;
+ let el = document.getElementById('toastBiobel');
+ if(!el){
+  el = document.createElement('div');
+  el.id = 'toastBiobel';
+  el.setAttribute('role','status');
+  el.setAttribute('aria-live','polite');
+  el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#0ea97a;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:800;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:9999;opacity:0;transition:opacity .25s,transform .25s;display:flex;align-items:center;gap:12px;';
+  document.body.appendChild(el);
+ }
+ el.style.background = '#0ea97a';
+ el.innerHTML = mensagem+' <button onclick="executarUltimoDesfazer()" style="background:rgba(255,255,255,.25);border:none;color:#fff;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:800;cursor:pointer;">↩️ Desfazer</button>';
+ el.style.opacity = '1';
+ el.style.transform = 'translateX(-50%) translateY(0)';
+ clearTimeout(window._toastBiobelTimer);
+ window._toastBiobelTimer = setTimeout(()=>{
+  el.style.opacity = '0';
+  el.style.transform = 'translateX(-50%) translateY(20px)';
+  _callbackDesfazer = null;
+ }, 5000); // um pouco mais que o toast comum, pra dar tempo de reagir e clicar
+}
+function executarUltimoDesfazer(){
+ if(!_callbackDesfazer) return;
+ const callback = _callbackDesfazer;
+ _callbackDesfazer = null;
+ callback();
+ const el = document.getElementById('toastBiobel');
+ if(el) el.style.opacity = '0';
+ mostrarToast('↩️ Desfeito!');
+}
+
 function mostrarToast(texto){
  // Vibração curta em confirmações de sucesso (✅) — Android tem bom suporte a isso, dá um
  // feedback físico gostoso ao salvar algo. iPhone geralmente ignora silenciosamente, sem erro.
@@ -2945,6 +2990,16 @@ function sairModoApresentacao(){
   document.exitFullscreen().catch(()=>{});
  }
 }
+// Proteção contra clique duplo por impaciência — quando alguém toca um botão e não vê resposta
+// na hora, tende a tocar de novo, o que às vezes duplica a ação (registrar duas vezes, etc.).
+// Isso trava o botão por meio segundo depois de qualquer toque, sem bloquear a ação em si.
+document.addEventListener('click', e=>{
+ const btn = e.target.closest('button');
+ if(!btn || btn.disabled) return;
+ if(btn.dataset.protegidoContraDuploClique==='ativo') { e.stopImmediatePropagation(); e.preventDefault(); return; }
+ btn.dataset.protegidoContraDuploClique = 'ativo';
+ setTimeout(()=>{ delete btn.dataset.protegidoContraDuploClique; }, 500);
+}, true);
 document.addEventListener('keydown', e=>{
  if(e.key==='Escape'){
   const overlay = document.getElementById('modoApresentacaoOverlay');
@@ -4045,11 +4100,17 @@ function cancelarEdicaoPonto(){
  document.getElementById('btnCancelarEdicaoPonto').style.display = 'none';
 }
 function removerRegistroPonto(id){
- confirmarBiobel('Remover esse registro de ponto?', ()=>{
-  const lista = getRegistrosPonto().filter(p=>p.id!==id);
-  salvarRegistrosPonto(lista);
+ const listaAntes = getRegistrosPonto();
+ const item = listaAntes.find(p=>p.id===id);
+ if(!item) return;
+ const lista = listaAntes.filter(p=>p.id!==id);
+ salvarRegistrosPonto(lista);
+ renderFolhaDePonto();
+ mostrarToastComDesfazer('🗑️ Registro removido.', ()=>{
+  const listaAtual = getRegistrosPonto();
+  listaAtual.push(item);
+  salvarRegistrosPonto(listaAtual);
   renderFolhaDePonto();
-  mostrarToast('🗑️ Removido.');
  });
 }
 function salvarHorarioPadraoEAtualizar(){
@@ -5429,6 +5490,7 @@ function mostrarConteudoAdm(){
  seedDadosPessoaisEquipe();
  initChavesPixUI();
  renderFaixaMensagemProgramada();
+ initModoTravadoGastos();
  renderGastosFixos();
  renderBoletos();
  renderComissoes();
@@ -5816,20 +5878,36 @@ function adicionarGastoFixo(){
 
  const lista = getGastosFixos();
  if(gastoFixoEditandoId!==null){
-  const idx = lista.findIndex(g=>g.id===gastoFixoEditandoId);
-  if(idx>=0){
-   lista[idx] = { ...lista[idx], nome, valor, dia: (dia && !isNaN(dia)) ? dia : null, diaUtil: (diaUtil && !isNaN(diaUtil)) ? diaUtil : null, categoria, renovacaoContrato };
-   salvarGastosFixos(lista);
-   mostrarToast('✅ Gasto fixo atualizado!');
-   registrarAlteracao('Gasto fixo "'+nome+'" editado');
+  const aplicarEdicao = ()=>{
+   const idx = lista.findIndex(g=>g.id===gastoFixoEditandoId);
+   if(idx>=0){
+    lista[idx] = { ...lista[idx], nome, valor, dia: (dia && !isNaN(dia)) ? dia : null, diaUtil: (diaUtil && !isNaN(diaUtil)) ? diaUtil : null, categoria, renovacaoContrato };
+    salvarGastosFixos(lista);
+    mostrarToast('✅ Gasto fixo atualizado!');
+    registrarAlteracao('Gasto fixo "'+nome+'" editado');
+   }
+   cancelarEdicaoGastoFixo();
+   document.getElementById('novoGastoFixoNome').value='';
+   document.getElementById('novoGastoFixoValor').value='';
+   document.getElementById('novoGastoFixoDia').value='';
+   document.getElementById('novoGastoFixoDiaUtil').value='';
+   document.getElementById('novoGastoFixoCategoria').value='Aluguel/Imóvel';
+   document.getElementById('novoGastoFixoRenovacao').value='';
+   renderGastosFixos();
+   atualizarTotaisAdm();
+   renderLogAlteracoes();
+  };
+  if(getModoTravadoGastos()){
+   confirmarBiobel('Confirma a alteração desse gasto fixo?', aplicarEdicao);
+  } else {
+   aplicarEdicao();
   }
-  cancelarEdicaoGastoFixo();
- } else {
-  lista.push({ id: Date.now(), nome, valor, dia: (dia && !isNaN(dia)) ? dia : null, diaUtil: (diaUtil && !isNaN(diaUtil)) ? diaUtil : null, categoria, renovacaoContrato });
-  salvarGastosFixos(lista);
-  mostrarToast('✅ Gasto fixo adicionado!');
-  registrarAlteracao('Gasto fixo "'+nome+'" adicionado'+(valor!==null?' ('+money(valor)+')':' (valor a definir)'));
+  return;
  }
+ lista.push({ id: Date.now(), nome, valor, dia: (dia && !isNaN(dia)) ? dia : null, diaUtil: (diaUtil && !isNaN(diaUtil)) ? diaUtil : null, categoria, renovacaoContrato });
+ salvarGastosFixos(lista);
+ mostrarToast('✅ Gasto fixo adicionado!');
+ registrarAlteracao('Gasto fixo "'+nome+'" adicionado'+(valor!==null?' ('+money(valor)+')':' (valor a definir)'));
  document.getElementById('novoGastoFixoNome').value='';
  document.getElementById('novoGastoFixoValor').value='';
  document.getElementById('novoGastoFixoDia').value='';
@@ -5839,6 +5917,18 @@ function adicionarGastoFixo(){
  renderGastosFixos();
  atualizarTotaisAdm();
  renderLogAlteracoes();
+}
+function getModoTravadoGastos(){
+ return localStorage.getItem('biobel_modo_travado_gastos')==='yes';
+}
+function salvarModoTravadoGastos(){
+ const ativo = document.getElementById('modoTravadoGastosCheckbox').checked;
+ localStorage.setItem('biobel_modo_travado_gastos', ativo?'yes':'no');
+ mostrarToast(ativo ? '🔒 Proteção ativada.' : '🔓 Proteção desativada.');
+}
+function initModoTravadoGastos(){
+ const checkbox = document.getElementById('modoTravadoGastosCheckbox');
+ if(checkbox) checkbox.checked = getModoTravadoGastos();
 }
 function editarGastoFixo(id){
  const g = getGastosFixos().find(x=>x.id===id);
@@ -5870,12 +5960,19 @@ function cancelarEdicaoGastoFixo(){
  if(btnCancelar) btnCancelar.style.display = 'none';
 }
 function removerGastoFixo(id){
- confirmarBiobel('Remover esse gasto fixo?', ()=>{
-  const lista = getGastosFixos().filter(g=>g.id!==id);
-  salvarGastosFixos(lista);
+ const listaAntes = getGastosFixos();
+ const item = listaAntes.find(g=>g.id===id);
+ if(!item) return;
+ const lista = listaAntes.filter(g=>g.id!==id);
+ salvarGastosFixos(lista);
+ renderGastosFixos();
+ atualizarTotaisAdm();
+ mostrarToastComDesfazer('🗑️ Gasto fixo removido.', ()=>{
+  const listaAtual = getGastosFixos();
+  listaAtual.push(item);
+  salvarGastosFixos(listaAtual);
   renderGastosFixos();
   atualizarTotaisAdm();
-  mostrarToast('🗑️ Removido.');
  });
 }
 function seedGastosFixosPadrao(){
@@ -6201,12 +6298,19 @@ function alternarPagoBoleto(id){
  mostrarToast(lista[idx].pago ? '✅ Marcado como pago.' : '↩️ Marcado como pendente.');
 }
 function removerBoleto(id){
- confirmarBiobel('Remover esse boleto?', ()=>{
-  const lista = getBoletos().filter(b=>b.id!==id);
-  salvarBoletos(lista);
+ const listaAntes = getBoletos();
+ const item = listaAntes.find(b=>b.id===id);
+ if(!item) return;
+ const lista = listaAntes.filter(b=>b.id!==id);
+ salvarBoletos(lista);
+ renderBoletos();
+ atualizarTotaisAdm();
+ mostrarToastComDesfazer('🗑️ Boleto removido.', ()=>{
+  const listaAtual = getBoletos();
+  listaAtual.push(item);
+  salvarBoletos(listaAtual);
   renderBoletos();
   atualizarTotaisAdm();
-  mostrarToast('🗑️ Removido.');
  });
 }
 /* ===== Histórico de Preços por Fornecedor (item 7) ===== */
