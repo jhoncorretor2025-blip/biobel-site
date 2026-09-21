@@ -530,7 +530,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 20/09/2026 — versão v7.6')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 20/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v7.6</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 20/09/2026 — versão v7.7')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 20/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v7.7</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -1267,6 +1267,12 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <button onclick="iniciarProcessoDesligamentoGuiado()" class="w-full bg-rose-600 hover:bg-rose-500 px-4 py-3 rounded-xl font-semibold text-sm">🚪 Registrar desligamento de funcionária</button>
  </div>
 
+ <div class="no-print" style="display:flex;gap:8px;margin-bottom:4px;">
+  <button type="button" id="btnEquipeSubAbaPonto" onclick="mostrarEquipeSubAba('ponto')" class="config-chip active" style="flex:1;text-align:center;">💳 PIX & Ponto</button>
+  <button type="button" id="btnEquipeSubAbaRotina" onclick="mostrarEquipeSubAba('rotina')" class="config-chip" style="flex:1;text-align:center;">✅ Rotina & Atividades</button>
+ </div>
+
+ <div id="equipeSubAbaPonto">
  <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7" style="border-color:rgba(79,156,255,.35);">
   <div class="mb-4">
    <h2 class="text-xl font-bold">💳 Chaves PIX — Pagamento Rápido</h2>
@@ -1368,7 +1374,9 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <button id="btnImprimirFolhaPonto" onclick="imprimirFolhaDePonto()" class="no-print w-full bg-purple-600 hover:bg-purple-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="background:#8b5cf6;margin-top:8px;">🖨️ Imprimir / Exportar PDF</button>
   <button onclick="exportarFolhaDePontoCSV()" class="no-print w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="margin-top:8px;">📊 Exportar CSV (abre no Excel)</button>
  </div>
+ </div>
 
+ <div id="equipeSubAbaRotina" style="display:none;">
  <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7" style="border-color:rgba(139,92,246,.35);">
   <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
    <div>
@@ -1517,6 +1525,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <button onclick="limparHistoricoEquipe()" class="no-print text-xs text-slate-500 hover:text-rose-400 underline whitespace-nowrap">Limpar histórico</button>
   </div>
   <div id="equipeHistorico" class="space-y-3"></div>
+ </div>
  </div>
 
 </section>
@@ -4003,7 +4012,20 @@ function renderEquipeHistorico(){
  }).join('');
 }
 
+function mostrarEquipeSubAba(aba){
+ const abaPonto = document.getElementById('equipeSubAbaPonto');
+ const abaRotina = document.getElementById('equipeSubAbaRotina');
+ const btnPonto = document.getElementById('btnEquipeSubAbaPonto');
+ const btnRotina = document.getElementById('btnEquipeSubAbaRotina');
+ if(abaPonto) abaPonto.style.display = aba==='ponto' ? 'block' : 'none';
+ if(abaRotina) abaRotina.style.display = aba==='rotina' ? 'block' : 'none';
+ if(btnPonto) btnPonto.classList.toggle('active', aba==='ponto');
+ if(btnRotina) btnRotina.classList.toggle('active', aba==='rotina');
+ localStorage.setItem('biobel_equipe_sub_aba', aba);
+}
+
 function initEquipeTab(){
+ mostrarEquipeSubAba(localStorage.getItem('biobel_equipe_sub_aba') || 'ponto');
  renderFolhaDePonto();
  seedChavesPix();
  renderChavesPixLista();
