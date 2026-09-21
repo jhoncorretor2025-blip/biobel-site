@@ -530,7 +530,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 20/09/2026 — versão v7.7')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 20/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v7.7</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 20/09/2026 — versão v7.8')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 20/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v7.8</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -581,6 +581,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <button id="tabAlertas" data-tab="alertas" role="tab" aria-selected="false" aria-controls="alertasTab" onclick="showTab('alertas')" title="Atalho: Alt+3" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">🚨 Alertas <span id="badgeContadorAlertas" style="display:none;background:#fb7185;color:#3a0f16;font-size:10px;font-weight:900;padding:1px 6px;border-radius:999px;margin-left:2px;">0</span></button>
   <button id="tabCaixa" data-tab="caixa" role="tab" aria-selected="false" aria-controls="caixaTab" onclick="showTab('caixa')" title="Atalho: Alt+4 — só o valor final do fechamento" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">⚡ Fechamento Rápido</button>
   <button id="tabEquipe" data-tab="equipe" role="tab" aria-selected="false" aria-controls="equipeTab" onclick="showTab('equipe')" title="Atalho: Alt+5" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">👩‍💼 Equipe</button>
+  <button id="tabCampanhas" data-tab="campanhas" role="tab" aria-selected="false" aria-controls="campanhasTab" onclick="showTab('campanhas')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">🎉 Campanhas</button>
   <button id="tabConfig" data-tab="config" role="tab" aria-selected="false" aria-controls="configTab" onclick="showTab('config')" title="Atalho: Alt+6" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm" style="display:none;">⚙️ Configuração</button>
   <button id="tabAdm" data-tab="adm" role="tab" aria-selected="false" aria-controls="admTab" onclick="showTab('adm')" title="Atalho: Alt+7" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm" style="display:none;">👑 ADM</button>
  </div>
@@ -1530,6 +1531,43 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
 </section>
 
+<section id="campanhasTab" class="hidden max-w-3xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabCampanhas">
+
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
+  <div class="mb-4">
+   <h2 class="text-xl font-bold">🎉 Campanhas</h2>
+   <p class="text-sm text-slate-400 mt-1">Textos prontos com emoji, pra copiar e colar direto no WhatsApp, Facebook ou Instagram — tanto pras datas especiais quanto pras promoções da loja.</p>
+  </div>
+
+  <div style="display:flex;gap:8px;margin-bottom:14px;">
+   <button type="button" id="btnAbaCampanhaData" onclick="mostrarAbaCampanha('data')" class="config-chip active">📅 Datas Especiais</button>
+   <button type="button" id="btnAbaCampanhaPromo" onclick="mostrarAbaCampanha('promo')" class="config-chip">🏷️ Promocionais</button>
+  </div>
+
+  <div id="blocoCampanhaData">
+   <div id="listaCampanhasData" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;"></div>
+   <button onclick="abrirNovaCampanha('data')" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Nova campanha de data especial</button>
+  </div>
+
+  <div id="blocoCampanhaPromo" style="display:none;">
+   <div id="listaCampanhasPromo" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;"></div>
+   <button onclick="abrirNovaCampanha('promo')" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Nova campanha promocional</button>
+  </div>
+
+  <div id="formCampanhaWrapper" style="display:none;border-top:1px solid #1e2c42;margin-top:16px;padding-top:16px;">
+   <label class="block text-sm font-semibold mb-2" for="campanhaTituloInput">Título da campanha</label>
+   <input id="campanhaTituloInput" type="text" placeholder="Ex: Dia das Mães" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:10px;">
+   <label class="block text-sm font-semibold mb-2" for="campanhaTextoInput">Texto (pronto pra copiar)</label>
+   <textarea id="campanhaTextoInput" rows="9" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 12px;color:#dce5f2;font-size:13px;resize:vertical;margin-bottom:10px;line-height:1.5;"></textarea>
+   <div style="display:flex;gap:8px;">
+    <button onclick="salvarCampanha()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">💾 Salvar</button>
+    <button onclick="fecharFormCampanha()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl font-semibold text-sm">✕ Cancelar</button>
+   </div>
+  </div>
+ </div>
+
+</section>
+
 
 <section id="configTab" class="hidden max-w-3xl mx-auto p-4 md:p-6" role="tabpanel" aria-labelledby="tabConfig">
  <nav aria-label="Atalhos da Configuração" role="tablist" style="margin-bottom:18px;">
@@ -1555,7 +1593,6 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <button type="button" id="chipMensagens" onclick="mostrarSecaoConfig('Mensagens')" class="config-chip" role="tab" aria-selected="false">💬 Mensagens</button>
     <button type="button" id="chipVagas" onclick="mostrarSecaoConfig('Vagas')" class="config-chip" role="tab" aria-selected="false">📢 Textos de Vaga</button>
     <button type="button" id="chipDicas" onclick="mostrarSecaoConfig('Dicas')" class="config-chip" role="tab" aria-selected="false">💡 Dica do Dia</button>
-    <button type="button" id="chipCampanhas" onclick="mostrarSecaoConfig('Campanhas')" class="config-chip" role="tab" aria-selected="false">🎉 Campanhas</button>
     <button type="button" id="chipSitePublico" onclick="mostrarSecaoConfig('SitePublico')" class="config-chip" role="tab" aria-selected="false">🌐 Site</button>
    </div>
   </div>
@@ -1919,39 +1956,6 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
   <div id="listaDicasDoDia" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
   <button onclick="testarDicaDoDia()" class="w-full bg-blue-600 hover:bg-blue-500 px-4 py-2.5 rounded-xl font-semibold text-sm">👁️ Ver como fica (testar agora)</button>
- </div>
-
- <div id="configSecaoCampanhas" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6" style="display:none;">
-  <div class="mb-4">
-   <h2 class="text-xl font-bold">🎉 Campanhas</h2>
-   <p class="text-sm text-slate-400 mt-1">Textos prontos com emoji, pra copiar e colar direto no WhatsApp, Facebook ou Instagram — tanto pras datas especiais quanto pras promoções da loja.</p>
-  </div>
-
-  <div style="display:flex;gap:8px;margin-bottom:14px;">
-   <button type="button" id="btnAbaCampanhaData" onclick="mostrarAbaCampanha('data')" class="config-chip active">📅 Datas Especiais</button>
-   <button type="button" id="btnAbaCampanhaPromo" onclick="mostrarAbaCampanha('promo')" class="config-chip">🏷️ Promocionais</button>
-  </div>
-
-  <div id="blocoCampanhaData">
-   <div id="listaCampanhasData" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;"></div>
-   <button onclick="abrirNovaCampanha('data')" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Nova campanha de data especial</button>
-  </div>
-
-  <div id="blocoCampanhaPromo" style="display:none;">
-   <div id="listaCampanhasPromo" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;"></div>
-   <button onclick="abrirNovaCampanha('promo')" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Nova campanha promocional</button>
-  </div>
-
-  <div id="formCampanhaWrapper" style="display:none;border-top:1px solid #1e2c42;margin-top:16px;padding-top:16px;">
-   <label class="block text-sm font-semibold mb-2" for="campanhaTituloInput">Título da campanha</label>
-   <input id="campanhaTituloInput" type="text" placeholder="Ex: Dia das Mães" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:10px;">
-   <label class="block text-sm font-semibold mb-2" for="campanhaTextoInput">Texto (pronto pra copiar)</label>
-   <textarea id="campanhaTextoInput" rows="9" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 12px;color:#dce5f2;font-size:13px;resize:vertical;margin-bottom:10px;line-height:1.5;"></textarea>
-   <div style="display:flex;gap:8px;">
-    <button onclick="salvarCampanha()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">💾 Salvar</button>
-    <button onclick="fecharFormCampanha()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl font-semibold text-sm">✕ Cancelar</button>
-   </div>
-  </div>
  </div>
 </section>
 
@@ -3256,6 +3260,7 @@ const BIOBEL_INDICE_BUSCA = [
  { termos:'alertas divergencia caixa vencimento', label:'🚨 Alertas', acao:()=>showTab('alertas') },
  { termos:'fechamento rapido caixa simples', label:'⚡ Fechamento Rápido', acao:()=>showTab('caixa') },
  { termos:'equipe checklist tarefas', label:'👩‍💼 Equipe', acao:()=>showTab('equipe') },
+ { termos:'campanha campanhas dia das maes dia dos pais promocao desconto whatsapp', label:'🎉 Campanhas', acao:()=>showTab('campanhas') },
  { termos:'conexao planilha google sheets', label:'🔗 Configuração → Conexão', acao:()=>{showTab('config'); mostrarSecaoConfig('Conexao');} },
  { termos:'planilhas salvas trocar mes', label:'📂 Configuração → Planilhas', acao:()=>{showTab('config'); mostrarSecaoConfig('Planilhas');} },
  { termos:'metas faturamento vendedora', label:'🎯 Configuração → Metas', acao:()=>{showTab('config'); mostrarSecaoConfig('Metas');} },
@@ -3592,6 +3597,7 @@ function showTab(tab){
   info: 'Informação Geral — Biobel',
   caixa: 'Fechamento Rápido — Biobel',
   equipe: 'Equipe — Biobel',
+  campanhas: 'Campanhas — Biobel',
   config: 'Configuração — Biobel'
  };
  document.title = titulosAba[tab] || 'Biobel — Fechamento de Caixa Diário';
@@ -3600,6 +3606,7 @@ function showTab(tab){
  const info=document.getElementById('infoTab');
  const caixa=document.getElementById('caixaTab');
  const equipe=document.getElementById('equipeTab');
+ const campanhas=document.getElementById('campanhasTab');
  const config=document.getElementById('configTab');
  const alertas=document.getElementById('alertasTab');
  const adm=document.getElementById('admTab');
@@ -3607,11 +3614,12 @@ function showTab(tab){
  const b4=document.getElementById('tabInfo');
  const b2=document.getElementById('tabCaixa');
  const b6=document.getElementById('tabEquipe');
+ const b9=document.getElementById('tabCampanhas');
  const b3=document.getElementById('tabConfig');
  const b7=document.getElementById('tabAlertas');
  const b8=document.getElementById('tabAdm');
- [dash,info,caixa,equipe,config,alertas,adm].forEach(x=>x.classList.add('hidden'));
- [b1,b4,b2,b6,b3,b7,b8].forEach(x=>{x.className='tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm';x.setAttribute('aria-selected','false');});
+ [dash,info,caixa,equipe,campanhas,config,alertas,adm].forEach(x=>x.classList.add('hidden'));
+ [b1,b4,b2,b6,b9,b3,b7,b8].forEach(x=>{x.className='tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm';x.setAttribute('aria-selected','false');});
 
  // Sincroniza o menu lateral (sidebar) com a mesma aba selecionada.
  document.querySelectorAll('.adv-nav button[data-tab]').forEach(btn=>{
@@ -3639,6 +3647,11 @@ function showTab(tab){
   b6.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
   b6.setAttribute('aria-selected','true');
   initEquipeTab();
+ } else if(tab==='campanhas'){
+  campanhas.classList.remove('hidden');
+  b9.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
+  b9.setAttribute('aria-selected','true');
+  initCampanhas();
  } else if(tab==='alertas'){
   alertas.classList.remove('hidden');
   b7.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
@@ -12449,7 +12462,7 @@ function extractSpreadsheetId(url){
  return m?m[1]:'';
 }
 function mostrarSecaoConfig(secao){
- const secoes = ['Conexao','Planilhas','Metas','Email','Horarios','Empresa','Log','Backup','Logo','SitePublico','Mensagens','Vagas','Dicas','Campanhas'];
+ const secoes = ['Conexao','Planilhas','Metas','Email','Horarios','Empresa','Log','Backup','Logo','SitePublico','Mensagens','Vagas','Dicas'];
  secoes.forEach(s=>{
   const el = document.getElementById('configSecao'+s);
   const chip = document.getElementById('chip'+s);
@@ -12464,7 +12477,6 @@ function mostrarSecaoConfig(secao){
  if(secao==='Backup') renderStatusBackupAutomatico();
  if(secao==='Vagas') initTextosVaga();
  if(secao==='Dicas') renderListaDicasDoDia();
- if(secao==='Campanhas') initCampanhas();
 }
 
 function saveGoogleConfig(){
