@@ -6,7 +6,7 @@
 // internet, a versão mais nova é buscada e exibida; o cache só entra em ação quando o
 // aparelho está genuinamente sem conexão.
 
-const CACHE_NAME = 'biobel-cache-v1';
+const CACHE_NAME = 'biobel-cache-v2';
 const ARQUIVOS_ESSENCIAIS = ['./dashboard.html', './login.html'];
 
 self.addEventListener('install', (event) => {
@@ -31,8 +31,14 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   if (!event.request.url.startsWith(self.location.origin)) return;
 
+  // IMPORTANTE: 'cache: reload' força o navegador a ignorar o próprio cache HTTP dele e buscar
+  // sempre uma cópia fresca de verdade na rede — sem isso, o navegador podia devolver uma versão
+  // salva ANTES mesmo desse código rodar, fazendo a pessoa ficar presa numa versão antiga mesmo
+  // com internet e mesmo com essa estratégia "rede primeiro" no Service Worker.
+  const pedidoSemCache = new Request(event.request, { cache: 'reload' });
+
   event.respondWith(
-    fetch(event.request)
+    fetch(pedidoSemCache)
       .then((resposta) => {
         // Conseguiu buscar online — guarda uma cópia fresca no cache, pra ficar disponível
         // se um dia faltar internet, e devolve a versão mais nova de verdade.
