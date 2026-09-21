@@ -531,7 +531,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 21/09/2026 — versão v8.2')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 21/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v8.2</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 21/09/2026 — versão v8.3')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 21/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v8.3</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -610,6 +610,15 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
 
   <div id="avisoMesDivergente" class="no-print" style="display:none;"></div>
+  <div id="bannerClimaChuva" class="no-print" style="display:none;"></div>
+  <div class="no-print" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:10px 14px;margin-bottom:6px;">
+   <span style="font-size:12px;color:#93a3ba;font-weight:700;">🌦️ Clima de hoje:</span>
+   <button onclick="marcarClimaHojeRapido('Sol')" style="background:#1c2c42;border:none;color:#dce5f2;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;">☀️ Sol</button>
+   <button onclick="marcarClimaHojeRapido('Nublado')" style="background:#1c2c42;border:none;color:#dce5f2;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;">☁️ Nublado</button>
+   <button onclick="marcarClimaHojeRapido('Chuva')" style="background:#1c2c42;border:none;color:#dce5f2;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;">🌧️ Chuva</button>
+   <button onclick="marcarClimaHojeRapido('Frio')" style="background:#1c2c42;border:none;color:#dce5f2;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;">🥶 Frio</button>
+   <span id="climaHojeMarcadoTexto" style="font-size:11.5px;color:#27d7a0;font-weight:700;"></span>
+  </div>
   <div id="avisoProximaPlanilha" class="no-print" style="display:none;"></div>
   <div id="metaDestaqueTopo" class="no-print" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid #1e2c42;border-radius:20px;padding:24px 28px;margin-bottom:16px;">
    <div style="font-size:11px;color:#93a3ba;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">🎯 Meta do mês</div>
@@ -996,6 +1005,14 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
  </div>
 
+ <div class="adv-card">
+  <div class="adv-card-title">
+   <h3>📊 Faturamento por dia da semana (todos)</h3>
+   <span>quanto já faturou em cada dia da semana, somando todas as ocorrências do mês</span>
+  </div>
+  <div id="infoTodosDiasSemana" style="display:flex;flex-direction:column;gap:8px;"></div>
+ </div>
+
  </div>
  <!-- fim infoSecaoFinanceiro -->
 
@@ -1283,10 +1300,10 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <div id="conteudoChavesPixEquipe"></div>
  </div>
 
- <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7" id="cardFolhaDePonto" style="border-color:rgba(6,182,212,.35);">
   <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
    <div>
-    <h2 class="text-xl font-bold">📋 Folha de Ponto</h2>
+    <h2 class="text-xl font-bold">⏱️ Folha de Ponto</h2>
     <p class="text-sm text-slate-400 mt-1">Registro de entrada, intervalo e saída — o sistema calcula as horas e a hora extra sozinho.</p>
    </div>
   </div>
@@ -1393,7 +1410,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
  </div>
 
- <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7" style="border-color:rgba(34,197,94,.35);">
   <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
    <div>
     <h2 class="text-xl font-bold">👩‍💼 Rotina da Equipe</h2>
@@ -1431,9 +1448,12 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <div class="flex gap-2 flex-wrap mb-5" id="equipeDayTabs"></div>
   <div id="equipeComparativoHoje" style="margin-bottom:14px;"></div>
   <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-   <div>
+   <div id="equipeColunaGabi" style="background:rgba(39,215,160,.05);border:1px solid rgba(39,215,160,.15);border-radius:14px;padding:14px;">
     <div class="flex items-center justify-between gap-2 mb-2">
-     <h3 class="font-bold text-emerald-400">💇‍♀️ GABI</h3>
+     <div style="display:flex;align-items:center;gap:8px;">
+      <span style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#27d7a0,#0ea97a);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#04241a;flex-shrink:0;">G</span>
+      <h3 class="font-bold text-emerald-400">💇‍♀️ GABI</h3>
+     </div>
      <span id="equipeProgressoGabiTexto" class="text-xs text-slate-400 font-semibold whitespace-nowrap">0 de 0</span>
     </div>
     <div style="background:#0b1728;border-radius:999px;height:8px;overflow:hidden;margin-bottom:12px;">
@@ -1441,9 +1461,12 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     </div>
     <div id="equipeListaGabi" class="space-y-2"></div>
    </div>
-   <div>
+   <div id="equipeColunaDai" style="background:rgba(79,156,255,.05);border:1px solid rgba(79,156,255,.15);border-radius:14px;padding:14px;">
     <div class="flex items-center justify-between gap-2 mb-2">
-     <h3 class="font-bold text-blue-400">✨ DAI</h3>
+     <div style="display:flex;align-items:center;gap:8px;">
+      <span style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#4f9cff,#2f78e0);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#04162e;flex-shrink:0;">D</span>
+      <h3 class="font-bold text-blue-400">✨ DAI</h3>
+     </div>
      <span id="equipeProgressoDaiTexto" class="text-xs text-slate-400 font-semibold whitespace-nowrap">0 de 0</span>
     </div>
     <div style="background:#0b1728;border-radius:999px;height:8px;overflow:hidden;margin-bottom:12px;">
@@ -2225,7 +2248,16 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <div id="tituloFormBoleto" style="font-size:12px;font-weight:800;color:#93a3ba;margin-bottom:10px;">➕ Adicionar novo boleto</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:8px;">
      <input id="novoBoletoFornecedor" type="text" placeholder="Fornecedor" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
-     <input id="novoBoletoMarca" type="text" placeholder="Marca" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     <select id="novoBoletoMarcaSelect" onchange="alternarCampoMarcaOutros()" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+      <option value="">Marca (escolha)</option>
+      <option value="Truss">Truss</option>
+      <option value="Porto Dez">Porto Dez</option>
+      <option value="Plattelli">Plattelli</option>
+      <option value="Eudora">Eudora</option>
+      <option value="Natura">Natura</option>
+      <option value="__outros__">Outros...</option>
+     </select>
+     <input id="novoBoletoMarca" type="text" placeholder="Marca" style="display:none;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
      <input id="novoBoletoQuantidade" type="text" placeholder="Quantidade" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
      <input id="novoBoletoValidade" type="text" placeholder="Validade (ex: 12/2027)" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
      <input id="novoBoletoValor" type="text" inputmode="decimal" placeholder="Valor R$" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
@@ -2721,6 +2753,18 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
 
   <div id="admAncoraAgenda"></div>
+  <div class="grupo-adm-header" data-grupo="agenda" onclick="alternarGrupoAdm('agenda')" style="display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#1a1408,#0f1a08);border:1px solid rgba(163,230,53,.35);border-radius:16px;padding:16px 20px;cursor:pointer;position:relative;overflow:hidden;">
+   <span style="position:absolute;right:-10px;top:-10px;font-size:70px;opacity:.08;pointer-events:none;">🗓️</span>
+   <div>
+    <h2 style="font-size:17px;font-weight:900;color:#dce5f2;">🗓️ Agenda de Reuniões</h2>
+    <p style="font-size:12px;color:#93a3ba;margin-top:2px;">Quando um fornecedor vem até a loja, ou uma reunião marcada</p>
+   </div>
+   <div style="display:flex;align-items:center;gap:10px;">
+    <span id="contadorGrupo-agenda" style="font-size:11px;color:#a3e635;background:rgba(163,230,53,.12);border-radius:999px;padding:3px 10px;"></span>
+    <span id="setaGrupo-agenda" style="font-size:22px;color:#93a3ba;">▸</span>
+   </div>
+  </div>
+  <div id="conteudoGrupo-agenda" style="display:none;">
   <div class="adv-card">
    <div class="adv-card-title">
     <h3>🤝 Agenda de Reuniões com Fornecedores</h3>
@@ -2744,6 +2788,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <button id="btnAdicionarReuniao" onclick="adicionarReuniao()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Adicionar reunião</button>
     <button id="btnCancelarEdicaoReuniao" onclick="cancelarEdicaoReuniao()" style="display:none;margin-top:8px;background:none;border:none;color:#93a3ba;font-size:12px;text-decoration:underline;cursor:pointer;width:100%;">✕ Cancelar edição</button>
    </div>
+  </div>
   </div>
  </div>
 </section>
@@ -2917,16 +2962,28 @@ function executarUltimoDesfazer(){
 
 /* ===== Atividades da Gerência (Alessandra) — lista própria, separada da rotina Gabi/Day ===== */
 const ATIVIDADES_GERENCIA_PADRAO = [
- '🎥 Gravar vídeos pras redes sociais',
- '🪟 Arrumar a vitrine',
- '🤝 Contatar fornecedores',
- '⭐ Chamar clientes VIP'
+ { texto:'🎥 Gravar vídeos pras redes sociais', acao:null },
+ { texto:'🪟 Arrumar a vitrine', acao:null },
+ { texto:'🤝 Contatar fornecedores', acao:null },
+ { texto:'⭐ Chamar clientes VIP', acao:null },
+ { texto:'📢 Enviar campanha pro grupo', acao:'campanhas' },
+ { texto:'⏱️ Assinar o ponto', acao:'ponto' }
 ];
 function getAtividadesGerencia(){
+ let lista;
  try{
   const salvo = localStorage.getItem('biobel_atividades_gerencia');
-  return salvo ? JSON.parse(salvo) : ATIVIDADES_GERENCIA_PADRAO.map(texto=>({texto, feita:false}));
- }catch(e){ return ATIVIDADES_GERENCIA_PADRAO.map(texto=>({texto, feita:false})); }
+  lista = salvo ? JSON.parse(salvo) : ATIVIDADES_GERENCIA_PADRAO.map(p=>({texto:p.texto, feita:false, acao:p.acao}));
+ }catch(e){ lista = ATIVIDADES_GERENCIA_PADRAO.map(p=>({texto:p.texto, feita:false, acao:p.acao})); }
+ // Migração: quem já tinha essa lista salva antes dos itens de campanha/ponto existirem, recebe
+ // eles agora — comparando pelo texto (não tem id nessas atividades), sem duplicar.
+ const textosAtuais = lista.map(i=>i.texto);
+ ATIVIDADES_GERENCIA_PADRAO.forEach(p=>{
+  if(p.acao && !textosAtuais.includes(p.texto)){
+   lista.push({ texto:p.texto, feita:false, acao:p.acao });
+  }
+ });
+ return lista;
 }
 function salvarAtividadesGerencia(lista){
  localStorage.setItem('biobel_atividades_gerencia', JSON.stringify(lista));
@@ -2936,7 +2993,7 @@ function adicionarAtividadeGerencia(){
  const texto = input.value.trim();
  if(!texto){ mostrarToast('⚠️ Digite uma atividade.'); return; }
  const lista = getAtividadesGerencia();
- lista.push({ texto, feita:false });
+ lista.push({ texto, feita:false, acao:null });
  salvarAtividadesGerencia(lista);
  input.value = '';
  renderAtividadesGerencia();
@@ -2963,15 +3020,21 @@ function removerAtividadeGerencia(indice){
   renderAtividadesGerencia();
  });
 }
+function abrirAcaoAtividadeGerencia(acao){
+ if(acao==='campanhas') showTab('campanhas');
+ if(acao==='ponto'){ showTab('equipe'); setTimeout(()=>mostrarEquipeSubAba('ponto'), 150); }
+}
 function renderAtividadesGerencia(){
  const el = document.getElementById('listaAtividadesGerencia');
  if(!el) return;
  const lista = getAtividadesGerencia();
  if(lista.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhuma atividade cadastrada.</p>'; return; }
+ const nomesAcao = { campanhas:'📢 Ir pra Campanhas', ponto:'⏱️ Ir pro Ponto' };
  el.innerHTML = lista.map((item,i)=>`
    <div style="display:flex;align-items:center;gap:10px;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 14px;">
     <input type="checkbox" ${item.feita?'checked':''} onchange="alternarAtividadeGerencia(${i})" style="width:18px;height:18px;flex-shrink:0;cursor:pointer;">
     <span style="flex:1;font-size:13px;color:${item.feita?'#93a3ba':'#dce5f2'};text-decoration:${item.feita?'line-through':'none'};">${item.texto}</span>
+    ${item.acao?`<button onclick="abrirAcaoAtividadeGerencia('${item.acao}')" style="background:#2f78e0;color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">${nomesAcao[item.acao]||'Abrir'}</button>`:''}
     <button onclick="removerAtividadeGerencia(${i})" aria-label="Remover atividade" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;flex-shrink:0;">🗑️</button>
    </div>`).join('');
 }
@@ -3747,6 +3810,7 @@ function showTab(tab){
   b1.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
   b1.setAttribute('aria-selected','true');
   initModoDashboard();
+  renderClimaHojeStatus();
  }
 }
 document.getElementById('simpleDaySelect').addEventListener('change',e=>updateSimpleDay(e.target.value));
@@ -3833,10 +3897,10 @@ function renderEquipeChecklistItem(escopo, index, texto, editControlsHtml){
  }
  return `
   <div style="display:flex;align-items:center;gap:6px;">
-   <label style="flex:1;display:flex;align-items:flex-start;gap:10px;background:${checked?'rgba(39,215,160,.06)':'#0b1728'};border:1px solid ${checked?'rgba(39,215,160,.25)':'#1c2c42'};border-radius:12px;padding:10px 12px;cursor:pointer;">
+   <label style="flex:1;display:flex;align-items:flex-start;gap:10px;background:${checked?'rgba(39,215,160,.1)':'#0b1728'};border:1px solid ${checked?'rgba(39,215,160,.4)':'#1c2c42'};border-radius:12px;padding:10px 12px;cursor:pointer;transition:background-color .2s,border-color .2s;">
     <input type="checkbox" ${checked?'checked':''} onchange="toggleEquipeCheck('${escopo}',${index})" style="margin-top:3px;width:16px;height:16px;accent-color:#27d7a0;cursor:pointer;flex-shrink:0;">
     <span style="flex:1;">
-     <span style="font-size:13px;color:${checked?'#93a3ba':'#dce5f2'};text-decoration:${checked?'line-through':'none'};">${texto}</span>
+     <span style="font-size:13px;color:${checked?'#93a3ba':'#dce5f2'};text-decoration:${checked?'line-through':'none'};">${checked?'✅ ':''}${texto}</span>
      ${assinaturaTexto}
     </span>
    </label>
@@ -3924,6 +3988,7 @@ function restaurarRotinaPadrao(){
 function renderComparativoEquipeHoje(dia, d){
  const el = document.getElementById('equipeComparativoHoje');
  if(!el) return;
+ if(getDesligamento('gabriela')){ el.innerHTML=''; return; } // sem comparativo se ela já saiu
  const gabi = calcEquipeProgresso(`${dia}_gabi`, d.gabi.length);
  const dai = calcEquipeProgresso(`${dia}_dai`, d.dai.length);
  if(gabi.total===0 && dai.total===0){ el.innerHTML=''; return; }
@@ -3971,10 +4036,16 @@ function renderEquipeRotinaDiaria(){
 function renderEquipeDayTabs(){
  const el = document.getElementById('equipeDayTabs');
  if(!el) return;
+ // Descobre qual chave (segunda, terca...) corresponde a hoje, pra destacar visualmente na lista
+ // — ajuda a achar rápido o dia certo sem precisar contar mentalmente.
+ const diaSemanaHoje = obterAgoraBrasilia().getDay(); // 0=domingo, 1=segunda, ..., 6=sabado
+ const mapaCorrigido = {1:'segunda', 2:'terca', 3:'quarta', 4:'quinta', 5:'sexta', 6:'sabado'};
+ const chaveHoje = mapaCorrigido[diaSemanaHoje] || null;
  el.innerHTML = diasSemanaOrdem.map(dia=>{
   const d = rotinaSemanal[dia];
   const ativo = dia===equipeDiaAtual;
-  return `<button onclick="selectEquipeDia('${dia}')" class="px-3 py-2 rounded-xl text-sm font-semibold whitespace-nowrap" style="background:${ativo?'#0ea97a':'#1c2c42'};color:${ativo?'#04241a':'#c3d0e0'};">${d.emoji} ${d.nome}</button>`;
+  const ehHoje = dia===chaveHoje;
+  return `<button onclick="selectEquipeDia('${dia}')" class="px-3 py-2 rounded-xl text-sm font-semibold whitespace-nowrap" style="background:${ativo?'#0ea97a':'#1c2c42'};color:${ativo?'#04241a':'#c3d0e0'};position:relative;${ehHoje&&!ativo?'box-shadow:0 0 0 2px #fbbf24 inset;':''}">${d.emoji} ${d.nome}${ehHoje?' <span style="font-size:9px;">🔸HOJE</span>':''}</button>`;
  }).join('');
 }
 
@@ -3988,6 +4059,13 @@ function selectEquipeDia(dia){
 function renderEquipeDia(dia){
  const d = rotinaSemanal[dia];
  if(!d) return;
+ // Se a Gabi já foi desligada, a coluna dela some da Rotina — ela não faz mais tarefas do dia a
+ // dia, então não faz sentido continuar aparecendo aqui como se ainda estivesse ativa.
+ const gabiDesligada = !!getDesligamento('gabriela');
+ const colunaGabi = document.getElementById('equipeColunaGabi');
+ const colunaDai = document.getElementById('equipeColunaDai');
+ if(colunaGabi) colunaGabi.style.display = gabiDesligada ? 'none' : 'block';
+ if(colunaDai) colunaDai.parentElement.style.gridTemplateColumns = gabiDesligada ? '1fr' : '';
  const gabiEl = document.getElementById('equipeListaGabi');
  const daiEl = document.getElementById('equipeListaDai');
  if(gabiEl){
@@ -4447,6 +4525,18 @@ function renderFolhaDePonto(){
  if(inputSabadoPadrao && padrao.horasContratadasSabado!==undefined && padrao.horasContratadasSabado!=='') inputSabadoPadrao.value = padrao.horasContratadasSabado;
  renderCargaHorariaSemanal();
 
+ // Marca no seletor quem já foi desligada, mas mantém a opção — importante continuar acessível
+ // pra puxar a folha de ponto dela até o último mês trabalhado, pra contadora.
+ const selectFuncionaria = document.getElementById('pontoFuncionariaSelect');
+ if(selectFuncionaria){
+  Array.from(selectFuncionaria.options).forEach(opt=>{
+   const chave = opt.value.toLowerCase();
+   const nomeBase = opt.value;
+   const desligada = !!getDesligamento(chave);
+   opt.textContent = desligada ? nomeBase+' (desligada)' : nomeBase;
+  });
+ }
+
  const funcionaria = document.getElementById('pontoFuncionariaSelect')?.value;
  const mesInput = document.getElementById('pontoMesSelect');
  if(!mesInput.value){
@@ -4519,7 +4609,39 @@ function renderFolhaDePonto(){
     <div style="font-size:10px;color:#93a3ba;">🔶 Total de hora extra</div>
     <div style="font-size:18px;font-weight:900;color:#fbbf24;margin-top:2px;">${totalExtras.toFixed(1)}h</div>
    </div>
-  </div>${htmlResumoFaltas()}`;
+  </div>${htmlGraficoHorasPorSemana(lista)}${htmlResumoFaltas()}`;
+}
+function htmlGraficoHorasPorSemana(lista){
+ // Agrupa os dias do mês por semana (segunda a domingo) e soma as horas de cada uma, mostrando
+ // um gráfico de barras bem simples — ajuda a ver de relance se alguma semana fugiu do padrão.
+ if(lista.length===0) return '';
+ const semanas = {};
+ lista.forEach(p=>{
+  const dataObj = new Date(p.data+'T00:00:00');
+  const diaDoMes = dataObj.getDate();
+  const numeroSemana = Math.ceil((diaDoMes + new Date(dataObj.getFullYear(),dataObj.getMonth(),1).getDay())/7);
+  const { horas } = calcularHorasDoDia(p);
+  if(!semanas[numeroSemana]) semanas[numeroSemana] = 0;
+  if(p.saida) semanas[numeroSemana] += horas;
+ });
+ const chaves = Object.keys(semanas).sort((a,b)=>a-b);
+ if(chaves.length<2) return ''; // com só 1 semana de dados, o gráfico não ajuda muito
+ const maxHoras = Math.max(...Object.values(semanas), 1);
+ const barras = chaves.map(k=>{
+  const valor = semanas[k];
+  const alturaPct = Math.max(6, (valor/maxHoras)*100);
+  return `<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;">
+    <span style="font-size:10px;color:#93a3ba;font-weight:700;">${valor.toFixed(0)}h</span>
+    <div style="width:100%;max-width:36px;height:70px;display:flex;align-items:flex-end;">
+     <div style="width:100%;height:${alturaPct}%;background:linear-gradient(180deg,#06b6d4,#0891b2);border-radius:6px 6px 0 0;"></div>
+    </div>
+    <span style="font-size:9.5px;color:#93a3ba;">Sem ${k}</span>
+   </div>`;
+ }).join('');
+ return `<div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:14px 12px;margin-top:10px;">
+   <div style="font-size:10.5px;color:#93a3ba;font-weight:700;margin-bottom:10px;">📊 Horas trabalhadas por semana</div>
+   <div style="display:flex;gap:8px;align-items:flex-end;">${barras}</div>
+  </div>`;
 }
 function carregarExemploCartaoPontoAgosto(){
  // Carrega exatamente os dados do cartão de ponto físico que você me mandou. O dia 30 é domingo
@@ -5100,9 +5222,9 @@ function initChavesPixUI(){
 }
 function renderChavesPixLista(){
  const pessoas = [
-  { nome:'Gabriela', chave: getChavePix('gabriela') },
-  { nome:'Day', chave: getChavePix('day') },
- ];
+  { nome:'Gabriela', chave: getChavePix('gabriela'), pessoaKey:'gabriela' },
+  { nome:'Day', chave: getChavePix('day'), pessoaKey:'day' },
+ ].filter(p=>!getDesligamento(p.pessoaKey)); // quem já foi desligada não aparece mais aqui
  const html = pessoas.map(p=>`
    <div style="display:flex;justify-content:space-between;align-items:center;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
     <div>
@@ -6788,6 +6910,8 @@ async function adicionarBoleto(){
  ['novoBoletoFornecedor','novoBoletoMarca','novoBoletoQuantidade','novoBoletoValidade','novoBoletoValor','novoBoletoVencimento','novoBoletoPagoPor','novoBoletoObs'].forEach(id=>{
   const elCampo = document.getElementById(id);
   if(elCampo) elCampo.value='';
+  document.getElementById('novoBoletoMarcaSelect').value = '';
+  document.getElementById('novoBoletoMarca').style.display = 'none';
  });
  document.getElementById('novoBoletoCategoria').value = 'Produto';
  document.getElementById('novoBoletoRecorrente').checked = false;
@@ -6796,12 +6920,35 @@ async function adicionarBoleto(){
  atualizarTotaisAdm();
  renderLogAlteracoes();
 }
+const MARCAS_FORNECEDOR_CONHECIDAS = ['Truss','Porto Dez','Plattelli','Eudora','Natura'];
+function alternarCampoMarcaOutros(){
+ const select = document.getElementById('novoBoletoMarcaSelect');
+ const input = document.getElementById('novoBoletoMarca');
+ if(select.value==='__outros__'){
+  input.style.display = 'block';
+  input.value = '';
+  input.focus();
+ } else {
+  input.style.display = 'none';
+  input.value = select.value;
+ }
+}
+function preencherCampoMarca(marca){
+ const select = document.getElementById('novoBoletoMarcaSelect');
+ const input = document.getElementById('novoBoletoMarca');
+ if(!marca){ select.value=''; input.value=''; input.style.display='none'; return; }
+ if(MARCAS_FORNECEDOR_CONHECIDAS.includes(marca)){
+  select.value = marca; input.value = marca; input.style.display = 'none';
+ } else {
+  select.value = '__outros__'; input.value = marca; input.style.display = 'block';
+ }
+}
 function editarBoleto(id){
  const b = getBoletos().find(x=>x.id===id);
  if(!b) return;
  boletoEditandoId = id;
  document.getElementById('novoBoletoFornecedor').value = b.fornecedor||'';
- document.getElementById('novoBoletoMarca').value = b.marca||'';
+ preencherCampoMarca(b.marca||'');
  document.getElementById('novoBoletoQuantidade').value = b.quantidade||'';
  document.getElementById('novoBoletoValidade').value = b.validade||'';
  document.getElementById('novoBoletoValor').value = b.valor!==null&&b.valor!==undefined ? String(b.valor).replace('.',',') : '';
@@ -6829,7 +6976,7 @@ function duplicarBoleto(id){
  if(!b) return;
  cancelarEdicaoBoleto();
  document.getElementById('novoBoletoFornecedor').value = b.fornecedor||'';
- document.getElementById('novoBoletoMarca').value = b.marca||'';
+ preencherCampoMarca(b.marca||'');
  document.getElementById('novoBoletoQuantidade').value = b.quantidade||'';
  document.getElementById('novoBoletoValidade').value = b.validade||'';
  document.getElementById('novoBoletoValor').value = b.valor!==null&&b.valor!==undefined ? String(b.valor).replace('.',',') : '';
@@ -6844,6 +6991,8 @@ function cancelarEdicaoBoleto(){
  ['novoBoletoFornecedor','novoBoletoMarca','novoBoletoQuantidade','novoBoletoValidade','novoBoletoValor','novoBoletoVencimento','novoBoletoPagoPor','novoBoletoObs'].forEach(id=>{
   const elCampo = document.getElementById(id);
   if(elCampo) elCampo.value='';
+  document.getElementById('novoBoletoMarcaSelect').value = '';
+  document.getElementById('novoBoletoMarca').style.display = 'none';
  });
  document.getElementById('novoBoletoCategoria').value = 'Produto';
  document.getElementById('novoBoletoRecorrente').checked = false;
@@ -10084,6 +10233,34 @@ function getClimaDias(){
  try{ return JSON.parse(localStorage.getItem('biobel_clima_dias')||'{}'); }catch(e){ return {}; }
 }
 function salvarClimaDias(obj){ localStorage.setItem('biobel_clima_dias', JSON.stringify(obj)); }
+function marcarClimaHojeRapido(tipo){
+ const hoje = obterAgoraBrasilia();
+ const chaveDia = String(hoje.getDate()).padStart(2,'0')+'.'+String(hoje.getMonth()+1).padStart(2,'0');
+ const obj = getClimaDias();
+ obj[chaveDia] = tipo;
+ salvarClimaDias(obj);
+ mostrarToast('✅ Clima de hoje marcado: '+tipo);
+ renderClimaHojeStatus();
+ try{ renderCorrelacaoClima(); }catch(e){}
+}
+function renderClimaHojeStatus(){
+ const el = document.getElementById('climaHojeMarcadoTexto');
+ const bannerEl = document.getElementById('bannerClimaChuva');
+ if(!el && !bannerEl) return;
+ const hoje = obterAgoraBrasilia();
+ const chaveDia = String(hoje.getDate()).padStart(2,'0')+'.'+String(hoje.getMonth()+1).padStart(2,'0');
+ const climaHoje = getClimaDias()[chaveDia];
+ const emojis = { Sol:'☀️', Nublado:'☁️', Chuva:'🌧️', Frio:'🥶' };
+ if(el) el.textContent = climaHoje ? 'Marcado: '+(emojis[climaHoje]||'')+' '+climaHoje : '';
+ if(bannerEl){
+  if(climaHoje==='Chuva'){
+   bannerEl.style.cssText = 'display:block;background:rgba(79,156,255,.1);border:1px solid rgba(79,156,255,.4);border-radius:12px;padding:12px 16px;margin-bottom:6px;';
+   bannerEl.innerHTML = '<div style="font-size:13px;color:#4f9cff;font-weight:800;">🌧️ Hoje é dia de chuva — foco nas vendas online! Movimento na loja física costuma cair em dias assim, vale reforçar redes sociais e WhatsApp.</div>';
+  } else {
+   bannerEl.style.display = 'none';
+  }
+ }
+}
 function adicionarClimaDia(){
  const dataInput = document.getElementById('climaDataInput').value;
  const tipo = document.getElementById('climaTipoSelect').value;
@@ -10990,6 +11167,36 @@ function renderMelhoresPioresDiasSemana(porDiaSemana){
   });
  }
 }
+function renderTodosDiasSemana(porDiaSemana){
+ const el = document.getElementById('infoTodosDiasSemana');
+ if(!el) return;
+ const nomesDias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+ // Mostra na ordem natural da semana (segunda a domingo), não por valor — assim fica fácil
+ // comparar visualmente sem precisar caçar cada dia numa lista ordenada por valor.
+ const ordem = [1,2,3,4,5,6,0];
+ const linhas = ordem.map(dow=>{
+  const info = porDiaSemana[dow];
+  const soma = info ? info.soma : 0;
+  const qtd = info ? info.qtd : 0;
+  const media = qtd>0 ? soma/qtd : 0;
+  return { dow, nome: nomesDias[dow], soma, qtd, media };
+ });
+ const maiorSoma = Math.max(...linhas.map(l=>l.soma), 1);
+ el.innerHTML = linhas.map(l=>{
+  const pct = maiorSoma>0 ? (l.soma/maiorSoma)*100 : 0;
+  return `
+   <div style="display:grid;grid-template-columns:90px 1fr auto;gap:10px;align-items:center;">
+    <span style="font-size:12.5px;color:#dce5f2;font-weight:700;">${l.nome}</span>
+    <div style="background:#0b1728;border-radius:999px;height:10px;overflow:hidden;">
+     <div style="height:100%;width:${Math.max(pct,l.qtd>0?3:0).toFixed(1)}%;background:linear-gradient(90deg,#4f9cff,#2f78e0);"></div>
+    </div>
+    <div style="text-align:right;min-width:100px;">
+     <strong style="color:#f6f9fd;font-size:13px;">${money(l.soma)}</strong>
+     ${l.qtd>0?`<div style="font-size:10px;color:#93a3ba;">média ${money(l.media)} (${l.qtd}x)</div>`:'<div style="font-size:10px;color:#93a3ba;">sem dados</div>'}
+    </div>
+   </div>`;
+ }).join('');
+}
 
 function renderRitmoAtual(totalSales, goal, remaining){
  const el = document.getElementById('infoRitmoAtualWrap');
@@ -11093,6 +11300,7 @@ function renderMaisNumerosDoMes(){
   if(elDowSub) elDowSub.textContent = money(melhorSoma)+' somando '+qtdMelhorDow+' dia'+(qtdMelhorDow===1?'':'s');
  }
  renderMelhoresPioresDiasSemana(porDiaSemana);
+ renderTodosDiasSemana(porDiaSemana);
 
  // Comparativo "até o mesmo dia" do mês passado (mais justo que comparar mês fechado com mês em andamento)
  const mesAtual = daysData[0]?.dia?.split('.')[1];
@@ -14052,6 +14260,7 @@ aplicarLogoPersonalizadaNoSistema();
 inicializarBotoesCompartilharNativo();
 atualizarBotaoModoCompacto();
 initModoDashboard();
+renderClimaHojeStatus();
 verificarBackupAutomatico();
 verificarPrimeiroAcessoTour();
 verificarDicaDoDia();
