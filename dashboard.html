@@ -530,7 +530,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 20/09/2026 — versão v7.5')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 20/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v7.5</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 20/09/2026 — versão v7.6')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 20/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v7.6</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -1369,6 +1369,20 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <button onclick="exportarFolhaDePontoCSV()" class="no-print w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="margin-top:8px;">📊 Exportar CSV (abre no Excel)</button>
  </div>
 
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7" style="border-color:rgba(139,92,246,.35);">
+  <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
+   <div>
+    <h2 class="text-xl font-bold">🎯 Atividades da Gerência</h2>
+    <p class="text-sm text-slate-400 mt-1">As tarefas da Alessandra — separadas da rotina da equipe porque são mais de gestão do que de loja.</p>
+   </div>
+  </div>
+  <div id="listaAtividadesGerencia" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
+  <div style="display:flex;gap:8px;">
+   <input id="novaAtividadeGerenciaInput" type="text" placeholder="Ex: Gravar vídeos pras redes sociais" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+   <button onclick="adicionarAtividadeGerencia()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">➕ Adicionar</button>
+  </div>
+ </div>
+
  <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
   <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
    <div>
@@ -1532,6 +1546,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <button type="button" id="chipMensagens" onclick="mostrarSecaoConfig('Mensagens')" class="config-chip" role="tab" aria-selected="false">💬 Mensagens</button>
     <button type="button" id="chipVagas" onclick="mostrarSecaoConfig('Vagas')" class="config-chip" role="tab" aria-selected="false">📢 Textos de Vaga</button>
     <button type="button" id="chipDicas" onclick="mostrarSecaoConfig('Dicas')" class="config-chip" role="tab" aria-selected="false">💡 Dica do Dia</button>
+    <button type="button" id="chipCampanhas" onclick="mostrarSecaoConfig('Campanhas')" class="config-chip" role="tab" aria-selected="false">🎉 Campanhas</button>
     <button type="button" id="chipSitePublico" onclick="mostrarSecaoConfig('SitePublico')" class="config-chip" role="tab" aria-selected="false">🌐 Site</button>
    </div>
   </div>
@@ -1895,6 +1910,39 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
   <div id="listaDicasDoDia" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
   <button onclick="testarDicaDoDia()" class="w-full bg-blue-600 hover:bg-blue-500 px-4 py-2.5 rounded-xl font-semibold text-sm">👁️ Ver como fica (testar agora)</button>
+ </div>
+
+ <div id="configSecaoCampanhas" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6" style="display:none;">
+  <div class="mb-4">
+   <h2 class="text-xl font-bold">🎉 Campanhas</h2>
+   <p class="text-sm text-slate-400 mt-1">Textos prontos com emoji, pra copiar e colar direto no WhatsApp, Facebook ou Instagram — tanto pras datas especiais quanto pras promoções da loja.</p>
+  </div>
+
+  <div style="display:flex;gap:8px;margin-bottom:14px;">
+   <button type="button" id="btnAbaCampanhaData" onclick="mostrarAbaCampanha('data')" class="config-chip active">📅 Datas Especiais</button>
+   <button type="button" id="btnAbaCampanhaPromo" onclick="mostrarAbaCampanha('promo')" class="config-chip">🏷️ Promocionais</button>
+  </div>
+
+  <div id="blocoCampanhaData">
+   <div id="listaCampanhasData" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;"></div>
+   <button onclick="abrirNovaCampanha('data')" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Nova campanha de data especial</button>
+  </div>
+
+  <div id="blocoCampanhaPromo" style="display:none;">
+   <div id="listaCampanhasPromo" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;"></div>
+   <button onclick="abrirNovaCampanha('promo')" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Nova campanha promocional</button>
+  </div>
+
+  <div id="formCampanhaWrapper" style="display:none;border-top:1px solid #1e2c42;margin-top:16px;padding-top:16px;">
+   <label class="block text-sm font-semibold mb-2" for="campanhaTituloInput">Título da campanha</label>
+   <input id="campanhaTituloInput" type="text" placeholder="Ex: Dia das Mães" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:10px;">
+   <label class="block text-sm font-semibold mb-2" for="campanhaTextoInput">Texto (pronto pra copiar)</label>
+   <textarea id="campanhaTextoInput" rows="9" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 12px;color:#dce5f2;font-size:13px;resize:vertical;margin-bottom:10px;line-height:1.5;"></textarea>
+   <div style="display:flex;gap:8px;">
+    <button onclick="salvarCampanha()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">💾 Salvar</button>
+    <button onclick="fecharFormCampanha()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl font-semibold text-sm">✕ Cancelar</button>
+   </div>
+  </div>
  </div>
 </section>
 
@@ -2814,6 +2862,67 @@ function executarUltimoDesfazer(){
  const el = document.getElementById('toastBiobel');
  if(el) el.style.opacity = '0';
  mostrarToast('↩️ Desfeito!');
+}
+
+/* ===== Atividades da Gerência (Alessandra) — lista própria, separada da rotina Gabi/Day ===== */
+const ATIVIDADES_GERENCIA_PADRAO = [
+ '🎥 Gravar vídeos pras redes sociais',
+ '🪟 Arrumar a vitrine',
+ '🤝 Contatar fornecedores',
+ '⭐ Chamar clientes VIP'
+];
+function getAtividadesGerencia(){
+ try{
+  const salvo = localStorage.getItem('biobel_atividades_gerencia');
+  return salvo ? JSON.parse(salvo) : ATIVIDADES_GERENCIA_PADRAO.map(texto=>({texto, feita:false}));
+ }catch(e){ return ATIVIDADES_GERENCIA_PADRAO.map(texto=>({texto, feita:false})); }
+}
+function salvarAtividadesGerencia(lista){
+ localStorage.setItem('biobel_atividades_gerencia', JSON.stringify(lista));
+}
+function adicionarAtividadeGerencia(){
+ const input = document.getElementById('novaAtividadeGerenciaInput');
+ const texto = input.value.trim();
+ if(!texto){ mostrarToast('⚠️ Digite uma atividade.'); return; }
+ const lista = getAtividadesGerencia();
+ lista.push({ texto, feita:false });
+ salvarAtividadesGerencia(lista);
+ input.value = '';
+ renderAtividadesGerencia();
+ mostrarToast('✅ Atividade adicionada!');
+}
+function alternarAtividadeGerencia(indice){
+ const lista = getAtividadesGerencia();
+ if(!lista[indice]) return;
+ lista[indice].feita = !lista[indice].feita;
+ salvarAtividadesGerencia(lista);
+ renderAtividadesGerencia();
+}
+function removerAtividadeGerencia(indice){
+ const lista = getAtividadesGerencia();
+ const item = lista[indice];
+ if(!item) return;
+ lista.splice(indice,1);
+ salvarAtividadesGerencia(lista);
+ renderAtividadesGerencia();
+ mostrarToastComDesfazer('🗑️ Atividade removida.', ()=>{
+  const listaAtual = getAtividadesGerencia();
+  listaAtual.splice(indice,0,item);
+  salvarAtividadesGerencia(listaAtual);
+  renderAtividadesGerencia();
+ });
+}
+function renderAtividadesGerencia(){
+ const el = document.getElementById('listaAtividadesGerencia');
+ if(!el) return;
+ const lista = getAtividadesGerencia();
+ if(lista.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhuma atividade cadastrada.</p>'; return; }
+ el.innerHTML = lista.map((item,i)=>`
+   <div style="display:flex;align-items:center;gap:10px;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 14px;">
+    <input type="checkbox" ${item.feita?'checked':''} onchange="alternarAtividadeGerencia(${i})" style="width:18px;height:18px;flex-shrink:0;cursor:pointer;">
+    <span style="flex:1;font-size:13px;color:${item.feita?'#93a3ba':'#dce5f2'};text-decoration:${item.feita?'line-through':'none'};">${item.texto}</span>
+    <button onclick="removerAtividadeGerencia(${i})" aria-label="Remover atividade" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;flex-shrink:0;">🗑️</button>
+   </div>`).join('');
 }
 
 function mostrarToast(texto){
@@ -3898,6 +4007,7 @@ function initEquipeTab(){
  renderFolhaDePonto();
  seedChavesPix();
  renderChavesPixLista();
+ renderAtividadesGerencia();
  const savedDia = localStorage.getItem('biobel_equipe_dia_atual');
  if(savedDia && diasSemanaOrdem.includes(savedDia)) equipeDiaAtual = savedDia;
 
@@ -4991,6 +5101,163 @@ function mostrarAbaVaga(tipo){
  if(btnEstagio) btnEstagio.classList.toggle('active', tipo==='estagio');
  if(btnClt) btnClt.classList.toggle('active', tipo==='clt');
 }
+/* ===== Campanhas — datas especiais e promocionais, prontas pra copiar e colar ===== */
+const CAMPANHAS_DATA_PADRAO = [
+ { id:1, titulo:'Dia do Cliente', texto:`🎉 Hoje é Dia do Cliente e queremos comemorar com você! 💕
+
+Passa aqui na Biobel e aproveita condições especiais só de hoje, feitas com muito carinho pra agradecer sua confiança! 🛍️✨
+
+📍 Te esperamos na loja!` },
+ { id:2, titulo:'Dia das Mães', texto:`🌸 Dia das Mães chegando! 🌸
+
+Que tal presentear quem merece todo o carinho do mundo? 💐 Temos kits, perfumes e presentes especiais pensados com todo amor pra sua mãe se sentir única! 🎁
+
+📍 Vem conferir na Biobel — corre que os kits são limitados!` },
+ { id:3, titulo:'Dia dos Pais', texto:`👔 Dia dos Pais está chegando! 👔
+
+Aquele presente que ele merece, você encontra aqui! 🎁 Kits de cuidados masculinos, perfumes e muito mais, com aquele preço especial de comemoração. 💙
+
+📍 Passa na Biobel e garante o presente do seu pai!` },
+ { id:4, titulo:'Natal', texto:`🎄✨ O Natal está chegando na Biobel! ✨🎄
+
+Presenteie com carinho quem você ama! 🎁 Kits especiais, perfumes e muito mais, com aquele clima de fim de ano gostoso. 🥳
+
+📍 Vem garantir o seu antes que acabe!` }
+];
+const CAMPANHAS_PROMO_PADRAO = [
+ { id:1, titulo:'Desconto Relâmpago', texto:`🔥 PROMOÇÃO RELÂMPAGO na Biobel! 🔥
+
+Só HOJE, produtos selecionados com até 20% OFF! 💸
+
+Corre que é por tempo limitado! ⏰
+
+📍 Te esperamos na loja!` },
+ { id:2, titulo:'Compre 1 Leve 2', texto:`🎁 COMPRE 1 LEVE 2 na Biobel! 🎁
+
+Aproveita essa condição especial em produtos selecionados — na compra de 1, o segundo é por nossa conta! 💕
+
+📍 Só até acabar o estoque — corre pra garantir o seu!` }
+];
+function getCampanhas(tipo){
+ const chave = 'biobel_campanhas_'+tipo;
+ try{
+  const salvo = localStorage.getItem(chave);
+  if(salvo) return JSON.parse(salvo);
+ }catch(e){}
+ return tipo==='data' ? JSON.parse(JSON.stringify(CAMPANHAS_DATA_PADRAO)) : JSON.parse(JSON.stringify(CAMPANHAS_PROMO_PADRAO));
+}
+function salvarCampanhas(tipo, lista){
+ localStorage.setItem('biobel_campanhas_'+tipo, JSON.stringify(lista));
+}
+let campanhaEditandoId = null;
+let campanhaEditandoTipo = null;
+function mostrarAbaCampanha(tipo){
+ const blocoData = document.getElementById('blocoCampanhaData');
+ const blocoPromo = document.getElementById('blocoCampanhaPromo');
+ const btnData = document.getElementById('btnAbaCampanhaData');
+ const btnPromo = document.getElementById('btnAbaCampanhaPromo');
+ if(blocoData) blocoData.style.display = tipo==='data' ? 'block' : 'none';
+ if(blocoPromo) blocoPromo.style.display = tipo==='promo' ? 'block' : 'none';
+ if(btnData) btnData.classList.toggle('active', tipo==='data');
+ if(btnPromo) btnPromo.classList.toggle('active', tipo==='promo');
+ fecharFormCampanha();
+}
+function abrirNovaCampanha(tipo){
+ campanhaEditandoId = null;
+ campanhaEditandoTipo = tipo;
+ document.getElementById('campanhaTituloInput').value = '';
+ document.getElementById('campanhaTextoInput').value = '';
+ document.getElementById('formCampanhaWrapper').style.display = 'block';
+ document.getElementById('campanhaTituloInput').scrollIntoView({behavior:'smooth', block:'center'});
+}
+function editarCampanha(tipo, id){
+ const item = getCampanhas(tipo).find(c=>c.id===id);
+ if(!item) return;
+ campanhaEditandoId = id;
+ campanhaEditandoTipo = tipo;
+ document.getElementById('campanhaTituloInput').value = item.titulo;
+ document.getElementById('campanhaTextoInput').value = item.texto;
+ document.getElementById('formCampanhaWrapper').style.display = 'block';
+ document.getElementById('campanhaTituloInput').scrollIntoView({behavior:'smooth', block:'center'});
+}
+function fecharFormCampanha(){
+ campanhaEditandoId = null;
+ campanhaEditandoTipo = null;
+ const wrapper = document.getElementById('formCampanhaWrapper');
+ if(wrapper) wrapper.style.display = 'none';
+}
+function salvarCampanha(){
+ const titulo = document.getElementById('campanhaTituloInput').value.trim();
+ const texto = document.getElementById('campanhaTextoInput').value.trim();
+ if(!titulo){ mostrarToast('⚠️ Digite um título pra campanha.'); return; }
+ if(!texto){ mostrarToast('⚠️ Digite o texto da campanha.'); return; }
+ const tipo = campanhaEditandoTipo;
+ const lista = getCampanhas(tipo);
+ if(campanhaEditandoId!==null){
+  const idx = lista.findIndex(c=>c.id===campanhaEditandoId);
+  if(idx>=0){ lista[idx] = { ...lista[idx], titulo, texto }; }
+  mostrarToast('✅ Campanha atualizada!');
+ } else {
+  lista.push({ id:Date.now(), titulo, texto });
+  mostrarToast('✅ Campanha adicionada!');
+ }
+ salvarCampanhas(tipo, lista);
+ fecharFormCampanha();
+ renderListaCampanhas(tipo);
+}
+function removerCampanha(tipo, id){
+ const lista = getCampanhas(tipo);
+ const item = lista.find(c=>c.id===id);
+ if(!item) return;
+ const novaLista = lista.filter(c=>c.id!==id);
+ salvarCampanhas(tipo, novaLista);
+ renderListaCampanhas(tipo);
+ mostrarToastComDesfazer('🗑️ Campanha removida.', ()=>{
+  const listaAtual = getCampanhas(tipo);
+  listaAtual.push(item);
+  salvarCampanhas(tipo, listaAtual);
+  renderListaCampanhas(tipo);
+ });
+}
+function copiarCampanha(tipo, id){
+ const item = getCampanhas(tipo).find(c=>c.id===id);
+ if(!item) return;
+ if(navigator.clipboard && navigator.clipboard.writeText){
+  navigator.clipboard.writeText(item.texto).then(()=>{
+   mostrarToast('✅ Texto copiado! Já pode colar no WhatsApp, Facebook, Instagram...');
+  }).catch(()=>{
+   mostrarToast('⚠️ Não copiou sozinho — selecione e copie manualmente.');
+  });
+ } else {
+  mostrarToast('⚠️ Não copiou sozinho — selecione e copie manualmente.');
+ }
+}
+function renderListaCampanhas(tipo){
+ const el = document.getElementById(tipo==='data' ? 'listaCampanhasData' : 'listaCampanhasPromo');
+ if(!el) return;
+ const lista = getCampanhas(tipo);
+ if(lista.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhuma campanha cadastrada ainda.</p>'; return; }
+ el.innerHTML = lista.map(item=>{
+  const preview = item.texto.length>90 ? item.texto.slice(0,90)+'...' : item.texto;
+  return `
+  <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
+   <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+    <span style="color:#dce5f2;font-weight:800;font-size:13.5px;">${item.titulo}</span>
+    <div style="display:flex;gap:8px;flex-shrink:0;">
+     <button onclick="editarCampanha('${tipo}',${item.id})" aria-label="Editar campanha" style="background:none;border:none;color:#4f9cff;cursor:pointer;font-size:14px;">✏️</button>
+     <button onclick="removerCampanha('${tipo}',${item.id})" aria-label="Remover campanha" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;">🗑️</button>
+    </div>
+   </div>
+   <div style="font-size:11.5px;color:#93a3ba;margin-top:6px;white-space:pre-line;">${preview}</div>
+   <button onclick="copiarCampanha('${tipo}',${item.id})" class="w-full bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded-lg font-semibold text-xs" style="margin-top:10px;">📋 Copiar texto</button>
+  </div>`;
+ }).join('');
+}
+function initCampanhas(){
+ renderListaCampanhas('data');
+ renderListaCampanhas('promo');
+}
+
 function initTextosVaga(){
  const inputEstagio = document.getElementById('textoVagaEstagioInput');
  const inputClt = document.getElementById('textoVagaCltInput');
@@ -12160,7 +12427,7 @@ function extractSpreadsheetId(url){
  return m?m[1]:'';
 }
 function mostrarSecaoConfig(secao){
- const secoes = ['Conexao','Planilhas','Metas','Email','Horarios','Empresa','Log','Backup','Logo','SitePublico','Mensagens','Vagas','Dicas'];
+ const secoes = ['Conexao','Planilhas','Metas','Email','Horarios','Empresa','Log','Backup','Logo','SitePublico','Mensagens','Vagas','Dicas','Campanhas'];
  secoes.forEach(s=>{
   const el = document.getElementById('configSecao'+s);
   const chip = document.getElementById('chip'+s);
@@ -12175,6 +12442,7 @@ function mostrarSecaoConfig(secao){
  if(secao==='Backup') renderStatusBackupAutomatico();
  if(secao==='Vagas') initTextosVaga();
  if(secao==='Dicas') renderListaDicasDoDia();
+ if(secao==='Campanhas') initCampanhas();
 }
 
 function saveGoogleConfig(){
