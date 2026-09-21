@@ -530,7 +530,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 20/09/2026 — versão v7.8')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 20/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v7.8</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 20/09/2026 — versão v7.9')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 20/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v7.9</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -5157,7 +5157,34 @@ Aquele presente que ele merece, você encontra aqui! 🎁 Kits de cuidados mascu
 
 Presenteie com carinho quem você ama! 🎁 Kits especiais, perfumes e muito mais, com aquele clima de fim de ano gostoso. 🥳
 
-📍 Vem garantir o seu antes que acabe!` }
+📍 Vem garantir o seu antes que acabe!` },
+ { id:5, titulo:'Black Friday', texto:`🖤 BLACK FRIDAY chegou na Biobel! 🖤
+
+Os melhores descontos do ano estão aqui! 🔥 Aproveita pra garantir aqueles produtos que você já queria com um preço incrível.
+
+⏰ É só até acabar o estoque!
+
+📍 Corre pra loja!` },
+ { id:6, titulo:'Dia Internacional da Mulher', texto:`💜 Feliz Dia Internacional da Mulher! 💜
+
+Hoje o dia é todo seu! 🌷 Pra comemorar, preparamos uma condição especial pra você se cuidar e se presentear com muito carinho.
+
+📍 Te esperamos na Biobel!` },
+ { id:7, titulo:'Dia dos Namorados', texto:`💕 Dia dos Namorados está chegando! 💕
+
+Que tal um presente diferente pra surpreender quem você ama? 🎁 Perfumes, kits e presentes especiais esperando por você.
+
+📍 Vem escolher o seu na Biobel!` },
+ { id:8, titulo:'Páscoa', texto:`🐰🌸 Feliz Páscoa! 🌸🐰
+
+Pra comemorar, preparamos mimos e condições especiais em produtos selecionados! 🎁
+
+📍 Passa na Biobel e aproveita!` },
+ { id:9, titulo:'Aniversário da Loja', texto:`🎂🎉 A Biobel está de aniversário! 🎉🎂
+
+Pra comemorar com você, que sempre esteve com a gente, preparamos condições especiais só nessa semana! 💕
+
+📍 Vem celebrar com a gente na loja!` }
 ];
 const CAMPANHAS_PROMO_PADRAO = [
  { id:1, titulo:'Desconto Relâmpago', texto:`🔥 PROMOÇÃO RELÂMPAGO na Biobel! 🔥
@@ -5171,9 +5198,31 @@ Corre que é por tempo limitado! ⏰
 
 Aproveita essa condição especial em produtos selecionados — na compra de 1, o segundo é por nossa conta! 💕
 
-📍 Só até acabar o estoque — corre pra garantir o seu!` }
+📍 Só até acabar o estoque — corre pra garantir o seu!` },
+ { id:3, titulo:'Últimas Unidades', texto:`⚠️ ÚLTIMAS UNIDADES na Biobel! ⚠️
+
+Alguns produtos estão acabando o estoque, e o preço está imperdível pra dar vazão! 🔥
+
+Corre que depois que acabar, acabou! ⏰
+
+📍 Vem garantir o seu antes que termine!` },
+ { id:4, titulo:'Lançamento de Produto', texto:`✨ NOVIDADE na Biobel! ✨
+
+Chegou um produto novo que você vai amar! 💄 Pra comemorar o lançamento, ele está com um preço especial só essa semana.
+
+📍 Vem conhecer na loja!` },
+ { id:5, titulo:'Indique uma Amiga', texto:`💕 INDIQUE UMA AMIGA e ganhe! 💕
+
+Traga uma amiga que ainda não conhece a Biobel e as duas ganham um mimo especial na compra! 🎁
+
+📍 Válido só essa semana — chama sua amiga e vem pra loja!` },
+ { id:6, titulo:'Cliente Fiel', texto:`⭐ Prêmio pra quem já é da família Biobel! ⭐
+
+Você que já é nossa cliente tem uma condição exclusiva te esperando! 💕 É nosso jeito de agradecer sua confiança.
+
+📍 Passa na loja e confere!` }
 ];
-function getCampanhas(tipo){
+function getCampanhasTexto(tipo){
  const chave = 'biobel_campanhas_'+tipo;
  try{
   const salvo = localStorage.getItem(chave);
@@ -5181,7 +5230,7 @@ function getCampanhas(tipo){
  }catch(e){}
  return tipo==='data' ? JSON.parse(JSON.stringify(CAMPANHAS_DATA_PADRAO)) : JSON.parse(JSON.stringify(CAMPANHAS_PROMO_PADRAO));
 }
-function salvarCampanhas(tipo, lista){
+function salvarCampanhasTexto(tipo, lista){
  localStorage.setItem('biobel_campanhas_'+tipo, JSON.stringify(lista));
 }
 let campanhaEditandoId = null;
@@ -5206,7 +5255,7 @@ function abrirNovaCampanha(tipo){
  document.getElementById('campanhaTituloInput').scrollIntoView({behavior:'smooth', block:'center'});
 }
 function editarCampanha(tipo, id){
- const item = getCampanhas(tipo).find(c=>c.id===id);
+ const item = getCampanhasTexto(tipo).find(c=>c.id===id);
  if(!item) return;
  campanhaEditandoId = id;
  campanhaEditandoTipo = tipo;
@@ -5227,7 +5276,7 @@ function salvarCampanha(){
  if(!titulo){ mostrarToast('⚠️ Digite um título pra campanha.'); return; }
  if(!texto){ mostrarToast('⚠️ Digite o texto da campanha.'); return; }
  const tipo = campanhaEditandoTipo;
- const lista = getCampanhas(tipo);
+ const lista = getCampanhasTexto(tipo);
  if(campanhaEditandoId!==null){
   const idx = lista.findIndex(c=>c.id===campanhaEditandoId);
   if(idx>=0){ lista[idx] = { ...lista[idx], titulo, texto }; }
@@ -5236,26 +5285,26 @@ function salvarCampanha(){
   lista.push({ id:Date.now(), titulo, texto });
   mostrarToast('✅ Campanha adicionada!');
  }
- salvarCampanhas(tipo, lista);
+ salvarCampanhasTexto(tipo, lista);
  fecharFormCampanha();
- renderListaCampanhas(tipo);
+ renderListaCampanhasTexto(tipo);
 }
-function removerCampanha(tipo, id){
- const lista = getCampanhas(tipo);
+function removerCampanhaTexto(tipo, id){
+ const lista = getCampanhasTexto(tipo);
  const item = lista.find(c=>c.id===id);
  if(!item) return;
  const novaLista = lista.filter(c=>c.id!==id);
- salvarCampanhas(tipo, novaLista);
- renderListaCampanhas(tipo);
+ salvarCampanhasTexto(tipo, novaLista);
+ renderListaCampanhasTexto(tipo);
  mostrarToastComDesfazer('🗑️ Campanha removida.', ()=>{
-  const listaAtual = getCampanhas(tipo);
+  const listaAtual = getCampanhasTexto(tipo);
   listaAtual.push(item);
-  salvarCampanhas(tipo, listaAtual);
-  renderListaCampanhas(tipo);
+  salvarCampanhasTexto(tipo, listaAtual);
+  renderListaCampanhasTexto(tipo);
  });
 }
 function copiarCampanha(tipo, id){
- const item = getCampanhas(tipo).find(c=>c.id===id);
+ const item = getCampanhasTexto(tipo).find(c=>c.id===id);
  if(!item) return;
  if(navigator.clipboard && navigator.clipboard.writeText){
   navigator.clipboard.writeText(item.texto).then(()=>{
@@ -5267,10 +5316,10 @@ function copiarCampanha(tipo, id){
   mostrarToast('⚠️ Não copiou sozinho — selecione e copie manualmente.');
  }
 }
-function renderListaCampanhas(tipo){
+function renderListaCampanhasTexto(tipo){
  const el = document.getElementById(tipo==='data' ? 'listaCampanhasData' : 'listaCampanhasPromo');
  if(!el) return;
- const lista = getCampanhas(tipo);
+ const lista = getCampanhasTexto(tipo);
  if(lista.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhuma campanha cadastrada ainda.</p>'; return; }
  el.innerHTML = lista.map(item=>{
   const preview = item.texto.length>90 ? item.texto.slice(0,90)+'...' : item.texto;
@@ -5280,7 +5329,7 @@ function renderListaCampanhas(tipo){
     <span style="color:#dce5f2;font-weight:800;font-size:13.5px;">${item.titulo}</span>
     <div style="display:flex;gap:8px;flex-shrink:0;">
      <button onclick="editarCampanha('${tipo}',${item.id})" aria-label="Editar campanha" style="background:none;border:none;color:#4f9cff;cursor:pointer;font-size:14px;">✏️</button>
-     <button onclick="removerCampanha('${tipo}',${item.id})" aria-label="Remover campanha" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;">🗑️</button>
+     <button onclick="removerCampanhaTexto('${tipo}',${item.id})" aria-label="Remover campanha" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;">🗑️</button>
     </div>
    </div>
    <div style="font-size:11.5px;color:#93a3ba;margin-top:6px;white-space:pre-line;">${preview}</div>
@@ -5288,9 +5337,31 @@ function renderListaCampanhas(tipo){
   </div>`;
  }).join('');
 }
+const CAMPANHAS_IDS_ORIGINAIS = { data:[1,2,3,4], promo:[1,2] };
+function migrarNovasCampanhasPadrao(){
+ // Só roda uma vez — adiciona os NOVOS modelos padrão pra quem já tinha campanhas salvas antes
+ // dessa atualização. Compara com os IDs ORIGINAIS (fixos), não com os atuais — assim, se a
+ // pessoa já tinha apagado um dos 4/2 modelos originais de propósito, ele não é revivido; só os
+ // modelos genuinamente novos (a partir do id 5 em datas, e 3 em promocionais) entram.
+ if(localStorage.getItem('biobel_campanhas_migracao_v2')==='feito') return;
+ ['data','promo'].forEach(tipo=>{
+  const salvo = localStorage.getItem('biobel_campanhas_'+tipo);
+  if(!salvo) return; // nunca salvou nada -> getCampanhasTexto já usa a lista nova completa direto
+  try{
+   const listaAtual = JSON.parse(salvo);
+   const idsAtuais = listaAtual.map(c=>c.id);
+   const idsOriginais = CAMPANHAS_IDS_ORIGINAIS[tipo];
+   const padrao = tipo==='data' ? CAMPANHAS_DATA_PADRAO : CAMPANHAS_PROMO_PADRAO;
+   const novos = padrao.filter(p=>!idsOriginais.includes(p.id) && !idsAtuais.includes(p.id));
+   if(novos.length>0) salvarCampanhasTexto(tipo, [...listaAtual, ...novos]);
+  }catch(e){}
+ });
+ localStorage.setItem('biobel_campanhas_migracao_v2', 'feito');
+}
 function initCampanhas(){
- renderListaCampanhas('data');
- renderListaCampanhas('promo');
+ migrarNovasCampanhasPadrao();
+ renderListaCampanhasTexto('data');
+ renderListaCampanhasTexto('promo');
 }
 
 function initTextosVaga(){
