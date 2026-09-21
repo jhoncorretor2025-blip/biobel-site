@@ -498,6 +498,7 @@ body.modo-compacto .space-y-4 > * + *{ margin-top:8px!important; }
 <div id="faixaMensagemProgramada" style="display:none;"></div>
 <div id="tourGuiadoOverlay" style="display:none;"></div>
 <div id="dicaDoDiaOverlay" style="display:none;"></div>
+<div id="lembreteReunioesOverlay" style="display:none;"></div>
 <div id="assistenteDesligamentoOverlay" style="display:none;"></div>
 <button id="btnVoltarTopo" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Voltar ao topo">↑</button>
 <a href="#dashboardTab" style="position:absolute;left:-9999px;top:0;z-index:9999;background:#0ea97a;color:#04241a;padding:12px 18px;border-radius:0 0 10px 0;font-weight:700;text-decoration:none" onfocus="this.style.left='0'" onblur="this.style.left='-9999px'">Pular para o conteúdo</a>
@@ -530,7 +531,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 21/09/2026 — versão v8.1')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 21/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v8.1</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 21/09/2026 — versão v8.2')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 21/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v8.2</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -2053,7 +2054,8 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraGastos')">🏠 Gastos</button>
    <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraComissoes')">🎯 Comissões</button>
    <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraFuncionarios')">👥 Funcionários</button>
-   <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraAgenda')">🤝 Fornecedores</button>
+   <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraFornecedoresReal')">🤝 Fornecedores</button>
+   <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraAgenda')">🗓️ Agenda</button>
   </nav>
 
   <button id="btnAlternarTodosGrupos" onclick="alternarTodosGruposAdm()" class="no-print text-xs text-slate-300 hover:text-white" style="background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:6px 12px;margin-bottom:14px;">▾ Expandir todos os grupos</button>
@@ -2193,6 +2195,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <p style="font-size:11px;color:#93a3ba;margin-top:8px;">💡 Pode deixar o valor em branco pra cadastrar o nome agora e preencher o valor depois — vai aparecer como "⚠️ A definir".</p>
   </div>
 
+  <div id="admAncoraFornecedoresReal"></div>
   <div class="grupo-adm-header" data-grupo="fornecedores" onclick="alternarGrupoAdm('fornecedores')" style="display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#1a1408,#150f06);border:1px solid rgba(251,191,36,.35);border-radius:16px;padding:16px 20px;cursor:pointer;position:relative;overflow:hidden;">
    <span style="position:absolute;right:-10px;top:-10px;font-size:70px;opacity:.08;pointer-events:none;">🤝</span>
    <div>
@@ -3307,7 +3310,7 @@ const BIOBEL_INDICE_BUSCA = [
  { termos:'site trabalhe conosco curriculo formulario', label:'🌐 Configuração → Site', acao:()=>{showTab('config'); mostrarSecaoConfig('SitePublico');} },
  { termos:'mensagens programadas aniversario popup', label:'💬 Configuração → Mensagens', acao:()=>{showTab('config'); mostrarSecaoConfig('Mensagens');} },
  { termos:'aluguel gastos fixos agua luz internet contadora', label:'🏠 ADM → Gastos Fixos', acao:()=>{showTab('adm'); setTimeout(()=>irParaSecaoAdm('admAncoraGastos'),250);} },
- { termos:'boletos fornecedores comprovante', label:'📦 ADM → Boletos de Fornecedores', acao:()=>{showTab('adm'); setTimeout(()=>irParaSecaoAdm('admAncoraGastos'),250);} },
+ { termos:'boletos fornecedores comprovante compra parcelada', label:'📦 ADM → Boletos de Fornecedores', acao:()=>{showTab('adm'); setTimeout(()=>irParaSecaoAdm('admAncoraFornecedoresReal'),250);} },
  { termos:'comissao meta gabriela day niveis', label:'🎯 ADM → Comissão por Metas', acao:()=>{showTab('adm'); setTimeout(()=>irParaSecaoAdm('admAncoraComissoes'),250);} },
  { termos:'ferias fgts admissao gabriela', label:'🏖️ ADM → Férias e Admissão', acao:()=>{showTab('adm'); setTimeout(()=>irParaSecaoAdm('admAncoraComissoes'),250);} },
  { termos:'estagio day recesso contrato', label:'📋 ADM → Estágio da Day', acao:()=>{showTab('adm'); setTimeout(()=>irParaSecaoAdm('admAncoraComissoes'),250);} },
@@ -5703,6 +5706,34 @@ function removerReuniao(id){
   mostrarToast('🗑️ Removida.');
  });
 }
+function verificarLembreteReunioesHoje(){
+ const hoje = obterAgoraBrasilia();
+ const hojeStr = hoje.paraChaveISO();
+ const ultimaVez = localStorage.getItem('biobel_lembrete_reunioes_ultima_data');
+ if(ultimaVez===hojeStr) return; // já avisou hoje, não repete
+ const reunioesHoje = getReunioes().filter(r=>r.data===hojeStr && !r.concluida);
+ if(reunioesHoje.length===0) return;
+ localStorage.setItem('biobel_lembrete_reunioes_ultima_data', hojeStr);
+ // Espera mais tempo que a Dica do Dia (que aparece em ~1.2s), pra dar tempo da pessoa ler e
+ // fechar a primeira antes dessa aparecer — evita as duas telas surgindo uma em cima da outra.
+ setTimeout(()=>renderLembreteReunioesPopup(reunioesHoje), 4500);
+}
+function renderLembreteReunioesPopup(reunioes){
+ const el = document.getElementById('lembreteReunioesOverlay');
+ if(!el) return;
+ el.style.cssText = 'display:flex;position:fixed;inset:0;z-index:9998;background:rgba(7,17,31,.85);align-items:center;justify-content:center;padding:20px;';
+ const listaHtml = reunioes.map(r=>`
+   <div style="background:#0b1728;border:1px solid rgba(251,191,36,.3);border-radius:10px;padding:10px 14px;margin-bottom:8px;text-align:left;">
+    <div style="color:#dce5f2;font-weight:800;font-size:13px;">${r.fornecedor}</div>
+    <div style="color:#93a3ba;font-size:11.5px;margin-top:2px;">${r.hora?'⏰ '+r.hora:'Sem horário marcado'}${r.assunto?' — '+r.assunto:''}</div>
+   </div>`).join('');
+ el.innerHTML = `<div style="background:linear-gradient(135deg,#1a1408,#150f06);border:1px solid rgba(251,191,36,.4);border-radius:20px;padding:30px 28px;max-width:400px;width:100%;box-shadow:0 24px 70px rgba(0,0,0,.55);text-align:center;">
+   <div style="font-size:11px;color:#fbbf24;font-weight:800;text-transform:uppercase;margin-bottom:14px;">🤝 Reunião marcada pra hoje</div>
+   ${listaHtml}
+   <button onclick="document.getElementById('lembreteReunioesOverlay').style.display='none';" style="background:#fbbf24;border:none;color:#1a1408;border-radius:10px;padding:10px 24px;font-size:13px;font-weight:800;cursor:pointer;margin-top:10px;">Combinado!</button>
+  </div>`;
+}
+
 function renderReunioes(){
  const el = document.getElementById('listaReunioes');
  if(!el) return;
@@ -14024,6 +14055,7 @@ initModoDashboard();
 verificarBackupAutomatico();
 verificarPrimeiroAcessoTour();
 verificarDicaDoDia();
+verificarLembreteReunioesHoje();
 
 // Registra o service worker (permite abrir o sistema mesmo sem internet, mostrando a última
 // versão salva) — se o navegador não suportar, simplesmente ignora, sem quebrar nada.
