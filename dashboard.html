@@ -531,7 +531,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 22/09/2026 — versão v9.0')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 22/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v9.0</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 22/09/2026 — versão v9.1')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 22/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v9.1</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -1098,6 +1098,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <button onclick="adicionarClimaDia()" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">➕ Marcar</button>
    </div>
    <button onclick="preencherClimaHistoricoAutomatico()" class="no-print w-full bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-xl font-semibold text-sm" style="margin-bottom:10px;">🔄 Preencher automaticamente os dias já lançados desse mês</button>
+   <div id="tirinhaPrevisaoClima" style="margin-bottom:14px;"></div>
    <div id="conteudoCorrelacaoClima"></div>
   </div>
 
@@ -9668,6 +9669,7 @@ function mostrarSecaoInfo(secao){
   try{ renderSemanasDoMes(); }catch(e){ console.error('Erro em renderSemanasDoMes:', e); }
   try{ renderListaCampanhas(); }catch(e){ console.error('Erro em renderListaCampanhas:', e); }
   try{ renderCorrelacaoClima(); }catch(e){ console.error('Erro em renderCorrelacaoClima:', e); }
+  try{ renderTirinhaPrevisaoClima(); }catch(e){ console.error('Erro em renderTirinhaPrevisaoClima:', e); }
  }
 }
 
@@ -10814,6 +10816,30 @@ function adicionarClimaDia(){
  renderCorrelacaoClima();
  mostrarToast('✅ Clima marcado!');
 }
+async function renderTirinhaPrevisaoClima(){
+ const el = document.getElementById('tirinhaPrevisaoClima');
+ if(!el) return;
+ const previsao = await getPrevisaoClimaFutura();
+ if(previsao.length===0){ el.innerHTML=''; return; }
+ const emojis = { Sol:'☀️', Nublado:'☁️', Chuva:'🌧️', Frio:'🥶' };
+ const nomesDiaSemana = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+ // Mostra só os próximos 7 dias (uma semana) — já dá uma boa visão sem virar bagunça visual.
+ const proximosSete = previsao.slice(0,7);
+ el.innerHTML = `
+  <div style="font-size:10.5px;color:#93a3ba;font-weight:700;margin-bottom:8px;">📅 Previsão dos próximos dias</div>
+  <div style="display:flex;gap:6px;overflow-x:auto;">
+   ${proximosSete.map((d,i)=>{
+    const dataObj = new Date(d.data+'T00:00:00');
+    const rotulo = i===0 ? 'Hoje' : nomesDiaSemana[dataObj.getDay()];
+    return `<div style="flex-shrink:0;width:64px;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:8px 6px;text-align:center;">
+      <div style="font-size:10px;color:#93a3ba;font-weight:700;">${rotulo}</div>
+      <div style="font-size:20px;margin:4px 0;">${emojis[d.categoria]||'❔'}</div>
+      <div style="font-size:9.5px;color:#dce5f2;">${Math.round(d.tempMax)}°/${Math.round(d.tempMin)}°</div>
+     </div>`;
+   }).join('')}
+  </div>`;
+}
+
 function renderCorrelacaoClima(){
  const el = document.getElementById('conteudoCorrelacaoClima');
  if(!el) return;
@@ -10846,11 +10872,20 @@ function renderCorrelacaoClima(){
   }
  }
 
- el.innerHTML = insightHtml + tipos.map(([tipo, dados])=>{
+ const cores = { Sol:'#fbbf24', Nublado:'#93a3ba', Chuva:'#4f9cff', Frio:'#60a5fa' };
+ const maiorMedia = Math.max(...tipos.map(([,d])=>d.soma/d.qtd), 1);
+ el.innerHTML = insightHtml + tipos.sort((a,b)=>(b[1].soma/b[1].qtd)-(a[1].soma/a[1].qtd)).map(([tipo, dados])=>{
   const media = dados.soma/dados.qtd;
-  return `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1e2c42;font-size:12.5px;">
-    <span style="color:#dce5f2;">${tipo} (${dados.qtd} dia${dados.qtd===1?'':'s'})</span>
-    <span style="color:#93a3ba;">Média: <strong style="color:#dce5f2;">${money(media)}</strong></span>
+  const pct = maiorMedia>0 ? (media/maiorMedia)*100 : 0;
+  const emojis = { Sol:'☀️', Nublado:'☁️', Chuva:'🌧️', Frio:'🥶' };
+  return `<div style="margin-bottom:10px;">
+    <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px;">
+     <span style="color:#dce5f2;">${emojis[tipo]||''} ${tipo} <span style="color:#93a3ba;font-size:11px;">(${dados.qtd} dia${dados.qtd===1?'':'s'})</span></span>
+     <strong style="color:#f6f9fd;">${money(media)}</strong>
+    </div>
+    <div style="background:#0b1728;border-radius:999px;height:10px;overflow:hidden;">
+     <div style="height:100%;width:${pct.toFixed(1)}%;background:${cores[tipo]||'#93a3ba'};"></div>
+    </div>
    </div>`;
  }).join('');
 }
