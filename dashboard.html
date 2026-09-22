@@ -531,7 +531,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 21/09/2026 — versão v8.6')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 21/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v8.6</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 21/09/2026 — versão v8.7')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 21/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v8.7</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -2244,6 +2244,11 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <button type="button" id="btnFiltroBoletoPendentes" onclick="filtrarBoletos('pendentes')" style="border:0;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer;background:transparent;color:#93a3ba;">Pendentes</button>
     <button type="button" id="btnFiltroBoletoPagos" onclick="filtrarBoletos('pagos')" style="border:0;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer;background:transparent;color:#93a3ba;">Pagos</button>
    </div>
+   <input id="buscaBoletoInput" type="text" placeholder="🔎 Buscar por fornecedor, marca ou observação..." oninput="renderBoletos()" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:12px;">
+   <div style="display:flex;gap:8px;margin-bottom:12px;">
+    <button onclick="exportarBoletosPDF()" class="no-print flex-1 bg-purple-600 hover:bg-purple-500 px-3 py-2 rounded-lg font-semibold text-xs">📑 Exportar PDF</button>
+    <button onclick="exportarBoletosCSV()" class="no-print flex-1 bg-emerald-600 hover:bg-emerald-500 px-3 py-2 rounded-lg font-semibold text-xs">📊 Exportar CSV (Excel)</button>
+   </div>
    <div id="listaBoletos" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;"></div>
    <div id="formWrapperBoleto" style="border-top:1px solid #1e2c42;padding-top:14px;transition:background-color .2s;">
     <div id="tituloFormBoleto" style="font-size:12px;font-weight:800;color:#93a3ba;margin-bottom:10px;">➕ Adicionar novo boleto</div>
@@ -2320,6 +2325,36 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <option value="">Escolha um fornecedor...</option>
    </select>
    <div id="conteudoHistoricoPrecoFornecedor"></div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>📇 Dados dos Fornecedores</h3>
+    <span>telefone e CNPJ de cada um — útil pra ligar rápido ou conferir dado fiscal</span>
+   </div>
+   <div style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:8px;margin-bottom:12px;">
+    <input id="dadosFornecedorNomeInput" type="text" placeholder="Fornecedor" list="listaFornecedoresConhecidos" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <input id="dadosFornecedorTelefoneInput" type="text" placeholder="Telefone" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <input id="dadosFornecedorCnpjInput" type="text" placeholder="CNPJ" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="salvarDadosFornecedor()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+   </div>
+   <div id="listaDadosFornecedores" style="display:flex;flex-direction:column;gap:8px;"></div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>🏆 Ranking de Fornecedores</h3>
+    <span>quem mais pesa no seu bolso — útil pra saber quem vale a pena negociar melhor</span>
+   </div>
+   <div id="rankingFornecedores" style="display:flex;flex-direction:column;gap:8px;"></div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>🏷️ Gastos por Marca</h3>
+    <span>quanto você já comprou de cada marca, somando todos os fornecedores</span>
+   </div>
+   <div id="gastosPorMarca" style="display:flex;flex-direction:column;gap:8px;"></div>
   </div>
 
   </div>
@@ -4649,6 +4684,94 @@ function carregarExemploCartaoPontoAgosto(){
   mostrarToast(adicionados>0 ? '✅ '+adicionados+' dia(s) de exemplo carregado(s)!' : 'ℹ️ Esses dias já estavam cadastrados.');
  });
 }
+/* ===== Exportar Boletos — PDF e CSV, respeitando o filtro/busca que estiver ativo na tela ===== */
+function getBoletosFiltradosAtual(){
+ let lista = getBoletos();
+ if(filtroBoletoAtual==='pendentes') lista = lista.filter(b=>!b.pago);
+ else if(filtroBoletoAtual==='pagos') lista = lista.filter(b=>b.pago);
+ const termoBusca = document.getElementById('buscaBoletoInput')?.value.trim().toLowerCase();
+ if(termoBusca){
+  lista = lista.filter(b=>
+   String(b.fornecedor||'').toLowerCase().includes(termoBusca) ||
+   String(b.marca||'').toLowerCase().includes(termoBusca) ||
+   String(b.obs||'').toLowerCase().includes(termoBusca)
+  );
+ }
+ return lista;
+}
+function exportarBoletosCSV(){
+ const lista = getBoletosFiltradosAtual();
+ if(lista.length===0){ mostrarToast('⚠️ Não tem nenhum boleto pra exportar com esse filtro.'); return; }
+ const linhas = [['Fornecedor','Marca','Categoria','Valor','Vencimento','Pago?','Pago Por','Observação']];
+ lista.forEach(b=>{
+  linhas.push([
+   b.fornecedor||'', b.marca||'', b.categoria||'',
+   money(Number(b.valor)||0),
+   b.vencimento ? new Date(b.vencimento+'T00:00:00').toLocaleDateString('pt-BR') : '',
+   b.pago ? 'Sim' : 'Não',
+   b.pagoPor||'', b.obs||''
+  ]);
+ });
+ const csv = linhas.map(linha=>linha.map(campo=>'"'+String(campo).replace(/"/g,'""')+'"').join(';')).join('\r\n');
+ const blob = new Blob(['\ufeff'+csv], { type:'text/csv;charset=utf-8;' });
+ const url = URL.createObjectURL(blob);
+ const a = document.createElement('a');
+ a.href = url;
+ a.download = 'boletos-fornecedores-'+obterAgoraBrasilia().paraChaveISO()+'.csv';
+ document.body.appendChild(a);
+ a.click();
+ document.body.removeChild(a);
+ URL.revokeObjectURL(url);
+ mostrarToast('✅ CSV exportado!');
+}
+async function exportarBoletosPDF(){
+ const lista = getBoletosFiltradosAtual();
+ if(lista.length===0){ mostrarToast('⚠️ Não tem nenhum boleto pra exportar com esse filtro.'); return; }
+ try{
+  await carregarJsPDFSobDemanda();
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({unit:'mm', format:'a4'});
+  const margem = 15;
+  let y = await desenharCabecalhoPDF(doc, 'Boletos de Fornecedores', filtroBoletoAtual==='todos' ? 'Todos os boletos' : 'Somente '+(filtroBoletoAtual==='pendentes'?'pendentes':'pagos'));
+
+  doc.setFontSize(9); doc.setTextColor(20,20,20);
+  doc.setFont('helvetica','bold');
+  doc.text('Fornecedor', margem, y);
+  doc.text('Categoria', margem+55, y);
+  doc.text('Valor', margem+95, y);
+  doc.text('Vencimento', margem+125, y);
+  doc.text('Status', margem+160, y);
+  y += 2;
+  doc.line(margem, y, 195, y);
+  y += 5;
+  doc.setFont('helvetica','normal');
+
+  let total = 0;
+  lista.forEach(b=>{
+   if(y>275){ doc.addPage(); y=20; }
+   total += Number(b.valor)||0;
+   doc.text(String(b.fornecedor||'').slice(0,28), margem, y);
+   doc.text(String(b.categoria||''), margem+55, y);
+   doc.text(money(Number(b.valor)||0), margem+95, y);
+   doc.text(b.vencimento ? new Date(b.vencimento+'T00:00:00').toLocaleDateString('pt-BR') : '—', margem+125, y);
+   doc.text(b.pago ? 'Pago' : 'Pendente', margem+160, y);
+   y += 6;
+  });
+
+  y += 4;
+  doc.line(margem, y, 195, y);
+  y += 8;
+  doc.setFont('helvetica','bold'); doc.setFontSize(11);
+  doc.text('Total ('+lista.length+' boletos): '+money(total), margem, y);
+
+  doc.save('boletos-fornecedores-'+obterAgoraBrasilia().paraChaveISO()+'.pdf');
+  mostrarToast('✅ PDF exportado!');
+ }catch(e){
+  console.error(e);
+  mostrarToast('⚠️ Não foi possível gerar o PDF.');
+ }
+}
+
 function exportarFolhaDePontoCSV(){
  const funcionaria = document.getElementById('pontoFuncionariaSelect').value;
  const mesInput = document.getElementById('pontoMesSelect').value;
@@ -6804,6 +6927,113 @@ function verComprovanteBoleto(id){
 }
 
 /* ===== Padrão de parcelamento por fornecedor — lembra o jeito que cada um costuma parcelar ===== */
+/* ===== Ranking de Fornecedores e Gastos por Marca — quem/o que mais pesa no bolso ===== */
+function renderRankingFornecedores(){
+ const el = document.getElementById('rankingFornecedores');
+ if(!el) return;
+ const boletos = getBoletos();
+ if(boletos.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhum boleto cadastrado ainda.</p>'; return; }
+ const porFornecedor = {};
+ boletos.forEach(b=>{
+  const chave = String(b.fornecedor||'').trim();
+  if(!chave) return;
+  if(!porFornecedor[chave]) porFornecedor[chave] = { total:0, qtd:0 };
+  porFornecedor[chave].total += Number(b.valor)||0;
+  porFornecedor[chave].qtd += 1;
+ });
+ const ranking = Object.entries(porFornecedor).sort((a,b)=>b[1].total-a[1].total).slice(0,10);
+ const maiorValor = ranking.length>0 ? ranking[0][1].total : 1;
+ el.innerHTML = ranking.map(([nome,info],i)=>{
+  const pct = maiorValor>0 ? (info.total/maiorValor)*100 : 0;
+  return `<div>
+    <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px;">
+     <span style="color:#dce5f2;">${i+1}º — ${nome} <span style="color:#93a3ba;font-size:11px;">(${info.qtd} boleto${info.qtd===1?'':'s'})</span></span>
+     <strong style="color:#f6f9fd;">${money(info.total)}</strong>
+    </div>
+    <div style="background:#0b1728;border-radius:999px;height:8px;overflow:hidden;">
+     <div style="height:100%;width:${pct.toFixed(1)}%;background:linear-gradient(90deg,#fbbf24,#f59e0b);"></div>
+    </div>
+   </div>`;
+ }).join('');
+}
+function renderGastosPorMarca(){
+ const el = document.getElementById('gastosPorMarca');
+ if(!el) return;
+ const boletos = getBoletos().filter(b=>b.marca);
+ if(boletos.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhum boleto com marca preenchida ainda.</p>'; return; }
+ const porMarca = {};
+ boletos.forEach(b=>{
+  const chave = String(b.marca||'').trim();
+  if(!chave) return;
+  if(!porMarca[chave]) porMarca[chave] = { total:0, qtd:0 };
+  porMarca[chave].total += Number(b.valor)||0;
+  porMarca[chave].qtd += 1;
+ });
+ const lista = Object.entries(porMarca).sort((a,b)=>b[1].total-a[1].total);
+ const maiorValor = lista.length>0 ? lista[0][1].total : 1;
+ el.innerHTML = lista.map(([nome,info])=>{
+  const pct = maiorValor>0 ? (info.total/maiorValor)*100 : 0;
+  return `<div>
+    <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px;">
+     <span style="color:#dce5f2;">${nome} <span style="color:#93a3ba;font-size:11px;">(${info.qtd}x)</span></span>
+     <strong style="color:#f6f9fd;">${money(info.total)}</strong>
+    </div>
+    <div style="background:#0b1728;border-radius:999px;height:8px;overflow:hidden;">
+     <div style="height:100%;width:${pct.toFixed(1)}%;background:linear-gradient(90deg,#a78bfa,#8b5cf6);"></div>
+    </div>
+   </div>`;
+ }).join('');
+}
+
+/* ===== Dados dos Fornecedores — telefone e CNPJ, guardado por nome ===== */
+function getDadosFornecedores(){
+ try{ return JSON.parse(localStorage.getItem('biobel_dados_fornecedores')||'{}'); }catch(e){ return {}; }
+}
+function salvarDadosFornecedores(obj){ localStorage.setItem('biobel_dados_fornecedores', JSON.stringify(obj)); }
+function salvarDadosFornecedor(){
+ const nome = document.getElementById('dadosFornecedorNomeInput').value.trim();
+ const telefone = document.getElementById('dadosFornecedorTelefoneInput').value.trim();
+ const cnpj = document.getElementById('dadosFornecedorCnpjInput').value.trim();
+ if(!nome){ mostrarToast('⚠️ Digite o nome do fornecedor.'); return; }
+ const chave = nome.toLowerCase();
+ const dados = getDadosFornecedores();
+ dados[chave] = { nomeOriginal: nome, telefone, cnpj };
+ salvarDadosFornecedores(dados);
+ mostrarToast('✅ Dados salvos!');
+ document.getElementById('dadosFornecedorNomeInput').value = '';
+ document.getElementById('dadosFornecedorTelefoneInput').value = '';
+ document.getElementById('dadosFornecedorCnpjInput').value = '';
+ renderDadosFornecedores();
+}
+function removerDadosFornecedor(chave){
+ const dados = getDadosFornecedores();
+ const item = dados[chave];
+ if(!item) return;
+ delete dados[chave];
+ salvarDadosFornecedores(dados);
+ renderDadosFornecedores();
+ mostrarToastComDesfazer('🗑️ Dados removidos.', ()=>{
+  const dadosAtuais = getDadosFornecedores();
+  dadosAtuais[chave] = item;
+  salvarDadosFornecedores(dadosAtuais);
+  renderDadosFornecedores();
+ });
+}
+function renderDadosFornecedores(){
+ const el = document.getElementById('listaDadosFornecedores');
+ if(!el) return;
+ const dados = Object.entries(getDadosFornecedores());
+ if(dados.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhum fornecedor com dados cadastrados ainda.</p>'; return; }
+ el.innerHTML = dados.map(([chave,item])=>`
+   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 14px;">
+    <div>
+     <div style="color:#dce5f2;font-weight:800;font-size:13px;">${item.nomeOriginal}</div>
+     <div style="color:#93a3ba;font-size:11px;margin-top:2px;">${item.telefone?'📞 '+item.telefone:''}${item.telefone&&item.cnpj?' · ':''}${item.cnpj?'🏢 '+item.cnpj:''}${!item.telefone&&!item.cnpj?'Sem telefone/CNPJ cadastrado':''}</div>
+    </div>
+    <button onclick="removerDadosFornecedor('${chave}')" aria-label="Remover" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;flex-shrink:0;">🗑️</button>
+   </div>`).join('');
+}
+
 function getPadroesParceladoFornecedores(){
  try{ return JSON.parse(localStorage.getItem('biobel_padroes_parcelado_fornecedor')||'{}'); }catch(e){ return {}; }
 }
@@ -6971,6 +7201,19 @@ async function adicionarBoleto(){
 
  const comprovante = await lerComprovanteAnexado();
  const lista = getBoletos();
+ if(boletoEditandoId===null){
+  // Confere se já existe um boleto bem parecido (mesmo fornecedor, valor e vencimento) antes de
+  // salvar — evita cadastrar o mesmo boleto duas vezes sem querer.
+  const possívelDuplicado = lista.find(b=>
+   String(b.fornecedor||'').trim().toLowerCase()===fornecedor.toLowerCase() &&
+   Number(b.valor)===valor &&
+   b.vencimento===vencimento
+  );
+  if(possívelDuplicado){
+   const confirmou = await confirmarBiobelAsync('⚠️ Já existe um boleto de "'+fornecedor+'" com esse mesmo valor ('+money(valor)+') e essa mesma data de vencimento.\n\nPode ser duplicado sem querer — quer cadastrar mesmo assim?');
+   if(!confirmou) return;
+  }
+ }
  if(boletoEditandoId!==null){
   const idx = lista.findIndex(b=>b.id===boletoEditandoId);
   if(idx>=0){
@@ -7137,13 +7380,24 @@ function renderHistoricoPrecoFornecedor(){
 function renderBoletos(){
  renderSeletorFornecedorHistorico();
  preencherListaFornecedoresConhecidos();
+ renderRankingFornecedores();
+ renderGastosPorMarca();
+ renderDadosFornecedores();
  const el = document.getElementById('listaBoletos');
  if(!el) return;
  let lista = getBoletos();
  if(filtroBoletoAtual==='pendentes') lista = lista.filter(b=>!b.pago);
  else if(filtroBoletoAtual==='pagos') lista = lista.filter(b=>b.pago);
+ const termoBusca = document.getElementById('buscaBoletoInput')?.value.trim().toLowerCase();
+ if(termoBusca){
+  lista = lista.filter(b=>
+   String(b.fornecedor||'').toLowerCase().includes(termoBusca) ||
+   String(b.marca||'').toLowerCase().includes(termoBusca) ||
+   String(b.obs||'').toLowerCase().includes(termoBusca)
+  );
+ }
  if(lista.length===0){
-  el.innerHTML = `<p style="color:#93a3ba;font-size:12.5px;">${filtroBoletoAtual==='todos' ? 'Nenhum boleto cadastrado ainda.' : 'Nenhum boleto '+(filtroBoletoAtual==='pendentes'?'pendente':'pago')+' no momento.'}</p>`;
+  el.innerHTML = `<p style="color:#93a3ba;font-size:12.5px;">${termoBusca ? 'Nenhum boleto encontrado pra "'+termoBusca+'".' : (filtroBoletoAtual==='todos' ? 'Nenhum boleto cadastrado ainda.' : 'Nenhum boleto '+(filtroBoletoAtual==='pendentes'?'pendente':'pago')+' no momento.')}</p>`;
   return;
  }
 
