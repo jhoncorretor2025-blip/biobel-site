@@ -531,7 +531,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 21/09/2026 — versão v8.5')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 21/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v8.5</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 21/09/2026 — versão v8.6')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 21/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v8.6</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -2248,7 +2248,9 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <div id="formWrapperBoleto" style="border-top:1px solid #1e2c42;padding-top:14px;transition:background-color .2s;">
     <div id="tituloFormBoleto" style="font-size:12px;font-weight:800;color:#93a3ba;margin-bottom:10px;">➕ Adicionar novo boleto</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:8px;">
-     <input id="novoBoletoFornecedor" type="text" placeholder="Fornecedor" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     <input id="novoBoletoFornecedor" type="text" placeholder="Fornecedor" list="listaFornecedoresConhecidos" onblur="aplicarPadraoParceladoFornecedor()" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     <datalist id="listaFornecedoresConhecidos"></datalist>
+     <div id="avisoPadraoFornecedor" style="display:none;grid-column:1/-1;font-size:11px;color:#a78bfa;"></div>
      <select id="novoBoletoMarcaSelect" onchange="alternarCampoMarcaOutros()" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
       <option value="">Marca (escolha)</option>
       <option value="Truss">Truss</option>
@@ -2306,45 +2308,6 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     </div>
     <button id="btnAdicionarBoleto" onclick="adicionarBoleto()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Adicionar boleto</button>
     <button id="btnCancelarEdicaoBoleto" onclick="cancelarEdicaoBoleto()" style="display:none;margin-top:8px;background:none;border:none;color:#93a3ba;font-size:12px;text-decoration:underline;cursor:pointer;width:100%;">✕ Cancelar edição</button>
-   </div>
-  </div>
-
-  <div id="wrapperCompraParcelada" class="adv-card" style="display:none;border-color:rgba(99,102,241,.4);">
-   <div class="adv-card-title">
-    <h3>🧾 Nova Compra Parcelada</h3>
-    <span>registra o pedido de uma vez e o sistema gera cada boleto (parcela) separado, com sua própria data e valor — cada um continua aparecendo normalmente no fluxo de caixa e nas contas a pagar</span>
-   </div>
-   <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px;margin-bottom:8px;">
-    <input id="compraParceladaFornecedor" type="text" placeholder="Fornecedor" list="listaFornecedoresConhecidos" onblur="aplicarPadraoParceladoFornecedor()" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
-    <datalist id="listaFornecedoresConhecidos"></datalist>
-    <input id="compraParceladaValorTotal" type="text" inputmode="decimal" placeholder="Valor total (R$)" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
-   </div>
-   <div id="avisoPadraoFornecedor" style="display:none;font-size:11px;color:#a78bfa;margin-bottom:8px;"></div>
-   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;">
-    <div>
-     <label style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Nº de parcelas</label>
-     <input id="compraParceladaQtd" type="number" min="2" max="24" value="3" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
-    </div>
-    <div>
-     <label style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">1º vencimento</label>
-     <input id="compraParceladaPrimeiroVencimento" type="date" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
-    </div>
-    <div>
-     <label style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Intervalo (dias)</label>
-     <input id="compraParceladaIntervalo" type="number" min="1" value="30" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
-    </div>
-   </div>
-   <label style="display:flex;align-items:center;gap:8px;font-size:11.5px;color:#93a3ba;margin-bottom:12px;cursor:pointer;">
-    <input id="compraParceladaSalvarPadraoCheckbox" type="checkbox" checked>
-    💾 Guardar esse jeito de parcelar (quantidade + intervalo) como padrão desse fornecedor, pra próxima vez preencher sozinho
-   </label>
-   <button onclick="gerarParcelasPreview()" class="w-full bg-blue-600 hover:bg-blue-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="margin-bottom:12px;">🔄 Gerar parcelas</button>
-
-   <div id="previewParcelasCompra"></div>
-
-   <div style="display:flex;gap:8px;margin-top:12px;">
-    <button id="btnConfirmarCompraParcelada" onclick="confirmarCompraParcelada()" style="display:none;" class="flex-1 bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">✅ Confirmar e criar todos os boletos</button>
-    <button onclick="fecharCompraParcelada()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl font-semibold text-sm">✕ Cancelar</button>
    </div>
   </div>
 
@@ -6840,8 +6803,6 @@ function verComprovanteBoleto(id){
  if(win) win.document.write('<title>Comprovante — '+b.fornecedor+'</title><body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="'+b.comprovante+'" style="max-width:100%;max-height:100vh;"></body>');
 }
 
-/* ===== Compra Parcelada — um pedido só, virando vários boletos (parcelas) linkados ===== */
-let parcelasGeradasTemp = [];
 /* ===== Padrão de parcelamento por fornecedor — lembra o jeito que cada um costuma parcelar ===== */
 function getPadroesParceladoFornecedores(){
  try{ return JSON.parse(localStorage.getItem('biobel_padroes_parcelado_fornecedor')||'{}'); }catch(e){ return {}; }
@@ -6854,17 +6815,16 @@ function salvarPadraoParceladoFornecedor(fornecedor, qtd, intervalo){
  localStorage.setItem('biobel_padroes_parcelado_fornecedor', JSON.stringify(padroes));
 }
 function aplicarPadraoParceladoFornecedor(){
- const input = document.getElementById('compraParceladaFornecedor');
+ const input = document.getElementById('novoBoletoFornecedor');
  const aviso = document.getElementById('avisoPadraoFornecedor');
  const chave = input.value.trim().toLowerCase();
  if(!chave){ aviso.style.display='none'; return; }
  const padroes = getPadroesParceladoFornecedores();
  const padrao = padroes[chave];
- if(padrao){
-  document.getElementById('compraParceladaQtd').value = padrao.qtd;
-  document.getElementById('compraParceladaIntervalo').value = padrao.intervalo;
+ if(padrao && padrao.qtd>=1 && padrao.qtd<=3){
+  selecionarQuantasVezesBoleto(padrao.qtd); // já recalcula as datas sozinho, usando esse padrão
   aviso.style.display = 'block';
-  aviso.innerHTML = '📌 Esse fornecedor costuma parcelar em <strong>'+padrao.qtd+'x</strong>, a cada <strong>'+padrao.intervalo+' dias</strong> — já preenchi sozinho, pode ajustar se for diferente dessa vez.';
+  aviso.innerHTML = '📌 Esse fornecedor costuma parcelar em <strong>'+padrao.qtd+'x</strong> — já preenchi sozinho, pode ajustar se for diferente dessa vez.';
  } else {
   aviso.style.display = 'none';
  }
@@ -6877,104 +6837,6 @@ function preencherListaFornecedoresConhecidos(){
  const nomesUnicos = [...new Set([...nomesBoletos, ...nomesPadroes])].filter(Boolean);
  datalist.innerHTML = nomesUnicos.map(n=>`<option value="${n}">`).join('');
 }
-function abrirCompraParcelada(){
- preencherListaFornecedoresConhecidos();
- document.getElementById('wrapperCompraParcelada').style.display = 'block';
- document.getElementById('wrapperCompraParcelada').scrollIntoView({behavior:'smooth', block:'start'});
-}
-function fecharCompraParcelada(){
- document.getElementById('wrapperCompraParcelada').style.display = 'none';
- document.getElementById('previewParcelasCompra').innerHTML = '';
- document.getElementById('btnConfirmarCompraParcelada').style.display = 'none';
- document.getElementById('avisoPadraoFornecedor').style.display = 'none';
- parcelasGeradasTemp = [];
- ['compraParceladaFornecedor','compraParceladaValorTotal'].forEach(id=>{ document.getElementById(id).value=''; });
-}
-function gerarParcelasPreview(){
- const fornecedor = document.getElementById('compraParceladaFornecedor').value.trim();
- const valorTotal = parseValorSimples(document.getElementById('compraParceladaValorTotal').value);
- const qtd = parseInt(document.getElementById('compraParceladaQtd').value, 10);
- const primeiroVencimento = document.getElementById('compraParceladaPrimeiroVencimento').value;
- const intervalo = parseInt(document.getElementById('compraParceladaIntervalo').value, 10) || 30;
- if(!fornecedor){ mostrarToast('⚠️ Digite o fornecedor.'); return; }
- if(isNaN(valorTotal) || valorTotal<=0){ mostrarToast('⚠️ Digite o valor total da compra.'); return; }
- if(isNaN(qtd) || qtd<2){ mostrarToast('⚠️ São necessárias pelo menos 2 parcelas.'); return; }
- if(!primeiroVencimento){ mostrarToast('⚠️ Escolha a data do 1º vencimento.'); return; }
-
- // Divide o valor total em partes iguais (arredondado a centavos) — a diferença de arredondamento
- // (poucos centavos, se houver) fica toda na ÚLTIMA parcela, pra soma bater certinho com o total.
- const valorParcela = Math.floor((valorTotal/qtd)*100)/100;
- const somaSemUltima = valorParcela*(qtd-1);
- const valorUltimaParcela = Math.round((valorTotal-somaSemUltima)*100)/100;
-
- parcelasGeradasTemp = [];
- for(let i=0;i<qtd;i++){
-  const dataVenc = new Date(primeiroVencimento+'T00:00:00');
-  dataVenc.setDate(dataVenc.getDate() + (intervalo*i));
-  parcelasGeradasTemp.push({
-   numero: i+1,
-   total: qtd,
-   valor: i===qtd-1 ? valorUltimaParcela : valorParcela,
-   vencimento: dataVenc.toISOString().slice(0,10)
-  });
- }
- renderPreviewParcelas(fornecedor, valorTotal);
-}
-function renderPreviewParcelas(fornecedor, valorTotal){
- const el = document.getElementById('previewParcelasCompra');
- const somaAtual = parcelasGeradasTemp.reduce((s,p)=>s+p.valor,0);
- const bateCerto = Math.abs(somaAtual-valorTotal) < 0.01;
- el.innerHTML = `
-  <div style="font-size:11px;color:#93a3ba;margin-bottom:8px;">Confira e ajuste cada parcela se precisar (valores e datas diferentes são permitidos):</div>
-  ${parcelasGeradasTemp.map((p,i)=>`
-   <div style="display:grid;grid-template-columns:50px 1fr 1fr;gap:8px;align-items:center;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:8px 10px;margin-bottom:6px;">
-    <span style="font-size:12px;color:#93a3ba;font-weight:800;">${p.numero}/${p.total}</span>
-    <input type="text" inputmode="decimal" value="${p.valor.toFixed(2).replace('.',',')}" onchange="atualizarParcelaTemp(${i},'valor',this.value)" style="background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:7px 10px;color:#dce5f2;font-size:12.5px;">
-    <input type="date" value="${p.vencimento}" onchange="atualizarParcelaTemp(${i},'vencimento',this.value)" style="background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:7px 10px;color:#dce5f2;font-size:12.5px;">
-   </div>`).join('')}
-  <div style="font-size:11.5px;margin-top:8px;color:${bateCerto?'#27d7a0':'#fb7185'};font-weight:700;">
-   ${bateCerto?'✅':'⚠️'} Soma das parcelas: ${money(somaAtual)} ${bateCerto?'(bate certinho com o total)':'— diferente do total de '+money(valorTotal)+', ajuste antes de confirmar'}
-  </div>`;
- document.getElementById('btnConfirmarCompraParcelada').style.display = 'block';
- document.getElementById('btnConfirmarCompraParcelada').dataset.fornecedor = fornecedor;
- document.getElementById('btnConfirmarCompraParcelada').dataset.valorTotal = valorTotal;
-}
-function atualizarParcelaTemp(indice, campo, valor){
- if(!parcelasGeradasTemp[indice]) return;
- if(campo==='valor') parcelasGeradasTemp[indice].valor = parseValorSimples(valor)||0;
- if(campo==='vencimento') parcelasGeradasTemp[indice].vencimento = valor;
- const btn = document.getElementById('btnConfirmarCompraParcelada');
- renderPreviewParcelas(btn.dataset.fornecedor, Number(btn.dataset.valorTotal));
-}
-function confirmarCompraParcelada(){
- if(parcelasGeradasTemp.length===0) return;
- const fornecedor = document.getElementById('compraParceladaFornecedor').value.trim();
- const compraId = 'compra_'+Date.now();
- const lista = getBoletos();
- parcelasGeradasTemp.forEach(p=>{
-  lista.unshift({
-   id: Date.now()+p.numero, fornecedor, marca:'', quantidade:'', validade:'',
-   valor: p.valor, vencimento: p.vencimento, categoria:'Produto', pagoPor:'', recorrente:false,
-   obs: 'Parcela '+p.numero+'/'+p.total+' de uma compra parcelada', comprovante:null, pago:false,
-   criadoEm: new Date().toISOString(), compraId, parcelaAtual: p.numero, parcelaTotal: p.total
-  });
- });
- salvarBoletos(lista);
- // Guarda o jeito de parcelar desse fornecedor (quantas parcelas + intervalo), se a pessoa deixou
- // marcado — assim da próxima vez que digitar o mesmo fornecedor, já vem preenchido sozinho.
- if(document.getElementById('compraParceladaSalvarPadraoCheckbox').checked){
-  const qtd = parseInt(document.getElementById('compraParceladaQtd').value, 10);
-  const intervalo = parseInt(document.getElementById('compraParceladaIntervalo').value, 10);
-  salvarPadraoParceladoFornecedor(fornecedor, qtd, intervalo);
- }
- mostrarToast('✅ '+parcelasGeradasTemp.length+' boletos criados, um pra cada parcela!');
- registrarAlteracao('Compra parcelada de "'+fornecedor+'" registrada, em '+parcelasGeradasTemp.length+' parcelas');
- fecharCompraParcelada();
- renderBoletos();
- atualizarTotaisAdm();
- renderLogAlteracoes();
-}
-
 let quantasVezesBoletoSelecionado = 1;
 function selecionarQuantasVezesBoleto(n){
  quantasVezesBoletoSelecionado = n;
@@ -6989,6 +6851,33 @@ function selecionarQuantasVezesBoleto(n){
  const container = document.getElementById('parcelasExtrasBoletoContainer');
  const datasContainer = document.getElementById('datasExtrasBoletoContainer');
  if(!container || !datasContainer) return;
+
+ // Sugere datas automaticamente, contando a partir de hoje (dia do cadastro) — é só uma sugestão
+ // de largada, a pessoa pode trocar qualquer uma das datas na hora que quiser.
+ const hoje = obterAgoraBrasilia();
+ function somarDias(dias){
+  const d = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+  d.setDate(d.getDate()+dias);
+  return d.toISOString().slice(0,10);
+ }
+ // Se esse fornecedor já tiver um padrão próprio salvo, usa o intervalo dele em vez do genérico
+ // 30/45/60 — o padrão específico do fornecedor sempre tem prioridade sobre a sugestão padrão.
+ const fornecedorAtual = document.getElementById('novoBoletoFornecedor')?.value || '';
+ const padraoSalvo = getPadroesParceladoFornecedores()[fornecedorAtual.trim().toLowerCase()];
+ let diasSugeridos;
+ if(padraoSalvo && padraoSalvo.qtd===n){
+  diasSugeridos = [30];
+  for(let i=1;i<n;i++) diasSugeridos.push(30+(padraoSalvo.intervalo*i));
+ } else {
+  const padroesGenericos = { 1:[30], 2:[30,45], 3:[30,45,60] };
+  diasSugeridos = padroesGenericos[n] || [30];
+ }
+
+ const inputVencimentoPrincipal = document.getElementById('novoBoletoVencimento');
+ if(inputVencimentoPrincipal && !inputVencimentoPrincipal.value){
+  inputVencimentoPrincipal.value = somarDias(diasSugeridos[0]);
+ }
+
  if(n===1){
   container.style.display = 'none';
   datasContainer.innerHTML = '';
@@ -6998,7 +6887,7 @@ function selecionarQuantasVezesBoleto(n){
   for(let i=2;i<=n;i++){
    html += `<div>
      <label style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">${i}º vencimento</label>
-     <input type="date" id="novoBoletoVencimentoExtra${i}" style="width:100%;background:#0f172a;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     <input type="date" id="novoBoletoVencimentoExtra${i}" value="${somarDias(diasSugeridos[i-1])}" style="width:100%;background:#0f172a;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
     </div>`;
   }
   datasContainer.innerHTML = html;
@@ -7247,6 +7136,7 @@ function renderHistoricoPrecoFornecedor(){
 
 function renderBoletos(){
  renderSeletorFornecedorHistorico();
+ preencherListaFornecedoresConhecidos();
  const el = document.getElementById('listaBoletos');
  if(!el) return;
  let lista = getBoletos();
