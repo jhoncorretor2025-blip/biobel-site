@@ -531,7 +531,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 21/09/2026 — versão v8.4')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 21/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v8.4</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 21/09/2026 — versão v8.5')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 21/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v8.5</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -2072,13 +2072,14 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
 
   <nav class="config-chips no-print" aria-label="Atalhos da área ADM" style="position:sticky;top:64px;z-index:15;">
-   <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraResumo')">📊 Resumo</button>
-   <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraFechamento')">🔒 Fechamento</button>
-   <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraGastos')">🏠 Gastos</button>
-   <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraComissoes')">🎯 Comissões</button>
-   <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraFuncionarios')">👥 Funcionários</button>
-   <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraFornecedoresReal')">🤝 Fornecedores</button>
-   <button type="button" class="config-chip" onclick="irParaSecaoAdm('admAncoraAgenda')">🗓️ Agenda</button>
+   <button type="button" id="btnAdmVerTudo" onclick="mostrarTodasSecoesAdm()" class="config-chip" style="display:none;background:#1c2c42;">👁️ Ver tudo</button>
+   <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraResumo')">📊 Resumo</button>
+   <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraFechamento')">🔒 Fechamento</button>
+   <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraGastos')">🏠 Gastos</button>
+   <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraComissoes')">🎯 Comissões</button>
+   <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraFuncionarios')">👥 Funcionários</button>
+   <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraFornecedoresReal')">🤝 Fornecedores</button>
+   <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraAgenda')">🗓️ Agenda</button>
   </nav>
 
   <button id="btnAlternarTodosGrupos" onclick="alternarTodosGruposAdm()" class="no-print text-xs text-slate-300 hover:text-white" style="background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:6px 12px;margin-bottom:14px;">▾ Expandir todos os grupos</button>
@@ -2260,10 +2261,10 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
      <input id="novoBoletoMarca" type="text" placeholder="Marca" style="display:none;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
      <input id="novoBoletoQuantidade" type="text" placeholder="Quantidade" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
      <input id="novoBoletoValidade" type="text" placeholder="Validade (ex: 12/2027)" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
-     <input id="novoBoletoValor" type="text" inputmode="decimal" placeholder="Valor R$" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     <input id="novoBoletoValor" type="text" inputmode="decimal" placeholder="Valor R$" oninput="atualizarPreviewParcelasBoletoInline()" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
      <div>
-      <label for="novoBoletoVencimento" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Data de vencimento</label>
-      <input id="novoBoletoVencimento" type="date" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+      <label id="labelNovoBoletoVencimento" for="novoBoletoVencimento" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Data de vencimento</label>
+      <input id="novoBoletoVencimento" type="date" onchange="atualizarPreviewParcelasBoletoInline()" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
      </div>
      <div>
       <label for="novoBoletoCategoria" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Categoria</label>
@@ -2275,9 +2276,22 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
       </select>
      </div>
      <div>
+      <label style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Quantos boletos?</label>
+      <div style="display:flex;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;overflow:hidden;height:38px;">
+       <button type="button" id="btnQuantasVezesBoleto1" onclick="selecionarQuantasVezesBoleto(1)" style="flex:1;border:none;background:#0ea97a;color:#04241a;font-weight:800;font-size:13px;cursor:pointer;">1x</button>
+       <button type="button" id="btnQuantasVezesBoleto2" onclick="selecionarQuantasVezesBoleto(2)" style="flex:1;border:none;border-left:1px solid #1e2c42;background:transparent;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;">2x</button>
+       <button type="button" id="btnQuantasVezesBoleto3" onclick="selecionarQuantasVezesBoleto(3)" style="flex:1;border:none;border-left:1px solid #1e2c42;background:transparent;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;">3x</button>
+      </div>
+     </div>
+     <div>
       <label for="novoBoletoPagoPor" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Pago por</label>
       <input id="novoBoletoPagoPor" type="text" placeholder="Ex: Jhonatan" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
      </div>
+    </div>
+
+    <div id="parcelasExtrasBoletoContainer" style="display:none;background:rgba(99,102,241,.06);border:1px solid rgba(99,102,241,.3);border-radius:12px;padding:14px;margin-bottom:12px;">
+     <div id="valorDivididoBoletoTexto" style="font-size:12.5px;color:#a78bfa;font-weight:700;margin-bottom:10px;"></div>
+     <div id="datasExtrasBoletoContainer" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>
     </div>
     <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#dce5f2;cursor:pointer;margin-bottom:8px;">
      <input type="checkbox" id="novoBoletoRecorrente" style="width:15px;height:15px;accent-color:#27d7a0;">
@@ -2292,7 +2306,6 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     </div>
     <button id="btnAdicionarBoleto" onclick="adicionarBoleto()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Adicionar boleto</button>
     <button id="btnCancelarEdicaoBoleto" onclick="cancelarEdicaoBoleto()" style="display:none;margin-top:8px;background:none;border:none;color:#93a3ba;font-size:12px;text-decoration:underline;cursor:pointer;width:100%;">✕ Cancelar edição</button>
-    <button onclick="abrirCompraParcelada()" class="w-full bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="margin-top:10px;">🧾 Nova Compra Parcelada (vários boletos de uma vez)</button>
    </div>
   </div>
 
@@ -3378,18 +3391,18 @@ const BIOBEL_INDICE_BUSCA = [
  { termos:'logo imagem marca', label:'🖼️ Configuração → Logo', acao:()=>{showTab('config'); mostrarSecaoConfig('Logo');} },
  { termos:'site trabalhe conosco curriculo formulario', label:'🌐 Configuração → Site', acao:()=>{showTab('config'); mostrarSecaoConfig('SitePublico');} },
  { termos:'mensagens programadas aniversario popup', label:'💬 Configuração → Mensagens', acao:()=>{showTab('config'); mostrarSecaoConfig('Mensagens');} },
- { termos:'aluguel gastos fixos agua luz internet contadora', label:'🏠 ADM → Gastos Fixos', acao:()=>{showTab('adm'); setTimeout(()=>irParaSecaoAdm('admAncoraGastos'),250);} },
- { termos:'boletos fornecedores comprovante compra parcelada', label:'📦 ADM → Boletos de Fornecedores', acao:()=>{showTab('adm'); setTimeout(()=>irParaSecaoAdm('admAncoraFornecedoresReal'),250);} },
- { termos:'comissao meta gabriela day niveis', label:'🎯 ADM → Comissão por Metas', acao:()=>{showTab('adm'); setTimeout(()=>irParaSecaoAdm('admAncoraComissoes'),250);} },
- { termos:'ferias fgts admissao gabriela', label:'🏖️ ADM → Férias e Admissão', acao:()=>{showTab('adm'); setTimeout(()=>irParaSecaoAdm('admAncoraComissoes'),250);} },
- { termos:'estagio day recesso contrato', label:'📋 ADM → Estágio da Day', acao:()=>{showTab('adm'); setTimeout(()=>irParaSecaoAdm('admAncoraComissoes'),250);} },
- { termos:'imposto das mei simples nacional', label:'🧾 ADM → Impostos', acao:()=>{showTab('adm'); setTimeout(()=>irParaSecaoAdm('admAncoraComissoes'),250);} },
- { termos:'estoque valor parado', label:'📦 ADM → Estoque', acao:()=>{showTab('adm'); setTimeout(()=>irParaSecaoAdm('admAncoraComissoes'),250);} },
- { termos:'reserva emergencia capital de giro', label:'🏦 ADM → Reserva de Emergência', acao:()=>{showTab('adm'); setTimeout(()=>irParaSecaoAdm('admAncoraComissoes'),250);} },
- { termos:'taxa maquina cartao debito credito', label:'💳 ADM → Taxa de Cartão', acao:()=>{showTab('adm'); setTimeout(()=>irParaSecaoAdm('admAncoraResumo'),250);} },
- { termos:'dre relatorio anual lucro fluxo de caixa ponto equilibrio', label:'📋 ADM → DRE e Relatórios', acao:()=>{showTab('adm'); setTimeout(()=>irParaSecaoAdm('admAncoraResumo'),250);} },
- { termos:'fechamento mensal encerrar periodo', label:'🔒 ADM → Fechamento Mensal', acao:()=>{showTab('adm'); setTimeout(()=>irParaSecaoAdm('admAncoraFechamento'),250);} },
- { termos:'reunioes fornecedores agenda', label:'🤝 ADM → Agenda de Fornecedores', acao:()=>{showTab('adm'); setTimeout(()=>irParaSecaoAdm('admAncoraAgenda'),250);} },
+ { termos:'aluguel gastos fixos agua luz internet contadora', label:'🏠 ADM → Gastos Fixos', acao:()=>{showTab('adm'); setTimeout(()=>isolarSecaoAdm('admAncoraGastos'),250);} },
+ { termos:'boletos fornecedores comprovante compra parcelada', label:'📦 ADM → Boletos de Fornecedores', acao:()=>{showTab('adm'); setTimeout(()=>isolarSecaoAdm('admAncoraFornecedoresReal'),250);} },
+ { termos:'comissao meta gabriela day niveis', label:'🎯 ADM → Comissão por Metas', acao:()=>{showTab('adm'); setTimeout(()=>isolarSecaoAdm('admAncoraComissoes'),250);} },
+ { termos:'ferias fgts admissao gabriela', label:'🏖️ ADM → Férias e Admissão', acao:()=>{showTab('adm'); setTimeout(()=>isolarSecaoAdm('admAncoraComissoes'),250);} },
+ { termos:'estagio day recesso contrato', label:'📋 ADM → Estágio da Day', acao:()=>{showTab('adm'); setTimeout(()=>isolarSecaoAdm('admAncoraComissoes'),250);} },
+ { termos:'imposto das mei simples nacional', label:'🧾 ADM → Impostos', acao:()=>{showTab('adm'); setTimeout(()=>isolarSecaoAdm('admAncoraComissoes'),250);} },
+ { termos:'estoque valor parado', label:'📦 ADM → Estoque', acao:()=>{showTab('adm'); setTimeout(()=>isolarSecaoAdm('admAncoraComissoes'),250);} },
+ { termos:'reserva emergencia capital de giro', label:'🏦 ADM → Reserva de Emergência', acao:()=>{showTab('adm'); setTimeout(()=>isolarSecaoAdm('admAncoraComissoes'),250);} },
+ { termos:'taxa maquina cartao debito credito', label:'💳 ADM → Taxa de Cartão', acao:()=>{showTab('adm'); setTimeout(()=>isolarSecaoAdm('admAncoraResumo'),250);} },
+ { termos:'dre relatorio anual lucro fluxo de caixa ponto equilibrio', label:'📋 ADM → DRE e Relatórios', acao:()=>{showTab('adm'); setTimeout(()=>isolarSecaoAdm('admAncoraResumo'),250);} },
+ { termos:'fechamento mensal encerrar periodo', label:'🔒 ADM → Fechamento Mensal', acao:()=>{showTab('adm'); setTimeout(()=>isolarSecaoAdm('admAncoraFechamento'),250);} },
+ { termos:'reunioes fornecedores agenda', label:'🤝 ADM → Agenda de Fornecedores', acao:()=>{showTab('adm'); setTimeout(()=>isolarSecaoAdm('admAncoraAgenda'),250);} },
 ];
 function renderResultadosBuscaGlobal(){
  const input = document.getElementById('inputBuscaGlobal');
@@ -6149,6 +6162,42 @@ function fecharTodosGruposAdmExceto(grupoQueFicaAberto){
   }
  });
 }
+const ANCORAS_SECOES_ADM = ['admAncoraResumo','admAncoraFechamento','admAncoraGastos','admAncoraComissoes','admAncoraFuncionarios','admAncoraFornecedoresReal','admAncoraAgenda'];
+function isolarSecaoAdm(idAncoraAlvo){
+ const container = document.getElementById('admConteudoWrap');
+ if(!container) return;
+ const filhos = Array.from(container.children);
+ let mostrando = false;
+ filhos.forEach(filho=>{
+  if(filho.id && ANCORAS_SECOES_ADM.includes(filho.id)){
+   mostrando = (filho.id === idAncoraAlvo);
+  }
+  filho.style.display = mostrando ? '' : 'none';
+ });
+ // Se a seção for um grupo colapsável (Fornecedores, Funcionários, Agenda), abre ele sozinho —
+ // senão a pessoa cairia numa seção "isolada" mas ainda fechada, sem ver nada.
+ const elAncora = document.getElementById(idAncoraAlvo);
+ const proximoIrmao = elAncora?.nextElementSibling;
+ if(proximoIrmao && proximoIrmao.classList.contains('grupo-adm-header')){
+  const grupo = proximoIrmao.dataset.grupo;
+  const conteudo = document.getElementById('conteudoGrupo-'+grupo);
+  if(conteudo) conteudo.style.display = 'block';
+  const seta = document.getElementById('setaGrupo-'+grupo);
+  if(seta) seta.textContent = '▾';
+ }
+ localStorage.setItem('biobel_adm_secao_isolada', idAncoraAlvo);
+ const btnVerTudo = document.getElementById('btnAdmVerTudo');
+ if(btnVerTudo) btnVerTudo.style.display = 'inline-block';
+ window.scrollTo({top:0, behavior:'smooth'});
+}
+function mostrarTodasSecoesAdm(){
+ const container = document.getElementById('admConteudoWrap');
+ if(!container) return;
+ Array.from(container.children).forEach(filho=>{ filho.style.display = ''; });
+ localStorage.removeItem('biobel_adm_secao_isolada');
+ const btnVerTudo = document.getElementById('btnAdmVerTudo');
+ if(btnVerTudo) btnVerTudo.style.display = 'none';
+}
 function irParaSecaoAdm(idAncora){
  const el = document.getElementById(idAncora);
  if(!el) return;
@@ -6926,6 +6975,57 @@ function confirmarCompraParcelada(){
  renderLogAlteracoes();
 }
 
+let quantasVezesBoletoSelecionado = 1;
+function selecionarQuantasVezesBoleto(n){
+ quantasVezesBoletoSelecionado = n;
+ for(let i=1;i<=3;i++){
+  const btn = document.getElementById('btnQuantasVezesBoleto'+i);
+  if(!btn) continue;
+  if(i===n){ btn.style.background='#0ea97a'; btn.style.color='#04241a'; }
+  else { btn.style.background='transparent'; btn.style.color='#dce5f2'; }
+ }
+ const labelVenc = document.getElementById('labelNovoBoletoVencimento');
+ if(labelVenc) labelVenc.textContent = n===1 ? 'Data de vencimento' : '1º vencimento';
+ const container = document.getElementById('parcelasExtrasBoletoContainer');
+ const datasContainer = document.getElementById('datasExtrasBoletoContainer');
+ if(!container || !datasContainer) return;
+ if(n===1){
+  container.style.display = 'none';
+  datasContainer.innerHTML = '';
+ } else {
+  container.style.display = 'block';
+  let html = '';
+  for(let i=2;i<=n;i++){
+   html += `<div>
+     <label style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">${i}º vencimento</label>
+     <input type="date" id="novoBoletoVencimentoExtra${i}" style="width:100%;background:#0f172a;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    </div>`;
+  }
+  datasContainer.innerHTML = html;
+  atualizarPreviewParcelasBoletoInline();
+ }
+}
+function atualizarPreviewParcelasBoletoInline(){
+ if(quantasVezesBoletoSelecionado===1) return;
+ const valorTotal = parseValorSimples(document.getElementById('novoBoletoValor').value);
+ const texto = document.getElementById('valorDivididoBoletoTexto');
+ if(!texto) return;
+ if(isNaN(valorTotal) || valorTotal<=0){ texto.textContent = '💰 Digite o valor total pra ver quanto fica cada boleto.'; return; }
+ const valorCada = valorTotal/quantasVezesBoletoSelecionado;
+ texto.textContent = '💰 Cada boleto: '+money(valorCada)+' (total '+money(valorTotal)+' ÷ '+quantasVezesBoletoSelecionado+')';
+}
+function limparFormularioBoleto(){
+ ['novoBoletoFornecedor','novoBoletoMarca','novoBoletoQuantidade','novoBoletoValidade','novoBoletoValor','novoBoletoVencimento','novoBoletoPagoPor','novoBoletoObs'].forEach(id=>{
+  const elCampo = document.getElementById(id);
+  if(elCampo) elCampo.value='';
+ });
+ document.getElementById('novoBoletoMarcaSelect').value = '';
+ document.getElementById('novoBoletoMarca').style.display = 'none';
+ document.getElementById('novoBoletoCategoria').value = 'Produto';
+ document.getElementById('novoBoletoRecorrente').checked = false;
+ selecionarQuantasVezesBoleto(1);
+ removerComprovanteAnexado();
+}
 async function adicionarBoleto(){
  const fornecedor = document.getElementById('novoBoletoFornecedor').value.trim();
  const marca = document.getElementById('novoBoletoMarca').value.trim();
@@ -6939,6 +7039,46 @@ async function adicionarBoleto(){
  const obs = document.getElementById('novoBoletoObs').value.trim();
  if(!fornecedor){ mostrarToast('⚠️ Digite o nome do fornecedor.'); return; }
  if(isNaN(valor) || valor<=0){ mostrarToast('⚠️ Digite um valor válido.'); return; }
+
+ // Se marcou 2x ou 3x (e não está editando um boleto já existente), gera vários boletos de uma
+ // vez, cada um com sua própria data e o valor total dividido igualmente entre eles.
+ if(quantasVezesBoletoSelecionado>1 && boletoEditandoId===null){
+  if(!vencimento){ mostrarToast('⚠️ Escolha a data do 1º vencimento.'); return; }
+  const n = quantasVezesBoletoSelecionado;
+  const datas = [vencimento];
+  for(let i=2;i<=n;i++){
+   const d = document.getElementById('novoBoletoVencimentoExtra'+i)?.value;
+   if(!d){ mostrarToast('⚠️ Preencha a data do '+i+'º vencimento.'); return; }
+   datas.push(d);
+  }
+  const comprovante = await lerComprovanteAnexado();
+  const compraId = 'compra_'+Date.now();
+  const valorParcela = Math.floor((valor/n)*100)/100;
+  const somaSemUltima = valorParcela*(n-1);
+  const valorUltima = Math.round((valor-somaSemUltima)*100)/100;
+  const lista = getBoletos();
+  for(let i=0;i<n;i++){
+   lista.unshift({
+    id: Date.now()+i, fornecedor, marca, quantidade, validade,
+    valor: i===n-1?valorUltima:valorParcela, vencimento: datas[i], categoria, pagoPor, recorrente,
+    obs: obs || ('Parcela '+(i+1)+'/'+n+' de uma compra parcelada'), comprovante, pago:false,
+    criadoEm: new Date().toISOString(), compraId, parcelaAtual: i+1, parcelaTotal: n
+   });
+  }
+  salvarBoletos(lista);
+  // Guarda automaticamente o intervalo usado, pra da próxima vez que digitar esse mesmo
+  // fornecedor o sistema já sugerir o mesmo jeito de parcelar.
+  const dt1 = new Date(datas[0]+'T00:00:00'), dt2 = new Date(datas[1]+'T00:00:00');
+  const intervaloDias = Math.round((dt2-dt1)/(1000*60*60*24));
+  if(intervaloDias>0) salvarPadraoParceladoFornecedor(fornecedor, n, intervaloDias);
+  mostrarToast('✅ '+n+' boletos criados, um pra cada parcela!');
+  registrarAlteracao('Compra parcelada de "'+fornecedor+'" registrada, em '+n+' parcelas');
+  limparFormularioBoleto();
+  renderBoletos();
+  atualizarTotaisAdm();
+  renderLogAlteracoes();
+  return;
+ }
 
  const comprovante = await lerComprovanteAnexado();
  const lista = getBoletos();
@@ -6957,15 +7097,7 @@ async function adicionarBoleto(){
   mostrarToast('✅ Boleto adicionado!');
   registrarAlteracao('Boleto de "'+fornecedor+'" adicionado ('+money(valor)+')');
  }
- ['novoBoletoFornecedor','novoBoletoMarca','novoBoletoQuantidade','novoBoletoValidade','novoBoletoValor','novoBoletoVencimento','novoBoletoPagoPor','novoBoletoObs'].forEach(id=>{
-  const elCampo = document.getElementById(id);
-  if(elCampo) elCampo.value='';
-  document.getElementById('novoBoletoMarcaSelect').value = '';
-  document.getElementById('novoBoletoMarca').style.display = 'none';
- });
- document.getElementById('novoBoletoCategoria').value = 'Produto';
- document.getElementById('novoBoletoRecorrente').checked = false;
- removerComprovanteAnexado();
+ limparFormularioBoleto();
  renderBoletos();
  atualizarTotaisAdm();
  renderLogAlteracoes();
@@ -6997,6 +7129,7 @@ function editarBoleto(id){
  const b = getBoletos().find(x=>x.id===id);
  if(!b) return;
  boletoEditandoId = id;
+ selecionarQuantasVezesBoleto(1); // editar sempre mexe em 1 boleto só, mesmo que ele seja parte de uma compra parcelada
  document.getElementById('novoBoletoFornecedor').value = b.fornecedor||'';
  preencherCampoMarca(b.marca||'');
  document.getElementById('novoBoletoQuantidade').value = b.quantidade||'';
@@ -7038,15 +7171,7 @@ function duplicarBoleto(id){
 }
 function cancelarEdicaoBoleto(){
  boletoEditandoId = null;
- ['novoBoletoFornecedor','novoBoletoMarca','novoBoletoQuantidade','novoBoletoValidade','novoBoletoValor','novoBoletoVencimento','novoBoletoPagoPor','novoBoletoObs'].forEach(id=>{
-  const elCampo = document.getElementById(id);
-  if(elCampo) elCampo.value='';
-  document.getElementById('novoBoletoMarcaSelect').value = '';
-  document.getElementById('novoBoletoMarca').style.display = 'none';
- });
- document.getElementById('novoBoletoCategoria').value = 'Produto';
- document.getElementById('novoBoletoRecorrente').checked = false;
- removerComprovanteAnexado();
+ limparFormularioBoleto();
  const btn = document.getElementById('btnAdicionarBoleto');
  if(btn) btn.textContent = '➕ Adicionar boleto';
  const btnCancelar = document.getElementById('btnCancelarEdicaoBoleto');
