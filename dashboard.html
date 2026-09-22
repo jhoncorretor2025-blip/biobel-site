@@ -531,7 +531,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 21/09/2026 — versão v8.8')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 21/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v8.8</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 21/09/2026 — versão v8.9')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 21/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v8.9</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -598,6 +598,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
 <main id="dashboardTab" class="max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabDashboard">
 
+  <div id="indicadorClimaTopo" class="no-print" style="display:none;justify-content:flex-end;margin-bottom:4px;"></div>
   <div class="no-print" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:6px;">
    <button onclick="showTab('caixa')" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(39,215,160,.35);border-radius:14px;padding:16px 10px;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;text-align:center;">⚡<br>Fechar Caixa</button>
    <button onclick="showTab('equipe')" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(79,156,255,.35);border-radius:14px;padding:16px 10px;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;text-align:center;">📋<br>Folha de Ponto</button>
@@ -620,6 +621,9 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <span id="climaHojeMarcadoTexto" style="font-size:11.5px;color:#27d7a0;font-weight:700;"></span>
    <span style="font-size:10px;color:#93a3ba;">(o sistema tenta detectar sozinho — clique pra corrigir se estiver errado)</span>
   </div>
+  <div id="previsaoProximosDiasFaixa" class="no-print" style="display:none;margin-bottom:6px;"></div>
+  <div id="bannerClimaSol" class="no-print" style="display:none;"></div>
+  <div id="avisoFimDeSemanaChuvoso" class="no-print" style="display:none;"></div>
   <div id="avisoProximaPlanilha" class="no-print" style="display:none;"></div>
   <div id="metaDestaqueTopo" class="no-print" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid #1e2c42;border-radius:20px;padding:24px 28px;margin-bottom:16px;">
    <div style="font-size:11px;color:#93a3ba;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">🎯 Meta do mês</div>
@@ -1093,6 +1097,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     </select>
     <button onclick="adicionarClimaDia()" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">➕ Marcar</button>
    </div>
+   <button onclick="preencherClimaHistoricoAutomatico()" class="no-print w-full bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-xl font-semibold text-sm" style="margin-bottom:10px;">🔄 Preencher automaticamente os dias já lançados desse mês</button>
    <div id="conteudoCorrelacaoClima"></div>
   </div>
 
@@ -5827,7 +5832,7 @@ function gerarDatasComerciais(ano){
   { nome:'🎉 Véspera de Ano Novo', data: new Date(ano,11,31) },
  ];
 }
-function renderDatasComerciais(){
+async function renderDatasComerciais(){
  const el = document.getElementById('listaDatasComerciaisDashboard');
  if(!el) return;
  const hoje = obterAgoraBrasilia();
@@ -5841,13 +5846,22 @@ function renderDatasComerciais(){
 
  if(futuras.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhuma data encontrada.</p>'; return; }
 
+ // Cruza com a previsão do tempo (que só cobre uns 16 dias à frente) — só aparece o selo de
+ // clima nas datas que já entram dentro desse período; datas mais distantes ficam sem selo.
+ let previsao = [];
+ try{ previsao = await getPrevisaoClimaFutura(); }catch(e){}
+ const emojisClima = { Sol:'☀️', Nublado:'☁️', Chuva:'🌧️', Frio:'🥶' };
+
  el.innerHTML = futuras.map((d,i)=>{
   const destaque = i===0;
+  const dataStr = d.data.toISOString().slice(0,10);
+  const previsaoDoDia = previsao.find(p=>p.data===dataStr);
+  const seloClima = previsaoDoDia ? `<span style="margin-left:6px;" title="Previsão do tempo pra essa data">${emojisClima[previsaoDoDia.categoria]||''}</span>` : '';
   return `
    <div style="display:flex;justify-content:space-between;align-items:center;background:${destaque?'rgba(39,215,160,.08)':'#0b1728'};border:1px solid ${destaque?'rgba(39,215,160,.35)':'#1e2c42'};border-radius:10px;padding:10px 14px;">
     <div>
      <span style="color:#dce5f2;font-weight:700;font-size:13px;">${d.nome}</span>
-     <span style="color:#93a3ba;font-size:11px;margin-left:8px;">${d.data.toLocaleDateString('pt-BR')}</span>
+     <span style="color:#93a3ba;font-size:11px;margin-left:8px;">${d.data.toLocaleDateString('pt-BR')}</span>${seloClima}
     </div>
     <span style="color:${destaque?'#27d7a0':'#93a3ba'};font-weight:800;font-size:12.5px;white-space:nowrap;">${d.dias===0?'🎉 é hoje!':d.dias+' dia'+(d.dias===1?'':'s')}</span>
    </div>`;
@@ -10563,6 +10577,41 @@ function mapearCodigoClimaParaCategoria(codigoWMO, temperatura){
  if(codigoWMO===0 || codigoWMO===1) return 'Sol';
  return 'Nublado';
 }
+/* ===== Previsão futura do clima — busca uma vez por dia e guarda em cache, reaproveitada por
+   várias telas (previsão dos próximos dias, alerta de fim de semana, calendário comercial) ===== */
+let previsaoClimaCache = null;
+async function getPrevisaoClimaFutura(){
+ const hoje = obterAgoraBrasilia();
+ const hojeStr = hoje.paraChaveISO();
+ if(previsaoClimaCache && previsaoClimaCache.buscadoEm===hojeStr) return previsaoClimaCache.dias;
+ try{
+  const salvo = localStorage.getItem('biobel_previsao_clima_cache');
+  if(salvo){
+   const obj = JSON.parse(salvo);
+   if(obj.buscadoEm===hojeStr){ previsaoClimaCache = obj; return obj.dias; }
+  }
+ }catch(e){}
+ try{
+  const resposta = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-29.94&longitude=-50.99&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=America%2FSao_Paulo&forecast_days=16');
+  if(!resposta.ok) return [];
+  const dados = await resposta.json();
+  if(!dados?.daily?.time) return [];
+  const dias = dados.daily.time.map((data,i)=>({
+   data,
+   weathercode: dados.daily.weathercode[i],
+   tempMax: dados.daily.temperature_2m_max[i],
+   tempMin: dados.daily.temperature_2m_min[i],
+   categoria: mapearCodigoClimaParaCategoria(dados.daily.weathercode[i], dados.daily.temperature_2m_min[i])
+  }));
+  previsaoClimaCache = { buscadoEm: hojeStr, dias };
+  localStorage.setItem('biobel_previsao_clima_cache', JSON.stringify(previsaoClimaCache));
+  return dias;
+ }catch(e){
+  console.error('Não foi possível buscar a previsão futura:', e);
+  return [];
+ }
+}
+
 async function buscarClimaAutomaticoHoje(){
  const hoje = obterAgoraBrasilia();
  const chaveDia = String(hoje.getDate()).padStart(2,'0')+'.'+String(hoje.getMonth()+1).padStart(2,'0');
@@ -10602,22 +10651,139 @@ function marcarClimaHojeRapido(tipo){
 }
 function renderClimaHojeStatus(){
  const el = document.getElementById('climaHojeMarcadoTexto');
- const bannerEl = document.getElementById('bannerClimaChuva');
- if(!el && !bannerEl) return;
+ const bannerChuva = document.getElementById('bannerClimaChuva');
+ const bannerSol = document.getElementById('bannerClimaSol');
+ if(!el && !bannerChuva) return;
  const hoje = obterAgoraBrasilia();
  const chaveDia = String(hoje.getDate()).padStart(2,'0')+'.'+String(hoje.getMonth()+1).padStart(2,'0');
  const climaHoje = getClimaDias()[chaveDia];
  const emojis = { Sol:'☀️', Nublado:'☁️', Chuva:'🌧️', Frio:'🥶' };
  if(el) el.textContent = climaHoje ? 'Marcado: '+(emojis[climaHoje]||'')+' '+climaHoje : '';
- if(bannerEl){
+
+ if(bannerChuva){
   if(climaHoje==='Chuva'){
-   bannerEl.style.cssText = 'display:block;background:rgba(79,156,255,.1);border:1px solid rgba(79,156,255,.4);border-radius:12px;padding:12px 16px;margin-bottom:6px;';
-   bannerEl.innerHTML = '<div style="font-size:13px;color:#4f9cff;font-weight:800;">🌧️ Hoje é dia de chuva — foco nas vendas online! Movimento na loja física costuma cair em dias assim, vale reforçar redes sociais e WhatsApp.</div>';
+   bannerChuva.style.cssText = 'display:block;background:rgba(79,156,255,.1);border:1px solid rgba(79,156,255,.4);border-radius:12px;padding:12px 16px;margin-bottom:6px;';
+   bannerChuva.innerHTML = `
+     <div style="font-size:13px;color:#4f9cff;font-weight:800;margin-bottom:6px;">🌧️ Hoje é dia de chuva — foco nas vendas online! Movimento na loja física costuma cair em dias assim, vale reforçar redes sociais e WhatsApp.</div>
+     <div style="font-size:11.5px;color:#93a3ba;margin-bottom:8px;">💧 Dia de chuva também é bom pra destacar hidratantes e produtos pra pele ressecada — combina com o clima.</div>
+     <button onclick="showTab('campanhas')" class="no-print" style="background:#4f9cff;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:11.5px;font-weight:700;cursor:pointer;">📢 Ir pra Campanhas e postar algo agora</button>`;
   } else {
-   bannerEl.style.display = 'none';
+   bannerChuva.style.display = 'none';
   }
  }
+ if(bannerSol){
+  if(climaHoje==='Sol'){
+   bannerSol.style.cssText = 'display:block;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.4);border-radius:12px;padding:12px 16px;margin-bottom:6px;';
+   bannerSol.innerHTML = `
+     <div style="font-size:13px;color:#fbbf24;font-weight:800;margin-bottom:6px;">☀️ Dia de sol firme — costuma ser um bom dia de movimento! Aproveita pra reforçar as redes sociais também, tanto pra quem vem na loja quanto pra quem compra online.</div>
+     <div style="font-size:11.5px;color:#93a3ba;">🧴 Dia de sol é ótimo pra destacar protetor solar e produtos pra depois do sol.</div>`;
+  } else {
+   bannerSol.style.display = 'none';
+  }
+ } else if(climaHoje==='Frio'){
+  // Sem banner próprio pro frio (pra não poluir a tela com banners demais) — mas deixa registrado
+  // como sugestão de produto no console de log de alteracoes, se algum dia quiser reaproveitar.
+ }
 }
+async function renderPrevisaoProximosDias(){
+ const el = document.getElementById('previsaoProximosDiasFaixa');
+ if(!el) return;
+ const dias = await getPrevisaoClimaFutura();
+ if(dias.length===0) return;
+ const emojis = { Sol:'☀️', Nublado:'☁️', Chuva:'🌧️', Frio:'🥶' };
+ const proximosDias = dias.slice(1,6); // pula hoje (índice 0), mostra os 5 dias seguintes
+ if(proximosDias.length===0) return;
+ el.style.display = 'block';
+ el.innerHTML = `<div style="display:flex;gap:8px;overflow-x:auto;background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:10px 14px;">
+   <span style="font-size:11px;color:#93a3ba;font-weight:700;white-space:nowrap;align-self:center;">📅 Próximos dias:</span>
+   ${proximosDias.map(d=>{
+    const dataObj = new Date(d.data+'T00:00:00');
+    const diaSemana = dataObj.toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','');
+    return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;min-width:52px;">
+      <span style="font-size:10px;color:#93a3ba;text-transform:capitalize;">${diaSemana}</span>
+      <span style="font-size:18px;">${emojis[d.categoria]||'☁️'}</span>
+      <span style="font-size:9.5px;color:#93a3ba;">${Math.round(d.tempMax)}°</span>
+     </div>`;
+   }).join('')}
+  </div>`;
+}
+async function verificarFimDeSemanaChuvoso(){
+ const el = document.getElementById('avisoFimDeSemanaChuvoso');
+ if(!el) return;
+ const dias = await getPrevisaoClimaFutura();
+ if(dias.length===0) return;
+ // Acha o próximo sábado e domingo dentro da previsão (até 16 dias à frente)
+ const fimDeSemana = dias.filter(d=>{
+  const diaSemana = new Date(d.data+'T00:00:00').getDay();
+  return diaSemana===0 || diaSemana===6; // domingo ou sábado
+ }).slice(0,2);
+ const algumComChuva = fimDeSemana.filter(d=>d.categoria==='Chuva');
+ if(algumComChuva.length===0){ el.style.display='none'; return; }
+ const nomes = algumComChuva.map(d=>{
+  const dataObj = new Date(d.data+'T00:00:00');
+  return dataObj.toLocaleDateString('pt-BR',{weekday:'long'})+' ('+dataObj.toLocaleDateString('pt-BR')+')';
+ });
+ el.style.cssText = 'display:block;background:rgba(79,156,255,.08);border:1px solid rgba(79,156,255,.3);border-radius:12px;padding:10px 16px;margin-bottom:6px;';
+ el.innerHTML = '<div style="font-size:12.5px;color:#4f9cff;font-weight:700;">🌧️📅 Previsão de chuva pro fim de semana: '+nomes.join(' e ')+'. Já pode ir se planejando pra reforçar as vendas online nesses dias.</div>';
+}
+
+function renderIndicadorClimaTopo(){
+ const el = document.getElementById('indicadorClimaTopo');
+ if(!el) return;
+ const hoje = obterAgoraBrasilia();
+ const chaveDia = String(hoje.getDate()).padStart(2,'0')+'.'+String(hoje.getMonth()+1).padStart(2,'0');
+ const climaHoje = getClimaDias()[chaveDia];
+ if(!climaHoje){ el.style.display='none'; return; }
+ const emojis = { Sol:'☀️', Nublado:'☁️', Chuva:'🌧️', Frio:'🥶' };
+ el.style.display = 'flex';
+ el.innerHTML = `<span style="background:#0b1728;border:1px solid #1e2c42;border-radius:999px;padding:4px 12px;font-size:12px;color:#93a3ba;font-weight:700;">${emojis[climaHoje]||''} ${climaHoje} hoje</span>`;
+}
+
+async function preencherClimaHistoricoAutomatico(){
+ if(daysData.length===0){ mostrarToast('⚠️ Não tem dias carregados nesse mês ainda.'); return; }
+ const climaDias = getClimaDias();
+ const diasFaltando = daysData.filter(d=>!climaDias[String(d.dia)]);
+ if(diasFaltando.length===0){ mostrarToast('✅ Todos os dias desse mês já têm o clima marcado!'); return; }
+
+ const datasISO = diasFaltando.map(d=>dataDoDiaParaISO(d.dia)).sort();
+ const dataInicio = datasISO[0];
+ const dataFim = datasISO[datasISO.length-1];
+ // Não busca datas futuras (a API de histórico só tem dados de dias que já passaram).
+ const hojeISO = obterAgoraBrasilia().paraChaveISO();
+ if(dataInicio>hojeISO){ mostrarToast('⚠️ Esses dias ainda não aconteceram, não dá pra buscar o clima deles ainda.'); return; }
+ const dataFimAjustada = dataFim>hojeISO ? hojeISO : dataFim;
+
+ mostrarToast('🔄 Buscando o clima de '+diasFaltando.length+' dia(s)...');
+ try{
+  const resposta = await fetch('https://archive-api.open-meteo.com/v1/archive?latitude=-29.94&longitude=-50.99&start_date='+dataInicio+'&end_date='+dataFimAjustada+'&daily=weathercode,temperature_2m_min&timezone=America%2FSao_Paulo');
+  if(!resposta.ok){ mostrarToast('⚠️ Não consegui buscar o histórico agora — tenta de novo daqui a pouco.'); return; }
+  const dados = await resposta.json();
+  if(!dados?.daily?.time){ mostrarToast('⚠️ Não veio nenhum dado do histórico.'); return; }
+
+  const mapaClimaPorData = {};
+  dados.daily.time.forEach((data,i)=>{
+   mapaClimaPorData[data] = mapearCodigoClimaParaCategoria(dados.daily.weathercode[i], dados.daily.temperature_2m_min[i]);
+  });
+
+  let preenchidos = 0;
+  diasFaltando.forEach(d=>{
+   const iso = dataDoDiaParaISO(d.dia);
+   if(mapaClimaPorData[iso]){
+    climaDias[String(d.dia)] = mapaClimaPorData[iso];
+    preenchidos++;
+   }
+  });
+  salvarClimaDias(climaDias);
+  mostrarToast('✅ '+preenchidos+' dia(s) preenchido(s) automaticamente!');
+  registrarAlteracao('Clima preenchido automaticamente pra '+preenchidos+' dia(s) do mês');
+  renderLogAlteracoes();
+  renderCorrelacaoClima();
+ }catch(e){
+  console.error(e);
+  mostrarToast('⚠️ Não foi possível buscar o histórico agora.');
+ }
+}
+
 function adicionarClimaDia(){
  const dataInput = document.getElementById('climaDataInput').value;
  const tipo = document.getElementById('climaTipoSelect').value;
@@ -10645,7 +10811,25 @@ function renderCorrelacaoClima(){
  });
  const tipos = Object.entries(porTipo);
  if(tipos.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12px;">Marque o clima de alguns dias pra começar a ver a correlação.</p>'; return; }
- el.innerHTML = tipos.map(([tipo, dados])=>{
+
+ // Insight em texto simples, comparando Sol com Chuva (as duas pontas mais opostas) — só aparece
+ // se tiver pelo menos 1 dia de cada marcado, pra dar uma comparação minimamente confiável.
+ let insightHtml = '';
+ if(porTipo['Sol'] && porTipo['Chuva']){
+  const mediaSol = porTipo['Sol'].soma/porTipo['Sol'].qtd;
+  const mediaChuva = porTipo['Chuva'].soma/porTipo['Chuva'].qtd;
+  if(mediaChuva>0){
+   const diffPct = ((mediaSol-mediaChuva)/mediaChuva)*100;
+   if(Math.abs(diffPct)>=1){
+    const maisOuMenos = diffPct>0 ? 'mais' : 'menos';
+    insightHtml = `<div style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:10px;padding:10px 14px;margin-bottom:10px;font-size:12.5px;color:#fbbf24;font-weight:700;">
+      💡 Seus dias de ☀️ Sol vendem ${Math.abs(diffPct).toFixed(0)}% ${maisOuMenos} que os dias de 🌧️ Chuva, em média.
+     </div>`;
+   }
+  }
+ }
+
+ el.innerHTML = insightHtml + tipos.map(([tipo, dados])=>{
   const media = dados.soma/dados.qtd;
   return `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1e2c42;font-size:12.5px;">
     <span style="color:#dce5f2;">${tipo} (${dados.qtd} dia${dados.qtd===1?'':'s'})</span>
@@ -14618,7 +14802,10 @@ inicializarBotoesCompartilharNativo();
 atualizarBotaoModoCompacto();
 initModoDashboard();
 renderClimaHojeStatus();
-buscarClimaAutomaticoHoje();
+renderIndicadorClimaTopo();
+buscarClimaAutomaticoHoje().then(()=>{ renderClimaHojeStatus(); renderIndicadorClimaTopo(); });
+renderPrevisaoProximosDias();
+verificarFimDeSemanaChuvoso();
 verificarBackupAutomatico();
 verificarPrimeiroAcessoTour();
 verificarDicaDoDia();
