@@ -531,7 +531,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 22/09/2026 — versão v9.7')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 22/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v9.7</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 22/09/2026 — versão v9.8')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 22/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v9.8</span>
   <span id="indicadorUltimoSalvamento" class="no-print" style="font-size:11px;color:#27d7a0;font-weight:700;display:none;white-space:nowrap;" title="Tudo o que você faz salva sozinho no aparelho — esse é o horário do último salvamento"></span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
@@ -623,21 +623,6 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <span style="font-size:10px;color:#93a3ba;">(o sistema tenta detectar sozinho — clique pra corrigir se estiver errado)</span>
   </div>
   <div id="previsaoProximosDiasFaixa" class="no-print" style="display:none;margin-bottom:6px;"></div>
-  <div class="no-print" style="background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:12px 14px;margin-bottom:6px;">
-   <div style="font-size:12px;color:#93a3ba;font-weight:700;margin-bottom:8px;">📊 Atendimentos por Turno (hoje)</div>
-   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px;">
-    <div>
-     <label for="atendimentosManhaInput" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">☀️ Quantos de manhã?</label>
-     <input id="atendimentosManhaInput" type="number" min="0" placeholder="Ex: 8" style="width:100%;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:7px 10px;color:#dce5f2;font-size:13px;">
-    </div>
-    <div>
-     <label for="atendimentosTardeInput" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">🌇 Quantos à tarde?</label>
-     <input id="atendimentosTardeInput" type="number" min="0" placeholder="Ex: 12" style="width:100%;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:7px 10px;color:#dce5f2;font-size:13px;">
-    </div>
-   </div>
-   <button onclick="salvarAtendimentosHoje()" class="w-full bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded-lg font-semibold text-xs" style="margin-bottom:8px;">💾 Salvar atendimentos de hoje</button>
-   <div id="resultadoAtendimentosTurno"></div>
-  </div>
   <div id="bannerClimaSol" class="no-print" style="display:none;"></div>
   <div id="avisoFimDeSemanaChuvoso" class="no-print" style="display:none;"></div>
   <div id="avisoProximaPlanilha" class="no-print" style="display:none;"></div>
@@ -1037,7 +1022,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
  <div class="adv-card">
   <div class="adv-card-title">
    <h3>📉 Dias com menos movimento (por turno)</h3>
-   <span>os 3 dias da semana com menor média de atendimentos de manhã, e os 3 com menor média à tarde — baseado no que você registrou em "Atendimentos por Turno" no Dashboard</span>
+   <span>os 3 dias da semana com menor média de atendimentos de manhã, e os 3 com menor média à tarde — direto da coluna de turno da sua planilha, somando o mês inteiro</span>
   </div>
   <div id="menosMovimentoPorTurno" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;"></div>
  </div>
@@ -1045,7 +1030,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
  <div class="adv-card">
   <div class="adv-card-title">
    <h3>🕐 Turnos — Manhã vs Tarde</h3>
-   <span>de forma geral (somando todos os dias registrados), qual turno tem mais movimento e qual tem menos</span>
+   <span>de forma geral (somando todos os dias do mês), qual turno tem mais movimento e qual tem menos — direto da coluna de turno da sua planilha</span>
   </div>
   <div id="comparativoTurnos"></div>
  </div>
@@ -3958,7 +3943,6 @@ function showTab(tab){
   b1.setAttribute('aria-selected','true');
   initModoDashboard();
   renderClimaHojeStatus();
-  renderAtendimentosPorTurno();
  }
 }
 document.getElementById('simpleDaySelect').addEventListener('change',e=>updateSimpleDay(e.target.value));
@@ -9562,62 +9546,6 @@ function calcularFracaoHojeRestante(){
  return Math.max(0, Math.min(1, (totalMinutos-decorridos)/totalMinutos));
 }
 
-/* ===== Atendimentos por Turno — quantos atendimentos de manhã/tarde, e o intervalo médio entre
-   um e outro (calculado automaticamente a partir do horário de funcionamento configurado) ===== */
-function getAtendimentosPorTurno(){
- try{ return JSON.parse(localStorage.getItem('biobel_atendimentos_turno')||'{}'); }catch(e){ return {}; }
-}
-function salvarAtendimentosTurno(obj){
- localStorage.setItem('biobel_atendimentos_turno', JSON.stringify(obj));
-}
-function salvarAtendimentosHoje(){
- const manha = parseInt(document.getElementById('atendimentosManhaInput').value, 10);
- const tarde = parseInt(document.getElementById('atendimentosTardeInput').value, 10);
- if(isNaN(manha) && isNaN(tarde)){ mostrarToast('⚠️ Preencha pelo menos um dos dois turnos.'); return; }
- const hoje = obterAgoraBrasilia();
- const chaveDia = String(hoje.getDate()).padStart(2,'0')+'.'+String(hoje.getMonth()+1).padStart(2,'0');
- const dados = getAtendimentosPorTurno();
- dados[chaveDia] = { manha: isNaN(manha)?null:manha, tarde: isNaN(tarde)?null:tarde };
- salvarAtendimentosTurno(dados);
- mostrarToast('✅ Atendimentos de hoje salvos!');
- renderAtendimentosPorTurno();
-}
-function calcularDuracaoTurnoMinutos(inicio, fim){
- const [h1,m1] = String(inicio).split(':').map(Number);
- const [h2,m2] = String(fim).split(':').map(Number);
- return (h2*60+m2) - (h1*60+m1);
-}
-function renderAtendimentosPorTurno(){
- const el = document.getElementById('resultadoAtendimentosTurno');
- const inputManha = document.getElementById('atendimentosManhaInput');
- const inputTarde = document.getElementById('atendimentosTardeInput');
- if(!el) return;
- const hoje = obterAgoraBrasilia();
- const chaveDia = String(hoje.getDate()).padStart(2,'0')+'.'+String(hoje.getMonth()+1).padStart(2,'0');
- const dados = getAtendimentosPorTurno()[chaveDia];
- if(inputManha) inputManha.value = dados?.manha ?? '';
- if(inputTarde) inputTarde.value = dados?.tarde ?? '';
- if(!dados || (dados.manha===null && dados.tarde===null)){ el.innerHTML=''; return; }
-
- // Divide o dia em manhã (abertura até meio-dia) e tarde (meio-dia até o fechamento) — usa o
- // horário de funcionamento já configurado, incluindo a regra diferente de sábado.
- const horario = getHorarioFuncionamento();
- const ehSabado = hoje.getDay()===6;
- const fechamento = ehSabado ? horario.fechamentoSabado : horario.fechamentoSemana;
- const duracaoManha = calcularDuracaoTurnoMinutos(horario.abertura, '12:00');
- const duracaoTarde = calcularDuracaoTurnoMinutos('12:00', fechamento);
-
- function linhaResultado(nome, emoji, qtd, duracaoMin){
-  if(qtd===null || qtd===undefined) return '';
-  if(qtd===0) return `<div style="font-size:11.5px;color:#93a3ba;margin-top:4px;">${emoji} ${nome}: nenhum atendimento registrado</div>`;
-  const intervaloMedio = duracaoMin/qtd;
-  const horas = Math.floor(intervaloMedio/60), minutos = Math.round(intervaloMedio%60);
-  const textoIntervalo = horas>0 ? horas+'h'+String(minutos).padStart(2,'0')+'min' : minutos+'min';
-  return `<div style="font-size:11.5px;color:#dce5f2;margin-top:4px;">${emoji} ${nome}: <strong>${qtd}</strong> atendimento${qtd===1?'':'s'} — média de <strong style="color:#4f9cff;">1 a cada ${textoIntervalo}</strong></div>`;
- }
- el.innerHTML = linhaResultado('Manhã', '☀️', dados.manha, duracaoManha) + linhaResultado('Tarde', '🌇', dados.tarde, duracaoTarde);
-}
-
 function getHorarioFuncionamento(){
  return {
   abertura: localStorage.getItem('biobel_horario_abertura') || '09:00',
@@ -12089,21 +12017,27 @@ function renderMelhoresPioresDiasSemana(porDiaSemana){
 function renderMenosMovimentoPorTurno(){
  const el = document.getElementById('menosMovimentoPorTurno');
  if(!el) return;
- const dados = getAtendimentosPorTurno();
+ // Usa o "porTurno" que o sistema já extrai automaticamente da coluna de turno da planilha
+ // (coluna K), pra cada dia — não depende de nada digitado manualmente, é o mês inteiro real.
  const nomesDias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
  const porDiaManha = {};
  const porDiaTarde = {};
- Object.entries(dados).forEach(([chaveDia, valores])=>{
-  const dataISO = dataDoDiaParaISO(chaveDia);
+ const diasAtipicos = getDiasAtipicos().map(d=>d.dia);
+ daysData.forEach(d=>{
+  if(diasAtipicos.includes(String(d.dia))) return; // dia atípico não entra na média, igual ao resto do sistema
+  if(!d.porTurno) return;
+  const dataISO = dataDoDiaParaISO(d.dia);
   const dow = new Date(dataISO+'T00:00:00').getDay();
-  if(valores.manha!==null && valores.manha!==undefined){
+  const qtdManha = d.porTurno['manhã']?.qtd;
+  const qtdTarde = d.porTurno['tarde']?.qtd;
+  if(qtdManha!==undefined){
    if(!porDiaManha[dow]) porDiaManha[dow] = { soma:0, qtd:0 };
-   porDiaManha[dow].soma += valores.manha;
+   porDiaManha[dow].soma += qtdManha;
    porDiaManha[dow].qtd += 1;
   }
-  if(valores.tarde!==null && valores.tarde!==undefined){
+  if(qtdTarde!==undefined){
    if(!porDiaTarde[dow]) porDiaTarde[dow] = { soma:0, qtd:0 };
-   porDiaTarde[dow].soma += valores.tarde;
+   porDiaTarde[dow].soma += qtdTarde;
    porDiaTarde[dow].qtd += 1;
   }
  });
@@ -12112,7 +12046,7 @@ function renderMenosMovimentoPorTurno(){
   const linhas = Object.entries(porDia).map(([dow,info])=>({
    nome: nomesDias[dow], media: info.soma/info.qtd, qtdDias: info.qtd
   }));
-  if(linhas.length===0) return `<div><div style="font-size:11px;color:#93a3ba;font-weight:800;margin-bottom:8px;">${emoji} ${titulo}</div><p style="font-size:11.5px;color:#93a3ba;">Ainda não tem dados suficientes — registre os atendimentos no Dashboard por alguns dias.</p></div>`;
+  if(linhas.length===0) return `<div><div style="font-size:11px;color:#93a3ba;font-weight:800;margin-bottom:8px;">${emoji} ${titulo}</div><p style="font-size:11.5px;color:#93a3ba;">Sem dados de turno nessa planilha ainda.</p></div>`;
   const piores = linhas.sort((a,b)=>a.media-b.media).slice(0,3);
   return `<div>
     <div style="font-size:11px;color:#93a3ba;font-weight:800;margin-bottom:8px;">${emoji} ${titulo}</div>
@@ -12129,14 +12063,18 @@ function renderMenosMovimentoPorTurno(){
 function renderComparativoTurnos(){
  const el = document.getElementById('comparativoTurnos');
  if(!el) return;
- const dados = getAtendimentosPorTurno();
+ const diasAtipicos = getDiasAtipicos().map(d=>d.dia);
  let somaManha=0, qtdManha=0, somaTarde=0, qtdTarde=0;
- Object.values(dados).forEach(v=>{
-  if(v.manha!==null && v.manha!==undefined){ somaManha+=v.manha; qtdManha++; }
-  if(v.tarde!==null && v.tarde!==undefined){ somaTarde+=v.tarde; qtdTarde++; }
+ daysData.forEach(d=>{
+  if(diasAtipicos.includes(String(d.dia))) return;
+  if(!d.porTurno) return;
+  const qm = d.porTurno['manhã']?.qtd;
+  const qt = d.porTurno['tarde']?.qtd;
+  if(qm!==undefined){ somaManha+=qm; qtdManha++; }
+  if(qt!==undefined){ somaTarde+=qt; qtdTarde++; }
  });
  if(qtdManha===0 && qtdTarde===0){
-  el.innerHTML = '<p style="font-size:12px;color:#93a3ba;">Ainda não tem dados suficientes — registre os atendimentos no Dashboard por alguns dias.</p>';
+  el.innerHTML = '<p style="font-size:12px;color:#93a3ba;">Sem dados de turno nessa planilha ainda.</p>';
   return;
  }
  const mediaManha = qtdManha>0 ? somaManha/qtdManha : 0;
@@ -12152,7 +12090,7 @@ function renderComparativoTurnos(){
   <div style="display:flex;flex-direction:column;gap:10px;">
    <div>
     <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px;">
-     <span style="color:#dce5f2;">☀️ Manhã <span style="color:#93a3ba;font-size:11px;">(${qtdManha} dia${qtdManha===1?'':'s'} registrado${qtdManha===1?'':'s'})</span></span>
+     <span style="color:#dce5f2;">☀️ Manhã <span style="color:#93a3ba;font-size:11px;">(${qtdManha} dia${qtdManha===1?'':'s'})</span></span>
      <strong style="color:#f6f9fd;">${mediaManha.toFixed(1)} atend./dia</strong>
     </div>
     <div style="background:#0b1728;border-radius:999px;height:10px;overflow:hidden;">
@@ -12161,7 +12099,7 @@ function renderComparativoTurnos(){
    </div>
    <div>
     <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px;">
-     <span style="color:#dce5f2;">🌇 Tarde <span style="color:#93a3ba;font-size:11px;">(${qtdTarde} dia${qtdTarde===1?'':'s'} registrado${qtdTarde===1?'':'s'})</span></span>
+     <span style="color:#dce5f2;">🌇 Tarde <span style="color:#93a3ba;font-size:11px;">(${qtdTarde} dia${qtdTarde===1?'':'s'})</span></span>
      <strong style="color:#f6f9fd;">${mediaTarde.toFixed(1)} atend./dia</strong>
     </div>
     <div style="background:#0b1728;border-radius:999px;height:10px;overflow:hidden;">
@@ -15280,7 +15218,6 @@ inicializarBotoesCompartilharNativo();
 atualizarBotaoModoCompacto();
 initModoDashboard();
 renderClimaHojeStatus();
-renderAtendimentosPorTurno();
 renderIndicadorClimaTopo();
 buscarClimaAutomaticoHoje().then(()=>{ renderClimaHojeStatus(); renderIndicadorClimaTopo(); });
 renderPrevisaoProximosDias();
