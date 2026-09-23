@@ -531,7 +531,8 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 22/09/2026 — versão v9.2')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 22/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v9.2</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 22/09/2026 — versão v9.3')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 22/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v9.3</span>
+  <span id="indicadorUltimoSalvamento" class="no-print" style="font-size:11px;color:#27d7a0;font-weight:700;display:none;white-space:nowrap;" title="Tudo o que você faz salva sozinho no aparelho — esse é o horário do último salvamento"></span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -1635,6 +1636,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <button type="button" id="chipMensagens" onclick="mostrarSecaoConfig('Mensagens')" class="config-chip" role="tab" aria-selected="false">💬 Mensagens</button>
     <button type="button" id="chipVagas" onclick="mostrarSecaoConfig('Vagas')" class="config-chip" role="tab" aria-selected="false">📢 Textos de Vaga</button>
     <button type="button" id="chipDicas" onclick="mostrarSecaoConfig('Dicas')" class="config-chip" role="tab" aria-selected="false">💡 Dica do Dia</button>
+    <button type="button" id="chipNovidades" onclick="mostrarSecaoConfig('Novidades')" class="config-chip" role="tab" aria-selected="false">🆕 Novidades</button>
     <button type="button" id="chipSitePublico" onclick="mostrarSecaoConfig('SitePublico')" class="config-chip" role="tab" aria-selected="false">🌐 Site</button>
    </div>
   </div>
@@ -1856,10 +1858,46 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
 
   <div style="border-top:1px solid #1e2c42;margin-top:20px;padding-top:16px;">
+   <div style="font-size:13px;font-weight:800;color:#dce5f2;margin-bottom:6px;">📂 Restaurar de um backup baixado</div>
+   <p style="font-size:12px;color:#93a3ba;margin-bottom:10px;">Se você trocou de aparelho, limpou o navegador, ou precisa voltar num backup salvo antes, escolha o arquivo .json que foi baixado.</p>
+   <input type="file" id="inputArquivoBackup" accept=".json" onchange="importarBackupCompleto(this.files[0])" style="display:none;">
+   <button onclick="document.getElementById('inputArquivoBackup').click()" class="w-full bg-blue-600 hover:bg-blue-500 px-4 py-3 rounded-xl font-semibold text-sm">📂 Escolher arquivo de backup e restaurar</button>
+  </div>
+
+  <div style="border-top:1px solid #1e2c42;margin-top:20px;padding-top:16px;">
    <div style="font-size:13px;font-weight:800;color:#dce5f2;margin-bottom:6px;">🔄 Backup automático</div>
    <p style="font-size:12px;color:#93a3ba;margin-bottom:10px;">O sistema guarda sozinho um retrato de segurança dentro do próprio navegador, uma vez por semana — sem precisar clicar em nada. Não substitui o backup baixado acima (que fica fora do navegador), mas ajuda numa emergência no meio da semana.</p>
    <div id="statusBackupAutomatico" style="font-size:12px;color:#93a3ba;margin-bottom:10px;"></div>
    <button onclick="restaurarBackupAutomatico()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2.5 rounded-xl font-semibold text-sm">↺ Restaurar do backup automático</button>
+  </div>
+ </div>
+
+ <div id="configSecaoNovidades" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6" style="display:none;">
+  <div class="mb-4">
+   <h2 class="text-xl font-bold">🆕 Novidades do Sistema</h2>
+   <p class="text-sm text-slate-400 mt-1">O que mudou nas últimas atualizações, resumido de forma simples.</p>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:14px;">
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
+    <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v9.3 — 22/09/2026</div>
+    <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">🔒 Segurança: aviso de espaço quase cheio, indicador de "salvo às HH:MM" no topo, restaurar backup baixado, validação de CPF/CNPJ. 🆕 Essa própria tela de Novidades.</div>
+   </div>
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
+    <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v9.2 — 22/09/2026</div>
+    <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">🌦️ Melhorias no Clima: correlação separada pra sábados, exportar relatório em PDF, previsão dos próximos dias, alerta de fim de semana chuvoso.</div>
+   </div>
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
+    <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v8.7 a v9.0 — Setembro 2026</div>
+    <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">🤝 Fornecedores: busca, ranking, gastos por marca, dados de contato/CNPJ, compra parcelada com sugestão automática de datas (30/45/60), navegação em abas de verdade. 🌦️ Clima detectado automaticamente. 🎉 Aba de Campanhas prontas pra copiar e colar.</div>
+   </div>
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
+    <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v7.0 a v8.6 — Setembro 2026</div>
+    <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">🚪 Assistente guiado de desligamento, arquivo de ex-funcionários, promoção de estágio pra CLT. 👥 Modo Simples no Dashboard, Central de Ações Rápidas, sistema de Desfazer. 📢 Textos de Vaga prontos.</div>
+   </div>
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
+    <div style="font-size:12px;font-weight:800;color:#93a3ba;margin-bottom:6px;">Versões anteriores</div>
+    <div style="font-size:12.5px;color:#93a3ba;line-height:1.6;">Fechamento diário, comissões, gastos fixos, folha de ponto, calendário comercial, e toda a base do sistema.</div>
+   </div>
   </div>
  </div>
 
@@ -2352,7 +2390,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <div style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:8px;margin-bottom:12px;">
     <input id="dadosFornecedorNomeInput" type="text" placeholder="Fornecedor" list="listaFornecedoresConhecidos" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
     <input id="dadosFornecedorTelefoneInput" type="text" placeholder="Telefone" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
-    <input id="dadosFornecedorCnpjInput" type="text" placeholder="CNPJ" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <input id="dadosFornecedorCnpjInput" type="text" placeholder="CNPJ" onblur="checarFormatoDocumento('dadosFornecedorCnpjInput','cnpj')" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
     <button onclick="salvarDadosFornecedor()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
    </div>
    <div id="listaDadosFornecedores" style="display:flex;flex-direction:column;gap:8px;"></div>
@@ -2478,7 +2516,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     </div>
     <div>
      <label class="block text-sm font-semibold mb-2" for="cpfGabrielaInput">CPF</label>
-     <input id="cpfGabrielaInput" type="text" placeholder="000.000.000-00" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     <input id="cpfGabrielaInput" type="text" placeholder="000.000.000-00" onblur="checarFormatoDocumento('cpfGabrielaInput','cpf')" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
     </div>
    </div>
    <label class="block text-sm font-semibold mb-2" for="cargoGabrielaInput">Cargo/função</label>
@@ -2603,7 +2641,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     </div>
     <div>
      <label class="block text-sm font-semibold mb-2" for="cpfDayInput">CPF</label>
-     <input id="cpfDayInput" type="text" placeholder="000.000.000-00" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     <input id="cpfDayInput" type="text" placeholder="000.000.000-00" onblur="checarFormatoDocumento('cpfDayInput','cpf')" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
     </div>
    </div>
    <label class="block text-sm font-semibold mb-2" for="cargoDayInput">Cargo/função</label>
@@ -3072,6 +3110,50 @@ function renderAtividadesGerencia(){
     <button onclick="removerAtividadeGerencia(${i})" aria-label="Remover atividade" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;flex-shrink:0;">🗑️</button>
    </div>`).join('');
 }
+
+/* ===== Item 4: Aviso de armazenamento quase cheio — evita a pessoa perder dados sem entender
+   por quê, se um dia o limite do navegador (geralmente uns 5-10MB) chegar perto do fim. ===== */
+function calcularEspacoUsadoBiobel(){
+ let totalBytes = 0;
+ for(let i=0;i<localStorage.length;i++){
+  const chave = localStorage.key(i);
+  if(chave && chave.startsWith('biobel_')){
+   totalBytes += (chave.length + (localStorage.getItem(chave)||'').length) * 2; // UTF-16 ~2 bytes/caractere
+  }
+ }
+ return totalBytes;
+}
+function verificarEspacoArmazenamento(){
+ const bytesUsados = calcularEspacoUsadoBiobel();
+ const limiteEstimado = 5*1024*1024; // 5MB — estimativa conservadora, a maioria dos navegadores permite isso ou mais
+ const pctUsado = (bytesUsados/limiteEstimado)*100;
+ if(pctUsado>=80){
+  const mbUsados = (bytesUsados/1024/1024).toFixed(1);
+  mostrarToast('⚠️ O sistema já está usando '+mbUsados+'MB no aparelho — perto do limite. Fale com o suporte se aparecer erro ao salvar.');
+ }
+}
+
+/* ===== Item 11: Indicador de "última vez salvo" — intercepta TODO salvamento do sistema de uma
+   vez só, sem precisar mexer em cada função individual de salvar. ===== */
+let _timeoutIndicadorSalvo = null;
+const _setItemOriginalBiobel = localStorage.setItem.bind(localStorage);
+localStorage.setItem = function(chave, valor){
+ _setItemOriginalBiobel(chave, valor);
+ if(String(chave).startsWith('biobel_')){
+  const el = document.getElementById('indicadorUltimoSalvamento');
+  if(el){
+   const agora = obterAgoraBrasilia();
+   const hhmm = String(agora.getHours()).padStart(2,'0')+':'+String(agora.getMinutes()).padStart(2,'0');
+   el.style.display = 'inline';
+   el.textContent = '✅ Salvo às '+hhmm;
+   // Depois de um tempinho, encolhe pra só o iconezinho, pra não poluir o cabeçalho — mas o
+   // título (ao passar o mouse/tocar) continua mostrando o horário completo.
+   el.title = 'Última vez salvo: '+hhmm;
+   clearTimeout(_timeoutIndicadorSalvo);
+   _timeoutIndicadorSalvo = setTimeout(()=>{ el.textContent = '✅'; }, 4000);
+  }
+ }
+};
 
 function mostrarToast(texto){
  // Vibração curta em confirmações de sucesso (✅) — Android tem bom suporte a isso, dá um
@@ -9025,6 +9107,66 @@ function baixarBackupCompleto(){
  mostrarToast('✅ Backup baixado com sucesso!');
 }
 
+/* ===== Item 7: Validação de CPF e CNPJ — confere os dígitos verificadores de verdade, não só
+   se tem a quantidade certa de números. Não bloqueia salvar, só avisa visualmente. ===== */
+function validarCPF(cpf){
+ cpf = String(cpf).replace(/\D/g,'');
+ if(cpf.length!==11 || /^(\d)\1{10}$/.test(cpf)) return false;
+ let soma=0;
+ for(let i=0;i<9;i++) soma += parseInt(cpf[i])*(10-i);
+ let resto = (soma*10)%11; if(resto===10||resto===11) resto=0;
+ if(resto!==parseInt(cpf[9])) return false;
+ soma=0;
+ for(let i=0;i<10;i++) soma += parseInt(cpf[i])*(11-i);
+ resto = (soma*10)%11; if(resto===10||resto===11) resto=0;
+ return resto===parseInt(cpf[10]);
+}
+function validarCNPJ(cnpj){
+ cnpj = String(cnpj).replace(/\D/g,'');
+ if(cnpj.length!==14 || /^(\d)\1{13}$/.test(cnpj)) return false;
+ let tamanho = cnpj.length-2;
+ let numeros = cnpj.substring(0,tamanho);
+ const digitos = cnpj.substring(tamanho);
+ let soma=0, pos=tamanho-7;
+ for(let i=tamanho;i>=1;i--){ soma += numeros.charAt(tamanho-i)*pos--; if(pos<2) pos=9; }
+ let resultado = soma%11<2 ? 0 : 11-soma%11;
+ if(resultado!==parseInt(digitos.charAt(0))) return false;
+ tamanho++; numeros = cnpj.substring(0,tamanho); soma=0; pos=tamanho-7;
+ for(let i=tamanho;i>=1;i--){ soma += numeros.charAt(tamanho-i)*pos--; if(pos<2) pos=9; }
+ resultado = soma%11<2 ? 0 : 11-soma%11;
+ return resultado===parseInt(digitos.charAt(1));
+}
+function checarFormatoDocumento(inputId, tipo){
+ const input = document.getElementById(inputId);
+ if(!input) return;
+ const valor = input.value.trim();
+ if(!valor){ input.style.borderColor=''; input.title=''; return; }
+ const valido = tipo==='cpf' ? validarCPF(valor) : validarCNPJ(valor);
+ input.style.borderColor = valido ? 'rgba(39,215,160,.5)' : 'rgba(251,113,133,.6)';
+ input.title = valido ? '' : (tipo==='cpf' ? '⚠️ Esse CPF não parece válido — confira os números' : '⚠️ Esse CNPJ não parece válido — confira os números');
+}
+
+function importarBackupCompleto(arquivo){
+ if(!arquivo) return;
+ const leitor = new FileReader();
+ leitor.onload = function(e){
+  let backup;
+  try{ backup = JSON.parse(e.target.result); }
+  catch(err){ mostrarToast('⚠️ Esse arquivo não parece um backup válido.'); return; }
+  if(!backup.dados || typeof backup.dados!=='object'){ mostrarToast('⚠️ Esse arquivo não parece um backup válido do sistema.'); return; }
+  const qtdChaves = Object.keys(backup.dados).length;
+  const dataBackup = backup.geradoEm ? new Date(backup.geradoEm).toLocaleString('pt-BR') : 'data desconhecida';
+  confirmarBiobel('🚨 ATENÇÃO — Restaurar backup\n\nEsse backup foi feito em '+dataBackup+' e tem '+qtdChaves+' itens salvos.\n\nIsso vai SUBSTITUIR os dados atuais deste aparelho pelos dados do backup. O que estiver salvo agora e não estiver no backup será perdido.\n\nTem certeza que quer restaurar?', ()=>{
+   Object.entries(backup.dados).forEach(([chave,valor])=>{
+    localStorage.setItem(chave, valor);
+   });
+   mostrarToast('✅ Backup restaurado! A página vai recarregar agora.');
+   setTimeout(()=>location.reload(), 1800);
+  });
+ };
+ leitor.readAsText(arquivo);
+}
+
 function saveSalesGoal(){
  const val = parseMoneyInput(document.getElementById('salesGoalInput').value);
  const statusEl = document.getElementById('goalStatus');
@@ -13626,7 +13768,7 @@ function extractSpreadsheetId(url){
  return m?m[1]:'';
 }
 function mostrarSecaoConfig(secao){
- const secoes = ['Conexao','Planilhas','Metas','Email','Horarios','Empresa','Log','Backup','Logo','SitePublico','Mensagens','Vagas','Dicas'];
+ const secoes = ['Conexao','Planilhas','Metas','Email','Horarios','Empresa','Log','Backup','Logo','SitePublico','Mensagens','Vagas','Dicas','Novidades'];
  secoes.forEach(s=>{
   const el = document.getElementById('configSecao'+s);
   const chip = document.getElementById('chip'+s);
@@ -14955,6 +15097,7 @@ buscarClimaAutomaticoHoje().then(()=>{ renderClimaHojeStatus(); renderIndicadorC
 renderPrevisaoProximosDias();
 verificarFimDeSemanaChuvoso();
 verificarBackupAutomatico();
+verificarEspacoArmazenamento();
 verificarPrimeiroAcessoTour();
 verificarDicaDoDia();
 verificarLembreteReunioesHoje();
