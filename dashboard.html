@@ -531,7 +531,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 22/09/2026 — versão v9.3')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 22/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v9.3</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 22/09/2026 — versão v9.4')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 22/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v9.4</span>
   <span id="indicadorUltimoSalvamento" class="no-print" style="font-size:11px;color:#27d7a0;font-weight:700;display:none;white-space:nowrap;" title="Tudo o que você faz salva sozinho no aparelho — esse é o horário do último salvamento"></span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
@@ -13928,10 +13928,23 @@ function verificarMesDivergente(nomePlanilhaAtiva){
 
  if(bateComMesAtual){ el.style.display='none'; return; }
 
- // Acha a planilha salva que já tem o nome do mês atual, pra oferecer o botão de troca rápida.
+ // Acha a planilha salva que já tem o nome do mês atual, pra oferecer o botão de troca rápida —
+ // ou trocar sozinho, se ainda não tiver feito isso nessa sessão (ver abaixo).
  const lista = getPlanilhasSalvas();
  const nomeMesRealCapitalizado = nomeMesReal.charAt(0).toUpperCase()+nomeMesReal.slice(1);
  const planilhaDoMesAtual = lista.find(p=>p.nome.toLowerCase().includes(nomeMesReal));
+
+ // Troca automática — só na primeira checagem de cada sessão (aba aberta). Depois disso, mesmo
+ // que a pessoa escolha de propósito ver um mês antigo, o sistema não fica forçando de volta a
+ // cada checagem (que roda 1x por minuto), só mostra o aviso com o botão pra trocar se quiser.
+ const jaTrocouAutomaticoNessaSessao = sessionStorage.getItem('biobel_ja_trocou_mes_automatico')==='yes';
+ if(planilhaDoMesAtual && !jaTrocouAutomaticoNessaSessao){
+  sessionStorage.setItem('biobel_ja_trocou_mes_automatico', 'yes');
+  mostrarToast('📅 O mês virou! Trocando sozinho pra planilha de '+planilhaDoMesAtual.nome+'...');
+  irParaPlanilhaPorNome(planilhaDoMesAtual.nome);
+  el.style.display = 'none';
+  return;
+ }
 
  el.style.display = 'block';
  el.innerHTML = `<div style="background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.35);border-radius:14px;padding:14px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
