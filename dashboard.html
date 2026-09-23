@@ -531,7 +531,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 22/09/2026 — versão v9.4')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 22/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v9.4</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 22/09/2026 — versão v9.5')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 22/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v9.5</span>
   <span id="indicadorUltimoSalvamento" class="no-print" style="font-size:11px;color:#27d7a0;font-weight:700;display:none;white-space:nowrap;" title="Tudo o que você faz salva sozinho no aparelho — esse é o horário do último salvamento"></span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
@@ -623,6 +623,21 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <span style="font-size:10px;color:#93a3ba;">(o sistema tenta detectar sozinho — clique pra corrigir se estiver errado)</span>
   </div>
   <div id="previsaoProximosDiasFaixa" class="no-print" style="display:none;margin-bottom:6px;"></div>
+  <div class="no-print" style="background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:12px 14px;margin-bottom:6px;">
+   <div style="font-size:12px;color:#93a3ba;font-weight:700;margin-bottom:8px;">📊 Atendimentos por Turno (hoje)</div>
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px;">
+    <div>
+     <label for="atendimentosManhaInput" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">☀️ Quantos de manhã?</label>
+     <input id="atendimentosManhaInput" type="number" min="0" placeholder="Ex: 8" style="width:100%;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:7px 10px;color:#dce5f2;font-size:13px;">
+    </div>
+    <div>
+     <label for="atendimentosTardeInput" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">🌇 Quantos à tarde?</label>
+     <input id="atendimentosTardeInput" type="number" min="0" placeholder="Ex: 12" style="width:100%;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:7px 10px;color:#dce5f2;font-size:13px;">
+    </div>
+   </div>
+   <button onclick="salvarAtendimentosHoje()" class="w-full bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded-lg font-semibold text-xs" style="margin-bottom:8px;">💾 Salvar atendimentos de hoje</button>
+   <div id="resultadoAtendimentosTurno"></div>
+  </div>
   <div id="bannerClimaSol" class="no-print" style="display:none;"></div>
   <div id="avisoFimDeSemanaChuvoso" class="no-print" style="display:none;"></div>
   <div id="avisoProximaPlanilha" class="no-print" style="display:none;"></div>
@@ -3927,6 +3942,7 @@ function showTab(tab){
   b1.setAttribute('aria-selected','true');
   initModoDashboard();
   renderClimaHojeStatus();
+  renderAtendimentosPorTurno();
  }
 }
 document.getElementById('simpleDaySelect').addEventListener('change',e=>updateSimpleDay(e.target.value));
@@ -9530,6 +9546,62 @@ function calcularFracaoHojeRestante(){
  return Math.max(0, Math.min(1, (totalMinutos-decorridos)/totalMinutos));
 }
 
+/* ===== Atendimentos por Turno — quantos atendimentos de manhã/tarde, e o intervalo médio entre
+   um e outro (calculado automaticamente a partir do horário de funcionamento configurado) ===== */
+function getAtendimentosPorTurno(){
+ try{ return JSON.parse(localStorage.getItem('biobel_atendimentos_turno')||'{}'); }catch(e){ return {}; }
+}
+function salvarAtendimentosTurno(obj){
+ localStorage.setItem('biobel_atendimentos_turno', JSON.stringify(obj));
+}
+function salvarAtendimentosHoje(){
+ const manha = parseInt(document.getElementById('atendimentosManhaInput').value, 10);
+ const tarde = parseInt(document.getElementById('atendimentosTardeInput').value, 10);
+ if(isNaN(manha) && isNaN(tarde)){ mostrarToast('⚠️ Preencha pelo menos um dos dois turnos.'); return; }
+ const hoje = obterAgoraBrasilia();
+ const chaveDia = String(hoje.getDate()).padStart(2,'0')+'.'+String(hoje.getMonth()+1).padStart(2,'0');
+ const dados = getAtendimentosPorTurno();
+ dados[chaveDia] = { manha: isNaN(manha)?null:manha, tarde: isNaN(tarde)?null:tarde };
+ salvarAtendimentosTurno(dados);
+ mostrarToast('✅ Atendimentos de hoje salvos!');
+ renderAtendimentosPorTurno();
+}
+function calcularDuracaoTurnoMinutos(inicio, fim){
+ const [h1,m1] = String(inicio).split(':').map(Number);
+ const [h2,m2] = String(fim).split(':').map(Number);
+ return (h2*60+m2) - (h1*60+m1);
+}
+function renderAtendimentosPorTurno(){
+ const el = document.getElementById('resultadoAtendimentosTurno');
+ const inputManha = document.getElementById('atendimentosManhaInput');
+ const inputTarde = document.getElementById('atendimentosTardeInput');
+ if(!el) return;
+ const hoje = obterAgoraBrasilia();
+ const chaveDia = String(hoje.getDate()).padStart(2,'0')+'.'+String(hoje.getMonth()+1).padStart(2,'0');
+ const dados = getAtendimentosPorTurno()[chaveDia];
+ if(inputManha) inputManha.value = dados?.manha ?? '';
+ if(inputTarde) inputTarde.value = dados?.tarde ?? '';
+ if(!dados || (dados.manha===null && dados.tarde===null)){ el.innerHTML=''; return; }
+
+ // Divide o dia em manhã (abertura até meio-dia) e tarde (meio-dia até o fechamento) — usa o
+ // horário de funcionamento já configurado, incluindo a regra diferente de sábado.
+ const horario = getHorarioFuncionamento();
+ const ehSabado = hoje.getDay()===6;
+ const fechamento = ehSabado ? horario.fechamentoSabado : horario.fechamentoSemana;
+ const duracaoManha = calcularDuracaoTurnoMinutos(horario.abertura, '12:00');
+ const duracaoTarde = calcularDuracaoTurnoMinutos('12:00', fechamento);
+
+ function linhaResultado(nome, emoji, qtd, duracaoMin){
+  if(qtd===null || qtd===undefined) return '';
+  if(qtd===0) return `<div style="font-size:11.5px;color:#93a3ba;margin-top:4px;">${emoji} ${nome}: nenhum atendimento registrado</div>`;
+  const intervaloMedio = duracaoMin/qtd;
+  const horas = Math.floor(intervaloMedio/60), minutos = Math.round(intervaloMedio%60);
+  const textoIntervalo = horas>0 ? horas+'h'+String(minutos).padStart(2,'0')+'min' : minutos+'min';
+  return `<div style="font-size:11.5px;color:#dce5f2;margin-top:4px;">${emoji} ${nome}: <strong>${qtd}</strong> atendimento${qtd===1?'':'s'} — média de <strong style="color:#4f9cff;">1 a cada ${textoIntervalo}</strong></div>`;
+ }
+ el.innerHTML = linhaResultado('Manhã', '☀️', dados.manha, duracaoManha) + linhaResultado('Tarde', '🌇', dados.tarde, duracaoTarde);
+}
+
 function getHorarioFuncionamento(){
  return {
   abertura: localStorage.getItem('biobel_horario_abertura') || '09:00',
@@ -15105,6 +15177,7 @@ inicializarBotoesCompartilharNativo();
 atualizarBotaoModoCompacto();
 initModoDashboard();
 renderClimaHojeStatus();
+renderAtendimentosPorTurno();
 renderIndicadorClimaTopo();
 buscarClimaAutomaticoHoje().then(()=>{ renderClimaHojeStatus(); renderIndicadorClimaTopo(); });
 renderPrevisaoProximosDias();
