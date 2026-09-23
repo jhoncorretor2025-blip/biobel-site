@@ -531,7 +531,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 22/09/2026 — versão v9.5')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 22/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v9.5</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 22/09/2026 — versão v9.6')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 22/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v9.6</span>
   <span id="indicadorUltimoSalvamento" class="no-print" style="font-size:11px;color:#27d7a0;font-weight:700;display:none;white-space:nowrap;" title="Tudo o que você faz salva sozinho no aparelho — esse é o horário do último salvamento"></span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
@@ -1032,6 +1032,14 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <span>quanto já faturou em cada dia da semana, somando todas as ocorrências do mês</span>
   </div>
   <div id="infoTodosDiasSemana" style="display:flex;flex-direction:column;gap:8px;"></div>
+ </div>
+
+ <div class="adv-card">
+  <div class="adv-card-title">
+   <h3>📉 Dias com menos movimento (por turno)</h3>
+   <span>os 3 dias da semana com menor média de atendimentos de manhã, e os 3 com menor média à tarde — baseado no que você registrou em "Atendimentos por Turno" no Dashboard</span>
+  </div>
+  <div id="menosMovimentoPorTurno" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;"></div>
  </div>
 
  </div>
@@ -12070,6 +12078,46 @@ function renderMelhoresPioresDiasSemana(porDiaSemana){
   });
  }
 }
+function renderMenosMovimentoPorTurno(){
+ const el = document.getElementById('menosMovimentoPorTurno');
+ if(!el) return;
+ const dados = getAtendimentosPorTurno();
+ const nomesDias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+ const porDiaManha = {};
+ const porDiaTarde = {};
+ Object.entries(dados).forEach(([chaveDia, valores])=>{
+  const dataISO = dataDoDiaParaISO(chaveDia);
+  const dow = new Date(dataISO+'T00:00:00').getDay();
+  if(valores.manha!==null && valores.manha!==undefined){
+   if(!porDiaManha[dow]) porDiaManha[dow] = { soma:0, qtd:0 };
+   porDiaManha[dow].soma += valores.manha;
+   porDiaManha[dow].qtd += 1;
+  }
+  if(valores.tarde!==null && valores.tarde!==undefined){
+   if(!porDiaTarde[dow]) porDiaTarde[dow] = { soma:0, qtd:0 };
+   porDiaTarde[dow].soma += valores.tarde;
+   porDiaTarde[dow].qtd += 1;
+  }
+ });
+
+ function montarRanking(porDia, emoji, titulo){
+  const linhas = Object.entries(porDia).map(([dow,info])=>({
+   nome: nomesDias[dow], media: info.soma/info.qtd, qtdDias: info.qtd
+  }));
+  if(linhas.length===0) return `<div><div style="font-size:11px;color:#93a3ba;font-weight:800;margin-bottom:8px;">${emoji} ${titulo}</div><p style="font-size:11.5px;color:#93a3ba;">Ainda não tem dados suficientes — registre os atendimentos no Dashboard por alguns dias.</p></div>`;
+  const piores = linhas.sort((a,b)=>a.media-b.media).slice(0,3);
+  return `<div>
+    <div style="font-size:11px;color:#93a3ba;font-weight:800;margin-bottom:8px;">${emoji} ${titulo}</div>
+    ${piores.map((l,i)=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid #1e2c42;">
+      <span style="color:#dce5f2;">${i+1}º ${l.nome}</span>
+      <span style="color:#fb7185;font-weight:700;">${l.media.toFixed(1)} atend. <span style="color:#93a3ba;font-weight:400;font-size:10px;">(${l.qtdDias}x)</span></span>
+     </div>`).join('')}
+   </div>`;
+ }
+
+ el.innerHTML = montarRanking(porDiaManha, '☀️', 'Manhãs com menos movimento') + montarRanking(porDiaTarde, '🌇', 'Tardes com menos movimento');
+}
+
 function renderTodosDiasSemana(porDiaSemana){
  const el = document.getElementById('infoTodosDiasSemana');
  if(!el) return;
@@ -12204,6 +12252,7 @@ function renderMaisNumerosDoMes(){
  }
  renderMelhoresPioresDiasSemana(porDiaSemana);
  renderTodosDiasSemana(porDiaSemana);
+ renderMenosMovimentoPorTurno();
 
  // Comparativo "até o mesmo dia" do mês passado (mais justo que comparar mês fechado com mês em andamento)
  const mesAtual = daysData[0]?.dia?.split('.')[1];
