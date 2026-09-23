@@ -531,7 +531,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 22/09/2026 — versão v9.1')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 22/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v9.1</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 22/09/2026 — versão v9.2')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 22/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v9.2</span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
   <div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;">
@@ -1101,6 +1101,16 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <div id="tirinhaPrevisaoClima" style="margin-bottom:14px;"></div>
    <div id="conteudoCorrelacaoClima"></div>
   </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>🔶 Correlação de Clima — só Sábados</h3>
+    <span>o sábado tem regra própria de horário e costuma ser o dia mais forte de venda, então vale ver o clima separado dos outros dias</span>
+   </div>
+   <div id="conteudoCorrelacaoClimaSabados"></div>
+  </div>
+
+  <button onclick="exportarRelatorioClimaPDF()" class="no-print w-full bg-purple-600 hover:bg-purple-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="margin-bottom:14px;">📑 Exportar relatório Clima x Vendas (PDF)</button>
 
   <div class="adv-card">
    <div class="adv-card-title">
@@ -9669,6 +9679,7 @@ function mostrarSecaoInfo(secao){
   try{ renderSemanasDoMes(); }catch(e){ console.error('Erro em renderSemanasDoMes:', e); }
   try{ renderListaCampanhas(); }catch(e){ console.error('Erro em renderListaCampanhas:', e); }
   try{ renderCorrelacaoClima(); }catch(e){ console.error('Erro em renderCorrelacaoClima:', e); }
+  try{ renderCorrelacaoClimaSabados(); }catch(e){ console.error('Erro em renderCorrelacaoClimaSabados:', e); }
   try{ renderTirinhaPrevisaoClima(); }catch(e){ console.error('Erro em renderTirinhaPrevisaoClima:', e); }
  }
 }
@@ -10889,7 +10900,92 @@ function renderCorrelacaoClima(){
    </div>`;
  }).join('');
 }
+function renderCorrelacaoClimaSabados(){
+ const el = document.getElementById('conteudoCorrelacaoClimaSabados');
+ if(!el) return;
+ const climaDias = getClimaDias();
+ const porTipo = {};
+ daysData.forEach(d=>{
+  const tipo = climaDias[String(d.dia)];
+  if(!tipo) return;
+  const dataISO = dataDoDiaParaISO(d.dia);
+  const diaSemana = new Date(dataISO+'T00:00:00').getDay();
+  if(diaSemana!==6) return; // só sábado
+  if(!porTipo[tipo]) porTipo[tipo] = { soma:0, qtd:0 };
+  porTipo[tipo].soma += Number(d.sales)||0;
+  porTipo[tipo].qtd += 1;
+ });
+ const tipos = Object.entries(porTipo);
+ if(tipos.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12px;">Ainda não tem sábados com o clima marcado pra comparar.</p>'; return; }
+ const cores = { Sol:'#fbbf24', Nublado:'#93a3ba', Chuva:'#4f9cff', Frio:'#60a5fa' };
+ const emojis = { Sol:'☀️', Nublado:'☁️', Chuva:'🌧️', Frio:'🥶' };
+ const maiorMedia = Math.max(...tipos.map(([,d])=>d.soma/d.qtd), 1);
+ el.innerHTML = tipos.sort((a,b)=>(b[1].soma/b[1].qtd)-(a[1].soma/a[1].qtd)).map(([tipo, dados])=>{
+  const media = dados.soma/dados.qtd;
+  const pct = maiorMedia>0 ? (media/maiorMedia)*100 : 0;
+  return `<div style="margin-bottom:10px;">
+    <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px;">
+     <span style="color:#dce5f2;">${emojis[tipo]||''} ${tipo} <span style="color:#93a3ba;font-size:11px;">(${dados.qtd} sábado${dados.qtd===1?'':'s'})</span></span>
+     <strong style="color:#f6f9fd;">${money(media)}</strong>
+    </div>
+    <div style="background:#0b1728;border-radius:999px;height:10px;overflow:hidden;">
+     <div style="height:100%;width:${pct.toFixed(1)}%;background:${cores[tipo]||'#93a3ba'};"></div>
+    </div>
+   </div>`;
+ }).join('');
+}
+async function exportarRelatorioClimaPDF(){
+ const climaDias = getClimaDias();
+ const porTipo = {};
+ const porTipoSabado = {};
+ daysData.forEach(d=>{
+  const tipo = climaDias[String(d.dia)];
+  if(!tipo) return;
+  if(!porTipo[tipo]) porTipo[tipo] = { soma:0, qtd:0 };
+  porTipo[tipo].soma += Number(d.sales)||0;
+  porTipo[tipo].qtd += 1;
+  const dataISO = dataDoDiaParaISO(d.dia);
+  if(new Date(dataISO+'T00:00:00').getDay()===6){
+   if(!porTipoSabado[tipo]) porTipoSabado[tipo] = { soma:0, qtd:0 };
+   porTipoSabado[tipo].soma += Number(d.sales)||0;
+   porTipoSabado[tipo].qtd += 1;
+  }
+ });
+ if(Object.keys(porTipo).length===0){ mostrarToast('⚠️ Marque o clima de alguns dias antes de exportar.'); return; }
+ try{
+  await carregarJsPDFSobDemanda();
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({unit:'mm', format:'a4'});
+  const margem = 15;
+  let y = await desenharCabecalhoPDF(doc, 'Relatório Clima x Vendas', 'Média de vendas por tipo de clima, comparando todos os dias e só os sábados');
 
+  function desenharTabela(titulo, dados){
+   if(y>260){ doc.addPage(); y=20; }
+   doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(20,20,20);
+   doc.text(titulo, margem, y);
+   y += 7;
+   doc.setFontSize(10);
+   const tipos = Object.entries(dados).sort((a,b)=>(b[1].soma/b[1].qtd)-(a[1].soma/a[1].qtd));
+   tipos.forEach(([tipo,info])=>{
+    const media = info.soma/info.qtd;
+    doc.setFont('helvetica','normal');
+    doc.text(tipo+' ('+info.qtd+' dia'+(info.qtd===1?'':'s')+')', margem, y);
+    doc.text('Média: '+money(media), margem+90, y);
+    y += 6;
+   });
+   y += 6;
+  }
+
+  desenharTabela('📊 Todos os dias', porTipo);
+  if(Object.keys(porTipoSabado).length>0) desenharTabela('🔶 Só sábados', porTipoSabado);
+
+  doc.save('relatorio-clima-vendas-'+obterAgoraBrasilia().paraChaveISO()+'.pdf');
+  mostrarToast('✅ PDF exportado!');
+ }catch(e){
+  console.error(e);
+  mostrarToast('⚠️ Não foi possível gerar o PDF.');
+ }
+}
 function renderAcimaAbaixoMedia(){
  const el = document.getElementById('conteudoAcimaAbaixoMedia');
  if(!el) return;
