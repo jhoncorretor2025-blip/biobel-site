@@ -531,7 +531,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 22/09/2026 — versão v9.8')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 22/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v9.8</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 22/09/2026 — versão v9.9')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 22/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v9.9</span>
   <span id="indicadorUltimoSalvamento" class="no-print" style="font-size:11px;color:#27d7a0;font-weight:700;display:none;white-space:nowrap;" title="Tudo o que você faz salva sozinho no aparelho — esse é o horário do último salvamento"></span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
@@ -1591,6 +1591,14 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 </section>
 
 <section id="campanhasTab" class="hidden max-w-3xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabCampanhas">
+
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7" style="border-color:rgba(251,113,133,.35);">
+  <div class="mb-4">
+   <h2 class="text-xl font-bold">📢 Sem Movimento? Faça Isso!</h2>
+   <p class="text-sm text-slate-400 mt-1">Quando a loja estiver parada, em vez de esperar, sai atrás do cliente — marca o que já fez hoje.</p>
+  </div>
+  <div id="listaAtividadesSemMovimento" style="display:flex;flex-direction:column;gap:8px;"></div>
+ </div>
 
  <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
   <div class="mb-4">
@@ -5777,10 +5785,53 @@ function migrarNovasCampanhasPadrao(){
  });
  localStorage.setItem('biobel_campanhas_migracao_v2', 'feito');
 }
+/* ===== Sem Movimento? Faça Isso! — checklist de ações de divulgação, reseta todo dia ===== */
+const ATIVIDADES_SEM_MOVIMENTO_PADRAO = [
+ '📘 Divulgar pelo Facebook (grupos)?',
+ '💬 Divulgar pelo WhatsApp (grupos)?',
+ '🚌 Foi na parada de ônibus puxar clientes?',
+ '📄 Panfletear na rua',
+ '📸 Mandou mensagem no Instagram pra amigos, no privado',
+ '📘 Mandou mensagem no Facebook pra amigos, no privado'
+];
+function getAtividadesSemMovimento(){
+ let dados;
+ try{ dados = JSON.parse(localStorage.getItem('biobel_atividades_sem_movimento')||'null'); }catch(e){ dados = null; }
+ const hoje = obterAgoraBrasilia().paraChaveISO();
+ if(!dados || dados.data!==hoje){
+  // Novo dia — reseta tudo, já que essas ações fazem sentido serem repetidas diariamente.
+  dados = { data: hoje, itens: ATIVIDADES_SEM_MOVIMENTO_PADRAO.map(texto=>({texto, feita:false})) };
+  localStorage.setItem('biobel_atividades_sem_movimento', JSON.stringify(dados));
+ }
+ return dados.itens;
+}
+function salvarAtividadesSemMovimento(itens){
+ const hoje = obterAgoraBrasilia().paraChaveISO();
+ localStorage.setItem('biobel_atividades_sem_movimento', JSON.stringify({data:hoje, itens}));
+}
+function alternarAtividadeSemMovimento(indice){
+ const itens = getAtividadesSemMovimento();
+ if(!itens[indice]) return;
+ itens[indice].feita = !itens[indice].feita;
+ salvarAtividadesSemMovimento(itens);
+ renderAtividadesSemMovimento();
+}
+function renderAtividadesSemMovimento(){
+ const el = document.getElementById('listaAtividadesSemMovimento');
+ if(!el) return;
+ const itens = getAtividadesSemMovimento();
+ el.innerHTML = itens.map((item,i)=>`
+   <div style="display:flex;align-items:center;gap:10px;background:${item.feita?'rgba(39,215,160,.1)':'#0b1728'};border:1px solid ${item.feita?'rgba(39,215,160,.4)':'#1e2c42'};border-radius:10px;padding:10px 14px;transition:background-color .2s,border-color .2s;">
+    <input type="checkbox" ${item.feita?'checked':''} onchange="alternarAtividadeSemMovimento(${i})" style="width:18px;height:18px;flex-shrink:0;cursor:pointer;">
+    <span style="flex:1;font-size:13px;color:${item.feita?'#93a3ba':'#dce5f2'};text-decoration:${item.feita?'line-through':'none'};">${item.feita?'✅ ':''}${item.texto}</span>
+   </div>`).join('');
+}
+
 function initCampanhas(){
  migrarNovasCampanhasPadrao();
  renderListaCampanhasTexto('data');
  renderListaCampanhasTexto('promo');
+ renderAtividadesSemMovimento();
 }
 
 function initTextosVaga(){
@@ -12064,48 +12115,51 @@ function renderComparativoTurnos(){
  const el = document.getElementById('comparativoTurnos');
  if(!el) return;
  const diasAtipicos = getDiasAtipicos().map(d=>d.dia);
- let somaManha=0, qtdManha=0, somaTarde=0, qtdTarde=0;
+ let somaManha=0, qtdManha=0, somaMeioDia=0, qtdMeioDia=0, somaTarde=0, qtdTarde=0;
  daysData.forEach(d=>{
   if(diasAtipicos.includes(String(d.dia))) return;
   if(!d.porTurno) return;
   const qm = d.porTurno['manhã']?.qtd;
+  const qmd = d.porTurno['meio-dia']?.qtd;
   const qt = d.porTurno['tarde']?.qtd;
   if(qm!==undefined){ somaManha+=qm; qtdManha++; }
+  if(qmd!==undefined){ somaMeioDia+=qmd; qtdMeioDia++; }
   if(qt!==undefined){ somaTarde+=qt; qtdTarde++; }
  });
- if(qtdManha===0 && qtdTarde===0){
+ if(qtdManha===0 && qtdMeioDia===0 && qtdTarde===0){
   el.innerHTML = '<p style="font-size:12px;color:#93a3ba;">Sem dados de turno nessa planilha ainda.</p>';
   return;
  }
  const mediaManha = qtdManha>0 ? somaManha/qtdManha : 0;
+ const mediaMeioDia = qtdMeioDia>0 ? somaMeioDia/qtdMeioDia : 0;
  const mediaTarde = qtdTarde>0 ? somaTarde/qtdTarde : 0;
- const maior = Math.max(mediaManha, mediaTarde, 1);
- let mensagem, cor;
- if(mediaManha===mediaTarde){ mensagem='⚖️ Os dois turnos estão empatados, na média.'; cor='#93a3ba'; }
- else if(mediaManha>mediaTarde){ mensagem='☀️ A manhã tem mais movimento, na média.'; cor='#fbbf24'; }
- else { mensagem='🌇 A tarde tem mais movimento, na média.'; cor='#4f9cff'; }
+ const maior = Math.max(mediaManha, mediaMeioDia, mediaTarde, 1);
+
+ const turnos = [
+  { nome:'Manhã', emoji:'☀️', media:mediaManha, qtd:qtdManha, cor:'#fbbf24' },
+  { nome:'Meio-dia', emoji:'🕛', media:mediaMeioDia, qtd:qtdMeioDia, cor:'#a78bfa' },
+  { nome:'Tarde', emoji:'🌇', media:mediaTarde, qtd:qtdTarde, cor:'#4f9cff' },
+ ];
+ const comDados = turnos.filter(t=>t.qtd>0);
+ const maisMovimento = comDados.reduce((a,b)=>b.media>a.media?b:a, comDados[0]);
+ const menosMovimento = comDados.reduce((a,b)=>b.media<a.media?b:a, comDados[0]);
+ const mensagem = maisMovimento.nome===menosMovimento.nome
+  ? '⚖️ Os turnos estão parecidos, na média.'
+  : `${maisMovimento.emoji} ${maisMovimento.nome} tem mais movimento, e ${menosMovimento.emoji} ${menosMovimento.nome.toLowerCase()} tem menos, na média.`;
 
  el.innerHTML = `
-  <div style="background:${cor}15;border:1px solid ${cor}40;border-radius:10px;padding:8px 14px;text-align:center;font-size:12px;font-weight:700;color:${cor};margin-bottom:14px;">${mensagem}</div>
+  <div style="background:rgba(79,156,255,.08);border:1px solid rgba(79,156,255,.3);border-radius:10px;padding:8px 14px;text-align:center;font-size:12px;font-weight:700;color:#dce5f2;margin-bottom:14px;">${mensagem}</div>
   <div style="display:flex;flex-direction:column;gap:10px;">
+   ${turnos.map(t=>`
    <div>
     <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px;">
-     <span style="color:#dce5f2;">☀️ Manhã <span style="color:#93a3ba;font-size:11px;">(${qtdManha} dia${qtdManha===1?'':'s'})</span></span>
-     <strong style="color:#f6f9fd;">${mediaManha.toFixed(1)} atend./dia</strong>
+     <span style="color:#dce5f2;">${t.emoji} ${t.nome} <span style="color:#93a3ba;font-size:11px;">(${t.qtd} dia${t.qtd===1?'':'s'})</span></span>
+     <strong style="color:#f6f9fd;">${t.media.toFixed(1)} atend./dia</strong>
     </div>
     <div style="background:#0b1728;border-radius:999px;height:10px;overflow:hidden;">
-     <div style="height:100%;width:${(mediaManha/maior*100).toFixed(1)}%;background:#fbbf24;"></div>
+     <div style="height:100%;width:${(t.media/maior*100).toFixed(1)}%;background:${t.cor};"></div>
     </div>
-   </div>
-   <div>
-    <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px;">
-     <span style="color:#dce5f2;">🌇 Tarde <span style="color:#93a3ba;font-size:11px;">(${qtdTarde} dia${qtdTarde===1?'':'s'})</span></span>
-     <strong style="color:#f6f9fd;">${mediaTarde.toFixed(1)} atend./dia</strong>
-    </div>
-    <div style="background:#0b1728;border-radius:999px;height:10px;overflow:hidden;">
-     <div style="height:100%;width:${(mediaTarde/maior*100).toFixed(1)}%;background:#4f9cff;"></div>
-    </div>
-   </div>
+   </div>`).join('')}
   </div>`;
 }
 
