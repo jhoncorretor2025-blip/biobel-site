@@ -1,3 +1,4 @@
+v10.9 | 🛡️ Manutenção mais segura: validador reforçado para referências de arquivos, chaves `localStorage` e indicadores de dívida técnica, sem alterar dados existentes.
 v10.8.1 | 🧩 Reorganização interna segura: criação de zonas de manutenção no `dashboard.html`, documentação do mapa de responsabilidades e proteção explícita da área de clima durante futuras refatorações.
 v10.8 | 🧭 Organização inteligente: remove a duplicação do menu “Mais”, cria navegação móvel completa, agrupa a Administração por assunto e melhora a busca global com múltiplas palavras e relevância.
 v10.7 | 📱 Refinamento mobile: cabeçalho mais enxuto, navegação adaptada para uso com uma mão, busca maior, atalhos compactos, cards mais densos, filtros roláveis, tabelas com primeira coluna fixa e ações com área de toque ampliada.

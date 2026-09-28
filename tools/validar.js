@@ -90,5 +90,46 @@ if (!spanV) aviso('Não achei o span #versaoSistema — a versão não foi confe
 else if (spanV[1] !== spanV[2]) erro(`Versão inconsistente: toast diz ${spanV[1]} mas o texto visível diz ${spanV[2]}`);
 else ok(`Versão do sistema consistente: ${spanV[2]}`);
 
+
+// 8) referências locais de arquivos (não bloqueia arquivos legados conhecidos)
+const REFERENCIAS_LOCAIS_CONHECIDAS = new Set(['script.js']);
+const refs = [];
+for (const m of html.matchAll(/<(?:script[^>]+src|link[^>]+href|img[^>]+src|iframe[^>]+src)=["']([^"'#]+)["']/gi)) {
+  const ref = m[1].trim();
+  if (!ref || /^(?:https?:|\/\/|data:|mailto:|tel:|javascript:)/i.test(ref)) continue;
+  refs.push(ref.split('?')[0].split('#')[0].replace(/^\//, ''));
+}
+const refsUnicas = [...new Set(refs)];
+function existeReferenciaLocal(ref) {
+  const raizSite = path.join(__dirname, '..');
+  const base = [path.join(raizSite, 'dashboard.html'), path.join(raizSite, 'index.html'), path.join(raizSite, 'login.html')].includes(path.resolve(arquivo))
+    ? raizSite : path.dirname(path.resolve(arquivo));
+  return fs.existsSync(path.resolve(base, ref));
+}
+const refsFaltando = refsUnicas.filter(ref => !existeReferenciaLocal(ref));
+const refsLegadas = refsFaltando.filter(ref => REFERENCIAS_LOCAIS_CONHECIDAS.has(ref));
+const refsNovas = refsFaltando.filter(ref => !REFERENCIAS_LOCAIS_CONHECIDAS.has(ref));
+refsNovas.length ? erro('Referências locais quebradas: ' + refsNovas.join(', '))
+                  : ok(`Referências locais válidas (${refsUnicas.length}); ${refsLegadas.length} legado(s) conhecido(s)`);
+
+// 9) localStorage: chaves literais precisam usar o prefixo do projeto.
+const chavesStorage = [...html.matchAll(/localStorage\.(?:getItem|setItem|removeItem)\(\s*['"]([^'"]+)['"]/g)].map(m => m[1]);
+const chavesStorageForaPadrao = [...new Set(chavesStorage.filter(k => !k.startsWith('biobel_')))];
+chavesStorageForaPadrao.length
+  ? erro('Chaves literais de localStorage sem prefixo biobel_: ' + chavesStorageForaPadrao.join(', '))
+  : ok(`Chaves literais de localStorage padronizadas (biobel_) — ${new Set(chavesStorage).size} encontradas`);
+
+// 10) indicadores de dívida técnica — avisos, não bloqueiam publicação.
+const ocorrenciasDate = (html.match(/\bnew\s+Date\s*\(/g) || []).length;
+const anosFixos = [...new Set((html.match(/\b20\d{2}\b/g) || []).filter(a => a !== '2026'))];
+const inlineCount = handlers.length;
+if (ocorrenciasDate > 0) aviso(`Há ${ocorrenciasDate} uso(s) de new Date(); ao alterar datas, prefira obterAgoraBrasilia()`);
+if (html.includes('2026')) aviso('Há referências ao ano 2026; ao alterar cálculos de datas, não fixe o ano atual no código');
+if (anosFixos.length) aviso('Há anos literais adicionais no arquivo: ' + anosFixos.join(', '));
+if (inlineCount > 0) aviso(`Há ${inlineCount} handler(s) inline (onclick/onchange/etc.); não é necessário migrar tudo agora`);
+
+// 11) resumo estrutural para facilitar auditoria futura.
+ok(`Resumo estrutural: ${idsHtml.length} IDs, ${definidas.size} funções detectadas, ${new Set(chavesStorage).size} chaves literais de localStorage, ${refsUnicas.length} referências locais`);
+
 console.log(`\n${erros ? '🚫 REPROVADO' : '🟢 APROVADO'} — ${erros} erro(s), ${avisos} aviso(s)`);
 process.exit(erros ? 1 : 0);
