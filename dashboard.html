@@ -653,7 +653,16 @@ body.light-mode .biobel-nav-dropdown button,body.light-mode .biobel-mobile-more-
  body.light-mode .biobel-mobile-bottom-nav>button{color:#64748b}
  body.light-mode .biobel-mobile-bottom-nav>button.active{background:rgba(14,169,122,.10);color:#0a7a56}
 }
-</style></head>
+</style><style id="ux-v10-11-quick-wins">
+.biobel-context-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;padding:12px 14px;border:1px solid rgba(39,215,160,.20);background:rgba(39,215,160,.055);border-radius:14px}
+.biobel-context-header strong{display:block;font-size:15px;font-weight:850;color:#f6f9fd}.biobel-context-header span{display:block;margin-top:3px;font-size:11px;color:#93a3ba}
+.biobel-context-header .biobel-context-action{flex:0 0 auto;border:1px solid #29405e;background:#0b1728;color:#dce5f2;border-radius:9px;padding:8px 11px;font-size:11px;font-weight:800;cursor:pointer}
+.biobel-context-header .biobel-context-action:hover,.biobel-context-header .biobel-context-action:focus-visible{background:#16263d;color:#27d7a0}
+body.light-mode .biobel-context-header{background:rgba(14,169,122,.07);border-color:rgba(14,169,122,.2)}body.light-mode .biobel-context-header strong{color:#0f172a}body.light-mode .biobel-context-header span{color:#64748b}body.light-mode .biobel-context-header .biobel-context-action{background:#fff;border-color:#dde3ea;color:#334155}
+@media(max-width:640px){.biobel-context-header{align-items:flex-start;padding:11px 12px}.biobel-context-header strong{font-size:14px}.biobel-context-header span{font-size:10.5px}.biobel-context-header .biobel-context-action{min-height:40px;padding:8px 10px}}
+@media(max-width:760px){body{padding-bottom:calc(78px + env(safe-area-inset-bottom))!important}.biobel-mobile-bottom-nav{height:calc(64px + env(safe-area-inset-bottom));padding-bottom:calc(5px + env(safe-area-inset-bottom))}.biobel-mobile-more-menu{bottom:calc(70px + env(safe-area-inset-bottom))}.biobel-mobile-bottom-nav>button{min-height:46px}.bg-emerald-600,.bg-rose-600,.bg-blue-600,.adv-btn,.config-chip{min-height:42px}}
+</style>
+</head>
 <body class="min-h-screen bg-slate-950 text-slate-100">
 <div id="faixaMensagemProgramada" style="display:none;"></div>
 <div id="tourGuiadoOverlay" style="display:none;"></div>
@@ -695,7 +704,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 28/09/2026 — versão v10.10')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 28/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo." >v10.10</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 28/09/2026 — versão v10.10')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 28/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo." >v10.11</span>
   <span id="indicadorUltimoSalvamento" class="no-print" style="font-size:11px;color:#27d7a0;font-weight:700;display:none;white-space:nowrap;" title="Tudo o que você faz salva sozinho no aparelho — esse é o horário do último salvamento"></span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
@@ -15740,5 +15749,13 @@ function alternarNovoMenu(id){const el=document.getElementById(id);if(!el)return
 function fecharNovosMenus(){document.querySelectorAll('.biobel-nav-dropdown.open,.biobel-mobile-more-menu.open').forEach(el=>el.classList.remove('open'))}
 document.addEventListener('click',function(e){if(!e.target.closest('.biobel-main-navigation,.biobel-mobile-bottom-nav'))fecharNovosMenus()});
 document.addEventListener('click',function(e){const btn=e.target.closest('[data-nav]');if(!btn)return;const nav=btn.closest('.biobel-main-navigation,.biobel-mobile-bottom-nav');if(!nav)return;nav.querySelectorAll('[data-nav]').forEach(x=>x.classList.remove('active'));btn.classList.add('active')});
-</script></body>
+</script><script id="ux-v10-11-quick-wins-js">
+(function(){
+const contextos={dashboard:["🏠 Visão Geral","Resumo do negócio, metas, alertas e indicadores principais.","Atualizar","loadGoogleSheet()"],caixa:["💰 Operação","Fechamento de caixa, conferência e histórico diário.","Abrir hoje","showTab('caixa')"],equipe:["👥 Equipe","Vendedoras, ponto, desempenho e acompanhamento da equipe.","Ver equipe","showTab('equipe')"],campanhas:["📣 Vendas","Campanhas, ações para dias sem movimento e comunicação.","Nova campanha","showTab('campanhas')"],info:["📊 Análises","Indicadores detalhados para entender vendas e desempenho.","Atualizar","loadGoogleSheet()"],alertas:["🚨 Alertas","Pontos que merecem atenção e ações pendentes.","Atualizar","loadGoogleSheet()"],config:["🔧 Configuração","Preferências e parâmetros do sistema.","Configuração","showTab('config')"],adm:["⚙️ Administração","Gestão financeira, fornecedores, pessoas e controles da gerência.","Voltar ao início","showTab('dashboard')"]};
+function aplicarContexto(){Object.keys(contextos).forEach(function(k){const el=document.getElementById(k+"Tab"),v=contextos[k];if(!el||el.querySelector(":scope > .biobel-context-header"))return;const w=document.createElement("div");w.className="biobel-context-header no-print";w.innerHTML="<div><strong>"+v[0]+"</strong><span>"+v[1]+"</span></div><button type='button' class='biobel-context-action' onclick=\""+v[3]+"\">"+v[2]+"</button>";el.insertBefore(w,el.firstElementChild)})}
+function feedback(e){const b=e.target.closest("button");if(!b||b.closest(".biobel-mobile-bottom-nav"))return;const a=(b.getAttribute("onclick")||"")+" "+(b.textContent||"");if(!/(salvar|importar|exportar|atualizar|restaurar|excluir|remover|aplicar|gerar|enviar|processar|fechar caixa)/i.test(a))return;if(typeof window.mostrarToast==="function")window.mostrarToast(/excluir|remover/i.test(a)?"⚠️ Processando alteração...":"⏳ Processando...")}
+function init(){aplicarContexto()}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();document.addEventListener("click",feedback,true);window.addEventListener("load",aplicarContexto,{once:true});
+})();
+</script>
+</body>
 </html>
