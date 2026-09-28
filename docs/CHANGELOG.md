@@ -1,3 +1,4 @@
+v10.6 | 🧭 Navegação reorganizada por objetivo: Visão Geral concentra análises e alertas, Caixa e Equipe ficam como áreas operacionais, Ferramentas agrupa Marketing & Vendas e Configuração, e ADM passa a se chamar Administração.
 v10.5 | ✨ Refinamento UX/UI completo: hierarquia, microinterações, site público, cards de produto, CTA, mobile, acessibilidade e consistência visual.
 v10.4 | 🧩 Componentes padronizados: cabeçalhos de cards, filtros, badges/tags, ações, estados vazio/carregando/desabilitado e comportamento mobile.
 v10.3 | 🎨 Design System Biobel: padronização de cards, controles, espaçamentos, estados, navegação interna e comportamento mobile/desktop.
