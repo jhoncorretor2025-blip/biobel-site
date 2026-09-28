@@ -531,7 +531,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 22/09/2026 — versão v10.0')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 22/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v10.0</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 28/09/2026 — versão v10.1')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 28/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v10.1</span>
   <span id="indicadorUltimoSalvamento" class="no-print" style="font-size:11px;color:#27d7a0;font-weight:700;display:none;white-space:nowrap;" title="Tudo o que você faz salva sozinho no aparelho — esse é o horário do último salvamento"></span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
@@ -613,6 +613,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
   <div id="avisoMesDivergente" class="no-print" style="display:none;"></div>
   <div id="bannerClimaChuva" class="no-print" style="display:none;"></div>
+  <div id="checklistChuvaDashboard" class="no-print" style="display:none;"></div>
   <div class="no-print" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:10px 14px;margin-bottom:6px;">
    <span style="font-size:12px;color:#93a3ba;font-weight:700;">🌦️ Clima de hoje:</span>
    <button onclick="marcarClimaHojeRapido('Sol')" style="background:#1c2c42;border:none;color:#dce5f2;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;">☀️ Sol</button>
@@ -1902,6 +1903,10 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <p class="text-sm text-slate-400 mt-1">O que mudou nas últimas atualizações, resumido de forma simples.</p>
   </div>
   <div style="display:flex;flex-direction:column;gap:14px;">
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
+    <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v10.1 — 28/09/2026</div>
+    <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">🌧️ Clima + Sem Movimento: em dia de chuva o aviso ganhou botão direto pra checklist e pras promoções prontas, as ações digitais sobem pro topo (ir na rua faz menos sentido na chuva), e a checklist aparece também no Dashboard. 📚 Repositório organizado com guia pra qualquer IA entender o sistema (AGENTS.md e pasta docs).</div>
+   </div>
    <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
     <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v9.3 — 22/09/2026</div>
     <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">🔒 Segurança: aviso de espaço quase cheio, indicador de "salvo às HH:MM" no topo, restaurar backup baixado, validação de CPF/CNPJ. 🆕 Essa própria tela de Novidades.</div>
@@ -5787,17 +5792,17 @@ function migrarNovasCampanhasPadrao(){
 }
 /* ===== Sem Movimento? Faça Isso! — checklist de ações de divulgação, reseta todo dia ===== */
 const ATIVIDADES_SEM_MOVIMENTO_PADRAO = [
- '📘 Divulgar pelo Facebook (grupos)?',
- '💬 Divulgar pelo WhatsApp (grupos)?',
- '🚌 Foi na parada de ônibus puxar clientes?',
- '📄 Panfletear na rua',
- '📸 Mandou mensagem no Instagram pra amigos, no privado',
- '📘 Mandou mensagem no Facebook pra amigos, no privado',
- '📞 Ligar pra clientes que não compram há um tempo',
- '🎥 Gravar um story mostrando um produto',
- '🧹 Organizar/repor as prateleiras e a vitrine',
- '📦 Conferir o que está com estoque baixo',
- '🤝 Combinar uma parceria com salão/clínica vizinha'
+ { texto:'📘 Divulgar pelo Facebook (grupos)?', tipo:'digital' },
+ { texto:'💬 Divulgar pelo WhatsApp (grupos)?', tipo:'digital' },
+ { texto:'📸 Mandou mensagem no Instagram pra amigos, no privado', tipo:'digital' },
+ { texto:'📘 Mandou mensagem no Facebook pra amigos, no privado', tipo:'digital' },
+ { texto:'📞 Ligar pra clientes que não compram há um tempo', tipo:'digital' },
+ { texto:'🎥 Gravar um story mostrando um produto', tipo:'digital' },
+ { texto:'🧹 Organizar/repor as prateleiras e a vitrine', tipo:'loja' },
+ { texto:'📦 Conferir o que está com estoque baixo', tipo:'loja' },
+ { texto:'🚌 Foi na parada de ônibus puxar clientes?', tipo:'rua' },
+ { texto:'📄 Panfletear na rua', tipo:'rua' },
+ { texto:'🤝 Combinar uma parceria com salão/clínica vizinha', tipo:'rua' }
 ];
 function getAtividadesSemMovimento(){
  let dados;
@@ -5805,7 +5810,7 @@ function getAtividadesSemMovimento(){
  const hoje = obterAgoraBrasilia().paraChaveISO();
  if(!dados || dados.data!==hoje){
   // Novo dia — reseta tudo, já que essas ações fazem sentido serem repetidas diariamente.
-  dados = { data: hoje, itens: ATIVIDADES_SEM_MOVIMENTO_PADRAO.map(texto=>({texto, feita:false})) };
+  dados = { data: hoje, itens: ATIVIDADES_SEM_MOVIMENTO_PADRAO.map(p=>({texto:p.texto, tipo:p.tipo, feita:false})) };
   localStorage.setItem('biobel_atividades_sem_movimento', JSON.stringify(dados));
  }
  return dados.itens;
@@ -5821,15 +5826,58 @@ function alternarAtividadeSemMovimento(indice){
  salvarAtividadesSemMovimento(itens);
  renderAtividadesSemMovimento();
 }
+function abrirChecklistSemMovimento(){
+ showTab('campanhas');
+ setTimeout(()=>{
+  const el = document.getElementById('listaAtividadesSemMovimento');
+  if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+ }, 200);
+}
 function renderAtividadesSemMovimento(){
  const el = document.getElementById('listaAtividadesSemMovimento');
  if(!el) return;
  const itens = getAtividadesSemMovimento();
- el.innerHTML = itens.map((item,i)=>`
+ // Guarda o índice original de cada item antes de reordenar pra tela — assim o clique no
+ // checkbox continua marcando o item certo, mesmo que a ordem visual mude.
+ const itensComIndice = itens.map((item,i)=>({...item, indiceOriginal:i}));
+
+ // Em dia de chuva, ir na rua (parada de ônibus, panfletar) faz menos sentido — prioriza as
+ // ações digitais primeiro, deixando as de rua por último, sem escondê-las.
+ const hoje = obterAgoraBrasilia();
+ const chaveDia = String(hoje.getDate()).padStart(2,'0')+'.'+String(hoje.getMonth()+1).padStart(2,'0');
+ const climaHoje = getClimaDias()[chaveDia];
+ let listaParaExibir = itensComIndice;
+ let avisoOrdem = '';
+ if(climaHoje==='Chuva'){
+  const ordem = { digital:0, loja:1, rua:2 };
+  listaParaExibir = [...itensComIndice].sort((a,b)=>(ordem[a.tipo]??1)-(ordem[b.tipo]??1));
+  avisoOrdem = '<div style="font-size:11px;color:#4f9cff;margin-bottom:10px;">🌧️ Como hoje é dia de chuva, coloquei as ações digitais primeiro — ir na rua faz menos sentido com esse tempo.</div>';
+ }
+
+ el.innerHTML = avisoOrdem + listaParaExibir.map(item=>`
    <div style="display:flex;align-items:center;gap:10px;background:${item.feita?'rgba(39,215,160,.1)':'#0b1728'};border:1px solid ${item.feita?'rgba(39,215,160,.4)':'#1e2c42'};border-radius:10px;padding:10px 14px;transition:background-color .2s,border-color .2s;">
-    <input type="checkbox" ${item.feita?'checked':''} onchange="alternarAtividadeSemMovimento(${i})" style="width:18px;height:18px;flex-shrink:0;cursor:pointer;">
+    <input type="checkbox" ${item.feita?'checked':''} onchange="alternarAtividadeSemMovimento(${item.indiceOriginal})" style="width:18px;height:18px;flex-shrink:0;cursor:pointer;">
     <span style="flex:1;font-size:13px;color:${item.feita?'#93a3ba':'#dce5f2'};text-decoration:${item.feita?'line-through':'none'};">${item.feita?'✅ ':''}${item.texto}</span>
    </div>`).join('');
+ renderChecklistChuvaDashboard();
+}
+function renderChecklistChuvaDashboard(){
+ // Espelho compacto da checklist "Sem Movimento" no Dashboard — só aparece em dia de chuva,
+ // mostrando as próximas ações digitais ainda não feitas (máx. 4), pra não precisar trocar de aba.
+ const el = document.getElementById('checklistChuvaDashboard');
+ if(!el) return;
+ const hoje = obterAgoraBrasilia();
+ const chaveDia = String(hoje.getDate()).padStart(2,'0')+'.'+String(hoje.getMonth()+1).padStart(2,'0');
+ if(getClimaDias()[chaveDia]!=='Chuva'){ el.style.display='none'; return; }
+ const itens = getAtividadesSemMovimento().map((item,i)=>({...item, indiceOriginal:i}));
+ const pendentes = itens.filter(i=>!i.feita && i.tipo==='digital').slice(0,4);
+ const feitas = itens.filter(i=>i.feita).length;
+ el.style.cssText = 'display:block;background:#0b1728;border:1px solid rgba(79,156,255,.35);border-radius:12px;padding:12px 14px;margin-bottom:6px;';
+ el.innerHTML = `<div style="font-size:12px;color:#4f9cff;font-weight:800;margin-bottom:8px;">📢 Sem Movimento? Próximas ações (${feitas}/${itens.length} feitas hoje)</div>`
+  + (pendentes.length===0
+   ? '<div style="font-size:12px;color:#27d7a0;">✅ Todas as ações digitais de hoje já foram feitas!</div>'
+   : pendentes.map(item=>`<label style="display:flex;align-items:center;gap:10px;font-size:12.5px;color:#dce5f2;padding:6px 0;cursor:pointer;"><input type="checkbox" onchange="alternarAtividadeSemMovimento(${item.indiceOriginal})" style="width:17px;height:17px;flex-shrink:0;">${item.texto}</label>`).join(''))
+  + `<button onclick="abrirChecklistSemMovimento()" style="margin-top:8px;background:none;border:none;color:#93a3ba;font-size:11px;text-decoration:underline;cursor:pointer;">ver lista completa →</button>`;
 }
 
 function initCampanhas(){
@@ -10886,6 +10934,7 @@ function renderClimaHojeStatus(){
  const climaHoje = getClimaDias()[chaveDia];
  const emojis = { Sol:'☀️', Nublado:'☁️', Chuva:'🌧️', Frio:'🥶' };
  if(el) el.textContent = climaHoje ? 'Marcado: '+(emojis[climaHoje]||'')+' '+climaHoje : '';
+ try{ renderChecklistChuvaDashboard(); }catch(e){}
 
  if(bannerChuva){
   if(climaHoje==='Chuva'){
@@ -10893,7 +10942,10 @@ function renderClimaHojeStatus(){
    bannerChuva.innerHTML = `
      <div style="font-size:13px;color:#4f9cff;font-weight:800;margin-bottom:6px;">🌧️ Hoje é dia de chuva — foco nas vendas online! Movimento na loja física costuma cair em dias assim, vale reforçar redes sociais e WhatsApp.</div>
      <div style="font-size:11.5px;color:#93a3ba;margin-bottom:8px;">💧 Dia de chuva também é bom pra destacar hidratantes e produtos pra pele ressecada — combina com o clima.</div>
-     <button onclick="showTab('campanhas')" class="no-print" style="background:#4f9cff;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:11.5px;font-weight:700;cursor:pointer;">📢 Ir pra Campanhas e postar algo agora</button>`;
+     <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button onclick="abrirChecklistSemMovimento()" class="no-print" style="background:#4f9cff;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:11.5px;font-weight:700;cursor:pointer;">✅ Abrir checklist de ações</button>
+      <button onclick="showTab('campanhas'); setTimeout(()=>mostrarAbaCampanha('promo'),150);" class="no-print" style="background:transparent;color:#4f9cff;border:1px solid rgba(79,156,255,.5);border-radius:8px;padding:7px 14px;font-size:11.5px;font-weight:700;cursor:pointer;">🏷️ Ver promoções prontas</button>
+     </div>`;
   } else {
    bannerChuva.style.display = 'none';
   }

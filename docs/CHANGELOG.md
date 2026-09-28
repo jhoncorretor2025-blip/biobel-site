@@ -1,0 +1,21 @@
+# 📜 Histórico de versões (resumo)
+
+> Mais recente primeiro. A versão vigente está sempre no topo do painel e em **Configuração → 🆕 Novidades**.
+
+| Versão | O que mudou |
+|---|---|
+| **v10.1** | 🌧️ Clima + "Sem Movimento": aviso de chuva com botão direto pra checklist e promoções; ações digitais primeiro na chuva; checklist espelhada no Dashboard. 📚 Repositório com `AGENTS.md`, `docs/`, `tools/validar.js`, `tools/mapa.js`. |
+| v10.0 | Checklist "Sem Movimento" ganha +5 ações (11 no total). |
+| v9.9 | Comparativo de turnos inclui **meio-dia**; nasce a checklist "Sem Movimento? Faça Isso!" (reseta todo dia). |
+| v9.8 | **Correção de rumo:** cards de turno passam a usar `d.porTurno` (já extraído da planilha) e o card manual de atendimentos foi removido. |
+| v9.5–9.7 | (Etapa intermediária) cards de turno com entrada manual — substituída na 9.8. Lição: verificar se o dado já existe antes de criar. |
+| v9.4 | Troca **automática** pra planilha do mês atual, uma vez por sessão. |
+| v9.3 | Segurança/confiabilidade: aviso de armazenamento cheio, restaurar backup, validação de CPF/CNPJ, tela Novidades, indicador "Salvo às HH:MM". |
+| v9.0–9.2 | Clima: cores, "amanhã (previsão)", tirinha de 7 dias, barras de correlação, correlação só de sábados, relatório PDF. |
+| v8.7–8.9 | Fornecedores: busca, dados (telefone/CNPJ), ranking, gastos por marca, aviso de duplicado, exportar PDF/CSV. Clima automático (Open-Meteo). |
+| v8.4–8.6 | Boleto 1x/2x/3x integrado ao formulário com datas sugeridas (30/45/60), memória de parcelamento por fornecedor, navegação da ADM por **isolamento de seção**. |
+| v8.2–8.3 | Agenda de reuniões como grupo, lembrete de reunião, marcas de fornecedor, clima rápido no Dashboard, faturamento por dia da semana, atividades com links. |
+| v8.0–8.1 | Compra parcelada; melhorias gráficas da Equipe. |
+| v7.0–7.9 | Textos de vaga, Dica do Dia, assistente guiado de desligamento, Modo Simples, Central de Ações Rápidas, "Desfazer", Campanhas, Atividades da Gerência. |
+| v6.x | Grupos colapsáveis na ADM, arquivo de ex-funcionários, promoção estágio→CLT, folha de ponto com regra própria de sábado. |
+| ≤ v5.9 | Base: fechamento diário, metas, comissões, gastos fixos, folha de ponto, calendário comercial, desligamento com PDF. |
