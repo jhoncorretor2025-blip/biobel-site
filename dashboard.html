@@ -3972,6 +3972,13 @@ function showTab(tab){
   config: 'Configuração — Biobel'
  };
  document.title = titulosAba[tab] || 'Biobel — Fechamento de Caixa Diário';
+ const mobileNavLabels = {
+  dashboard:'📊 Visão Geral', caixa:'💰 Caixa', equipe:'👥 Equipe',
+  campanhas:'🎉 Campanhas', info:'🔍 Análises', alertas:'🚨 Alertas',
+  config:'⚙️ Configuração', adm:'👑 Administração'
+ };
+ const mobileNav=document.querySelector('nav.no-print');
+ if(mobileNav) mobileNav.style.setProperty('--mobile-nav-label', JSON.stringify(mobileNavLabels[tab] || '📊 Visão Geral'));
 
  const dash=document.getElementById('dashboardTab');
  const info=document.getElementById('infoTab');
