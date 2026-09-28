@@ -1,3 +1,4 @@
+v10.3 | 🎨 Design System Biobel: padronização de cards, controles, espaçamentos, estados, navegação interna e comportamento mobile/desktop.
 # 📜 Histórico de versões (resumo)
 
 > Mais recente primeiro. A versão vigente está sempre no topo do painel e em **Configuração → 🆕 Novidades**.
