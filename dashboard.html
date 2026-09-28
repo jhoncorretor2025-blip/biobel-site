@@ -704,7 +704,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 28/09/2026 — versão v10.15')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 28/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v10.15</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 28/09/2026 — versão v10.20')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 28/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v10.20</span>
   <span id="indicadorUltimoSalvamento" class="no-print" style="font-size:11px;color:#27d7a0;font-weight:700;display:none;white-space:nowrap;" title="Tudo o que você faz salva sozinho no aparelho — esse é o horário do último salvamento"></span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
@@ -14735,10 +14735,10 @@ function findPaymentTotals(rows){
  for(let r=0;r<rows.length;r++){
   const label=String(rows[r]?.[0]??'').trim().toLowerCase();
   if(label==='total'){
-   const dinheiro=typeof rows[r][1]==='number'?rows[r][1]:0;
-   const debito=typeof rows[r][2]==='number'?rows[r][2]:0;
-   const credito=typeof rows[r][3]==='number'?rows[r][3]:0;
-   const pix=typeof rows[r][4]==='number'?rows[r][4]:0;
+   const dinheiro=numeroPlanilha(rows[r][1]);
+   const debito=numeroPlanilha(rows[r][2]);
+   const credito=numeroPlanilha(rows[r][3]);
+   const pix=numeroPlanilha(rows[r][4]);
    return {dinheiro,debito,credito,pix};
   }
  }
@@ -15115,6 +15115,20 @@ function extractRegistrosVendas(rows){
  return registros;
 }
 
+/* ===== Conversão robusta de valores vindos da planilha ===== */
+function numeroPlanilha(v){
+ if(typeof v==='number' && Number.isFinite(v)) return v;
+ if(v===null || v===undefined) return 0;
+ let s=String(v).trim();
+ if(!s) return 0;
+ s=s.replace(/R\$/gi,'').replace(/\s/g,'');
+ if(s.includes(',') && s.includes('.')) s=s.replace(/\./g,'').replace(',','.');
+ else if(s.includes(',')) s=s.replace(',','.');
+ else if((s.match(/\./g)||[]).length>1) s=s.replace(/\./g,'');
+ const n=Number(s);
+ return Number.isFinite(n) ? n : 0;
+}
+
 /* ===== PROCESSAMENTO DE DADOS DA PLANILHA ===== */
 function processarLinhasDoDia(sheetName, rows){
  const colM=12;
@@ -15122,33 +15136,48 @@ function processarLinhasDoDia(sheetName, rows){
  for(let r=0;r<rows.length;r++){
   const label=String(rows[r]?.[colM]??'').toLowerCase();
   if(label.includes('inicio do caixa')){
-   for(let rr=r+1;rr<Math.min(r+8,rows.length);rr++){const v=rows[rr]?.[colM]; if(typeof v==='number'){initial=v;break;}}
+   for(let rr=r+1;rr<Math.min(r+8,rows.length);rr++){
+    const bruto=rows[rr]?.[colM]; const v=numeroPlanilha(bruto);
+    if(v!==0 || bruto===0){initial=v;break;}
+   }
   }
   if(label.includes('retirada do caixa')){
-   for(let rr=r+1;rr<Math.min(r+8,rows.length);rr++){const v=rows[rr]?.[colM]; if(typeof v==='number'){withdrawals=v;break;} if(String(v??'').toLowerCase().includes('fechamento')) break;}
+   for(let rr=r+1;rr<Math.min(r+8,rows.length);rr++){
+    const bruto=rows[rr]?.[colM]; const v=numeroPlanilha(bruto);
+    if(v!==0 || bruto===0){withdrawals=v;break;}
+    if(String(bruto??'').toLowerCase().includes('fechamento')) break;
+   }
   }
   if(label.includes('fechamento do caixa')){
-   for(let rr=r+1;rr<Math.min(r+8,rows.length);rr++){const v=rows[rr]?.[colM]; if(typeof v==='number'){closing=v;break;}}
-   if(!closing && typeof rows[r+1]?.[0]==='number') closing=rows[r+1][0];
+   for(let rr=r+1;rr<Math.min(r+8,rows.length);rr++){
+    const bruto=rows[rr]?.[colM]; const v=numeroPlanilha(bruto);
+    if(v!==0 || bruto===0){closing=v;break;}
+   }
+   if(!closing) closing=numeroPlanilha(rows[r+1]?.[0]);
   }
-  // Busca "entrada do dia" por rótulo em vez de posição fixa — mais confiável entre
-  // diferentes formas de ler a planilha (leitura direta ou pela ponte do Apps Script).
+  // Busca "entrada do dia" por rótulo — aceita número real, texto numérico e valor em reais.
   if(sales===0){
    for(let c=0;c<(rows[r]?.length||0);c++){
     const cel = rows[r][c];
     if(typeof cel==='string' && cel.toLowerCase().includes('entrada do dia')){
      for(let cc=c+1; cc<Math.min(c+3,rows[r].length); cc++){
-      const v=rows[r][cc];
-      if(typeof v==='number'){ sales=v; break; }
+      const bruto=rows[r][cc]; const v=numeroPlanilha(bruto);
+      if(v!==0 || bruto===0){sales=v;break;}
      }
      break;
     }
    }
   }
  }
- // Se por algum motivo não achou o rótulo, cai pra posição fixa antiga como último recurso.
- if(sales===0 && typeof rows[1]?.[15]==='number') sales=rows[1][15];
- const {dinheiro,debito,credito,pix}=findPaymentTotals(rows);
+ // Último recurso: posição fixa antiga.
+ if(sales===0) sales=numeroPlanilha(rows[1]?.[15]);
+ const pagamentos=findPaymentTotals(rows);
+ const {dinheiro,debito,credito,pix}=pagamentos;
+ // Fallback: se "Entrada do dia" não estiver disponível, soma os meios de pagamento.
+ if(sales===0){
+  const totalPagamentos=dinheiro+debito+credito+pix;
+  if(totalPagamentos>0) sales=totalPagamentos;
+ }
  const vendedoras=extractSellerTotals(rows);
  const vendedorasDetalhe=extractSellerDetalhes(rows);
  const qtdVendas=countTransactions(rows);
@@ -15203,7 +15232,7 @@ async function loadGoogleSheet(){
  try{
   const proxyUrl = getAppsScriptProxyUrl();
   let found=0;
-  daysData=[]; // limpa tudo antes de recarregar — evita somar dias de uma planilha antiga (ex: mês trocado) com a nova
+  const novosDias=[]; // só substitui daysData depois que a leitura terminar com sucesso
 
   if(proxyUrl){
    // Caminho novo: passa pela "ponte" do Google Apps Script — roda dentro do Google,
@@ -15216,7 +15245,7 @@ async function loadGoogleSheet(){
    for(const sheetName in (data.sheets||{})){
     const nomeNormalizado = normalizarNomeAba(sheetName);
     if(!nomeNormalizado) continue; // ignora abas que não são de um dia (ex: aba de resumo, config, etc.)
-    daysData.push(processarLinhasDoDia(nomeNormalizado, data.sheets[sheetName]));
+    novosDias.push(processarLinhasDoDia(nomeNormalizado, data.sheets[sheetName]));
     found++;
    }
   } else {
@@ -15236,11 +15265,13 @@ async function loadGoogleSheet(){
     const nomeNormalizado = normalizarNomeAba(sheetName);
     if(!nomeNormalizado) continue;
     const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{header:1,defval:null,raw:true});
-    daysData.push(processarLinhasDoDia(nomeNormalizado, rows));
+    novosDias.push(processarLinhasDoDia(nomeNormalizado, rows));
     found++;
    }
   }
 
+  if(found===0 || novosDias.length===0) throw new Error('Nenhuma aba de dia válida foi encontrada na planilha.');
+  daysData=novosDias;
   render();
   setGoogleStatus(`conectado. ${found} dia(s) atualizado(s) às ${new Date().toLocaleTimeString('pt-BR')}.`,true);
   verificarEnvioEmailMensal();
