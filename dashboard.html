@@ -59,6 +59,18 @@ body.receipt-printing .print-receipt{
 }
 </style>
 
+<style id="navigation-improvements-dashboard">
+.biobel-tools-menu{position:absolute;top:100%;right:0;background:#0f172a;border:1px solid #1e2c42;border-radius:14px;padding:8px;min-width:250px;box-shadow:0 16px 40px rgba(0,0,0,.45);z-index:45;margin-top:4px}
+.biobel-tools-menu button{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:none;color:#dce5f2;font-size:13px;font-weight:650;padding:10px 12px;border-radius:9px;cursor:pointer}
+.biobel-tools-menu button:hover,.biobel-tools-menu button:focus-visible{background:#16263d;color:#fff}
+.biobel-tools-title{font-size:10px;font-weight:900;color:#27d7a0;text-transform:uppercase;letter-spacing:.08em;padding:5px 10px 7px}
+.biobel-tools-note{border-top:1px solid #1e2c42;margin-top:5px;padding:9px 10px 3px;font-size:10.5px;line-height:1.4;color:#93a3ba}
+body.light-mode .biobel-tools-menu{background:#fff;border-color:#dde3ea;box-shadow:0 16px 40px rgba(15,23,42,.16)}
+body.light-mode .biobel-tools-menu button{color:#334155}
+body.light-mode .biobel-tools-menu button:hover,body.light-mode .biobel-tools-menu button:focus-visible{background:#eef1f5;color:#0f172a}
+body.light-mode .biobel-tools-note{border-color:#dde3ea;color:#5b6b80}
+@media(max-width:760px){.biobel-tools-menu{position:fixed;top:auto;right:10px;left:10px;margin-top:8px;min-width:0;max-height:70vh;overflow:auto}#btnMenuFerramentas{font-size:0}#btnMenuFerramentas::before{content:"🛠️";font-size:16px}}
+</style>
 <style id="advanced-dashboard-design">
 :root{
   --bg:#07111f;
@@ -531,7 +543,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 28/09/2026 — versão v10.1')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 28/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v10.1</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 28/09/2026 — versão v10.2')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 28/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v10.2</span>
   <span id="indicadorUltimoSalvamento" class="no-print" style="font-size:11px;color:#27d7a0;font-weight:700;display:none;white-space:nowrap;" title="Tudo o que você faz salva sozinho no aparelho — esse é o horário do último salvamento"></span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
@@ -554,6 +566,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <div>
     <h1 class="text-2xl font-bold">Biobel — Fechamento de Caixa</h1>
     <p class="text-sm text-slate-400">Leitura diária da planilha + histórico do fechamento da gaveta</p>
+   <p class="text-[11px] text-emerald-400/80 mt-1">🛠️ Ferramentas e áreas administrativas organizadas por acesso rápido</p>
    </div>
   </div>
   <label class="cursor-pointer bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm">
@@ -583,10 +596,24 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <button id="tabAlertas" data-tab="alertas" role="tab" aria-selected="false" aria-controls="alertasTab" onclick="showTab('alertas')" title="Atalho: Alt+3" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">🚨 Alertas <span id="badgeContadorAlertas" style="display:none;background:#fb7185;color:#3a0f16;font-size:10px;font-weight:900;padding:1px 6px;border-radius:999px;margin-left:2px;">0</span></button>
   <button id="tabCaixa" data-tab="caixa" role="tab" aria-selected="false" aria-controls="caixaTab" onclick="showTab('caixa')" title="Atalho: Alt+4 — só o valor final do fechamento" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">⚡ Fechamento Rápido</button>
   <button id="tabEquipe" data-tab="equipe" role="tab" aria-selected="false" aria-controls="equipeTab" onclick="showTab('equipe')" title="Atalho: Alt+5" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">👩‍💼 Equipe</button>
-  <button id="tabCampanhas" data-tab="campanhas" role="tab" aria-selected="false" aria-controls="campanhasTab" onclick="showTab('campanhas')" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">🎉 Campanhas</button>
+  <button id="tabCampanhas" data-tab="campanhas" role="tab" aria-selected="false" aria-controls="campanhasTab" onclick="showTab('campanhas')" style="display:none;" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">🎉 Campanhas</button>
   <button id="tabConfig" data-tab="config" role="tab" aria-selected="false" aria-controls="configTab" onclick="showTab('config')" title="Atalho: Alt+6" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm" style="display:none;">⚙️ Configuração</button>
   <button id="tabAdm" data-tab="adm" role="tab" aria-selected="false" aria-controls="admTab" onclick="showTab('adm')" title="Atalho: Alt+7" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm" style="display:none;">👑 ADM</button>
  </div>
+ </div>
+ <div style="position:relative;flex-shrink:0;padding-bottom:2px;">
+  <button id="btnMenuFerramentas" onclick="alternarMenuFerramentas()" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm" aria-haspopup="true" aria-expanded="false">🛠️ Ferramentas</button>
+  <div id="menuFerramentasDropdown" class="biobel-tools-menu" style="display:none;">
+   <div class="biobel-tools-title">🛠️ Acesso rápido</div>
+   <button onclick="irParaFerramenta('campanhas')">🎉 Campanhas</button>
+   <button onclick="irParaFerramenta('info','Vendedoras')">👥 Vendedoras e rankings</button>
+   <button onclick="irParaFerramenta('info','Dias')">📅 Dias, histórico e clima</button>
+   <button onclick="irParaFerramenta('info','Avancado')">🔍 Análises avançadas</button>
+   <button onclick="irParaFerramenta('info','Comparar')">📊 Comparar meses</button>
+   <button onclick="irParaFerramenta('config')">⚙️ Configuração</button>
+   <button onclick="irParaFerramenta('adm')">👑 Administração</button>
+   <div class="biobel-tools-note">💡 São atalhos para áreas que já existem no sistema.</div>
+  </div>
  </div>
  <div style="position:relative;flex-shrink:0;padding-bottom:2px;">
   <button id="btnMenuMais" onclick="alternarMenuMais()" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm" aria-haspopup="true" aria-expanded="false">⋯ Mais</button>
@@ -3816,6 +3843,24 @@ function atualizarBotaoModoCompacto(){
  }
 })();
 
+function alternarMenuFerramentas(){
+ const menu=document.getElementById('menuFerramentasDropdown');
+ const btn=document.getElementById('btnMenuFerramentas');
+ if(!menu) return;
+ const abrir=menu.style.display==='none';
+ menu.style.display=abrir?'block':'none';
+ if(btn) btn.setAttribute('aria-expanded',abrir?'true':'false');
+}
+function irParaFerramenta(tab, secao){
+ const menu=document.getElementById('menuFerramentasDropdown');
+ const btn=document.getElementById('btnMenuFerramentas');
+ if(menu) menu.style.display='none';
+ if(btn) btn.setAttribute('aria-expanded','false');
+ if(tab==='info' && secao){
+  showTab('info');
+  setTimeout(()=>{try{mostrarSecaoInfo(secao);}catch(e){console.error('Erro ao abrir ferramenta:',e);}},80);
+ }else showTab(tab);
+}
 function alternarMenuMais(){
  const menu = document.getElementById('menuMaisDropdown');
  const btn = document.getElementById('btnMenuMais');
@@ -3831,10 +3876,15 @@ function irParaTabViaMenu(tab){
 document.addEventListener('click', function(e){
  const menu = document.getElementById('menuMaisDropdown');
  const btn = document.getElementById('btnMenuMais');
- if(!menu || menu.style.display==='none') return;
- if(!menu.contains(e.target) && e.target!==btn){
-  menu.style.display = 'none';
+ if(menu && menu.style.display!=='none' && !menu.contains(e.target) && e.target!==btn){
+  menu.style.display='none';
   if(btn) btn.setAttribute('aria-expanded','false');
+ }
+ const ferramentas=document.getElementById('menuFerramentasDropdown');
+ const btnFerramentas=document.getElementById('btnMenuFerramentas');
+ if(ferramentas && ferramentas.style.display!=='none' && !ferramentas.contains(e.target) && e.target!==btnFerramentas){
+  ferramentas.style.display='none';
+  if(btnFerramentas) btnFerramentas.setAttribute('aria-expanded','false');
  }
 });
 function showTab(tab){
@@ -3878,6 +3928,13 @@ function showTab(tab){
  if(btnMais){
   const dentroDoMenu = tab==='config' || tab==='adm';
   btnMais.className = 'tab-btn px-4 py-2 rounded-t-xl font-semibold text-sm '+(dentroDoMenu ? 'bg-emerald-600' : 'bg-slate-800 text-slate-300');
+ }
+ const btnFerramentas=document.getElementById('btnMenuFerramentas');
+ if(btnFerramentas){
+  btnFerramentas.className='tab-btn px-4 py-2 rounded-t-xl font-semibold text-sm '+(tab==='campanhas' ? 'bg-emerald-600' : 'bg-slate-800 text-slate-300');
+  btnFerramentas.setAttribute('aria-expanded','false');
+  const menuFerramentas=document.getElementById('menuFerramentasDropdown');
+  if(menuFerramentas) menuFerramentas.style.display='none';
  }
 
  if(tab==='caixa'){
