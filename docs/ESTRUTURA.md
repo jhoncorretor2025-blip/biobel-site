@@ -26,7 +26,7 @@
 Ordem dentro do arquivo:
 1. `<head>`: Tailwind (CDN), `xlsx` e `chart.js` (CDN), `<style>` com o CSS próprio (tema escuro; existe **modo claro**, ver seção `MODO CLARO`).
 2. Cabeçalho fixo: logo, **número da versão** (`#versaoSistema`), indicador "✅ Salvo às HH:MM", nome da planilha ativa.
-3. Navegação principal (v10.6) → **Visão Geral**, **Caixa**, **Equipe**, **Ferramentas** e **Administração**. As áreas `info`, `alertas`, `campanhas` e `config` continuam existindo como seções internas/atalhos agrupados; `adm` é a área técnica chamada de Administração na interface.
+3. Navegação principal (v10.6) → **Visão Geral**, **Caixa**, **Equipe**, **Ferramentas** e **Administração**. No celular, um menu único de navegação dá acesso às mesmas áreas sem duplicar atalhos. As áreas `info`, `alertas`, `campanhas` e `config` continuam existindo como seções internas/atalhos agrupados; `adm` é a área técnica chamada de Administração na interface.
 4. Uma `<section id="...Tab">` por aba (a aba Dashboard é o bloco principal com `#dashboardModoAvancado` etc.).
 5. Dois blocos `<script>` grandes no fim (todo o JavaScript). O código é organizado por **seções comentadas** `/* ===== Nome ===== */`.
 
@@ -86,3 +86,10 @@ Procure pelo comentário de seção com `grep -n "===== Nome" dashboard.html`.
 2. **Autenticação só no navegador** (login do painel e da ADM).
 3. `dashboard.html` gigante → difícil de revisar. Se um dia for dividido, faça por etapas com o dono, mantendo a versão de arquivo único funcionando.
 4. `index.html` aponta pra `script.js` inexistente.
+
+
+## 8. Organização UX v10.8
+- **Navegação:** o antigo menu “Mais” deixou de duplicar Configuração e ADM. No celular, ele funciona como **Menu** e reúne todas as áreas principais.
+- **Administração:** os atalhos existentes continuam os mesmos, mas agora são apresentados por assunto: Visão, Financeiro, Pessoas e Planejamento.
+- **Busca global:** aceita consultas com várias palavras, normaliza acentos e ordena resultados por relevância, sem criar uma segunda busca.
+- **Clima e avisos:** nenhuma lógica, aviso ou mensagem de clima/tempo foi alterada nesta versão.
