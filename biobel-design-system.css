@@ -1,0 +1,157 @@
+/* Biobel Design System — padrão visual compartilhado
+   Mantém as funcionalidades existentes e padroniza componentes, medidas e estados. */
+:root{
+  --bi-gap-1:8px;
+  --bi-gap-2:12px;
+  --bi-gap-3:16px;
+  --bi-gap-4:24px;
+  --bi-gap-5:32px;
+  --bi-radius-sm:10px;
+  --bi-radius-md:14px;
+  --bi-radius-lg:16px;
+  --bi-control-h:40px;
+  --bi-bg:#07111f;
+  --bi-panel:#0d1a2c;
+  --bi-panel-2:#101f34;
+  --bi-line:#20334e;
+  --bi-text:#f6f9fd;
+  --bi-muted:#93a3ba;
+  --bi-green:#27d7a0;
+  --bi-green-action:#0ea97a;
+  --bi-blue:#4f9cff;
+  --bi-yellow:#ffbf47;
+  --bi-red:#ff6174;
+  --bi-purple:#a97cff;
+  --bi-shadow:0 10px 30px rgba(0,0,0,.18);
+  --bi-shadow-lg:0 16px 40px rgba(0,0,0,.24);
+}
+
+/* Cards */
+.card,
+.adv-card{
+  border-radius:var(--bi-radius-lg)!important;
+  border-color:var(--bi-line)!important;
+}
+.card{
+  box-shadow:var(--bi-shadow);
+}
+.adv-card{padding:16px!important}
+.adv-kpi{
+  border-radius:var(--bi-radius-lg)!important;
+  box-shadow:var(--bi-shadow);
+}
+.adv-content2,.adv-grid4{gap:var(--bi-gap-3)!important}
+.adv-table-card{margin-top:var(--bi-gap-3)!important}
+
+/* Cabeçalhos de cards */
+.adv-card-title{
+  min-height:28px;
+  margin-bottom:var(--bi-gap-3)!important;
+}
+.adv-card-title h3{line-height:1.35!important}
+.adv-card-title span{line-height:1.4!important}
+
+/* Controles: inputs, selects e textareas */
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea{
+  min-height:var(--bi-control-h);
+  border-radius:var(--bi-radius-sm)!important;
+}
+select{padding-top:8px!important;padding-bottom:8px!important}
+button,
+a.btn,
+.adv-btn{
+  min-height:var(--bi-control-h);
+  border-radius:var(--bi-radius-sm)!important;
+}
+.adv-btn{
+  padding:8px 14px!important;
+}
+
+/* Navegação interna */
+.config-chip{
+  border-radius:var(--bi-radius-sm)!important;
+  min-height:38px;
+  padding:9px 14px!important;
+  transition:background .18s ease,border-color .18s ease,color .18s ease,transform .18s ease;
+}
+.config-chip:hover{transform:translateY(-1px)}
+.tabs-scroll-wrap .tab-btn{
+  min-height:40px;
+  border-radius:var(--bi-radius-sm)!important;
+  padding:9px 14px!important;
+}
+
+/* Espaçamento entre grupos de ações */
+.adv-actions{gap:var(--bi-gap-2)!important}
+.flex.gap-2{gap:var(--bi-gap-2)!important}
+.flex.gap-3{gap:var(--bi-gap-3)!important}
+
+/* Foco e estados */
+button:focus-visible,
+a:focus-visible,
+select:focus-visible,
+input:focus-visible,
+textarea:focus-visible{
+  outline:2px solid var(--bi-green)!important;
+  outline-offset:2px;
+}
+button:disabled,
+.adv-btn:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+  transform:none!important;
+}
+
+/* KPIs: hierarquia visual consistente */
+.adv-kpi .label{
+  line-height:1.35;
+  min-height:15px;
+}
+.adv-kpi .value{line-height:1.1}
+.adv-kpi .sub{line-height:1.4}
+
+/* Tabelas */
+.adv-table th{padding:12px 10px!important}
+.adv-table td{padding:12px 10px!important}
+.adv-table tbody tr:last-child td{border-bottom:0}
+
+/* Modo claro */
+body.light-mode .card,
+body.light-mode .adv-card,
+body.light-mode .adv-kpi{
+  box-shadow:0 8px 24px rgba(15,23,42,.06)!important;
+}
+body.light-mode .config-chip,
+body.light-mode .tabs-scroll-wrap .tab-btn{
+  color:#334155;
+}
+body.light-mode input,
+body.light-mode select,
+body.light-mode textarea{
+  background:#fff!important;
+  border-color:#cbd5e1!important;
+}
+
+/* Mobile: uma coluna, controles confortáveis e ações fáceis de tocar */
+@media(max-width:760px){
+  .adv-card{padding:14px!important}
+  .adv-card-title{margin-bottom:12px!important}
+  .adv-actions{width:100%}
+  .adv-actions>*{flex:1 1 auto}
+  .config-chip,.tabs-scroll-wrap .tab-btn{min-height:42px}
+}
+@media(max-width:480px){
+  .adv-actions>*{width:100%;flex-basis:100%}
+}
+
+/* Site público: reforça a mesma lógica de tamanhos sem alterar sua identidade rosa */
+.site-public-design .btn{min-height:44px}
+.site-public-design .card,
+.site-public-design .contact-card,
+.site-public-design .info-panel,
+.site-public-design .product-card,
+.site-public-design .testimonial-card{
+  border-radius:28px;
+}
