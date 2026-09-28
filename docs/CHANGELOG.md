@@ -1,3 +1,4 @@
+v10.7 | 📱 Refinamento mobile: cabeçalho mais enxuto, navegação adaptada para uso com uma mão, busca maior, atalhos compactos, cards mais densos, filtros roláveis, tabelas com primeira coluna fixa e ações com área de toque ampliada.
 v10.6 | 🧭 Navegação reorganizada por objetivo: Visão Geral concentra análises e alertas, Caixa e Equipe ficam como áreas operacionais, Ferramentas agrupa Marketing & Vendas e Configuração, e ADM passa a se chamar Administração.
 v10.5 | ✨ Refinamento UX/UI completo: hierarquia, microinterações, site público, cards de produto, CTA, mobile, acessibilidade e consistência visual.
 v10.4 | 🧩 Componentes padronizados: cabeçalhos de cards, filtros, badges/tags, ações, estados vazio/carregando/desabilitado e comportamento mobile.
