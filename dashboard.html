@@ -6173,28 +6173,49 @@ function renderAtividadesSemMovimento(){
  const el = document.getElementById('listaAtividadesSemMovimento');
  if(!el) return;
  const itens = getAtividadesSemMovimento();
- // Guarda o índice original de cada item antes de reordenar pra tela — assim o clique no
- // checkbox continua marcando o item certo, mesmo que a ordem visual mude.
+ // Mantém o índice original para que cada checkbox continue marcando o item correto.
  const itensComIndice = itens.map((item,i)=>({...item, indiceOriginal:i}));
+ const digitais = itensComIndice.filter(item=>item.tipo==='digital');
+ const presenciais = itensComIndice.filter(item=>item.tipo==='loja' || item.tipo==='rua');
 
- // Em dia de chuva, ir na rua (parada de ônibus, panfletar) faz menos sentido — prioriza as
- // ações digitais primeiro, deixando as de rua por último, sem escondê-las.
- const hoje = obterAgoraBrasilia();
- const chaveDia = String(hoje.getDate()).padStart(2,'0')+'.'+String(hoje.getMonth()+1).padStart(2,'0');
- const climaHoje = getClimaDias()[chaveDia];
- let listaParaExibir = itensComIndice;
- let avisoOrdem = '';
- if(climaHoje==='Chuva'){
-  const ordem = { digital:0, loja:1, rua:2 };
-  listaParaExibir = [...itensComIndice].sort((a,b)=>(ordem[a.tipo]??1)-(ordem[b.tipo]??1));
-  avisoOrdem = '<div style="font-size:11px;color:#4f9cff;margin-bottom:10px;">🌧️ Como hoje é dia de chuva, coloquei as ações digitais primeiro — ir na rua faz menos sentido com esse tempo.</div>';
- }
-
- el.innerHTML = avisoOrdem + listaParaExibir.map(item=>`
+ const renderItem = item => `
    <div style="display:flex;align-items:center;gap:10px;background:${item.feita?'rgba(39,215,160,.1)':'#0b1728'};border:1px solid ${item.feita?'rgba(39,215,160,.4)':'#1e2c42'};border-radius:10px;padding:10px 14px;transition:background-color .2s,border-color .2s;">
     <input type="checkbox" ${item.feita?'checked':''} onchange="alternarAtividadeSemMovimento(${item.indiceOriginal})" style="width:18px;height:18px;flex-shrink:0;cursor:pointer;">
     <span style="flex:1;font-size:13px;color:${item.feita?'#93a3ba':'#dce5f2'};text-decoration:${item.feita?'line-through':'none'};">${item.feita?'✅ ':''}${item.texto}</span>
-   </div>`).join('');
+   </div>`;
+
+ const hoje = obterAgoraBrasilia();
+ const chaveDia = String(hoje.getDate()).padStart(2,'0')+'.'+String(hoje.getMonth()+1).padStart(2,'0');
+ const climaHoje = getClimaDias()[chaveDia];
+ const avisoRua = climaHoje==='Chuva'
+  ? '<div style="font-size:11px;color:#4f9cff;margin:-2px 0 10px;">🌧️ Hoje está chovendo. As ações de rua continuam na lista, mas podem ser feitas conforme as condições do dia.</div>'
+  : '';
+
+ el.innerHTML = `
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;">
+   <section style="border:1px solid #1e2c42;border-radius:14px;padding:12px;background:rgba(11,23,40,.45);">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+     <div style="font-size:15px;">📱</div>
+     <div>
+      <div style="font-size:13px;font-weight:800;color:#dce5f2;">Divulgação & Relacionamento</div>
+      <div style="font-size:10.5px;color:#93a3ba;">Ações para buscar e reativar clientes</div>
+     </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;">${digitais.map(renderItem).join('')}</div>
+   </section>
+
+   <section style="border:1px solid #1e2c42;border-radius:14px;padding:12px;background:rgba(11,23,40,.45);">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+     <div style="font-size:15px;">🏪</div>
+     <div>
+      <div style="font-size:13px;font-weight:800;color:#dce5f2;">Loja, Rua & Parcerias</div>
+      <div style="font-size:10.5px;color:#93a3ba;">Ações presenciais para gerar movimento</div>
+     </div>
+    </div>
+    ${avisoRua}
+    <div style="display:flex;flex-direction:column;gap:8px;">${presenciais.map(renderItem).join('')}</div>
+   </section>
+  </div>`;
  renderChecklistChuvaDashboard();
 }
 function renderChecklistChuvaDashboard(){
