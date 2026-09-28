@@ -4235,7 +4235,7 @@ function showTab(tab){
   adm.classList.remove('hidden');
   b8.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
   b8.setAttribute('aria-selected','true');
-  initAdmTab();
+  try{ initAdmTab(); }catch(e){ console.error('Erro ao inicializar Administração:', e); }
  } else if(tab==='info'){
   info.classList.remove('hidden');
   b4.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
@@ -4250,11 +4250,11 @@ function showTab(tab){
   try{ renderInfoTab(); }catch(e){ console.error('Erro em renderInfoTab:', e); }
   let secaoInfoLembrada = 'Financeiro';
   try{ secaoInfoLembrada = localStorage.getItem('biobel_info_secao_ativa') || 'Financeiro'; }catch(e){}
-  try{ mostrarSecaoInfo(secaoInfoLembrada); }catch(e){ console.error('Erro em mostrarSecaoInfo:', e); }
- } else if(tab==='config'){
+  try{ mostrarSecaoInfo(secaoI } else if(tab==='config'){
   config.classList.remove('hidden');
   b3.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
   b3.setAttribute('aria-selected','true');
+  try{
   const goalInput=document.getElementById('salesGoalInput');
   if(goalInput) goalInput.value = money(getSalesGoal());
   initDailyGoalUI();
@@ -4278,6 +4278,7 @@ function showTab(tab){
   let secaoLembrada = 'Conexao';
   try{ secaoLembrada = localStorage.getItem('biobel_config_secao_ativa') || 'Conexao'; }catch(e){}
   mostrarSecaoConfig(secaoLembrada);
+  }catch(e){ console.error('Erro ao inicializar Configuração:', e); }
  } else {
   dash.classList.remove('hidden');
   b1.className='tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm';
