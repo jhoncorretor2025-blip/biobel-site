@@ -1,3 +1,9 @@
+## v10.22 | 🧾 Ponte de gravação do fechamento reforçada
+- O registro do horário em **O26** agora usa **JSONP primeiro**, reduzindo falhas de CORS no navegador.
+- O painel informa quando a ponte está ausente ou quando a gravação não é confirmada.
+- Adicionada a ponte oficial em apps-script/biobel-bridge.gs, limitada a gravações em **O26** nas abas DD.MM.
+- Versão publicada em **28/09/2026**.
+
 ## v10.21 | 🧾 Registro automático do horário do fechamento
 - Ao imprimir o **fechamento diário**, registra automaticamente o horário em **O26** da aba correspondente ao dia.
 - A impressão não fica travada esperando a internet.
