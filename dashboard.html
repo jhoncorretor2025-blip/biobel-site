@@ -71,6 +71,12 @@ body.light-mode .biobel-tools-menu button{color:#334155}
 body.light-mode .biobel-tools-menu button:hover,body.light-mode .biobel-tools-menu button:focus-visible{background:#eef1f5;color:#0f172a}
 body.light-mode .biobel-tools-note{border-color:#dde3ea;color:#5b6b80}
 @media(max-width:760px){.biobel-tools-menu{position:fixed;top:auto;right:10px;left:10px;margin-top:8px;min-width:0;max-height:70vh;overflow:auto}#btnMenuFerramentas{font-size:0}#btnMenuFerramentas::before{content:"🛠️";font-size:16px}}
+
+/* v10.6 — hierarquia da navegação: agrupamento por objetivo sem remover funções. */
+.biobel-tools-menu{min-width:290px}
+.biobel-tools-title{border-top:1px solid rgba(32,51,78,.55);margin-top:2px}
+.biobel-tools-title:first-child{border-top:0}
+@media(max-width:760px){.biobel-tools-menu{min-width:0}.biobel-tools-menu button{padding:11px 12px}}
 </style>
 <style id="advanced-dashboard-design">
 :root{
@@ -567,7 +573,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <div>
     <h1 class="text-2xl font-bold">Biobel — Fechamento de Caixa</h1>
     <p class="text-sm text-slate-400">Leitura diária da planilha + histórico do fechamento da gaveta</p>
-   <p class="text-[11px] text-emerald-400/80 mt-1">🛠️ Ferramentas e áreas administrativas organizadas por acesso rápido</p>
+   <p class="text-[11px] text-emerald-400/80 mt-1">🧭 Visão geral, operação e ferramentas organizadas por objetivo</p>
    </div>
   </div>
   <label class="cursor-pointer bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm">
@@ -592,28 +598,32 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 <nav class="no-print max-w-7xl mx-auto px-4 md:px-6 pt-4" style="display:flex;align-items:flex-end;gap:6px;">
  <div class="tabs-scroll-wrap" style="flex:1;min-width:0;">
  <div class="flex gap-2 border-b border-slate-800" role="tablist" aria-label="Navegação do painel">
-  <button id="tabDashboard" data-tab="dashboard" role="tab" aria-selected="true" aria-controls="dashboardTab" onclick="showTab('dashboard')" title="Atalho: Alt+1" class="tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm">📊 Dashboard</button>
-  <button id="tabInfo" data-tab="info" role="tab" aria-selected="false" aria-controls="infoTab" onclick="showTab('info')" title="Atalho: Alt+2" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">🎯 Informação Geral</button>
-  <button id="tabAlertas" data-tab="alertas" role="tab" aria-selected="false" aria-controls="alertasTab" onclick="showTab('alertas')" title="Atalho: Alt+3" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">🚨 Alertas <span id="badgeContadorAlertas" style="display:none;background:#fb7185;color:#3a0f16;font-size:10px;font-weight:900;padding:1px 6px;border-radius:999px;margin-left:2px;">0</span></button>
-  <button id="tabCaixa" data-tab="caixa" role="tab" aria-selected="false" aria-controls="caixaTab" onclick="showTab('caixa')" title="Atalho: Alt+4 — só o valor final do fechamento" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">⚡ Fechamento Rápido</button>
-  <button id="tabEquipe" data-tab="equipe" role="tab" aria-selected="false" aria-controls="equipeTab" onclick="showTab('equipe')" title="Atalho: Alt+5" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">👩‍💼 Equipe</button>
+  <button id="tabDashboard" data-tab="dashboard" role="tab" aria-selected="true" aria-controls="dashboardTab" onclick="showTab('dashboard')" title="Atalho: Alt+1" class="tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm">📊 Visão Geral</button>
+  <button id="tabInfo" data-tab="info" role="tab" aria-selected="false" aria-controls="infoTab" onclick="showTab('info')" title="Atalho: Alt+2 — análises detalhadas" style="display:none;" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">🎯 Análises</button>
+  <button id="tabAlertas" data-tab="alertas" role="tab" aria-selected="false" aria-controls="alertasTab" onclick="showTab('alertas')" title="Atalho: Alt+3" style="display:none;" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">🚨 Alertas <span id="badgeContadorAlertas" style="display:none;background:#fb7185;color:#3a0f16;font-size:10px;font-weight:900;padding:1px 6px;border-radius:999px;margin-left:2px;">0</span></button>
+  <button id="tabCaixa" data-tab="caixa" role="tab" aria-selected="false" aria-controls="caixaTab" onclick="showTab('caixa')" title="Atalho: Alt+4 — fechamento do dia" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">💰 Caixa</button>
+  <button id="tabEquipe" data-tab="equipe" role="tab" aria-selected="false" aria-controls="equipeTab" onclick="showTab('equipe')" title="Atalho: Alt+5" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">👥 Equipe</button>
   <button id="tabCampanhas" data-tab="campanhas" role="tab" aria-selected="false" aria-controls="campanhasTab" onclick="showTab('campanhas')" style="display:none;" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">🎉 Campanhas</button>
   <button id="tabConfig" data-tab="config" role="tab" aria-selected="false" aria-controls="configTab" onclick="showTab('config')" title="Atalho: Alt+6" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm" style="display:none;">⚙️ Configuração</button>
-  <button id="tabAdm" data-tab="adm" role="tab" aria-selected="false" aria-controls="admTab" onclick="showTab('adm')" title="Atalho: Alt+7" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm" style="display:none;">👑 ADM</button>
+  <button id="tabAdm" data-tab="adm" role="tab" aria-selected="false" aria-controls="admTab" onclick="showTab('adm')" title="Atalho: Alt+7" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm">👑 Administração</button>
  </div>
  </div>
  <div style="position:relative;flex-shrink:0;padding-bottom:2px;">
   <button id="btnMenuFerramentas" onclick="alternarMenuFerramentas()" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm" aria-haspopup="true" aria-expanded="false">🛠️ Ferramentas</button>
   <div id="menuFerramentasDropdown" class="biobel-tools-menu" style="display:none;">
-   <div class="biobel-tools-title">🛠️ Acesso rápido</div>
-   <button onclick="irParaFerramenta('campanhas')">🎉 Campanhas</button>
-   <button onclick="irParaFerramenta('info','Vendedoras')">👥 Vendedoras e rankings</button>
+   <div class="biobel-tools-title">📊 VISÃO GERAL</div>
+   <button onclick="irParaFerramenta('dashboard')">📊 Resumo do mês</button>
+   <button onclick="irParaFerramenta('info','Financeiro')">💰 Financeiro</button>
+   <button onclick="irParaFerramenta('info','Vendedoras')">👥 Vendedoras e ranking</button>
    <button onclick="irParaFerramenta('info','Dias')">📅 Dias, histórico e clima</button>
    <button onclick="irParaFerramenta('info','Avancado')">🔍 Análises avançadas</button>
    <button onclick="irParaFerramenta('info','Comparar')">📊 Comparar meses</button>
+   <button onclick="irParaFerramenta('alertas')">🚨 Central de alertas</button>
+   <div class="biobel-tools-title" style="margin-top:6px;">📣 MARKETING & VENDAS</div>
+   <button onclick="irParaFerramenta('campanhas')">🎉 Campanhas e promoções</button>
+   <div class="biobel-tools-title" style="margin-top:6px;">⚙️ SISTEMA</div>
    <button onclick="irParaFerramenta('config')">⚙️ Configuração</button>
-   <button onclick="irParaFerramenta('adm')">👑 Administração</button>
-   <div class="biobel-tools-note">💡 São atalhos para áreas que já existem no sistema.</div>
+   <div class="biobel-tools-note">💡 As funções continuam separadas por dentro; aqui elas ficam agrupadas por objetivo.</div>
   </div>
  </div>
  <div style="position:relative;flex-shrink:0;padding-bottom:2px;">
@@ -3890,10 +3900,10 @@ document.addEventListener('click', function(e){
 });
 function showTab(tab){
  const titulosAba = {
-  dashboard: 'Dashboard — Biobel',
+  dashboard: 'Visão Geral — Biobel',
   info: 'Informação Geral — Biobel',
-  caixa: 'Fechamento Rápido — Biobel',
-  equipe: 'Equipe — Biobel',
+  caixa: 'Caixa — Biobel',
+  equipe: 'Equipe & Rotina — Biobel',
   campanhas: 'Campanhas — Biobel',
   config: 'Configuração — Biobel'
  };
@@ -3932,7 +3942,8 @@ function showTab(tab){
  }
  const btnFerramentas=document.getElementById('btnMenuFerramentas');
  if(btnFerramentas){
-  btnFerramentas.className='tab-btn px-4 py-2 rounded-t-xl font-semibold text-sm '+(tab==='campanhas' ? 'bg-emerald-600' : 'bg-slate-800 text-slate-300');
+  const ferramentasAtivas = ['campanhas','info','alertas','config'].includes(tab);
+  btnFerramentas.className='tab-btn px-4 py-2 rounded-t-xl font-semibold text-sm '+(ferramentasAtivas ? 'bg-emerald-600' : 'bg-slate-800 text-slate-300');
   btnFerramentas.setAttribute('aria-expanded','false');
   const menuFerramentas=document.getElementById('menuFerramentasDropdown');
   if(menuFerramentas) menuFerramentas.style.display='none';
