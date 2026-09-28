@@ -1,3 +1,4 @@
+v10.5 | ✨ Refinamento UX/UI completo: hierarquia, microinterações, site público, cards de produto, CTA, mobile, acessibilidade e consistência visual.
 v10.4 | 🧩 Componentes padronizados: cabeçalhos de cards, filtros, badges/tags, ações, estados vazio/carregando/desabilitado e comportamento mobile.
 v10.3 | 🎨 Design System Biobel: padronização de cards, controles, espaçamentos, estados, navegação interna e comportamento mobile/desktop.
 # 📜 Histórico de versões (resumo)
