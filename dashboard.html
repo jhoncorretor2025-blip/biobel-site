@@ -704,7 +704,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 28/09/2026 — versão v10.20')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 28/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v10.20</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 28/09/2026 — versão v10.21')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 28/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v10.21</span>
   <span id="indicadorUltimoSalvamento" class="no-print" style="font-size:11px;color:#27d7a0;font-weight:700;display:none;white-space:nowrap;" title="Tudo o que você faz salva sozinho no aparelho — esse é o horário do último salvamento"></span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
@@ -2147,6 +2147,10 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <p class="text-sm text-slate-400 mt-1">O que mudou nas últimas atualizações, resumido de forma simples.</p>
   </div>
   <div style="display:flex;flex-direction:column;gap:14px;">
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
+    <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v10.21 — 28/09/2026</div>
+    <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">🧾 Fechamento mais inteligente: ao imprimir o fechamento do dia, o sistema registra automaticamente o horário na célula <strong>O26</strong> da aba correspondente ao dia. A gravação usa a ponte do Google Apps Script e, se a conexão cair, fica pendente no aparelho para nova tentativa.</div>
+   </div>
    <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
     <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v10.1 — 28/09/2026</div>
     <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">🌧️ Clima + Sem Movimento: em dia de chuva o aviso ganhou botão direto pra checklist e pras promoções prontas, as ações digitais sobem pro topo (ir na rua faz menos sentido na chuva), e a checklist aparece também no Dashboard. 📚 Repositório organizado com guia pra qualquer IA entender o sistema (AGENTS.md e pasta docs).</div>
@@ -13782,9 +13786,89 @@ function buildReceipt(type, day){
  }
  return true;
 }
+/* ===== Registro automático do horário de impressão do fechamento =====
+   O painel continua imprimindo mesmo se a rede estiver lenta.
+   O horário fica pendente no aparelho e é reenviado quando a ponte do Apps Script responder
+   com confirmação de gravação. A ponte deve implementar action=writeCell. */
+function tentarEnviarHorarioFechamentoPendente(){
+ const raw=localStorage.getItem('biobel_pendente_horario_fechamento');
+ if(!raw) return;
+ const proxyUrl=getAppsScriptProxyUrl();
+ if(!proxyUrl) return;
+
+ let registro;
+ try{ registro=JSON.parse(raw); }catch(e){
+  localStorage.removeItem('biobel_pendente_horario_fechamento');
+  return;
+ }
+ if(!registro?.spreadsheetId || !registro?.sheetName || !registro?.cell || !registro?.value) return;
+
+ const params=new URLSearchParams();
+ params.set('action','writeCell');
+ params.set('operacao','registrarFechamento');
+ params.set('evento','impressao_fechamento');
+ params.set('id',registro.spreadsheetId);
+ params.set('spreadsheetId',registro.spreadsheetId);
+ params.set('sheet',registro.sheetName);
+ params.set('sheetName',registro.sheetName);
+ params.set('range',registro.cell);
+ params.set('cell',registro.cell);
+ params.set('value',registro.value);
+ params.set('horario',registro.value);
+ params.set('_t',String(Date.now()));
+
+ const chamadaUrl=proxyUrl+(proxyUrl.includes('?')?'&':'?')+params.toString();
+ fetch(chamadaUrl,{cache:'no-store',keepalive:true})
+  .then(async resp=>{
+   if(!resp.ok) throw new Error('HTTP '+resp.status);
+   let data=null;
+   try{ data=await resp.json(); }catch(e){}
+   const confirmou=!!(data && (
+    data.success===true ||
+    data.ok===true ||
+    data.written===true ||
+    data.updated===true ||
+    data.status==='success' ||
+    data.status==='ok'
+   ));
+   if(!confirmou) throw new Error('A ponte respondeu sem confirmar a gravação.');
+   localStorage.removeItem('biobel_pendente_horario_fechamento');
+   localStorage.setItem('biobel_ultimo_horario_fechamento_registrado',JSON.stringify(registro));
+   mostrarToast('✅ Horário do fechamento registrado na nuvem.');
+  })
+  .catch(err=>console.warn('Registro do horário do fechamento ficará pendente para nova tentativa:',err));
+}
+
+function registrarHorarioFechamentoNuvem(diaSelecionado){
+ const spreadsheetId=extractSpreadsheetId(getGoogleUrl());
+ const sheetName=normalizarNomeAba(diaSelecionado);
+ if(!spreadsheetId || !sheetName) return;
+
+ const agora=obterAgoraBrasilia();
+ const hora=String(agora.getHours()).padStart(2,'0')+':'+String(agora.getMinutes()).padStart(2,'0');
+ const registro={
+  spreadsheetId,
+  sheetName,
+  cell:'O26',
+  value:hora,
+  dia:String(diaSelecionado),
+  registradoEm:String(obterAgoraBrasilia().paraChaveISO())+' '+hora
+ };
+ localStorage.setItem('biobel_pendente_horario_fechamento',JSON.stringify(registro));
+ tentarEnviarHorarioFechamentoPendente();
+}
+
 function startReceiptPrint(type){
  document.body.classList.add('receipt-printing');
  window.onafterprint=()=>document.body.classList.remove('receipt-printing');
+
+ // Só registra os botões de fechamento diário. Relatórios mensais/PDF não alteram O26.
+ if(type==='daily-simple' || type==='daily-complete'){
+  const seletor=type==='daily-simple' ? 'simpleDaySelect' : 'daySelect';
+  const dia=document.getElementById(seletor)?.value;
+  registrarHorarioFechamentoNuvem(dia);
+ }
+
  setTimeout(()=>window.print(),50);
 }
 function printDaily(){
@@ -15276,6 +15360,8 @@ async function loadGoogleSheet(){
   setGoogleStatus(`conectado. ${found} dia(s) atualizado(s) às ${new Date().toLocaleTimeString('pt-BR')}.`,true);
   verificarEnvioEmailMensal();
   sugerirProximaPlanilha();
+  // Se uma gravação ficou pendente durante uma queda/instabilidade, tenta agora novamente.
+  tentarEnviarHorarioFechamentoPendente();
  }catch(err){
   console.error(err);
   setGoogleStatus('não foi possível ler a planilha. Verifique se ela está acessível para leitura sem login e se o navegador permite o acesso.');

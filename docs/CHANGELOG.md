@@ -1,3 +1,9 @@
+## v10.21 | 🧾 Registro automático do horário do fechamento
+- Ao imprimir o **fechamento diário**, registra automaticamente o horário em **O26** da aba correspondente ao dia.
+- A impressão não fica travada esperando a internet.
+- Em caso de falha temporária, o registro fica pendente no aparelho e é reenviado quando a ponte do Apps Script voltar a responder.
+- Versão publicada em **28/09/2026**.
+
 ## v10.16 | 🔧 Navegação protegida de Configuração e Administração
 - Corrigida a abertura das áreas **Configuração** e **Administração** pelo novo menu, com tratamento de erro e fallback.
 - Reforçada a navegação no computador e no celular sem criar banco novo e sem alterar a origem dos dados da planilha.
