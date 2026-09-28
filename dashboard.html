@@ -3697,10 +3697,13 @@ const BIOBEL_INDICE_BUSCA = [
  { termos:'fechamento mensal encerrar periodo', label:'🔒 ADM → Fechamento Mensal', acao:()=>{showTab('adm'); setTimeout(()=>isolarSecaoAdm('admAncoraFechamento'),250);} },
  { termos:'reunioes fornecedores agenda', label:'🤝 ADM → Agenda de Fornecedores', acao:()=>{showTab('adm'); setTimeout(()=>isolarSecaoAdm('admAncoraAgenda'),250);} },
 ];
+function normalizarBuscaGlobal(valor){
+ return String(valor||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
 function pontuarBuscaGlobal(item, tokens, termoOriginal){
- const termos = String(item.termos||'').toLowerCase();
- const label = String(item.label||'').toLowerCase();
- const termo = String(termoOriginal||'').toLowerCase();
+ const termos = normalizarBuscaGlobal(item.termos);
+ const label = normalizarBuscaGlobal(item.label);
+ const termo = normalizarBuscaGlobal(termoOriginal);
  let pontos = 0;
  if(label === termo) pontos += 100;
  if(label.includes(termo)) pontos += 45;
