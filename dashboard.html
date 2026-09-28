@@ -3821,7 +3821,7 @@ function renderResultadosBuscaGlobal(){
  if(termo.length<2){ el.style.display='none'; return; }
  const tokens = termo.normalize('NFD').replace(/[\u0300-\u036f]/g,'').split(/\s+/).filter(t=>t.length>1);
  const resultados = BIOBEL_INDICE_BUSCA
-  .map(item=>({...item, _score:pontuarBuscaGlobal(item,tokens,termo)})
+  .map(item=>({...item, _score:pontuarBuscaGlobal(item,tokens,termo)}))
   .filter(item=>item._score>0)
   .sort((a,b)=>b._score-a._score)
   .slice(0,8);
