@@ -72,11 +72,49 @@ body.light-mode .biobel-tools-menu button:hover,body.light-mode .biobel-tools-me
 body.light-mode .biobel-tools-note{border-color:#dde3ea;color:#5b6b80}
 @media(max-width:760px){.biobel-tools-menu{position:fixed;top:auto;right:10px;left:10px;margin-top:8px;min-width:0;max-height:70vh;overflow:auto}#btnMenuFerramentas{font-size:0}#btnMenuFerramentas::before{content:"🛠️";font-size:16px}}
 
-/* v10.7 — hierarquia da navegação: agrupamento por objetivo sem remover funções. */
+/* v10.8 — hierarquia da navegação: agrupamento por objetivo sem remover funções. */
 .biobel-tools-menu{min-width:290px}
 .biobel-tools-title{border-top:1px solid rgba(32,51,78,.55);margin-top:2px}
 .biobel-tools-title:first-child{border-top:0}
 @media(max-width:760px){.biobel-tools-menu{min-width:0}.biobel-tools-menu button{padding:11px 12px}}
+</style>
+<style id="ux-v10-8-organization">
+/* v10.8 — organização sem duplicar recursos existentes */
+.biobel-mobile-nav-wrap{display:none}
+.biobel-mobile-nav-menu{min-width:250px}
+.biobel-mobile-nav-title{font-size:10px;font-weight:900;color:#27d7a0;text-transform:uppercase;letter-spacing:.08em;padding:5px 10px 7px}
+.biobel-mobile-nav-menu button{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:none;color:#dce5f2;font-size:13px;font-weight:650;padding:10px 12px;border-radius:9px;cursor:pointer}
+.biobel-mobile-nav-menu button:hover,.biobel-mobile-nav-menu button:focus-visible{background:#16263d;color:#fff}
+.biobel-mobile-nav-note{border-top:1px solid #1e2c42;margin-top:6px;padding:9px 10px 3px;font-size:10.5px;line-height:1.4;color:#93a3ba}
+body.light-mode .biobel-mobile-nav-menu{background:#fff;border-color:#dde3ea}
+body.light-mode .biobel-mobile-nav-menu button{color:#334155}
+body.light-mode .biobel-mobile-nav-menu button:hover,body.light-mode .biobel-mobile-nav-menu button:focus-visible{background:#eef1f5;color:#0f172a}
+body.light-mode .biobel-mobile-nav-note{border-color:#dde3ea;color:#5b6b80}
+
+/* Administração: atalhos agrupados por assunto, sem criar novas funções. */
+.adm-context-strip{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;border:1px solid rgba(39,215,160,.2);background:rgba(39,215,160,.05);border-radius:14px;margin-bottom:4px}
+.adm-context-strip strong{display:block;font-size:13px;color:#dce5f2}
+.adm-context-strip span{display:block;font-size:10.5px;color:#93a3ba;margin-top:2px}
+.adm-context-strip button{border:1px solid #1e2c42;background:#0b1728;color:#dce5f2;border-radius:9px;padding:7px 10px;font-size:11px;font-weight:800;cursor:pointer}
+.adm-context-strip button:hover{background:#16263d}
+body.light-mode .adm-context-strip{background:rgba(14,169,122,.07);border-color:rgba(14,169,122,.2)}
+body.light-mode .adm-context-strip strong{color:#0f172a}
+body.light-mode .adm-context-strip button{background:#fff;border-color:#dde3ea;color:#334155}
+@media(max-width:640px){.adm-context-strip{align-items:flex-start}.adm-context-strip button{white-space:nowrap}}
+.adm-shortcut-nav{display:flex;flex-direction:column;gap:8px;padding:10px 0}
+.adm-shortcut-group{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:8px 0 2px}
+.adm-shortcut-group-label{font-size:9.5px;font-weight:900;color:#71839c;text-transform:uppercase;letter-spacing:.08em;min-width:92px}
+.adm-shortcut-group .config-chip{margin:0}
+@media(max-width:760px){
+ .biobel-mobile-nav-wrap{display:block}
+ .biobel-mobile-nav-menu{position:fixed!important;top:62px!important;left:10px!important;right:10px!important;min-width:0!important;max-height:70vh!important;overflow:auto!important}
+ .biobel-mobile-nav-menu button{min-height:46px!important;font-size:14px!important}
+ .biobel-mobile-nav-note{font-size:10.5px}
+ .adm-shortcut-nav{gap:4px}
+ .adm-shortcut-group{display:block;padding:7px 0}
+ .adm-shortcut-group-label{display:block;margin:0 0 6px 2px}
+ .adm-shortcut-group .config-chip{margin:0 5px 5px 0}
+}
 </style>
 <style id="advanced-dashboard-design">
 :root{
@@ -513,7 +551,7 @@ body.modo-compacto .space-y-4 > * + *{ margin-top:8px!important; }
 </style>
 
 <style id="mobile-v10-7">
-/* v10.7 — Refinamento mobile focado em uso com uma mão */
+/* v10.8 — Refinamento mobile focado em uso com uma mão */
 @media(max-width:760px){
   body{padding-bottom:72px!important}
   header{z-index:50!important}
@@ -538,6 +576,9 @@ body.modo-compacto .space-y-4 > * + *{ margin-top:8px!important; }
   #btnMenuFerramentas,#btnMenuMais{font-size:0!important;min-width:46px!important;width:46px!important;height:42px!important;padding:0!important}
   #btnMenuFerramentas::before{content:"🛠️";font-size:17px}
   #btnMenuMais::before{content:"☰";font-size:18px}
+  .biobel-mobile-nav-wrap{display:block!important}
+  nav.no-print{align-items:center!important}
+  nav.no-print::before{flex:1!important}
   #menuMaisDropdown,#menuFerramentasDropdown{position:fixed!important;top:62px!important;left:10px!important;right:10px!important;min-width:0!important;max-height:70vh!important;overflow:auto!important}
   #menuMaisDropdown button,#menuFerramentasDropdown button{min-height:46px!important;font-size:14px!important}
   nav.no-print::before{content:var(--mobile-nav-label,"📊 Visão Geral");flex:1;min-width:0;height:42px;display:flex;align-items:center;padding:0 13px;border:1px solid rgba(39,215,160,.28);border-radius:12px;background:rgba(39,215,160,.09);color:#27d7a0;font-weight:800;font-size:13px}
@@ -614,7 +655,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 28/09/2026 — versão v10.7')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 28/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v10.7</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 28/09/2026 — versão v10.8')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 28/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v10.8</span>
   <span id="indicadorUltimoSalvamento" class="no-print" style="font-size:11px;color:#27d7a0;font-weight:700;display:none;white-space:nowrap;" title="Tudo o que você faz salva sozinho no aparelho — esse é o horário do último salvamento"></span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
@@ -690,11 +731,19 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <div class="biobel-tools-note">💡 As funções continuam separadas por dentro; aqui elas ficam agrupadas por objetivo.</div>
   </div>
  </div>
- <div style="position:relative;flex-shrink:0;padding-bottom:2px;">
-  <button id="btnMenuMais" onclick="alternarMenuMais()" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm" aria-haspopup="true" aria-expanded="false">⋯ Mais</button>
-  <div id="menuMaisDropdown" style="display:none;position:absolute;top:100%;right:0;background:#0f172a;border:1px solid #1e2c42;border-radius:12px;padding:6px;min-width:180px;box-shadow:0 12px 32px rgba(0,0,0,.4);z-index:40;margin-top:4px;">
-   <button onclick="irParaTabViaMenu('config')" style="display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:none;color:#dce5f2;font-size:13px;font-weight:600;padding:10px 12px;border-radius:8px;cursor:pointer;">⚙️ Configuração</button>
-   <button onclick="irParaTabViaMenu('adm')" style="display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:none;color:#dce5f2;font-size:13px;font-weight:600;padding:10px 12px;border-radius:8px;cursor:pointer;">👑 ADM</button>
+ <div class="biobel-mobile-nav-wrap" style="position:relative;flex-shrink:0;padding-bottom:2px;">
+  <button id="btnMenuMais" onclick="alternarMenuMais()" class="tab-btn px-4 py-2 rounded-t-xl bg-slate-800 text-slate-300 font-semibold text-sm" aria-haspopup="true" aria-expanded="false" aria-label="Abrir navegação">☰ Menu</button>
+  <div id="menuMaisDropdown" class="biobel-mobile-nav-menu" style="display:none;position:absolute;top:100%;right:0;background:#0f172a;border:1px solid #1e2c42;border-radius:14px;padding:8px;min-width:230px;box-shadow:0 12px 32px rgba(0,0,0,.4);z-index:50;margin-top:4px;">
+   <div class="biobel-mobile-nav-title">🧭 NAVEGAÇÃO</div>
+   <button onclick="irParaTabViaMenu('dashboard')">📊 Visão Geral</button>
+   <button onclick="irParaTabViaMenu('caixa')">💰 Caixa</button>
+   <button onclick="irParaTabViaMenu('equipe')">👥 Equipe</button>
+   <button onclick="irParaTabViaMenu('info')">🔍 Análises</button>
+   <button onclick="irParaTabViaMenu('alertas')">🚨 Alertas</button>
+   <button onclick="irParaTabViaMenu('campanhas')">🎉 Campanhas</button>
+   <button onclick="irParaTabViaMenu('config')">⚙️ Configuração</button>
+   <button onclick="irParaTabViaMenu('adm')">👑 Administração</button>
+   <div class="biobel-mobile-nav-note">No computador, as áreas principais ficam visíveis na barra superior.</div>
   </div>
  </div>
 </nav>
@@ -2257,19 +2306,35 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <button onclick="sairAdm()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl font-semibold text-sm">🔒 Sair da área da gerência</button>
   </div>
 
-  <nav class="config-chips no-print" aria-label="Atalhos da área ADM" style="position:sticky;top:64px;z-index:15;">
-   <button type="button" id="btnAdmVerTudo" onclick="mostrarTodasSecoesAdm()" class="config-chip" style="display:none;background:#1c2c42;">👁️ Ver tudo</button>
-   <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraResumo')">📊 Resumo</button>
-   <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraFechamento')">🔒 Fechamento</button>
-   <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraGastos')">🏠 Gastos</button>
-   <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraComissoes')">🎯 Comissões</button>
-   <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraFuncionarios')">👥 Funcionários</button>
-   <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraFornecedoresReal')">🤝 Fornecedores</button>
-   <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraAgenda')">🗓️ Agenda</button>
+  <nav class="adm-shortcut-nav no-print" aria-label="Atalhos da área ADM" style="position:sticky;top:64px;z-index:15;">
+   <div class="adm-shortcut-group">
+    <span class="adm-shortcut-group-label">👁️ Visão</span>
+    <button type="button" id="btnAdmVerTudo" onclick="mostrarTodasSecoesAdm()" class="config-chip" style="display:none;background:#1c2c42;">👁️ Ver tudo</button>
+    <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraResumo')">📊 Resumo</button>
+    <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraFechamento')">🔒 Fechamento</button>
+   </div>
+   <div class="adm-shortcut-group">
+    <span class="adm-shortcut-group-label">💰 Financeiro</span>
+    <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraGastos')">🏠 Gastos</button>
+    <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraFornecedoresReal')">🤝 Fornecedores</button>
+   </div>
+   <div class="adm-shortcut-group">
+    <span class="adm-shortcut-group-label">👥 Pessoas</span>
+    <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraComissoes')">🎯 Comissões</button>
+    <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraFuncionarios')">👥 Funcionários</button>
+   </div>
+   <div class="adm-shortcut-group">
+    <span class="adm-shortcut-group-label">🗓️ Planejamento</span>
+    <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraAgenda')">🗓️ Agenda</button>
+   </div>
   </nav>
 
   <button id="btnAlternarTodosGrupos" onclick="alternarTodosGruposAdm()" class="no-print text-xs text-slate-300 hover:text-white" style="background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:6px 12px;margin-bottom:14px;">▾ Expandir todos os grupos</button>
 
+  <div class="adm-context-strip no-print">
+   <div><strong>👑 Administração</strong><span>Financeiro, pessoas, fornecedores e planejamento</span></div>
+   <button type="button" onclick="mostrarTodasSecoesAdm()" title="Mostrar todas as áreas da Administração">👁️ Ver tudo</button>
+  </div>
   <div id="admResumoAtencao" style="display:none;"></div>
   <div id="admAncoraResumo"></div>
 
@@ -3632,16 +3697,38 @@ const BIOBEL_INDICE_BUSCA = [
  { termos:'fechamento mensal encerrar periodo', label:'🔒 ADM → Fechamento Mensal', acao:()=>{showTab('adm'); setTimeout(()=>isolarSecaoAdm('admAncoraFechamento'),250);} },
  { termos:'reunioes fornecedores agenda', label:'🤝 ADM → Agenda de Fornecedores', acao:()=>{showTab('adm'); setTimeout(()=>isolarSecaoAdm('admAncoraAgenda'),250);} },
 ];
+function pontuarBuscaGlobal(item, tokens, termoOriginal){
+ const termos = String(item.termos||'').toLowerCase();
+ const label = String(item.label||'').toLowerCase();
+ const termo = String(termoOriginal||'').toLowerCase();
+ let pontos = 0;
+ if(label === termo) pontos += 100;
+ if(label.includes(termo)) pontos += 45;
+ if(termos.includes(termo)) pontos += 35;
+ tokens.forEach(t=>{
+  if(!t) return;
+  if(label.includes(t)) pontos += 18;
+  if(termos.includes(t)) pontos += 10;
+ });
+ if(tokens.length>1 && tokens.every(t=>label.includes(t) || termos.includes(t))) pontos += 30;
+ return pontos;
+}
 function renderResultadosBuscaGlobal(){
  const input = document.getElementById('inputBuscaGlobal');
  const el = document.getElementById('resultadosBuscaGlobal');
  if(!input || !el) return;
- const termo = input.value.trim().toLowerCase();
+ const termoOriginal = input.value.trim();
+ const termo = termoOriginal.toLowerCase();
  if(termo.length<2){ el.style.display='none'; return; }
- const resultados = BIOBEL_INDICE_BUSCA.filter(item=>item.termos.includes(termo) || item.label.toLowerCase().includes(termo)).slice(0,8);
+ const tokens = termo.normalize('NFD').replace(/[\u0300-\u036f]/g,'').split(/\s+/).filter(t=>t.length>1);
+ const resultados = BIOBEL_INDICE_BUSCA
+  .map(item=>({...item, _score:pontuarBuscaGlobal(item,tokens,termo)})
+  .filter(item=>item._score>0)
+  .sort((a,b)=>b._score-a._score)
+  .slice(0,8);
  if(resultados.length===0){
   el.style.display='block';
-  el.innerHTML = '<div style="padding:12px 14px;font-size:12px;color:#93a3ba;">Nada encontrado pra "'+input.value+'".</div>';
+  el.innerHTML = '<div style="padding:12px 14px;font-size:12px;color:#93a3ba;">Nada encontrado pra "'+input.value+'". Tente uma palavra como <strong style="color:#dce5f2;">caixa</strong>, <strong style="color:#dce5f2;">aluguel</strong>, <strong style="color:#dce5f2;">meta</strong> ou <strong style="color:#dce5f2;">fornecedor</strong>.</div>';
   return;
  }
  el.style.display='block';
@@ -3965,13 +4052,15 @@ document.addEventListener('click', function(e){
 function showTab(tab){
  const titulosAba = {
   dashboard: 'Visão Geral — Biobel',
-  info: 'Informação Geral — Biobel',
+  info: 'Análises — Biobel',
+  alertas: 'Alertas — Biobel',
   caixa: 'Caixa — Biobel',
   equipe: 'Equipe & Rotina — Biobel',
   campanhas: 'Campanhas — Biobel',
-  config: 'Configuração — Biobel'
+  config: 'Configuração — Biobel',
+  adm: 'Administração — Biobel'
  };
- document.title = titulosAba[tab] || 'Biobel — Fechamento de Caixa Diário';
+ document.title = titulosAba[tab] || (tab==='adm' ? 'Administração — Biobel' : 'Biobel — Fechamento de Caixa Diário');
  const mobileNavLabels = {
   dashboard:'📊 Visão Geral', caixa:'💰 Caixa', equipe:'👥 Equipe',
   campanhas:'🎉 Campanhas', info:'🔍 Análises', alertas:'🚨 Alertas',
