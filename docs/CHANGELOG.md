@@ -1,3 +1,8 @@
+## v10.16 | 🔧 Navegação protegida de Configuração e Administração
+- Corrigida a abertura das áreas **Configuração** e **Administração** pelo novo menu, com tratamento de erro e fallback.
+- Reforçada a navegação no computador e no celular sem criar banco novo e sem alterar a origem dos dados da planilha.
+- Versão exibida no painel atualizada para **v10.16**.
+
 v10.15 | 🔧 Correção de botões e recuperação da planilha principal: corrigida a busca global, sincronizado o indicador de versão e reforçada a recuperação local da referência da planilha principal sem apagar planilhas cadastradas.
 v10.14 | 🛠️ Correção crítica da tela inicial: removido fechamento acidental do script que fazia código aparecer na página. Restaurados os recursos inteligentes já existentes de clima/chuva, checklist de ações e aviso para preparar/cadastrar a planilha do próximo mês.
 v10.13 | 🧠 Inteligência operacional: semáforo, comparador de períodos, meta progressiva, previsão de fechamento, evolução de vendedoras, calendário comercial, clima × vendas, detector de anomalias, ações recomendadas, relatório gerencial e busca global 2.0, todos aproveitando os dados já carregados da planilha e sem banco novo.\nv10.12 | 🧭 Central Operacional sem banco novo: tarefas, agenda, notificações, painel executivo, tendência de vendas, simuladores de meta/comissão, reconhecimento, contas/conciliação auxiliar, estoque com alerta de mínimo e sugestão de compra, ocorrências, manutenção, exportações e assistente interno baseado nos dados já carregados da planilha.\nv10.11 | ✨ UX de alto impacto: cabeçalhos contextuais por área, feedback visual para ações, áreas de toque mais confortáveis, proteção contra sobreposição da navegação mobile e refinamento do menu Mais.

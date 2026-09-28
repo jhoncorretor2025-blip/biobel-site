@@ -51,3 +51,63 @@ var old=window.showTab;window.showTab=function(tab){ensure();var ct=document.get
 function nav(){var d=document.querySelector(".biobel-nav-links");if(d&&!document.getElementById("navCentralBtn")){var b=document.createElement("button");b.id="navCentralBtn";b.className="biobel-nav-item";b.innerHTML="🧭 <span>Central</span>";b.onclick=function(){showTab("central")};d.insertBefore(b,d.children[1]||null)}var m=document.getElementById("menuMaisDropdown");if(m&&!document.getElementById("mobCentral")){var x=document.createElement("button");x.id="mobCentral";x.innerHTML="🧭 Central Operacional";x.onclick=function(){m.style.display="none";showTab("central")};m.insertBefore(x,m.children[1]||null)}}
 function init(){ensure();css();nav();render()}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();window.addEventListener("load",nav,{once:true})
 })();
+/* v10.16 — Navegação protegida de Configuração e Administração.
+   Este bloco fica separado para corrigir a navegação sem mexer no núcleo do leitor de planilha. */
+(function(){
+ "use strict";
+ function abrirAreaProtegida(tab){
+  try{
+   if(typeof window.showTab!=="function") throw new Error("showTab indisponível");
+   window.showTab(tab);
+   window.scrollTo({top:0,behavior:"smooth"});
+  }catch(e){
+   console.error("Biobel: erro ao abrir "+tab,e);
+   var alvo=document.getElementById(tab+"Tab");
+   if(alvo){
+    document.querySelectorAll("main[id$='Tab'],section[id$='Tab']").forEach(function(el){el.classList.add("hidden");});
+    alvo.classList.remove("hidden");
+    window.scrollTo({top:0,behavior:"smooth"});
+   }
+   if(typeof window.mostrarToast==="function") window.mostrarToast("⚠️ A área foi aberta, mas uma rotina interna apresentou erro.");
+  }
+ }
+ function fecharMenus(){
+  try{ if(typeof window.fecharNovosMenus==="function") window.fecharNovosMenus(); }catch(e){}
+  var m=document.getElementById("menuAdmin");
+  if(m) m.classList.remove("open");
+ }
+ function aplicar(){
+  var menu=document.getElementById("menuAdmin");
+  if(menu){
+   var botoes=menu.querySelectorAll("button");
+   if(botoes[0]) botoes[0].onclick=function(){abrirAreaProtegida("adm");fecharMenus();};
+   if(botoes[1]) botoes[1].onclick=function(){abrirAreaProtegida("config");fecharMenus();};
+  }
+  var grupo=document.querySelector(".biobel-nav-group #menuAdmin");
+  if(grupo){
+   var gatilho=grupo.parentElement ? grupo.parentElement.querySelector(":scope > .biobel-nav-item") : null;
+   if(gatilho) gatilho.onclick=function(){
+    try{
+     if(typeof window.alternarNovoMenu==="function") window.alternarNovoMenu("menuAdmin");
+     else grupo.classList.toggle("open");
+    }catch(e){grupo.classList.toggle("open");}
+   };
+  }
+  var mobile=document.getElementById("menuMobileMais");
+  if(mobile){
+   Array.from(mobile.querySelectorAll("button")).forEach(function(btn){
+    var texto=(btn.textContent||"").toLowerCase();
+    if(texto.indexOf("administração")!==-1) btn.onclick=function(){abrirAreaProtegida("adm");fecharMenus();};
+    if(texto.indexOf("configuração")!==-1) btn.onclick=function(){abrirAreaProtegida("config");fecharMenus();};
+   });
+  }
+  var versao=document.getElementById("versaoSistema");
+  if(versao){
+   versao.textContent="v10.16";
+   versao.setAttribute("title","Atualizado em 28/09/2026 — v10.16. Navegação de Configuração e Administração corrigida.");
+  }
+ }
+ if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",aplicar,{once:true});
+ else aplicar();
+ window.addEventListener("load",aplicar,{once:true});
+})();
