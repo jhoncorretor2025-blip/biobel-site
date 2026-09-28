@@ -26,7 +26,7 @@
 Ordem dentro do arquivo:
 1. `<head>`: Tailwind (CDN), `xlsx` e `chart.js` (CDN), `<style>` com o CSS próprio (tema escuro; existe **modo claro**, ver seção `MODO CLARO`).
 2. Cabeçalho fixo: logo, **número da versão** (`#versaoSistema`), indicador "✅ Salvo às HH:MM", nome da planilha ativa.
-3. Botões de aba → `showTab('nome')`. Abas: `dashboard`, `info`, `alertas`, `caixa`, `equipe`, `campanhas`, `config`, `adm`.
+3. Navegação principal (v10.6) → **Visão Geral**, **Caixa**, **Equipe**, **Ferramentas** e **Administração**. As áreas `info`, `alertas`, `campanhas` e `config` continuam existindo como seções internas/atalhos agrupados; `adm` é a área técnica chamada de Administração na interface.
 4. Uma `<section id="...Tab">` por aba (a aba Dashboard é o bloco principal com `#dashboardModoAvancado` etc.).
 5. Dois blocos `<script>` grandes no fim (todo o JavaScript). O código é organizado por **seções comentadas** `/* ===== Nome ===== */`.
 
