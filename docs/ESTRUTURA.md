@@ -28,7 +28,20 @@ Ordem dentro do arquivo:
 2. Cabeçalho fixo: logo, **número da versão** (`#versaoSistema`), indicador "✅ Salvo às HH:MM", nome da planilha ativa.
 3. Navegação principal (v10.6) → **Visão Geral**, **Caixa**, **Equipe**, **Ferramentas** e **Administração**. No celular, um menu único de navegação dá acesso às mesmas áreas sem duplicar atalhos. As áreas `info`, `alertas`, `campanhas` e `config` continuam existindo como seções internas/atalhos agrupados; `adm` é a área técnica chamada de Administração na interface.
 4. Uma `<section id="...Tab">` por aba (a aba Dashboard é o bloco principal com `#dashboardModoAvancado` etc.).
-5. Dois blocos `<script>` grandes no fim (todo o JavaScript). O código é organizado por **seções comentadas** `/* ===== Nome ===== */`.
+5. Dois blocos `<script>` grandes no fim (todo o JavaScript). O código continua em arquivo único, mas agora possui **zonas internas de manutenção** (`BIOBEL — ZONA: ...`) para facilitar alterações pequenas sem precisar separar o painel em vários arquivos.
+
+### Zonas internas do JavaScript
+As zonas são apenas marcadores de manutenção: **não alteram a execução** e não devem ser usadas para mover funções em massa.
+- **CORE / INICIALIZAÇÃO** → utilitários compartilhados e inicialização.
+- **EQUIPE** → rotinas, folha de ponto, faltas e exportações relacionadas.
+- **ADMINISTRAÇÃO** → acesso, financeiro, fornecedores, pessoas, comissões, custos e fluxo de caixa.
+- **DADOS** → backup, metas e integração com Google Sheets/planilhas.
+- **ANÁLISES** → comparativos e indicadores.
+- **CAMPANHAS** → marketing e “Sem Movimento”.
+- **CLIMA** → correlação, clima atual e previsões. Esta zona deve ser tratada como **sensível**: não refatorar junto com outras mudanças.
+- **EXPORTAÇÕES / RENDERIZAÇÃO** → relatórios, fechamento e desenho do dashboard.
+
+**Regra de segurança:** em uma melhoria futura, alterar uma zona por vez, validar o painel e só então avançar para a próxima.
 
 ### Como cada área navega por dentro
 | Área | Como funciona | Onde mexer |
