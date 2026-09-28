@@ -1,0 +1,84 @@
+/* Biobel UX/UI Refinement — camada visual, sem alterar lógica. */
+body:not(.site-public-design){--bi-focus:rgba(39,215,160,.22)}
+body:not(.site-public-design) .adv-topbar{box-shadow:0 8px 24px rgba(0,0,0,.12)}
+body:not(.site-public-design) .adv-kpi{transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+body:not(.site-public-design) .adv-kpi:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(0,0,0,.18)}
+body:not(.site-public-design) .adv-kpi .value{letter-spacing:-.04em}
+body:not(.site-public-design) .adv-card{transition:border-color .18s ease,box-shadow .18s ease}
+body:not(.site-public-design) .adv-card:hover{border-color:rgba(79,156,255,.24)!important}
+body:not(.site-public-design) .adv-actions .adv-btn,body:not(.site-public-design) .adv-actions button{transition:transform .15s ease,background .15s ease,border-color .15s ease}
+body:not(.site-public-design) .adv-actions .adv-btn:hover,body:not(.site-public-design) .adv-actions button:hover{transform:translateY(-1px)}
+body:not(.site-public-design) .adv-table tbody tr{transition:background .15s ease}
+body:not(.site-public-design) .adv-table tbody tr:hover td{background:rgba(39,215,160,.025)}
+body:not(.site-public-design) .adv-nav button{transition:background .16s ease,border-color .16s ease,color .16s ease,transform .16s ease}
+body:not(.site-public-design) .adv-nav button:hover{transform:translateX(2px)}
+body:not(.site-public-design) button:focus-visible,body:not(.site-public-design) a:focus-visible,body:not(.site-public-design) select:focus-visible,body:not(.site-public-design) input:focus-visible,body:not(.site-public-design) textarea:focus-visible{box-shadow:0 0 0 4px var(--bi-focus)}
+
+.site-public-design{--public-border:rgba(204,125,141,.16)}
+.site-public-design .section{scroll-margin-top:110px}
+.site-public-design .section-heading{max-width:760px;margin-left:auto;margin-right:auto}
+.site-public-design .section-heading h2{letter-spacing:-.025em;text-wrap:balance}
+.site-public-design .section-heading p{max-width:680px;margin-left:auto;margin-right:auto}
+.site-public-design .eyebrow{display:inline-flex;align-items:center;gap:6px;min-height:28px;padding:5px 10px;border:1px solid rgba(204,125,141,.20);border-radius:999px;background:rgba(247,234,238,.72);font-size:.74rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
+.site-public-design .hero-content h1{letter-spacing:-.035em;text-wrap:balance}
+.site-public-design .hero-content>p{max-width:620px}
+.site-public-design .hero-actions{gap:12px}
+.site-public-design .hero-actions .btn,.site-public-design .store-actions .btn,.site-public-design .brands-action .btn{min-height:46px;display:inline-flex;align-items:center;justify-content:center}
+.site-public-design .trust-grid{overflow:hidden}
+.site-public-design .trust-grid>div{transition:background .18s ease}
+.site-public-design .trust-grid>div:hover{background:rgba(247,234,238,.35)}
+.site-public-design .product-card{overflow:hidden;border:1px solid var(--public-border);box-shadow:0 14px 35px rgba(153,90,105,.09);transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+.site-public-design .product-card:hover{transform:translateY(-4px);box-shadow:0 22px 48px rgba(153,90,105,.15);border-color:rgba(204,125,141,.28)}
+.site-public-design .product-photo-wrap{overflow:hidden}
+.site-public-design .product-photo{transition:transform .35s ease}
+.site-public-design .product-card:hover .product-photo{transform:scale(1.025)}
+.site-public-design .product-body h3{text-wrap:balance}
+.site-public-design .offer-tag,.site-public-design .validity-tag{display:inline-flex;align-items:center;min-height:28px;border-radius:999px;font-size:.72rem;font-weight:800}
+.site-public-design .product-cta{min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+.site-public-design .brand-category{border:1px solid var(--public-border);box-shadow:0 10px 28px rgba(153,90,105,.06)}
+.site-public-design .brands-grid span{transition:background .15s ease,color .15s ease,transform .15s ease}
+.site-public-design .brands-grid span:hover{transform:translateY(-1px)}
+.site-public-design .testimonial-card{overflow:hidden;border:1px solid var(--public-border);box-shadow:0 10px 28px rgba(153,90,105,.07)}
+.site-public-design .testimonial-card img{width:100%;height:auto}
+.site-public-design .faq-list details{border-color:var(--public-border)}
+.site-public-design .faq-list summary{min-height:52px;display:flex;align-items:center;padding-right:44px}
+.site-public-design .map-card{overflow:hidden;border-radius:var(--radius-lg,28px);border:1px solid var(--public-border);box-shadow:0 14px 35px rgba(153,90,105,.09)}
+.site-public-design .floating-whatsapp{width:54px;height:54px;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 28px rgba(80,45,53,.20);transition:transform .18s ease,box-shadow .18s ease}
+.site-public-design .floating-whatsapp:hover{transform:translateY(-3px);box-shadow:0 16px 34px rgba(80,45,53,.26)}
+.site-public-design .footer a{transition:color .15s ease,opacity .15s ease}
+
+@media(max-width:760px){
+ .site-public-design .container{width:min(calc(100% - 28px),var(--container))}
+ .site-public-design .section{padding-top:52px;padding-bottom:52px}
+ .site-public-design .hero{padding-top:42px;padding-bottom:38px}
+ .site-public-design .hero-content h1{font-size:clamp(2.25rem,10vw,3.4rem);line-height:1.04}
+ .site-public-design .hero-actions{flex-direction:column}
+ .site-public-design .hero-actions .btn{width:100%}
+ .site-public-design .hero-image-card{margin-top:8px}
+ .site-public-design .hero-image{min-height:360px}
+ .site-public-design .hero-image-badge{left:18px;right:18px;bottom:18px}
+ .site-public-design .trust-grid{grid-template-columns:1fr}
+ .site-public-design .trust-grid>div{padding:18px 20px}
+ .site-public-design .products-grid,.site-public-design .cards-grid{grid-template-columns:1fr}
+ .site-public-design .product-actions,.site-public-design .store-actions{flex-direction:column}
+ .site-public-design .product-actions>*,.site-public-design .store-actions .btn{width:100%}
+ .site-public-design .brand-category{padding:18px}
+ .site-public-design .faq-layout,.site-public-design .store-grid{grid-template-columns:1fr}
+ .site-public-design .map-card{min-height:300px}
+ .site-public-design .floating-whatsapp{width:56px;height:56px;right:16px;bottom:16px}
+}
+@media(max-width:480px){
+ .site-public-design .topbar{justify-content:center;text-align:center}
+ .site-public-design .topbar-links{width:100%;justify-content:center}
+ .site-public-design .section-heading h2{font-size:clamp(1.75rem,8vw,2.25rem)}
+ .site-public-design .product-body{padding:18px}
+ .site-public-design .hero-image{min-height:300px}
+ body:not(.site-public-design) .adv-topbar{border-radius:14px}
+ body:not(.site-public-design) .adv-kpi{min-height:118px}
+}
+@media(prefers-reduced-motion:reduce){
+ .site-public-design *,body:not(.site-public-design) *{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+@media print{
+ .site-public-design .floating-whatsapp,.site-public-design .header-whatsapp{display:none!important}
+}
