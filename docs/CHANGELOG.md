@@ -1,5 +1,5 @@
-v10.3 | 🎨 Design System Biobel: padronização de cards, controles, espaçamentos, estados, navegação interna e comportamento mobile/desktop.
 v10.4 | 🧩 Componentes padronizados: cabeçalhos de cards, filtros, badges/tags, ações, estados vazio/carregando/desabilitado e comportamento mobile.
+v10.3 | 🎨 Design System Biobel: padronização de cards, controles, espaçamentos, estados, navegação interna e comportamento mobile/desktop.
 # 📜 Histórico de versões (resumo)
 
 > Mais recente primeiro. A versão vigente está sempre no topo do painel e em **Configuração → 🆕 Novidades**.
@@ -19,6 +19,6 @@ v10.4 | 🧩 Componentes padronizados: cabeçalhos de cards, filtros, badges/tag
 | v8.4–8.6 | Boleto 1x/2x/3x integrado ao formulário com datas sugeridas (30/45/60), memória de parcelamento por fornecedor, navegação da ADM por **isolamento de seção**. |
 | v8.2–8.3 | Agenda de reuniões como grupo, lembrete de reunião, marcas de fornecedor, clima rápido no Dashboard, faturamento por dia da semana, atividades com links. |
 | v8.0–8.1 | Compra parcelada; melhorias gráficas da Equipe. |
-| v7.0–7.9 | Textos de vaga, Dica do Dia, assistente guiado de desligamento, Modo Simples, Central de Ações Rápidas, "Desfazer", Campanhas, Atividades da Gerência. |
+| v7.0–v7.9 | Textos de vaga, Dica do Dia, assistente guiado de desligamento, Modo Simples, Central de Ações Rápidas, "Desfazer", Campanhas, Atividades da Gerência. |
 | v6.x | Grupos colapsáveis na ADM, arquivo de ex-funcionários, promoção estágio→CLT, folha de ponto com regra própria de sábado. |
 | ≤ v5.9 | Base: fechamento diário, metas, comissões, gastos fixos, folha de ponto, calendário comercial, desligamento com PDF. |
