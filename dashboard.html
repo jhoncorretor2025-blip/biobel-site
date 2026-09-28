@@ -540,7 +540,7 @@ body.modo-compacto .space-y-4 > * + *{ margin-top:8px!important; }
   #btnMenuMais::before{content:"☰";font-size:18px}
   #menuMaisDropdown,#menuFerramentasDropdown{position:fixed!important;top:62px!important;left:10px!important;right:10px!important;min-width:0!important;max-height:70vh!important;overflow:auto!important}
   #menuMaisDropdown button,#menuFerramentasDropdown button{min-height:46px!important;font-size:14px!important}
-  nav.no-print::before{content:"📊 Visão Geral";flex:1;min-width:0;height:42px;display:flex;align-items:center;padding:0 13px;border:1px solid rgba(39,215,160,.28);border-radius:12px;background:rgba(39,215,160,.09);color:#27d7a0;font-weight:800;font-size:13px}
+  nav.no-print::before{content:var(--mobile-nav-label,"📊 Visão Geral");flex:1;min-width:0;height:42px;display:flex;align-items:center;padding:0 13px;border:1px solid rgba(39,215,160,.28);border-radius:12px;background:rgba(39,215,160,.09);color:#27d7a0;font-weight:800;font-size:13px}
   main{padding:12px!important}
   main > .no-print[style*="grid-template-columns"]{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
   main > .no-print[style*="grid-template-columns"] button{min-height:72px!important;padding:12px 8px!important;border-radius:12px!important}
