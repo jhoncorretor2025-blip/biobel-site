@@ -704,7 +704,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 28/09/2026 — versão v10.12')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 28/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v10.14</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 28/09/2026 — versão v10.15')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 28/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v10.15</span>
   <span id="indicadorUltimoSalvamento" class="no-print" style="font-size:11px;color:#27d7a0;font-weight:700;display:none;white-space:nowrap;" title="Tudo o que você faz salva sozinho no aparelho — esse é o horário do último salvamento"></span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
@@ -14608,17 +14608,15 @@ function removerPlanilhaSalva(index){
  });
 }
 function seedPlanilhaSetembro2026(){
- // Já deixa a planilha de setembro/2026 cadastrada na lista — só na primeira vez, sem nunca
- // sobrescrever se alguém já tiver mexido na lista com a própria mão.
- const jaSeedou = localStorage.getItem('biobel_seed_planilha_setembro_v1');
- if(jaSeedou) return;
+ // Recupera referências conhecidas sem apagar nenhuma planilha já cadastrada.
+ // A planilha principal continua disponível mesmo se a lista local tiver sido limpa.
  const lista = getPlanilhasSalvas();
- const jaExiste = lista.some(p=>p.nome.trim().toLowerCase()==='setembro 2026');
- if(!jaExiste){
-  lista.push({ nome:'Setembro 2026', url:'https://docs.google.com/spreadsheets/d/1o99UbEDpc0wgnjAfF0D0DQZcLdR53zBMW3Cieqoa1IQ/edit?usp=sharing' });
-  salvarListaPlanilhas(lista);
- }
- localStorage.setItem('biobel_seed_planilha_setembro_v1', 'yes');
+ const principal = { nome:'Planilha principal', url:DEFAULT_GOOGLE_URL };
+ const setembro = { nome:'Setembro 2026', url:'https://docs.google.com/spreadsheets/d/1o99UbEDpc0wgnjAfF0D0DQZcLdR53zBMW3Cieqoa1IQ/edit?usp=sharing' };
+ let mudou = false;
+ if(!lista.some(p=>p.url===principal.url)){ lista.unshift(principal); mudou = true; }
+ if(!lista.some(p=>p.url===setembro.url)){ lista.push(setembro); mudou = true; }
+ if(mudou) salvarListaPlanilhas(lista);
 }
 function renderPlanilhasSalvas(){
  seedPlanilhaSetembro2026();
