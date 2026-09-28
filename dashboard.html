@@ -617,48 +617,43 @@ body.modo-compacto .space-y-4 > * + *{ margin-top:8px!important; }
   main > .no-print[style*="grid-template-columns"] button{min-height:68px!important}
 }
 </style>
-
 <style id="biobel-navigation-v11">
-/* v11 — navegação reorganizada por objetivo, sem remover as abas legadas */
-.biobel-main-navigation{position:sticky;top:0;z-index:55;background:rgba(7,17,31,.96);backdrop-filter:blur(14px);border-bottom:1px solid #1e2c42;}
-.biobel-main-nav-inner{max-width:80rem;margin:auto;padding:8px 16px;display:flex;align-items:center;gap:14px;}
-.biobel-nav-brand{display:flex;align-items:center;gap:7px;min-width:max-content;color:#f6f9fd;font-size:15px;}
-.biobel-nav-links{display:flex;align-items:center;gap:3px;flex:1;}
-.biobel-nav-item,.biobel-nav-search,.biobel-nav-help{border:0;background:transparent;color:#aebed0;border-radius:10px;padding:9px 11px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;}
-.biobel-nav-item:hover,.biobel-nav-item.active,.biobel-nav-search:hover,.biobel-nav-help:hover{background:#12233b;color:#f6f9fd;}
-.biobel-nav-item.active{color:#27d7a0;}
-.biobel-nav-group{position:relative;}
-.biobel-nav-dropdown{display:none;position:absolute;top:calc(100% + 6px);left:0;min-width:220px;padding:7px;background:#0f172a;border:1px solid #1e2c42;border-radius:12px;box-shadow:0 14px 35px rgba(0,0,0,.4);}
-.biobel-nav-dropdown.open{display:block;}
-.biobel-nav-dropdown button,.biobel-mobile-more-menu button{display:block;width:100%;text-align:left;border:0;background:transparent;color:#dce5f2;padding:9px 10px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;}
-.biobel-nav-dropdown button:hover,.biobel-mobile-more-menu button:hover{background:#12233b;color:#27d7a0;}
-.biobel-nav-actions{display:flex;align-items:center;gap:4px;}
-.biobel-nav-search{border:1px solid #1e2c42;background:#0b1728;}
-.biobel-mobile-bottom-nav{display:none;}
-.biobel-mobile-more-menu{display:none;position:absolute;right:8px;bottom:66px;width:230px;padding:8px;background:#0f172a;border:1px solid #1e2c42;border-radius:14px;box-shadow:0 14px 35px rgba(0,0,0,.45);}
-.biobel-mobile-more-menu.open{display:block;}
-.legacy-navigation{display:none!important;}
-body.light-mode .biobel-main-navigation{background:rgba(255,255,255,.96);border-color:#dde3ea;}
-body.light-mode .biobel-nav-brand{color:#0f172a;}
-body.light-mode .biobel-nav-item,body.light-mode .biobel-nav-search,body.light-mode .biobel-nav-help{color:#475569;}
-body.light-mode .biobel-nav-item:hover,body.light-mode .biobel-nav-item.active,body.light-mode .biobel-nav-search:hover,body.light-mode .biobel-nav-help:hover{background:#eef1f5;color:#0f172a;}
-body.light-mode .biobel-nav-item.active{color:#0a7a56;}
-body.light-mode .biobel-nav-dropdown,body.light-mode .biobel-mobile-more-menu{background:#fff;border-color:#dde3ea;}
-body.light-mode .biobel-nav-dropdown button,body.light-mode .biobel-mobile-more-menu button{color:#334155;}
-body.light-mode .biobel-nav-dropdown button:hover,body.light-mode .biobel-mobile-more-menu button:hover{background:#eef1f5;color:#0a7a56;}
+.biobel-main-navigation{position:sticky;top:0;z-index:55;background:rgba(7,17,31,.96);backdrop-filter:blur(14px);border-bottom:1px solid #1e2c42}
+.biobel-main-nav-inner{max-width:80rem;margin:auto;padding:8px 16px;display:flex;align-items:center;gap:14px}
+.biobel-nav-brand{display:flex;align-items:center;gap:7px;min-width:max-content;color:#f6f9fd;font-size:15px}
+.biobel-nav-links{display:flex;align-items:center;gap:3px;flex:1}
+.biobel-nav-item,.biobel-nav-search,.biobel-nav-help{border:0;background:transparent;color:#aebed0;border-radius:10px;padding:9px 11px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap}
+.biobel-nav-item:hover,.biobel-nav-item.active,.biobel-nav-search:hover,.biobel-nav-help:hover{background:#12233b;color:#f6f9fd}
+.biobel-nav-item.active{color:#27d7a0}
+.biobel-nav-group{position:relative}
+.biobel-nav-dropdown{display:none;position:absolute;top:calc(100% + 6px);left:0;min-width:220px;padding:7px;background:#0f172a;border:1px solid #1e2c42;border-radius:12px;box-shadow:0 14px 35px rgba(0,0,0,.4)}
+.biobel-nav-dropdown.open{display:block}
+.biobel-nav-dropdown button,.biobel-mobile-more-menu button{display:block;width:100%;text-align:left;border:0;background:transparent;color:#dce5f2;padding:9px 10px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer}
+.biobel-nav-dropdown button:hover,.biobel-mobile-more-menu button:hover{background:#12233b;color:#27d7a0}
+.biobel-nav-actions{display:flex;align-items:center;gap:4px}
+.biobel-nav-search{border:1px solid #1e2c42;background:#0b1728}
+.biobel-mobile-bottom-nav{display:none}
+.biobel-mobile-more-menu{display:none;position:absolute;right:8px;bottom:66px;width:230px;padding:8px;background:#0f172a;border:1px solid #1e2c42;border-radius:14px;box-shadow:0 14px 35px rgba(0,0,0,.45)}
+.biobel-mobile-more-menu.open{display:block}
+.legacy-navigation{display:none!important}
+body.light-mode .biobel-main-navigation{background:rgba(255,255,255,.96);border-color:#dde3ea}
+body.light-mode .biobel-nav-brand{color:#0f172a}
+body.light-mode .biobel-nav-item,body.light-mode .biobel-nav-search,body.light-mode .biobel-nav-help{color:#475569}
+body.light-mode .biobel-nav-item:hover,body.light-mode .biobel-nav-item.active,body.light-mode .biobel-nav-search:hover,body.light-mode .biobel-nav-help:hover{background:#eef1f5;color:#0f172a}
+body.light-mode .biobel-nav-item.active{color:#0a7a56}
+body.light-mode .biobel-nav-dropdown,body.light-mode .biobel-mobile-more-menu{background:#fff;border-color:#dde3ea}
+body.light-mode .biobel-nav-dropdown button,body.light-mode .biobel-mobile-more-menu button{color:#334155}
 @media(max-width:760px){
- .biobel-main-navigation{display:none;}
- .biobel-mobile-bottom-nav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:60;height:64px;padding:5px 6px;background:rgba(7,17,31,.98);border-top:1px solid #1e2c42;box-shadow:0 -8px 24px rgba(0,0,0,.28);}
- .biobel-mobile-bottom-nav>button{position:relative;flex:1;border:0;background:transparent;color:#93a3ba;border-radius:9px;font-weight:800;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;}
- .biobel-mobile-bottom-nav>button span{font-size:18px;line-height:1;}
- .biobel-mobile-bottom-nav>button small{font-size:9px;}
- .biobel-mobile-bottom-nav>button.active{background:rgba(39,215,160,.10);color:#27d7a0;}
- body.light-mode .biobel-mobile-bottom-nav{background:rgba(255,255,255,.98);border-color:#dde3ea;}
- body.light-mode .biobel-mobile-bottom-nav>button{color:#64748b;}
- body.light-mode .biobel-mobile-bottom-nav>button.active{background:rgba(14,169,122,.10);color:#0a7a56;}
+ .biobel-main-navigation{display:none}
+ .biobel-mobile-bottom-nav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:60;height:64px;padding:5px 6px;background:rgba(7,17,31,.98);border-top:1px solid #1e2c42;box-shadow:0 -8px 24px rgba(0,0,0,.28)}
+ .biobel-mobile-bottom-nav>button{position:relative;flex:1;border:0;background:transparent;color:#93a3ba;border-radius:9px;font-weight:800;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+ .biobel-mobile-bottom-nav>button span{font-size:18px;line-height:1}.biobel-mobile-bottom-nav>button small{font-size:9px}
+ .biobel-mobile-bottom-nav>button.active{background:rgba(39,215,160,.10);color:#27d7a0}
+ body.light-mode .biobel-mobile-bottom-nav{background:rgba(255,255,255,.98);border-color:#dde3ea}
+ body.light-mode .biobel-mobile-bottom-nav>button{color:#64748b}
+ body.light-mode .biobel-mobile-bottom-nav>button.active{background:rgba(14,169,122,.10);color:#0a7a56}
 }
-</style>
-</head>
+</style></head>
 <body class="min-h-screen bg-slate-950 text-slate-100">
 <div id="faixaMensagemProgramada" style="display:none;"></div>
 <div id="tourGuiadoOverlay" style="display:none;"></div>
@@ -745,7 +740,6 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <button onclick="loadGoogleSheet()" style="background:#fb7185;color:#3a0f16;border:none;border-radius:10px;padding:9px 18px;font-weight:800;font-size:13px;cursor:pointer;white-space:nowrap;">🔄 Tentar reconectar</button>
  </div>
 </div>
-
 <nav class="no-print biobel-main-navigation" aria-label="Navegação principal">
  <div class="biobel-main-nav-inner">
   <div class="biobel-nav-brand"><span>🟢</span><strong>BioBel</strong></div>
@@ -767,7 +761,6 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <div id="menuAdmin" class="biobel-nav-dropdown">
      <button onclick="showTab('adm');fecharNovosMenus()">⚙️ Administração</button>
      <button onclick="showTab('config');fecharNovosMenus()">🔧 Configuração</button>
-     <button onclick="fecharNovosMenus();document.getElementById('buscaGlobal')?.focus()">🔎 Buscar no sistema</button>
     </div>
    </div>
   </div>
@@ -777,7 +770,6 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
  </div>
 </nav>
-
 <div class="biobel-mobile-bottom-nav no-print" aria-label="Navegação mobile">
  <button class="active" data-nav="dashboard" onclick="showTab('dashboard')"><span>🏠</span><small>Início</small></button>
  <button data-nav="caixa" onclick="showTab('caixa')"><span>💰</span><small>Operação</small></button>
@@ -792,8 +784,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <button onclick="document.getElementById('buscaGlobal')?.focus();fecharNovosMenus()">🔎 Buscar</button>
   <button onclick="iniciarTourGuiado();fecharNovosMenus()">❓ Ajuda</button>
  </div>
-</div>
-<nav class="no-print legacy-navigation max-w-7xl mx-auto px-4 md:px-6 pt-4" style="display:flex;align-items:flex-end;gap:6px;">
+</div><nav class="no-print legacy-navigation max-w-7xl mx-auto px-4 md:px-6 pt-4" style="display:flex;align-items:flex-end;gap:6px;">
  <div class="tabs-scroll-wrap" style="flex:1;min-width:0;">
  <div class="flex gap-2 border-b border-slate-800" role="tablist" aria-label="Navegação do painel">
   <button id="tabDashboard" data-tab="dashboard" role="tab" aria-selected="true" aria-controls="dashboardTab" onclick="showTab('dashboard')" title="Atalho: Alt+1" class="tab-btn px-4 py-2 rounded-t-xl bg-emerald-600 font-semibold text-sm">📊 Visão Geral</button>
@@ -7488,32 +7479,7 @@ function verComprovanteBoleto(id){
  const b = getBoletos().find(x=>x.id===id);
  if(!b || !b.comprovante) return;
  const win = window.open('', '_blank');
- if(win) win.document.write('<title>Comprovante — '+b.fornecedor+'</title><body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="'+b.comprovante+'" style="max-width:100%;max-height:100vh;">
-<script>
-/* v11 — controle da nova navegação, sem alterar showTab ou os módulos existentes */
-function alternarNovoMenu(id){
- const el=document.getElementById(id);
- if(!el) return;
- const aberto=el.classList.contains('open');
- fecharNovosMenus();
- if(!aberto) el.classList.add('open');
-}
-function fecharNovosMenus(){
- document.querySelectorAll('.biobel-nav-dropdown.open,.biobel-mobile-more-menu.open').forEach(el=>el.classList.remove('open'));
-}
-document.addEventListener('click',function(e){
- if(!e.target.closest('.biobel-main-navigation,.biobel-mobile-bottom-nav')) fecharNovosMenus();
-});
-document.addEventListener('click',function(e){
- const btn=e.target.closest('[data-nav]');
- if(!btn) return;
- const nav=btn.closest('.biobel-main-navigation,.biobel-mobile-bottom-nav');
- if(!nav) return;
- nav.querySelectorAll('[data-nav]').forEach(x=>x.classList.remove('active'));
- btn.classList.add('active');
-});
-</script>
-</body>');
+ if(win) win.document.write('<title>Comprovante — '+b.fornecedor+'</title><body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="'+b.comprovante+'" style="max-width:100%;max-height:100vh;"></body>');
 }
 
 /* ===== Padrão de parcelamento por fornecedor — lembra o jeito que cada um costuma parcelar ===== */
@@ -15769,5 +15735,10 @@ if('serviceWorker' in navigator){
 }
 render();
 </script>
-</body>
+<script>
+function alternarNovoMenu(id){const el=document.getElementById(id);if(!el)return;const aberto=el.classList.contains('open');fecharNovosMenus();if(!aberto)el.classList.add('open')}
+function fecharNovosMenus(){document.querySelectorAll('.biobel-nav-dropdown.open,.biobel-mobile-more-menu.open').forEach(el=>el.classList.remove('open'))}
+document.addEventListener('click',function(e){if(!e.target.closest('.biobel-main-navigation,.biobel-mobile-bottom-nav'))fecharNovosMenus()});
+document.addEventListener('click',function(e){const btn=e.target.closest('[data-nav]');if(!btn)return;const nav=btn.closest('.biobel-main-navigation,.biobel-mobile-bottom-nav');if(!nav)return;nav.querySelectorAll('[data-nav]').forEach(x=>x.classList.remove('active'));btn.classList.add('active')});
+</script></body>
 </html>
