@@ -5,6 +5,7 @@
 | Versão | O que mudou |
 |---|---|
 | **v10.1** | 🌧️ Clima + "Sem Movimento": aviso de chuva com botão direto pra checklist e promoções; ações digitais primeiro na chuva; checklist espelhada no Dashboard. 📚 Repositório com `AGENTS.md`, `docs/`, `tools/validar.js`, `tools/mapa.js`. |
+| **v10.2** | 🧭 Navegação reorganizada: novo menu **Ferramentas** com atalhos para áreas existentes; Campanhas saiu da fileira principal para reduzir poluição visual; nenhuma funcionalidade existente foi removida. |
 | v10.0 | Checklist "Sem Movimento" ganha +5 ações (11 no total). |
 | v9.9 | Comparativo de turnos inclui **meio-dia**; nasce a checklist "Sem Movimento? Faça Isso!" (reseta todo dia). |
 | v9.8 | **Correção de rumo:** cards de turno passam a usar `d.porTurno` (já extraído da planilha) e o card manual de atendimentos foi removido. |
