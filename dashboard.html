@@ -627,6 +627,10 @@ body.modo-compacto .space-y-4 > * + *{ margin-top:8px!important; }
 <button id="btnVoltarTopo" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Voltar ao topo">↑</button>
 <a href="#dashboardTab" style="position:absolute;left:-9999px;top:0;z-index:9999;background:#0ea97a;color:#04241a;padding:12px 18px;border-radius:0 0 10px 0;font-weight:700;text-decoration:none" onfocus="this.style.left='0'" onblur="this.style.left='-9999px'">Pular para o conteúdo</a>
 <script>
+/* ============================================================
+   BIOBEL — ZONA: CORE / INICIALIZAÇÃO
+   Utilitários compartilhados e estado inicial do painel.
+   ============================================================ */
 // Proteção de acesso: só entra aqui quem passou pela tela de login (login.html).
 if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   window.location.href = 'login.html';
@@ -3228,6 +3232,9 @@ function executarUltimoDesfazer(){
  mostrarToast('↩️ Desfeito!');
 }
 
+/* ============================================================
+   BIOBEL — ZONA: EQUIPE / ROTINAS E ATIVIDADES
+   ============================================================ */
 /* ===== Atividades da Gerência (Alessandra) — lista própria, separada da rotina Gabi/Day ===== */
 const ATIVIDADES_GERENCIA_PADRAO = [
  { texto:'🎥 Gravar vídeos pras redes sociais', acao:null },
@@ -4659,6 +4666,9 @@ function _resetEquipeWeekReal(){
  }
 }
 
+/* ============================================================
+   BIOBEL — ZONA: EQUIPE / FOLHA DE PONTO E FALTAS
+   ============================================================ */
 /* ===== Folha de Ponto — entrada, intervalo, saída, com cálculo automático de horas ===== */
 function getRegistrosPonto(){
  try{ return JSON.parse(localStorage.getItem('biobel_folha_ponto')||'[]'); }catch(e){ return []; }
@@ -5610,6 +5620,9 @@ function obterLogoDataUrl(){
  });
 }
 
+/* ============================================================
+   BIOBEL — ZONA: ADMINISTRAÇÃO / ACESSO E DADOS DE GESTÃO
+   ============================================================ */
 /* ===== Área ADM/Gerência (login próprio, separado do login principal do painel) ===== */
 function parseValorSimples(str){
  // Parser simples pra campos de valor da área ADM (sem a máscara "digite os números"
@@ -7051,6 +7064,9 @@ function initAdmTab(){
  }
 }
 
+/* ============================================================
+   BIOBEL — ZONA: ADMINISTRAÇÃO / FINANCEIRO E FORNECEDORES
+   ============================================================ */
 /* ===== Gastos Fixos (aluguel, água, luz, internet...) ===== */
 function getGastosFixos(){
  try{ return JSON.parse(localStorage.getItem('biobel_adm_gastos_fixos')||'[]'); }catch(e){ return []; }
@@ -7931,6 +7947,9 @@ function renderBoletos(){
  }).join('<div style="height:6px;"></div>');
 }
 
+/* ============================================================
+   BIOBEL — ZONA: ADMINISTRAÇÃO / PESSOAS E COMISSÕES
+   ============================================================ */
 /* ===== Comissão por Níveis de Meta (Gabriela e Day, cada uma recebe o valor do nível atingido) ===== */
 function getNiveisComissao(){
  try{ return JSON.parse(localStorage.getItem('biobel_adm_niveis_comissao')||'[]'); }catch(e){ return []; }
@@ -8843,6 +8862,9 @@ function renderEstagioDay(){
  `;
 }
 
+/* ============================================================
+   BIOBEL — ZONA: ADMINISTRAÇÃO / CUSTOS, ESTOQUE E CAPITAL
+   ============================================================ */
 /* ===== Impostos (DAS/MEI/Simples Nacional) — valor manual, sem inventar número ===== */
 function getValorImpostoMensal(){
  const v = parseFloat(localStorage.getItem('biobel_adm_valor_imposto_mensal')||'0');
@@ -9088,6 +9110,9 @@ function atualizarTotaisAdm(){
  if(elUltimoSalvo) elUltimoSalvo.textContent = '💾 Atualizado às '+obterAgoraBrasilia().getHours().toString().padStart(2,'0')+':'+obterAgoraBrasilia().getMinutes().toString().padStart(2,'0');
 }
 
+/* ============================================================
+   BIOBEL — ZONA: ADMINISTRAÇÃO / FLUXO DE CAIXA E DRE
+   ============================================================ */
 /* ===== Alerta de Fluxo de Caixa (avisa se as contas a vencer não vão caber no saldo disponível) ===== */
 function calcularContasAVencerProximosDias(diasJanela){
  let total = 0;
@@ -9386,6 +9411,9 @@ function renderHistoricoComissoes(){
   }).join('');
 }
 
+/* ============================================================
+   BIOBEL — ZONA: DADOS / BACKUP E METAS
+   ============================================================ */
 /* ===== Backup automático (roda sozinho 1x por semana, guardado dentro do próprio navegador) ===== */
 function verificarBackupAutomatico(){
  const ultimoBackupAuto = localStorage.getItem('biobel_ultimo_backup_automatico');
@@ -10178,6 +10206,9 @@ function mostrarSecaoInfo(secao){
  }
 }
 
+/* ============================================================
+   BIOBEL — ZONA: ANÁLISES / COMPARATIVOS E INDICADORES
+   ============================================================ */
 /* ===== Tela "Por Dia da Semana" — compara todas as ocorrências do mesmo dia da semana ===== */
 let diaSemanaViewAtual = null;
 
@@ -11015,6 +11046,9 @@ function montarSeletorMeses(){
 /* ===== Comparar meses arquivados lado a lado ===== */
 /* ===== Comparar Mesmo Período — este mês (em andamento) x mês passado (arquivado) ===== */
 /* ===== Acima/Abaixo da Média, e Melhor/Pior Semana do Mês (aba Dias) ===== */
+/* ============================================================
+   BIOBEL — ZONA: CAMPANHAS / MARKETING E SEM MOVIMENTO
+   ============================================================ */
 /* ===== Campanhas de Marketing (item 2) — compara o período da campanha com o resto do mês ===== */
 function dataDoDiaParaISO(diaStr){
  const [dia, mes] = String(diaStr).split('.');
@@ -11069,6 +11103,10 @@ function renderListaCampanhas(){
  }).join('');
 }
 
+/* ============================================================
+   BIOBEL — ZONA: CLIMA / CORRELAÇÃO E PREVISÕES
+   ATENÇÃO: manter esta zona isolada ao fazer refatorações.
+   ============================================================ */
 /* ===== Correlação com Clima (item 12) — marcação manual, sem depender de API externa ===== */
 function getClimaDias(){
  try{ return JSON.parse(localStorage.getItem('biobel_clima_dias')||'{}'); }catch(e){ return {}; }
@@ -13675,6 +13713,9 @@ async function desenharCabecalhoPDF(doc, titulo, subtitulo){
  return 38;
 }
 
+/* ============================================================
+   BIOBEL — ZONA: EXPORTAÇÕES / RELATÓRIOS E FECHAMENTO
+   ============================================================ */
 /* ===== Fechamento Mensal Formal (retrato travado dos números, guardado no histórico) ===== */
 function getFechamentosMensais(){
  try{ return JSON.parse(localStorage.getItem('biobel_adm_fechamentos_mensais')||'[]'); }catch(e){ return []; }
@@ -14251,6 +14292,9 @@ function saveGoogleConfig(){
 }
 function getGoogleUrl(){return localStorage.getItem('biobel_google_sheet_url') || document.getElementById('googleSheetUrl')?.value || DEFAULT_GOOGLE_URL;}
 
+/* ============================================================
+   BIOBEL — ZONA: DADOS / GOOGLE SHEETS E PLANILHAS
+   ============================================================ */
 /* ===== Múltiplas planilhas salvas (troca rápida entre meses) ===== */
 function getPlanilhasSalvas(){
  try{ return JSON.parse(localStorage.getItem('biobel_planilhas_salvas')||'[]'); }
@@ -14961,6 +15005,7 @@ function extractRegistrosVendas(rows){
  return registros;
 }
 
+/* ===== PROCESSAMENTO DE DADOS DA PLANILHA ===== */
 function processarLinhasDoDia(sheetName, rows){
  const colM=12;
  let initial=0,closing=0,withdrawals=0,sales=0;
@@ -15205,6 +15250,9 @@ document.getElementById('fileInput').addEventListener('change',async e=>{
 
 let advSummaryDonut = null;
 
+/* ============================================================
+   BIOBEL — ZONA: RENDERIZAÇÃO / DASHBOARD AVANÇADO
+   ============================================================ */
 function renderAdvancedDashboard(){
   sortDays();
 
