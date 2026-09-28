@@ -61,3 +61,17 @@ ${gruposOrdenados.map(([g, ks]) => `**${g}** (${ks.length}): ` + ks.map(k => '`'
 fs.mkdirSync(path.join(raiz, 'docs'), { recursive: true });
 fs.writeFileSync(path.join(raiz, 'docs', 'MAPA_AUTOMATICO.md'), md);
 console.log(`✅ docs/MAPA_AUTOMATICO.md gerado — ${abas.length} abas, ${secoesCodigo.length} seções de código, ${funcoes.length} funções, ${chaves.length} chaves de dados`);
+
+// ---- Arquivo único pra colar/anexar em IAs de chat que não conseguem abrir o repositório ----
+const ler = f => fs.readFileSync(path.join(raiz, f), 'utf8').trim();
+const partes = [
+  ['AGENTS.md', 'GUIA PRINCIPAL'], ['docs/ESTRUTURA.md', 'ESTRUTURA'],
+  ['docs/CONVENCOES.md', 'CONVENÇÕES'], ['docs/PUBLICACAO.md', 'PUBLICAÇÃO']
+];
+let ctx = `# CONTEXTO COMPLETO DO PROJETO BIOBEL (arquivo único para colar/anexar em uma IA)\n\n` +
+`> Gerado automaticamente por \`node tools/mapa.js\` — NÃO edite à mão. Versão do sistema: ${versao}.\n` +
+`> Instrução para a IA: leia tudo abaixo antes de responder. Depois, o usuário vai enviar o \`dashboard.html\` (ou trechos dele) e dizer o que quer mudar.\n` +
+`> Responda em português simples, com emojis e negrito nas palavras-chave. Diga o que testou e o que não conseguiu testar.\n\n`;
+partes.forEach(([f, t]) => { ctx += `\n\n---\n## ===== ${t} (${f}) =====\n\n` + ler(f) + '\n'; });
+fs.writeFileSync(path.join(raiz, 'docs', 'CONTEXTO_PARA_IA.md'), ctx);
+console.log(`✅ docs/CONTEXTO_PARA_IA.md gerado — ${(ctx.length/1024).toFixed(0)} KB (arquivo único para IAs de chat)`);

@@ -1,6 +1,7 @@
 # 🤖 AGENTS.md — Guia para qualquer IA que for mexer neste projeto
 
 > Leia este arquivo **inteiro antes de editar qualquer coisa**. Ele vale para Claude, ChatGPT, Gemini, Copilot, Cursor, Codex ou qualquer outra ferramenta.
+> **IA de chat sem acesso ao repositório?** O usuário deve anexar [`docs/CONTEXTO_PARA_IA.md`](docs/CONTEXTO_PARA_IA.md) (este guia + estrutura + convenções + publicação em um arquivo só).
 > Detalhes: [`docs/ESTRUTURA.md`](docs/ESTRUTURA.md) · [`docs/CONVENCOES.md`](docs/CONVENCOES.md) · [`docs/PUBLICACAO.md`](docs/PUBLICACAO.md) · [`docs/CHANGELOG.md`](docs/CHANGELOG.md) · [`docs/MAPA_AUTOMATICO.md`](docs/MAPA_AUTOMATICO.md)
 
 ## 1. O que é
