@@ -1,3 +1,4 @@
+v10.10 | 🧭 Navegação reorganizada por objetivo: novo menu desktop com Visão Geral, Operação, Equipe, Vendas e Administração; navegação mobile inferior com Início, Operação, Equipe, Vendas e Mais. Abas e funções antigas permanecem preservadas para reduzir risco.
 v10.9 | 🛡️ Manutenção mais segura: validador reforçado para referências de arquivos, chaves `localStorage` e indicadores de dívida técnica, sem alterar dados existentes.
 v10.8.1 | 🧩 Reorganização interna segura: criação de zonas de manutenção no `dashboard.html`, documentação do mapa de responsabilidades e proteção explícita da área de clima durante futuras refatorações.
 v10.8 | 🧭 Organização inteligente: remove a duplicação do menu “Mais”, cria navegação móvel completa, agrupa a Administração por assunto e melhora a busca global com múltiplas palavras e relevância.
