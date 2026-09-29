@@ -1,3 +1,11 @@
+## v10.23 | 🧠 Central de Inteligência da planilha
+- Criada uma central que trabalha **somente com os dados que já existem na planilha**, sem cadastro novo de produtos ou clientes.
+- **Possíveis inconsistências:** cruza vendas, meios de pagamento, vendas individuais e diferença de caixa para apontar o que merece conferência.
+- **Comparação automática:** mostra o último dia lançado x dia anterior x média dos dias anteriores, além de quantidade de vendas e ticket médio.
+- **Explicação dos números:** transforma os dados do último dia em frases simples sobre faturamento, quantidade de vendas, ticket, pagamentos e dinheiro físico.
+- **O que chamou atenção:** seleciona automaticamente fatos relevantes do período, sem precisar procurar manualmente na tabela.
+- Versão publicada em **28/09/2026**.
+
 ## v10.22 | 🧾 Ponte de gravação do fechamento reforçada
 - O registro do horário em **O26** agora usa **JSONP primeiro**, reduzindo falhas de CORS no navegador.
 - O painel informa quando a ponte está ausente ou quando a gravação não é confirmada.
