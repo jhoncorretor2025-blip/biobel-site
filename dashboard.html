@@ -2358,6 +2358,11 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
   <div style="display:flex;flex-direction:column;gap:14px;">
    <div style="background:#0b1728;border:1px solid rgba(39,215,160,.35);border-radius:10px;padding:12px 14px;">
+    <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v10.31 — 29/09/2026</div>
+    <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">🛡️ Blindagem do fechamento: o sistema agora usa o <strong>valor real da planilha</strong> como fonte de verdade, inclusive nos layouts em que o valor fica acima ou abaixo do rótulo. Google Sheets e Excel/CSV usam exatamente o mesmo processador. Se não encontrar o fechamento, o sistema não inventa R$0,00 e bloqueia impressão/fechamento.</div>
+   </div>
+
+   <div style="background:#0b1728;border:1px solid rgba(39,215,160,.35);border-radius:10px;padding:12px 14px;">
     <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v10.29 — 29/09/2026</div>
     <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">🧮 Corrigida a leitura do <strong>fechamento de caixa</strong>: a planilha pode colocar o valor acima do rótulo "fechamento de caixa". O sistema agora identifica essa posição e usa o valor real da planilha, além de sinalizar divergências entre vendas e formas de pagamento.</div>
    </div>
@@ -2604,7 +2609,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    </div>
    <div class="rounded-xl border border-rose-500/20 bg-slate-950 px-4 py-4">
     <div class="flex items-center justify-between caixa-row">
-     <span class="text-slate-300">💸 Retiradas / despesas do dia</span>
+     <span class="text-slate-300">💸 Retirada do caixa</span>
      <strong id="simpleWithdrawals" class="text-xl text-rose-400" aria-live="polite">R$ 0,00</strong>
     </div>
    </div>
@@ -3999,18 +4004,20 @@ function updateSimpleDay(day){
  const d=daysData.find(x=>x.dia===day);
  if(!d) return;
  renderStatusFechamentoCaixaSimple(day);
- document.getElementById('simpleInitial').textContent=money(d.initial);
- document.getElementById('simpleSales').textContent=money(d.sales);
- document.getElementById('simpleWithdrawals').textContent=money(d.withdrawals);
- document.getElementById('simpleClosing').textContent=money(d.closing);
- const dow = nomeDiaSemanaAbrev(d.dia);
- const elData = document.getElementById('simpleClosingData');
- if(elData) elData.textContent = 'referente ao dia '+diaComAno(d.dia)+(dow?' ('+dow+')':'');
- updateGoalBanner('simpleGoalBanner', Number(d.sales)||0);
- atualizarBadgeDia('simple', d.dia);
+ const si=document.getElementById('simpleInitial'); if(si) si.textContent=money(d.initial);
+ const ss=document.getElementById('simpleSales'); if(ss) ss.textContent=money(d.sales);
+ const sw=document.getElementById('simpleWithdrawals'); if(sw) sw.textContent=money(d.withdrawals);
+ const sc=document.getElementById('simpleClosing'); if(sc) sc.textContent=d.closingEncontrado ? money(d.closing) : '⚠️ Não encontrado';
+ const dow=nomeDiaSemanaAbrev(d.dia);
+ const elData=document.getElementById('simpleClosingData');
+ if(elData){
+  const fonte=d.closingEncontrado&&d.closingCelula ? ' • lido diretamente da planilha ('+d.closingCelula+')' : ' • fechamento não encontrado na planilha';
+  elData.textContent='referente ao dia '+diaComAno(d.dia)+(dow?' ('+dow+')':'')+fonte;
+ }
+ updateGoalBanner('simpleGoalBanner',Number(d.sales)||0);
+ atualizarBadgeDia('simple',d.dia);
  flashCard('valoresSimpleWrap');
 }
-
 
 /* ===== Busca Global — pula direto pra onde a pessoa precisa, sem caçar pelo sistema ===== */
 const BIOBEL_INDICE_BUSCA = [
@@ -14285,6 +14292,8 @@ function startReceiptPrint(type){
 function printDaily(){
  const day=document.getElementById('daySelect').value;
  if(!day) return mostrarToast('⚠️ Selecione um dia antes de imprimir.');
+ const d=daysData.find(x=>x.dia===day);
+ if(!d?.closingEncontrado) return mostrarToast('🔴 Não vou imprimir: o fechamento real não foi encontrado na planilha. Atualize a leitura e confira a aba do dia.');
  updateSelected(day);
  if(buildReceipt('daily-complete',day)) startReceiptPrint('daily-complete');
 }
@@ -14905,6 +14914,8 @@ function iniciarFechamentoCaixaSimple(){
 function printSimpleDay(){
  const day=document.getElementById('simpleDaySelect').value;
  if(!day) return mostrarToast('⚠️ Selecione um dia antes de imprimir.');
+ const d=daysData.find(x=>x.dia===day);
+ if(!d?.closingEncontrado) return mostrarToast('🔴 Não vou imprimir: o fechamento real não foi encontrado na planilha. Atualize a leitura e confira a aba do dia.');
  if(buildReceipt('daily-simple',day)) startReceiptPrint('daily-simple');
 }
 
@@ -15721,99 +15732,113 @@ function numeroPlanilha(v){
  return Number.isFinite(n) ? n : 0;
 }
 
-/* ===== PROCESSAMENTO DE DADOS DA PLANILHA ===== */
-function processarLinhasDoDia(sheetName, rows){
- const colM=12;
- let initial=0,closing=0,withdrawals=0,sales=0;
- let encontrouFechamento=false;
+/* ===== PROCESSAMENTO DE DADOS DA PLANILHA =====
+   REGRA CRÍTICA DO CAIXA:
+   O fechamento da gaveta é o valor informado pela própria planilha.
+   Nunca substituir esse valor por uma conta parcial. Se não for localizado,
+   marcar como ausente e bloquear o fechamento/impressão.
+   ============================================================ */
+function colunaExcel(indiceZero){
+ let n=Number(indiceZero);
+ if(!Number.isFinite(n)||n<0) return '?';
+ let s='';
+ do{ s=String.fromCharCode(65+(n%26))+s; n=Math.floor(n/26)-1; }while(n>=0);
+ return s;
+}
+function valorPlanilhaPreenchido(bruto){
+ if(typeof bruto==='number') return Number.isFinite(bruto);
+ if(bruto===null||bruto===undefined) return false;
+ const s=String(bruto).trim();
+ if(!s) return false;
+ return Number.isFinite(numeroPlanilha(bruto));
+}
+function textoNormalizadoPlanilha(v){
+ return String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
+}
+function ehRotuloFechamentoCaixa(v){
+ const t=textoNormalizadoPlanilha(v);
+ return ((t.includes('fechamento')&&t.includes('caixa')) ||
+         t.includes('saldo final do caixa') ||
+         t==='saldo final' ||
+         t.includes('valor que ficou no caixa'));
+}
+function extrairFechamentoCaixaDaPlanilha(rows){
+ const rotulos=[];
  for(let r=0;r<rows.length;r++){
-  const label=String(rows[r]?.[colM]??'').toLowerCase();
-  if(label.includes('inicio do caixa')){
-   for(let rr=r+1;rr<Math.min(r+8,rows.length);rr++){
-    const bruto=rows[rr]?.[colM]; const v=numeroPlanilha(bruto);
-    if(v!==0 || bruto===0){initial=v;break;}
-   }
+  for(let c=0;c<(rows[r]?.length||0);c++){
+   if(ehRotuloFechamentoCaixa(rows[r]?.[c])) rotulos.push({r,c});
   }
-  if(label.includes('retirada do caixa')){
-   for(let rr=r+1;rr<Math.min(r+8,rows.length);rr++){
-    const bruto=rows[rr]?.[colM]; const v=numeroPlanilha(bruto);
-    if(v!==0 || bruto===0){withdrawals=v;break;}
-    if(String(bruto??'').toLowerCase().includes('fechamento')) break;
-   }
+ }
+ if(!rotulos.length) return {encontrado:false,valor:null,celula:null,rotulo:null};
+
+ // A planilha já usa os dois formatos:
+ // 26/09 -> rótulo acima e valor abaixo (M24 -> M25)
+ // 28/09 -> valor acima e rótulo abaixo (M25 -> M26)
+ // Portanto, só avaliamos células imediatamente ligadas ao rótulo e preferimos ABAIXO.
+ for(let i=rotulos.length-1;i>=0;i--){
+  const {r,c}=rotulos[i];
+  const ordem=[
+   {r:r+1,c},
+   {r:r-1,c},
+   {r,c:c+1},
+   {r,c:c-1}
+  ];
+  for(const x of ordem){
+   if(x.r<0||x.r>=rows.length||x.c<0) continue;
+   const bruto=rows[x.r]?.[x.c];
+   if(!valorPlanilhaPreenchido(bruto)) continue;
+   return {
+    encontrado:true,
+    valor:numeroPlanilha(bruto),
+    celula:colunaExcel(x.c)+String(x.r+1),
+    rotulo:colunaExcel(c)+String(r+1)
+   };
   }
-  // Fechamento: algumas abas da Biobel deixam o valor ACIMA do texto "fechamento de caixa"
-  // (ex.: M25 = R$122,04 e M26 = "fechamento de caixa"). Outras deixam o valor abaixo.
-  // Primeiro procura na mesma coluna M, priorizando a célula imediatamente anterior ao rótulo;
-  // depois tenta abaixo. Assim o sistema lê o valor real da planilha em vez de recalculá-lo
-  // e ignorar saídas aleatórias/despesas.
-  if(
-   label.includes('fechamento do caixa') ||
-   label.includes('fechamento de caixa') ||
-   label.includes('saldo final do caixa') ||
-   label.includes('saldo final') ||
-   label.includes('valor que ficou no caixa')
-  ){
-   // 1) Padrão da planilha atual: valor logo acima do rótulo.
-   for(let rr=r-1;rr>=Math.max(0,r-3);rr--){
-    const bruto=rows[rr]?.[colM];
-    const textoBruto=String(bruto??'').trim();
-    const v=numeroPlanilha(bruto);
-    if(v!==0 || bruto===0 || (textoBruto!=='' && /^R?\$?\s*[0-9]/.test(textoBruto))){
-     closing=v;
-     encontrouFechamento=true;
-     break;
-    }
-   }
-   // 2) Compatibilidade: valor abaixo do rótulo.
-   if(!encontrouFechamento){
-    for(let rr=r+1;rr<Math.min(r+8,rows.length);rr++){
-     const bruto=rows[rr]?.[colM];
-     const textoBruto=String(bruto??'').trim();
-     const v=numeroPlanilha(bruto);
-     if(v!==0 || bruto===0 || textoBruto!==''){
-      closing=v;
-      encontrouFechamento=true;
-      break;
-     }
-    }
-   }
-   // 3) Último recurso: valor na primeira célula da linha seguinte.
-   if(!encontrouFechamento){
-    const candidato=numeroPlanilha(rows[r+1]?.[0]);
-    if(candidato!==0 || rows[r+1]?.[0]===0){
-     closing=candidato;
-     encontrouFechamento=true;
-    }
-   }
-  }
-  // Busca "entrada do dia" por rótulo — aceita número real, texto numérico e valor em reais.
-  if(sales===0){
-   for(let c=0;c<(rows[r]?.length||0);c++){
-    const cel = rows[r][c];
-    if(typeof cel==='string' && cel.toLowerCase().includes('entrada do dia')){
-     for(let cc=c+1; cc<Math.min(c+3,rows[r].length); cc++){
-      const bruto=rows[r][cc]; const v=numeroPlanilha(bruto);
-      if(v!==0 || bruto===0){sales=v;break;}
-     }
-     break;
-    }
+ }
+ const ultimo=rotulos[rotulos.length-1];
+ return {encontrado:false,valor:null,celula:null,rotulo:colunaExcel(ultimo.c)+String(ultimo.r+1)};
+}
+function extrairValorPorRotulo(rows, predicado){
+ for(let r=0;r<rows.length;r++){
+  for(let c=0;c<(rows[r]?.length||0);c++){
+   if(!predicado(rows[r]?.[c])) continue;
+   for(const dr of [1,-1]){
+    const rr=r+dr;
+    if(rr<0||rr>=rows.length) continue;
+    const bruto=rows[rr]?.[c];
+    if(valorPlanilhaPreenchido(bruto)) return {encontrado:true,valor:numeroPlanilha(bruto),celula:colunaExcel(c)+String(rr+1)};
    }
   }
  }
- // Último recurso: posição fixa antiga.
- if(sales===0) sales=numeroPlanilha(rows[1]?.[15]);
+ return {encontrado:false,valor:0,celula:null};
+}
+function processarLinhasDoDia(sheetName, rows){
  const pagamentos=findPaymentTotals(rows);
+ const initialInfo=extrairValorPorRotulo(rows,v=>textoNormalizadoPlanilha(v).includes('inicio do caixa'));
+ const retiradaInfo=extrairValorPorRotulo(rows,v=>textoNormalizadoPlanilha(v).includes('retirada do caixa'));
+
+ let sales=0,salesCelula=null;
+ for(let r=0;r<rows.length&&sales===0;r++){
+  for(let c=0;c<(rows[r]?.length||0)&&sales===0;c++){
+   const cel=rows[r]?.[c];
+   if(typeof cel!=='string'||!textoNormalizadoPlanilha(cel).includes('entrada do dia')) continue;
+   for(let cc=c+1;cc<Math.min(c+3,rows[r].length);cc++){
+    const bruto=rows[r][cc];
+    if(valorPlanilhaPreenchido(bruto)){ sales=numeroPlanilha(bruto); salesCelula=colunaExcel(cc)+String(r+1); break; }
+   }
+  }
+ }
+ if(sales===0&&valorPlanilhaPreenchido(rows[1]?.[15])){ sales=numeroPlanilha(rows[1][15]); salesCelula='P2'; }
+
  const {dinheiro,debito,credito,pix}=pagamentos;
- // Fallback: se "Entrada do dia" não estiver disponível, soma os meios de pagamento.
  if(sales===0){
   const totalPagamentos=dinheiro+debito+credito+pix;
   if(totalPagamentos>0) sales=totalPagamentos;
  }
- // Se a planilha não trouxe um fechamento válido, calcula o valor físico esperado do caixa.
- // Cartão/PIX não entram no dinheiro que ficou na gaveta.
- if(!encontrouFechamento){
-  closing=Math.max(0, initial+dinheiro-withdrawals);
- }
+
+ const fechamentoInfo=extrairFechamentoCaixaDaPlanilha(rows);
+ const closing=fechamentoInfo.encontrado ? fechamentoInfo.valor : null;
+
  const vendedoras=extractSellerTotals(rows);
  const vendedorasDetalhe=extractSellerDetalhes(rows);
  const qtdVendas=countTransactions(rows);
@@ -15826,9 +15851,27 @@ function processarLinhasDoDia(sheetName, rows){
  const {primeiraVenda,ultimaVenda}=extractPrimeiraUltimaVenda(rows);
  const horariosVendas=extractHorariosVendas(rows);
  const registrosVendas=extractRegistrosVendas(rows);
- const totalPagamentos = dinheiro+debito+credito+pix;
- const diferencaVendasPagamentos = sales>0 ? sales-totalPagamentos : 0;
- return {dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,totalPagamentos,diferencaVendasPagamentos,vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos,horarios,porTurno,porTurnoVend,totalComTurno,genero,vendasIndividuais,primeiraVenda,ultimaVenda,horariosVendas,registrosVendas};
+
+ const totalPagamentos=dinheiro+debito+credito+pix;
+ const diferencaVendasPagamentos=sales>0 ? sales-totalPagamentos : 0;
+
+ return {
+  dia:sheetName,
+  initial:initialInfo.valor,
+  initialEncontrado:initialInfo.encontrado,
+  initialCelula:initialInfo.celula,
+  sales,
+  salesCelula,
+  withdrawals:retiradaInfo.valor,
+  withdrawalsEncontrado:retiradaInfo.encontrado,
+  withdrawalsCelula:retiradaInfo.celula,
+  closing,
+  closingEncontrado:fechamentoInfo.encontrado,
+  closingCelula:fechamentoInfo.celula,
+  dinheiro,debito,credito,pix,totalPagamentos,diferencaVendasPagamentos,
+  vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos,horarios,porTurno,porTurnoVend,totalComTurno,genero,
+  vendasIndividuais,primeiraVenda,ultimaVenda,horariosVendas,registrosVendas
+ };
 }
 
 function getAppsScriptProxyUrl(){
@@ -15947,87 +15990,30 @@ function startGoogleAutoRefresh(){
 
 document.getElementById('fileInput').addEventListener('change',async e=>{
  for(const file of e.target.files){
-  const buf=await file.arrayBuffer();
-  const wb=XLSX.read(buf,{type:'array'});
-  // "validSheets" guarda os pares {original, normalizado} — o nome original é necessário pra
-  // achar a aba dentro do arquivo Excel, e o normalizado é o que vira o identificador do dia no sistema
-  // (assim "25.8" digitado sem o zero à esquerda continua sendo lido certinho como "25.08").
-  const validSheets = wb.SheetNames
-   .map(original=>({ original, normalizado: normalizarNomeAba(original) }))
-   .filter(x=>x.normalizado!==null);
-  const jaExistem = validSheets.filter(x=>daysData.some(d=>d.dia===x.normalizado)).map(x=>x.normalizado);
-
-  if(validSheets.length===0){
-   mostrarToast('⚠️ Nenhuma aba de dia (formato DD.MM) foi encontrada em "'+file.name+'".');
-   continue;
-  }
-  if(jaExistem.length>0){
-   const ok = await confirmarBiobelAsync(
-    'O arquivo "'+file.name+'" tem dados para o(s) dia(s): '+jaExistem.join(', ')+'.\n\n'+
-    'Esse(s) dia(s) JÁ EXISTE(M) no painel e será(ão) SUBSTITUÍDO(S) pelos novos dados.\n\n'+
-    'Deseja continuar?'
-   );
-   if(!ok){ continue; }
-  }
-
-  for(const {original, normalizado} of validSheets){
-   const sheetName = normalizado; // a partir daqui, sheetName é sempre o identificador já normalizado (ex: "25.08")
-   const rows=XLSX.utils.sheet_to_json(wb.Sheets[original],{header:1,defval:null,raw:true});
-   const colM=12;
-   let initial=0,closing=0,withdrawals=0,sales=0;
-   for(let r=0;r<rows.length;r++){
-    const label=String(rows[r][colM]??'').toLowerCase();
-    if(label.includes('inicio do caixa')){
-     for(let rr=r+1;rr<Math.min(r+6,rows.length);rr++) if(typeof rows[rr][colM]==='number'){initial=rows[rr][colM];break;}
-    }
-    if(label.includes('retirada do caixa')){
-     for(let rr=r+1;rr<Math.min(r+6,rows.length);rr++){
-      const v=rows[rr][colM];
-      if(typeof v==='number'){withdrawals=v;break;}
-      if(String(v??'').toLowerCase().includes('fechamento')) break;
-     }
-    }
-    if(label.includes('fechamento do caixa')){
-     for(let rr=r+1;rr<Math.min(r+6,rows.length);rr++) if(typeof rows[rr][colM]==='number'){closing=rows[rr][colM];break;}
-     if(!closing && typeof rows[r+1]?.[0]==='number') closing=rows[r+1][0];
-    }
-    if(sales===0){
-     for(let c=0;c<(rows[r]?.length||0);c++){
-      const cel = rows[r][c];
-      if(typeof cel==='string' && cel.toLowerCase().includes('entrada do dia')){
-       for(let cc=c+1; cc<Math.min(c+3,rows[r].length); cc++){
-        const v=rows[r][cc];
-        if(typeof v==='number'){ sales=v; break; }
-       }
-       break;
-      }
-     }
-    }
+  try{
+   const buf=await file.arrayBuffer();
+   const wb=XLSX.read(buf,{type:'array'});
+   const validSheets=wb.SheetNames.map(original=>({original,normalizado:normalizarNomeAba(original)})).filter(x=>x.normalizado!==null);
+   const jaExistem=validSheets.filter(x=>daysData.some(d=>d.dia===x.normalizado)).map(x=>x.normalizado);
+   if(!validSheets.length){ mostrarToast('⚠️ Nenhuma aba de dia (DD.MM) foi encontrada em "'+file.name+'".'); continue; }
+   if(jaExistem.length){
+    const ok=await confirmarBiobelAsync('O arquivo "'+file.name+'" tem dados para: '+jaExistem.join(', ')+'.\\n\\nEsses dias serão substituídos pelos novos dados.\\n\\nDeseja continuar?');
+    if(!ok) continue;
    }
-   if(sales===0 && typeof rows[1]?.[15]==='number') sales=rows[1][15];
-   const {dinheiro,debito,credito,pix}=findPaymentTotals(rows);
-   const vendedoras=extractSellerTotals(rows);
-   const vendedorasDetalhe=extractSellerDetalhes(rows);
-   const qtdVendas=countTransactions(rows);
-   const tipoVenda=extractTipoVendaTotais(rows);
-   const produtos=extractProdutosVendidos(rows);
-   const horarios=extractHorariosPico(rows);
-   const {porTurno,porTurnoVend,totalComTurno}=extractTurnos(rows);
-   const genero=extractGeneroTotais(rows);
-   const vendasIndividuais=extractVendasIndividuais(rows);
-   const {primeiraVenda,ultimaVenda}=extractPrimeiraUltimaVenda(rows);
-   const horariosVendas=extractHorariosVendas(rows);
-   const registrosVendas=extractRegistrosVendas(rows);
-   const item={dia:sheetName,initial,sales,withdrawals,closing,dinheiro,debito,credito,pix,vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos,horarios,porTurno,porTurnoVend,totalComTurno,genero,vendasIndividuais,primeiraVenda,ultimaVenda,horariosVendas,registrosVendas};
-   daysData=daysData.filter(x=>x.dia!==sheetName);
-   daysData.push(item);
+   for(const {original,normalizado} of validSheets){
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[original],{header:1,defval:null,raw:true});
+    const item=processarLinhasDoDia(normalizado,rows);
+    daysData=daysData.filter(x=>x.dia!==normalizado);
+    daysData.push(item);
+   }
+  }catch(err){
+   console.error('Erro ao importar "'+file.name+'":',err);
+   mostrarToast('🔴 Não consegui ler "'+file.name+'". Verifique o arquivo e tente novamente.');
   }
  }
  e.target.value='';
  render();
 });
-
-
 
 let advSummaryDonut = null;
 
@@ -16437,59 +16423,42 @@ function renderAdvancedDashboard(){
 }
 
 function renderCardDiferencaCaixa(){
- const el = document.getElementById('cardDiferencaCaixa');
+ const el=document.getElementById('cardDiferencaCaixa');
  if(!el) return;
- if(daysData.length===0){ el.innerHTML=''; return; }
- const LIMITE = 20;
- const diferencas = daysData.map(d=>{
-  // Só o dinheiro físico fica na gaveta — débito/crédito/Pix vão direto pro banco.
-  const esperado = (Number(d.initial)||0) + (Number(d.dinheiro)||0) - (Number(d.withdrawals)||0);
-  return { dia: d.dia, diff: (Number(d.closing)||0) - esperado };
- });
- const negativasRelevantes = diferencas.filter(x=>x.diff <= -LIMITE).sort((a,b)=>a.diff-b.diff);
- const ultimaDiferenca = diferencas[diferencas.length-1];
- const alerta = ultimaDiferenca.diff <= -LIMITE;
- const positivo = ultimaDiferenca.diff >= 0;
- const cor = alerta ? '#fb7185' : (positivo ? '#27d7a0' : '#fbbf24');
- const fundo = alerta ? 'rgba(251,113,133,.08)' : (positivo ? 'rgba(39,215,160,.06)' : 'rgba(251,191,36,.06)');
- const borda = alerta ? 'rgba(251,113,133,.35)' : (positivo ? 'rgba(39,215,160,.25)' : 'rgba(251,191,36,.3)');
-
- let listaHtml = '';
- if(negativasRelevantes.length>0){
-  const mostrarAte = 5;
-  listaHtml = `<div style="margin-top:16px;padding-top:14px;border-top:1px solid ${borda};">
-    <div style="font-size:11px;color:#93a3ba;font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">⚠️ Dias com diferença negativa relevante (acima de ${money(LIMITE)})</div>
-    ${negativasRelevantes.slice(0,mostrarAte).map(x=>`
-     <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;">
-      <span style="color:#dce5f2;">Dia ${diaComAno(x.dia)}</span>
-      <strong style="color:#fb7185;">${money(x.diff)}</strong>
-     </div>`).join('')}
-    ${negativasRelevantes.length>mostrarAte ? `<div style="font-size:11.5px;color:#93a3ba;margin-top:4px;">e mais ${negativasRelevantes.length-mostrarAte} dia(s)...</div>` : ''}
-   </div>`;
+ const ultimo=[...daysData].reverse().find(d=>d.closingEncontrado);
+ if(!ultimo){
+  el.style.background='rgba(251,113,133,.07)';
+  el.style.border='1px solid rgba(251,113,133,.3)';
+  el.innerHTML='<div class="adv-card-title"><h3>💰 Conferência do Caixa</h3><span>proteção contra cálculo incompleto</span></div><div style="font-size:14px;font-weight:800;color:#fb7185;">⚠️ Fechamento da planilha não encontrado.</div><div style="font-size:12px;color:#93a3ba;margin-top:8px;">O sistema não inventa um valor. Atualize a leitura e confira o campo de fechamento.</div>';
+  return;
  }
-
- el.style.background = fundo;
- el.style.border = '1px solid '+borda;
- el.innerHTML = `
-  <div class="adv-card-title">
-   <h3>💰 Diferença de Caixa</h3>
-   <span>esperado (início + dinheiro físico − retiradas) x fechamento contado</span>
-  </div>
-  <div style="font-size:42px;font-weight:900;color:${cor};line-height:1;">${ultimaDiferenca.diff>=0?'+':''}${money(ultimaDiferenca.diff)}</div>
-  <div style="font-size:12.5px;color:#93a3ba;margin-top:8px;">referente ao dia ${diaComAno(ultimaDiferenca.dia)} (mais recente lançado)${alerta?' — vale reconferir a contagem física.':''}</div>
-  ${listaHtml}
- `;
+ const fluxoConhecido=(Number(ultimo.initial)||0)+(Number(ultimo.dinheiro)||0)-(Number(ultimo.withdrawals)||0);
+ const fechamento=Number(ultimo.closing)||0;
+ const diff=fechamento-fluxoConhecido;
+ const exato=Math.abs(diff)<0.01;
+ el.style.background=exato?'rgba(39,215,160,.06)':'rgba(251,191,36,.06)';
+ el.style.border='1px solid '+(exato?'rgba(39,215,160,.25)':'rgba(251,191,36,.3)');
+ el.innerHTML='<div class="adv-card-title"><h3>💰 Conferência do Caixa</h3><span>checagem dos campos conhecidos; o fechamento vem da planilha</span></div>'+
+ '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">'+
+ '<div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px;"><div style="font-size:10.5px;color:#93a3ba;">🔒 Fechamento da planilha</div><strong style="display:block;margin-top:5px;font-size:22px;color:#27d7a0;">'+money(fechamento)+'</strong><div style="font-size:10px;color:#93a3ba;margin-top:3px;">'+(ultimo.closingCelula||'fonte da planilha')+'</div></div>'+
+ '<div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px;"><div style="font-size:10.5px;color:#93a3ba;">🧮 Fluxo conhecido</div><strong style="display:block;margin-top:5px;font-size:22px;color:#dce5f2;">'+money(fluxoConhecido)+'</strong><div style="font-size:10px;color:#93a3ba;margin-top:3px;">inicial + dinheiro − retirada</div></div></div>'+
+ '<div style="margin-top:10px;font-size:12px;font-weight:800;color:'+(exato?'#27d7a0':'#fbbf24')+';">'+(exato?'✅ Os campos conhecidos fecham com o valor da planilha.':'ℹ️ Diferença de '+money(diff)+' — pode haver outras saídas/ajustes na seção "saída" da planilha.')+'</div>';
 }
-
 function updateAdvancedSelected(day){
-  const d=daysData.find(x=>x.dia===day); if(!d) return;
-  const map={advPillInitial:d.initial,advPillClosing:d.closing,advPillSales:d.sales,
-             advInitial:d.initial,advSales:d.sales,advWithdrawals:d.withdrawals,advClosing:d.closing};
-  Object.entries(map).forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.textContent=money(v)});
-  const sel=document.getElementById('simpleDaySelect');
-  if(sel) { sel.innerHTML=daysData.map(x=>`<option value="${x.dia}">${x.dia}</option>`).join(''); sel.value=day; updateSimpleDay(day); }
+ const d=daysData.find(x=>x.dia===day); if(!d) return;
+ const map={
+  advPillInitial:money(d.initial),
+  advPillClosing:d.closingEncontrado?money(d.closing):'⚠️ Não encontrado',
+  advPillSales:money(d.sales),
+  advInitial:money(d.initial),
+  advSales:money(d.sales),
+  advWithdrawals:money(d.withdrawals),
+  advClosing:d.closingEncontrado?money(d.closing):'⚠️ Não encontrado'
+ };
+ Object.entries(map).forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.textContent=v;});
+ const sel=document.getElementById('simpleDaySelect');
+ if(sel){ sel.innerHTML=daysData.map(x=>'<option value="'+x.dia+'">'+x.dia+'</option>').join(''); sel.value=day; updateSimpleDay(day); }
 }
-
 
 // O Dashboard Avançado usa uma renderização própria; as abas simples/configuração
 // continuam usando suas funções originais.
