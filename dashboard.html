@@ -661,6 +661,18 @@ body.light-mode .biobel-nav-dropdown button,body.light-mode .biobel-mobile-more-
 body.light-mode .biobel-context-header{background:rgba(14,169,122,.07);border-color:rgba(14,169,122,.2)}body.light-mode .biobel-context-header strong{color:#0f172a}body.light-mode .biobel-context-header span{color:#64748b}body.light-mode .biobel-context-header .biobel-context-action{background:#fff;border-color:#dde3ea;color:#334155}
 @media(max-width:640px){.biobel-context-header{align-items:flex-start;padding:11px 12px}.biobel-context-header strong{font-size:14px}.biobel-context-header span{font-size:10.5px}.biobel-context-header .biobel-context-action{min-height:40px;padding:8px 10px}}
 @media(max-width:760px){body{padding-bottom:calc(78px + env(safe-area-inset-bottom))!important}.biobel-mobile-bottom-nav{height:calc(64px + env(safe-area-inset-bottom));padding-bottom:calc(5px + env(safe-area-inset-bottom))}.biobel-mobile-more-menu{bottom:calc(70px + env(safe-area-inset-bottom))}.biobel-mobile-bottom-nav>button{min-height:46px}.bg-emerald-600,.bg-rose-600,.bg-blue-600,.adv-btn,.config-chip{min-height:42px}}
+
+/* v10.23 — Central de Inteligência: leitura automática da planilha */
+.biobel-inteligencia-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.biobel-inteligencia-box{background:#0b1728;border:1px solid #1e2c42;border-radius:14px;padding:14px;min-width:0}
+.biobel-inteligencia-box h4{margin:0 0 7px;font-size:12px;font-weight:900;color:#dce5f2}
+.biobel-inteligencia-box .sub{font-size:10.5px;color:#7f90a7;line-height:1.45}
+.biobel-inteligencia-list{display:flex;flex-direction:column;gap:8px;margin-top:9px}
+.biobel-inteligencia-item{font-size:12px;line-height:1.5;color:#cbd5e1;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.025)}
+.biobel-inteligencia-item strong{color:#f6f9fd}
+.biobel-inteligencia-vazio{font-size:12px;color:#93a3ba;padding:9px 0}
+.biobel-inteligencia-pill{display:inline-flex;align-items:center;gap:5px;border:1px solid #263852;border-radius:999px;padding:5px 8px;font-size:10.5px;font-weight:800;color:#cbd5e1;margin:3px 4px 0 0}
+@media(max-width:760px){.biobel-inteligencia-grid{grid-template-columns:1fr!important}.biobel-inteligencia-box{padding:12px}.biobel-inteligencia-item{font-size:12.5px}}
 </style>
 </head>
 <body class="min-h-screen bg-slate-950 text-slate-100">
@@ -704,7 +716,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 28/09/2026 — versão v10.22')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 28/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v10.22</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 28/09/2026 — versão v10.23')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 28/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v10.23</span>
   <span id="indicadorUltimoSalvamento" class="no-print" style="font-size:11px;color:#27d7a0;font-weight:700;display:none;white-space:nowrap;" title="Tudo o que você faz salva sozinho no aparelho — esse é o horário do último salvamento"></span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
@@ -895,6 +907,36 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <span>datas especiais que vêm por aí — bom pra todo mundo já ir se preparando</span>
    </div>
    <div id="listaDatasComerciaisDashboard" style="display:flex;flex-direction:column;gap:8px;"></div>
+  </div>
+
+  <div id="centralInteligenciaBiobel" class="adv-card no-print" style="margin-bottom:16px;background:linear-gradient(135deg,rgba(13,26,44,.98),rgba(8,19,32,.98));border-color:rgba(39,215,160,.25);">
+   <div class="adv-card-title">
+    <h3>🧠 Central de Inteligência</h3>
+    <span>lê a planilha e destaca o que merece atenção</span>
+   </div>
+   <div id="intelFrasePrincipal" style="font-size:13px;line-height:1.55;color:#dce5f2;background:rgba(39,215,160,.07);border:1px solid rgba(39,215,160,.18);border-radius:12px;padding:11px 13px;margin-bottom:12px;"></div>
+   <div class="biobel-inteligencia-grid">
+    <div class="biobel-inteligencia-box">
+     <h4>🚨 2. Possíveis inconsistências</h4>
+     <div class="sub">Conferência automática dos números lidos na planilha.</div>
+     <div id="intelErros" class="biobel-inteligencia-list"></div>
+    </div>
+    <div class="biobel-inteligencia-box">
+     <h4>📊 3. Comparação automática</h4>
+     <div class="sub">Último dia lançado, dia anterior e média dos dias anteriores.</div>
+     <div id="intelComparacao" class="biobel-inteligencia-list"></div>
+    </div>
+    <div class="biobel-inteligencia-box">
+     <h4>💡 5. O que os números estão mostrando</h4>
+     <div class="sub">Explicação simples, sem precisar interpretar a tabela.</div>
+     <div id="intelExplicacao" class="biobel-inteligencia-list"></div>
+    </div>
+    <div class="biobel-inteligencia-box">
+     <h4>👀 10. O que chamou atenção</h4>
+     <div class="sub">Principais fatos encontrados no período carregado.</div>
+     <div id="intelAtencao" class="biobel-inteligencia-list"></div>
+    </div>
+   </div>
   </div>
 
   <div class="adv-shell" id="dashboardModoAvancado">
@@ -2147,6 +2189,10 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <p class="text-sm text-slate-400 mt-1">O que mudou nas últimas atualizações, resumido de forma simples.</p>
   </div>
   <div style="display:flex;flex-direction:column;gap:14px;">
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
+    <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v10.23 — 28/09/2026</div>
+    <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">🧠 Nova <strong>Central de Inteligência</strong>: o painel agora lê os dados da planilha para apontar possíveis inconsistências, comparar automaticamente os dias, explicar os principais números e destacar o que chamou atenção no período.</div>
+   </div>
    <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
     <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v10.22 — 28/09/2026</div>
     <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">🧾 Gravação do fechamento reforçada: o horário em <strong>O26</strong> agora tenta primeiro uma chamada JSONP, reduzindo falhas de CORS. O painel também informa claramente quando a ponte do Google Apps Script não está configurada ou não confirma a gravação.</div>
@@ -15522,6 +15568,180 @@ let advSummaryDonut = null;
 /* ============================================================
    BIOBEL — ZONA: RENDERIZAÇÃO / DASHBOARD AVANÇADO
    ============================================================ */
+/* ============================================================
+   BIOBEL — ZONA: INTELIGÊNCIA DA PLANILHA (v10.23)
+   Quatro leituras automáticas sem cadastro de produtos/clientes:
+   2) possíveis inconsistências, 3) comparação, 5) explicação e 10) destaques.
+   ============================================================ */
+function escInteligencia(valor){
+ const s=String(valor??'');
+ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function qtdVendasInteligencia(d){
+ const q=Number(d?.qtdVendas)||0;
+ return q>0?q:(Array.isArray(d?.vendasIndividuais)?d.vendasIndividuais.length:0);
+}
+function ticketMedioInteligencia(d){
+ const qtd=qtdVendasInteligencia(d);
+ return qtd>0?(Number(d?.sales)||0)/qtd:0;
+}
+function diferencaCaixaInteligencia(d){
+ const esperado=(Number(d?.initial)||0)+(Number(d?.dinheiro)||0)-(Number(d?.withdrawals)||0);
+ return (Number(d?.closing)||0)-esperado;
+}
+function serieDiasInteligencia(){
+ return [...daysData].sort((a,b)=>{
+  const [da,ma]=String(a.dia).split('.').map(Number);
+  const [db,mb]=String(b.dia).split('.').map(Number);
+  return (ma*100+da)-(mb*100+db);
+ });
+}
+function listaHtmlIntel(itens, vazio){
+ return itens.length ? itens.join('') : '<div class="biobel-inteligencia-vazio">'+(vazio||'Nenhum ponto relevante encontrado no momento.')+'</div>';
+}
+function renderInteligenciaInconsistencias(dias){
+ const el=document.getElementById('intelErros');
+ if(!el) return;
+ const problemas=[];
+ const vistos=new Set();
+ dias.forEach(d=>{
+  const dia=escInteligencia(d.dia);
+  if(vistos.has(d.dia)) problemas.push('<div class="biobel-inteligencia-item">🗓️ A aba <strong>'+dia+'</strong> apareceu mais de uma vez na leitura.</div>');
+  vistos.add(d.dia);
+  const vendas=Number(d.sales)||0;
+  const pagamentos=(Number(d.dinheiro)||0)+(Number(d.debito)||0)+(Number(d.credito)||0)+(Number(d.pix)||0);
+  if(vendas>0 && pagamentos>0 && Math.abs(vendas-pagamentos)>0.01){
+   problemas.push('<div class="biobel-inteligencia-item">💳 <strong>'+dia+'</strong>: vendas '+money(vendas)+' x pagamentos '+money(pagamentos)+'. Diferença de '+money(vendas-pagamentos)+'.</div>');
+  }
+  const indiv=Array.isArray(d.vendasIndividuais)?d.vendasIndividuais:[];
+  if(indiv.length && vendas>0){
+   const somaInd=indiv.reduce((s,v)=>s+(Number(v)||0),0);
+   if(Math.abs(vendas-somaInd)>0.01){
+    problemas.push('<div class="biobel-inteligencia-item">🧮 <strong>'+dia+'</strong>: entrada do dia '+money(vendas)+' x soma das vendas individuais '+money(somaInd)+'.</div>');
+   }
+  }
+  const qtd=qtdVendasInteligencia(d);
+  if(qtd>0 && vendas<=0){
+   problemas.push('<div class="biobel-inteligencia-item">📋 <strong>'+dia+'</strong>: existem '+qtd+' venda(s) lida(s), mas o total de vendas está zerado.</div>');
+  }
+  if(vendas>0 && (Number(d.closing)||0)<=0){
+   problemas.push('<div class="biobel-inteligencia-item">🔒 <strong>'+dia+'</strong>: há vendas registradas, mas o fechamento do caixa está zerado.</div>');
+  }
+  const diff=diferencaCaixaInteligencia(d);
+  if(Math.abs(diff)>=20){
+   problemas.push('<div class="biobel-inteligencia-item">💰 <strong>'+dia+'</strong>: diferença de caixa de '+(diff>=0?'+':'')+money(diff)+' entre esperado e fechamento contado.</div>');
+  }
+ });
+ const unicos=[]; const seen=new Set();
+ problemas.forEach(x=>{const k=x.replace(/<[^>]+>/g,''); if(!seen.has(k)){seen.add(k);unicos.push(x);}});
+ el.innerHTML=listaHtmlIntel(unicos.slice(0,5),'✅ Nenhuma inconsistência relevante encontrada pelos testes automáticos.');
+}
+function renderInteligenciaComparacao(dias){
+ const el=document.getElementById('intelComparacao');
+ if(!el) return;
+ if(dias.length<2){el.innerHTML='<div class="biobel-inteligencia-vazio">É preciso ter pelo menos 2 dias lançados para comparar.</div>';return;}
+ const atual=dias[dias.length-1], anterior=dias[dias.length-2];
+ const anteriores=dias.slice(Math.max(0,dias.length-8),dias.length-1);
+ const mediaAnterior=anteriores.length?anteriores.reduce((s,d)=>s+(Number(d.sales)||0),0)/anteriores.length:0;
+ const va=Number(atual.sales)||0, vp=Number(anterior.sales)||0;
+ const delta=va-vp;
+ const pct=vp!==0?(delta/vp)*100:null;
+ const qa=qtdVendasInteligencia(atual), qp=qtdVendasInteligencia(anterior);
+ const ta=ticketMedioInteligencia(atual), tp=ticketMedioInteligencia(anterior);
+ const deltaTicket=ta-tp;
+ const itens=[];
+ itens.push('<div class="biobel-inteligencia-item">📅 Último dia lançado: <strong>'+escInteligencia(atual.dia)+'</strong> com <strong>'+money(va)+'</strong> em vendas.</div>');
+ itens.push('<div class="biobel-inteligencia-item">↔️ Dia anterior (<strong>'+escInteligencia(anterior.dia)+'</strong>): <strong>'+money(vp)+'</strong>. Variação: <strong>'+(delta>=0?'+':'')+money(delta)+(pct===null?'':' ('+(pct>=0?'+':'')+pct.toFixed(1)+'%)')+'</strong>.</div>');
+ if(mediaAnterior>0){
+  const deltaMedia=va-mediaAnterior;
+  const pctMedia=(deltaMedia/mediaAnterior)*100;
+  itens.push('<div class="biobel-inteligencia-item">📊 Média dos '+anteriores.length+' dia(s) anteriores: <strong>'+money(mediaAnterior)+'</strong>. O último dia ficou <strong>'+(deltaMedia>=0?'+':'')+money(deltaMedia)+'</strong> ('+(pctMedia>=0?'+':'')+pctMedia.toFixed(1)+'%) em relação a essa média.</div>');
+ }
+ itens.push('<div class="biobel-inteligencia-item">🧾 Vendas: <strong>'+qa+'</strong> no último dia x <strong>'+qp+'</strong> no anterior. Ticket médio: <strong>'+money(ta)+'</strong> x <strong>'+money(tp)+'</strong>'+(Math.abs(deltaTicket)>0.009?' ('+(deltaTicket>=0?'+':'')+money(deltaTicket)+').':'')+'</div>');
+ el.innerHTML=listaHtmlIntel(itens);
+}
+function renderInteligenciaExplicacao(dias){
+ const el=document.getElementById('intelExplicacao');
+ if(!el) return;
+ if(!dias.length){el.innerHTML='<div class="biobel-inteligencia-vazio">Carregue a planilha para explicar os números.</div>';return;}
+ const d=dias[dias.length-1];
+ const vendas=Number(d.sales)||0, qtd=qtdVendasInteligencia(d), ticket=ticketMedioInteligencia(d);
+ const pag=[
+  ['Pix',Number(d.pix)||0],['Dinheiro',Number(d.dinheiro)||0],['Crédito',Number(d.credito)||0],['Débito',Number(d.debito)||0]
+ ].filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]);
+ const totalPag=pag.reduce((s,x)=>s+x[1],0);
+ const itens=[];
+ itens.push('<div class="biobel-inteligencia-item">💰 O dia <strong>'+escInteligencia(d.dia)+'</strong> registrou <strong>'+money(vendas)+'</strong> em '+qtd+' venda(s), com ticket médio de <strong>'+money(ticket)+'</strong>.</div>');
+ if(pag.length){
+  const top=pag[0];
+  const pct=totalPag>0?(top[1]/totalPag)*100:0;
+  itens.push('<div class="biobel-inteligencia-item">💳 O meio de pagamento com maior valor foi <strong>'+escInteligencia(top[0])+'</strong>: '+money(top[1])+' ('+pct.toFixed(1)+'% dos pagamentos identificados).</div>');
+ }
+ const esperado=(Number(d.initial)||0)+(Number(d.dinheiro)||0)-(Number(d.withdrawals)||0);
+ const fechamento=Number(d.closing)||0;
+ itens.push('<div class="biobel-inteligencia-item">🏦 No dinheiro físico, o sistema calcula <strong>'+money(esperado)+'</strong> como valor esperado e encontrou <strong>'+money(fechamento)+'</strong> no fechamento, diferença de <strong>'+(fechamento-esperado>=0?'+':'')+money(fechamento-esperado)+'</strong>.</div>');
+ if(d.primeiraVenda || d.ultimaVenda){
+  itens.push('<div class="biobel-inteligencia-item">⏰ A primeira venda lida foi às <strong>'+escInteligencia(d.primeiraVenda||'—')+'</strong> e a última às <strong>'+escInteligencia(d.ultimaVenda||'—')+'</strong>.</div>');
+ }
+ el.innerHTML=listaHtmlIntel(itens);
+}
+function renderInteligenciaAtencao(dias){
+ const el=document.getElementById('intelAtencao');
+ const frase=document.getElementById('intelFrasePrincipal');
+ if(!el) return;
+ if(!dias.length){
+  el.textContent='📥 Ainda não há dados carregados. Quando a planilha chegar, esta área vai selecionar automaticamente os fatos mais importantes.';
+  el.innerHTML=''; return;
+ }
+ const itens=[];
+ const atual=dias[dias.length-1];
+ const anterior=dias.length>1?dias[dias.length-2]:null;
+ const diffCaixa=diferencaCaixaInteligencia(atual);
+ if(Math.abs(diffCaixa)>=20) itens.push('<div class="biobel-inteligencia-item">🚨 O fechamento mais recente tem diferença de <strong>'+(diffCaixa>=0?'+':'')+money(diffCaixa)+'</strong> entre o valor esperado e o contado.</div>');
+ if(anterior){
+  const a=Number(atual.sales)||0,b=Number(anterior.sales)||0;
+  if(b!==0){
+   const pct=((a-b)/b)*100;
+   if(Math.abs(pct)>=15) itens.push('<div class="biobel-inteligencia-item">📈 As vendas do último dia variaram <strong>'+(pct>=0?'+':'')+pct.toFixed(1)+'%</strong> em relação ao dia anterior.</div>');
+  }
+ }
+ const outliers=[];
+ dias.forEach(d=>{
+  (d.vendasIndividuais||[]).forEach(v=>{ if(Number(v)>0) outliers.push({dia:d.dia,valor:Number(v)}); });
+ });
+ if(outliers.length>=5){
+  const media=outliers.reduce((s,x)=>s+x.valor,0)/outliers.length;
+  const maior=outliers.reduce((a,b)=>b.valor>a.valor?b:a,outliers[0]);
+  if(maior.valor>media*5 && maior.valor>100) itens.push('<div class="biobel-inteligencia-item">🔎 A maior venda individual lida foi <strong>'+money(maior.valor)+'</strong> em <strong>'+escInteligencia(maior.dia)+'</strong>, acima de 5× a média das vendas individuais do período. Vale conferir a linha na planilha.</div>');
+ }
+ const maiorDia=[...dias].reduce((a,b)=>(Number(b.sales)||0)>(Number(a.sales)||0)?b:a,dias[0]);
+ if(maiorDia && dias.length>2) itens.push('<div class="biobel-inteligencia-item">🏅 O maior faturamento diário do período foi <strong>'+money(maiorDia.sales)+'</strong> no dia <strong>'+escInteligencia(maiorDia.dia)+'</strong>.</div>');
+ const problemaEl=document.getElementById('intelErros');
+ const problemaTexto=(problemaEl?.innerText||'').trim();
+ if(problemaTexto && !problemaTexto.startsWith('✅')) itens.push('<div class="biobel-inteligencia-item">🧩 A conferência automática encontrou pelo menos uma possível inconsistência para revisar.</div>');
+ const fraseTexto = Math.abs(diffCaixa)>=20
+  ? '🚨 O fechamento mais recente merece uma conferência: a conta automática encontrou uma diferença no dinheiro físico.'
+  : (anterior && (Number(atual.sales)||0)>(Number(anterior.sales)||0)
+     ? '📈 O último dia lançado vendeu mais que o dia anterior; abaixo o painel mostra quanto mudou e o que compôs esse resultado.'
+     : '👀 O painel analisou os dados carregados e destacou abaixo os pontos que mais chamaram atenção.');
+ if(frase) frase.textContent=fraseTexto;
+ el.innerHTML=listaHtmlIntel(itens.slice(0,4),'✅ Nenhum ponto fora do padrão mínimo foi destacado.');
+}
+function renderCentralInteligencia(){
+ const root=document.getElementById('centralInteligenciaBiobel');
+ if(!root) return;
+ if(!Array.isArray(daysData)||daysData.length===0){
+  const frase=document.getElementById('intelFrasePrincipal'); if(frase) frase.textContent='📥 Carregue a planilha para a Central de Inteligência analisar os dados.';
+  ['intelErros','intelComparacao','intelExplicacao','intelAtencao'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
+  return;
+ }
+ const dias=serieDiasInteligencia();
+ renderInteligenciaInconsistencias(dias);
+ renderInteligenciaComparacao(dias);
+ renderInteligenciaExplicacao(dias);
+ renderInteligenciaAtencao(dias);
+}
+
 function renderAdvancedDashboard(){
   sortDays();
 
@@ -15812,6 +16032,7 @@ render = function(){
   // (a cada minuto), então um erro em qualquer uma delas nunca pode travar as outras.
   try{ inicializarColapsoCards(); }catch(e){ console.error('Erro em inicializarColapsoCards:', e); }
   try{ renderAdvancedDashboard(); }catch(e){ console.error('Erro em renderAdvancedDashboard:', e); }
+  try{ renderCentralInteligencia(); }catch(e){ console.error('Erro em renderCentralInteligencia:', e); }
   try{ renderCentralDeAlertas(); }catch(e){ console.error('Erro em renderCentralDeAlertas:', e); }
   try{ renderDatasComerciais(); }catch(e){ console.error('Erro em renderDatasComerciais:', e); } // calendário comercial fica visível pra todo mundo, não só a gerência
   try{ renderFaixaMensagemProgramada(); }catch(e){ console.error('Erro em renderFaixaMensagemProgramada:', e); } // mensagens programadas (ex: aniversário) aparecem pra quem estiver logado, sem precisar da senha da área ADM
