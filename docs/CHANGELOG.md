@@ -1,3 +1,8 @@
+## v10.49 — Resumo rápido de hoje no Dashboard
+- **Novo:** linha de indicadores no card de meta com vendido hoje, maior venda, menor venda, atendimentos, média entre atendimentos e ticket médio.
+- **Novo:** a linha é calculada automaticamente com os registros do dia atual da planilha.
+- **Importante:** “média entre atendimentos” usa os horários das vendas registradas e não representa a duração real do atendimento.
+
 ## v10.48 — Resumo executivo do dia na Central
 - **Novo:** a Central passou a mostrar uma leitura gerencial simples do dia ou do último dia lançado.
 - **Novo:** faturamento do dia, quantidade de atendimentos, média por venda e horário da primeira/última venda.
