@@ -1,3 +1,12 @@
+
+## v10.45 — Escala de atendimento e ritmo por atendente
+- **Novo:** card "Hoje — escala e ritmo de atendimento" na Análises.
+- **Novo:** seg–sex considera Alessandra sozinha pela manhã e Alessandra + Day à tarde.
+- **Novo:** sábado considera Alessandra + Day juntas no mesmo turno.
+- **Novo:** calcula atendimentos do período, ritmo da equipe, carga de trabalho disponível por atendimento e divisão por atendente.
+- **Novo:** mostra maior e segundo maior intervalo real entre registros com horário em cada turno.
+- **Importante:** o sistema não chama isso de duração real do atendimento; é uma análise de ritmo/carga baseada nos horários registrados na planilha.
+- **Interno:** registros de venda passam a guardar o horário exato para permitir essa separação por turno e funcionária.
 ## v10.42 | 🐛🔧 Dois bugs críticos corrigidos + documentação atualizada
 - **Corrigido:** código JavaScript duplicado (~70 KB, cópia do próprio biobel-app.js) que tinha
   sobrado colado por engano dentro do `<body>` das 9 páginas do painel, fora de qualquer
