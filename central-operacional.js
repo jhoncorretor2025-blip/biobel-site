@@ -1,7 +1,7 @@
 
 (function(){
 "use strict";
-var K="biobel_central_v10_48",S={tasks:[],agenda:[],stock:[],occ:[],maint:[],accounts:[]};
+var K="biobel_central_v10_39",S={tasks:[],agenda:[],stock:[],occ:[],maint:[],accounts:[]};
 try{S=Object.assign(S,JSON.parse(localStorage.getItem(K)||"{}")||{});}catch(e){}
 function save(){try{localStorage.setItem(K,JSON.stringify(S));}catch(e){}}
 function n(v){return Number(String(v||"").replace(".","").replace(",","."))||0}
