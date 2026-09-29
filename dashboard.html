@@ -687,6 +687,141 @@ body.light-mode .biobel-context-header{background:rgba(14,169,122,.07);border-co
 .biobel-inteligencia-pill{display:inline-flex;align-items:center;gap:5px;border:1px solid #263852;border-radius:999px;padding:5px 8px;font-size:10.5px;font-weight:800;color:#cbd5e1;margin:3px 4px 0 0}
 @media(max-width:760px){.biobel-inteligencia-grid{grid-template-columns:1fr!important}.biobel-inteligencia-box{padding:12px}.biobel-inteligencia-item{font-size:12.5px}}
 </style>
+<style id="biobel-visual-refresh-v10-26">
+/* v10.26 — refinamento visual: mesma funcionalidade, leitura mais clara e aparência mais consistente. */
+:root{
+  --bi-pink:#e3a0b7;
+  --bi-pink-soft:rgba(227,160,183,.10);
+  --bi-pink-line:rgba(227,160,183,.28);
+}
+
+/* 1) Identidade visual: verde continua significando ação positiva; rosa aparece como assinatura da marca. */
+.biobel-context-header{
+  border-radius:16px!important;
+  background:linear-gradient(135deg,rgba(227,160,183,.08),rgba(39,215,160,.045))!important;
+  border:1px solid rgba(227,160,183,.20)!important;
+  box-shadow:0 10px 28px rgba(0,0,0,.10);
+}
+.biobel-context-header strong{letter-spacing:-.01em}
+.biobel-context-header button{
+  border-radius:10px!important;
+  transition:transform .18s ease,box-shadow .18s ease,background .18s ease;
+}
+.biobel-context-header button:hover{transform:translateY(-1px);box-shadow:0 7px 18px rgba(0,0,0,.16)}
+
+/* 2) Cards: menos "caixas soltas" e mais hierarquia visual. */
+.card,.adv-card,.adv-kpi{
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+.card:hover,.adv-card:hover{
+  border-color:rgba(79,156,255,.24)!important;
+  box-shadow:0 14px 34px rgba(0,0,0,.22)!important;
+}
+.adv-kpi:hover{
+  transform:translateY(-2px);
+  border-color:rgba(227,160,183,.34)!important;
+  box-shadow:0 16px 36px rgba(0,0,0,.25)!important;
+}
+.adv-kpi .label{
+  color:#a8b7c9!important;
+  letter-spacing:.075em!important;
+}
+.adv-kpi .value{
+  font-size:30px!important;
+  line-height:1.05!important;
+}
+.adv-kpi .sub{max-width:28ch}
+
+/* 3) Navegação: aba ativa mais evidente e menu mais leve. */
+.tabs-scroll-wrap .tab-btn{
+  transition:background .18s ease,border-color .18s ease,color .18s ease,transform .18s ease!important;
+}
+.tabs-scroll-wrap .tab-btn:hover{transform:translateY(-1px)}
+.tabs-scroll-wrap .tab-btn.active,
+.tabs-scroll-wrap .tab-btn[aria-selected="true"]{
+  background:linear-gradient(135deg,rgba(39,215,160,.16),rgba(227,160,183,.10))!important;
+  border-color:rgba(39,215,160,.34)!important;
+  color:#f7fbff!important;
+  box-shadow:0 7px 18px rgba(0,0,0,.14);
+}
+.biobel-main-navigation [data-nav].active{
+  background:linear-gradient(135deg,rgba(39,215,160,.14),rgba(227,160,183,.08))!important;
+  border-color:rgba(39,215,160,.28)!important;
+}
+
+/* 4) Botões e campos: aparência única em todo o painel. */
+button,.adv-btn,input,select,textarea{
+  transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease,background .18s ease!important;
+}
+button:not(:disabled):hover,.adv-btn:not(:disabled):hover{
+  box-shadow:0 7px 18px rgba(0,0,0,.12);
+}
+input:focus,select:focus,textarea:focus{
+  box-shadow:0 0 0 3px rgba(39,215,160,.10)!important;
+}
+
+/* 5) Gráficos e tabelas: aparência de painel executivo, com menos ruído. */
+.adv-card:has(canvas){
+  background:linear-gradient(180deg,rgba(13,26,44,.96),rgba(9,20,35,.96))!important;
+}
+.adv-card:has(canvas) .adv-card-title h3{
+  font-size:14.5px!important;
+}
+.adv-table tbody tr:nth-child(even) td{
+  background:rgba(255,255,255,.014);
+}
+.adv-table tbody tr:hover td{
+  background:rgba(39,215,160,.045)!important;
+}
+.adv-table th{
+  background:rgba(8,20,38,.42);
+  position:sticky;
+  top:0;
+  z-index:1;
+}
+.adv-card-title h3{
+  letter-spacing:-.01em;
+}
+.adv-card-title h3::first-letter{font-size:1.05em}
+
+/* Pequenos detalhes de acabamento. */
+hr{border-color:rgba(32,51,78,.72)!important}
+::-webkit-scrollbar-thumb:hover{background:#29405e}
+
+/* Modo claro: mantém a mesma identidade sem escurecer os componentes. */
+body.light-mode .biobel-context-header{
+  background:linear-gradient(135deg,rgba(227,160,183,.10),rgba(14,169,122,.06))!important;
+  border-color:rgba(14,169,122,.18)!important;
+}
+body.light-mode .adv-card:has(canvas){
+  background:linear-gradient(180deg,#fff,#f8fafc)!important;
+}
+body.light-mode .adv-table th{background:#f7f9fb}
+body.light-mode .adv-table tbody tr:nth-child(even) td{background:#fafbfc}
+body.light-mode .adv-table tbody tr:hover td{background:#f0faf6!important}
+body.light-mode .tabs-scroll-wrap .tab-btn.active,
+body.light-mode .tabs-scroll-wrap .tab-btn[aria-selected="true"]{
+  color:#0f172a!important;
+  background:linear-gradient(135deg,rgba(14,169,122,.10),rgba(227,160,183,.12))!important;
+}
+
+/* Mobile: prioridade total para leitura e toque confortável. */
+@media(max-width:760px){
+  .adv-kpi{min-height:112px!important;padding:14px!important}
+  .adv-kpi .value{font-size:27px!important}
+  .adv-card:hover,.card:hover{transform:none}
+  .adv-card:has(canvas){padding:14px!important}
+  .adv-table{font-size:11.5px!important}
+}
+@media(max-width:420px){
+  .adv-kpi .value{font-size:25px!important}
+  .adv-card-title h3{font-size:13.5px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .card,.adv-card,.adv-kpi,button,.adv-btn,.tabs-scroll-wrap .tab-btn{transition:none!important}
+}
+</style>
+
 </head>
 <body class="min-h-screen bg-slate-950 text-slate-100">
 <div id="faixaMensagemProgramada" style="display:none;"></div>
@@ -729,7 +864,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 28/09/2026 — versão v10.25')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 28/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v10.25</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 28/09/2026 — versão v10.26')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 28/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v10.26</span>
   <span id="indicadorUltimoSalvamento" class="no-print" style="font-size:11px;color:#27d7a0;font-weight:700;display:none;white-space:nowrap;" title="Tudo o que você faz salva sozinho no aparelho — esse é o horário do último salvamento"></span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
@@ -2222,8 +2357,13 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <p class="text-sm text-slate-400 mt-1">O que mudou nas últimas atualizações, resumido de forma simples.</p>
   </div>
   <div style="display:flex;flex-direction:column;gap:14px;">
+   <div style="background:#0b1728;border:1px solid rgba(227,160,183,.28);border-radius:10px;padding:12px 14px;">
+    <div style="font-size:12px;font-weight:800;color:#e3a0b7;margin-bottom:6px;">v10.26 — 29/09/2026</div>
+    <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">🎨 Refinamento visual do painel: identidade da Biobel mais consistente, cards com melhor hierarquia, navegação mais clara, botões e campos padronizados, gráficos/tabelas com menos ruído e ajustes para celular.</div>
+   </div>
+   
    <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
-    <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v10.25 — 28/09/2026</div>
+    <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v10.26 — 28/09/2026</div>
     <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">🛡️ Atualização de <strong>cache/PWA</strong>: o painel agora força a verificação de uma versão nova do service worker, reduzindo a chance de ficar preso em uma versão antiga como a v10.16 mesmo depois de uma publicação.</div>
    </div>
    
