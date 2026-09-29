@@ -399,7 +399,7 @@ function drawChart() {
   }
  });
 }
-document.getElementById('daySelect').addEventListener('change',e=>updateSelected(e.target.value));
+document.getElementById('daySelect')?.addEventListener('change',e=>updateSelected(e.target.value));
 
 /* ===== Modo Apresentação / TV ===== */
 let apresentacaoIntervalo = null;
