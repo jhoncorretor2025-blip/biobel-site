@@ -1,3 +1,8 @@
+## v10.47 — Filtro por dia e total da escala
+- **Novo:** filtro no card de escala para alternar entre **Hoje**, qualquer dia lançado e **Total do período**.
+- **Novo:** o total soma os atendimentos dos dias carregados e mantém a separação entre Alessandra e Day.
+- **Mantido:** análise de ritmo, média entre registros e maiores intervalos continua disponível no comparativo.
+
 ## v10.46 — Comparativo individual de atendimentos e tempo
 - **Novo:** cada turno mantém a contagem separada de atendimentos da Alessandra e da Day.
 - **Novo:** além da quantidade, o card mostra a média de tempo entre os atendimentos de cada uma e o maior intervalo individual, quando há horários exatos registrados.
