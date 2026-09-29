@@ -411,8 +411,15 @@
 
  <div class="adv-card card-analise-avancada" id="cardEscalaAtendimentoHoje">
   <div class="adv-card-title">
-   <h3>📅 Hoje — escala e ritmo de atendimento</h3>
-   <span>considera automaticamente quem trabalha em cada turno e separa a carga entre Alessandra e Day</span>
+   <h3>📅 Escala e ritmo de atendimento</h3>
+   <span>veja hoje, qualquer dia lançado ou o total do período — sempre separando Alessandra e Day</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+   <label for="filtroEscalaAtendimentoDia" style="font-size:11px;color:#93a3ba;font-weight:800;">📅 Ver:</label>
+   <select id="filtroEscalaAtendimentoDia" aria-label="Filtrar escala de atendimento por dia ou total" onchange="escalaAtendimentoFiltro=this.value;renderEscalaAtendimentoHoje();" style="background:#0b1728;border:1px solid #1e2c42;border-radius:9px;padding:8px 11px;color:#dce5f2;font-size:12px;min-width:220px;">
+    <option value="hoje">Hoje</option>
+    <option value="total">Total do período</option>
+   </select>
   </div>
   <div id="resumoEscalaAtendimentoHoje"></div>
  </div>
