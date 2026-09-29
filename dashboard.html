@@ -662,7 +662,20 @@ body.light-mode .biobel-context-header{background:rgba(14,169,122,.07);border-co
 @media(max-width:640px){.biobel-context-header{align-items:flex-start;padding:11px 12px}.biobel-context-header strong{font-size:14px}.biobel-context-header span{font-size:10.5px}.biobel-context-header .biobel-context-action{min-height:40px;padding:8px 10px}}
 @media(max-width:760px){body{padding-bottom:calc(78px + env(safe-area-inset-bottom))!important}.biobel-mobile-bottom-nav{height:calc(64px + env(safe-area-inset-bottom));padding-bottom:calc(5px + env(safe-area-inset-bottom))}.biobel-mobile-more-menu{bottom:calc(70px + env(safe-area-inset-bottom))}.biobel-mobile-bottom-nav>button{min-height:46px}.bg-emerald-600,.bg-rose-600,.bg-blue-600,.adv-btn,.config-chip{min-height:42px}}
 
-/* v10.23 — Central de Inteligência: leitura automática da planilha */
+/* v10.24 — Vendas por período e tempo entre atendimentos */
+.biobel-periodo-chart-wrap{height:320px;position:relative}
+.biobel-periodo-resumo{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
+.biobel-periodo-resumo .item{background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:10px;text-align:center}
+.biobel-periodo-resumo .lbl{font-size:10px;color:#93a3ba;font-weight:800;text-transform:uppercase}
+.biobel-periodo-resumo .val{font-size:15px;color:#f6f9fd;font-weight:900;margin-top:3px}
+.biobel-gap-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.biobel-gap-kpi{background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:11px;text-align:center}
+.biobel-gap-kpi .lbl{font-size:10px;color:#93a3ba;font-weight:800;text-transform:uppercase}
+.biobel-gap-kpi .val{font-size:18px;color:#f6f9fd;font-weight:900;margin-top:3px}
+.biobel-gap-list{display:flex;flex-direction:column;gap:7px}
+.biobel-gap-row{display:flex;justify-content:space-between;gap:10px;align-items:center;background:#0b1728;border:1px solid #1e2c42;border-radius:9px;padding:8px 10px;font-size:11.5px}
+@media(max-width:700px){.biobel-periodo-resumo,.biobel-gap-grid{grid-template-columns:1fr}.biobel-periodo-chart-wrap{height:300px}}
+/* v10.24 — Central de Inteligência: leitura automática da planilha */
 .biobel-inteligencia-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .biobel-inteligencia-box{background:#0b1728;border:1px solid #1e2c42;border-radius:14px;padding:14px;min-width:0}
 .biobel-inteligencia-box h4{margin:0 0 7px;font-size:12px;font-weight:900;color:#dce5f2}
@@ -716,7 +729,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 28/09/2026 — versão v10.23')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 28/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v10.23</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 28/09/2026 — versão v10.24')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 28/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v10.24</span>
   <span id="indicadorUltimoSalvamento" class="no-print" style="font-size:11px;color:#27d7a0;font-weight:700;display:none;white-space:nowrap;" title="Tudo o que você faz salva sozinho no aparelho — esse é o horário do último salvamento"></span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
@@ -1024,6 +1037,16 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
             <span>comparação dia a dia com a meta configurada</span>
           </div>
           <div class="adv-chart"><canvas id="closingChart"></canvas></div>
+        </div>
+
+        <div class="adv-card" id="cardVendasPorPeriodo">
+          <div class="adv-card-title">
+            <h3>📊 Vendas por período — dia a dia</h3>
+            <span>mostra quanto foi vendido de manhã, no meio-dia e à tarde em cada dia lançado</span>
+          </div>
+          <div class="biobel-periodo-chart-wrap"><canvas id="graficoVendasPorPeriodo" role="img" aria-label="Gráfico diário de vendas por manhã, meio-dia e tarde"></canvas></div>
+          <div id="resumoVendasPorPeriodo" class="biobel-periodo-resumo"></div>
+          <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">💡 A divisão usa o horário real registrado na planilha: manhã até 11h59, meio-dia das 12h às 13h59 e tarde a partir das 14h.</p>
         </div>
 
         <div class="adv-card">
@@ -1471,6 +1494,16 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <div id="infoHorariosLista" style="display:flex;flex-direction:column;gap:8px;"></div>
   <div id="infoRecomendacaoHorarioPico" style="display:none;"></div>
   <div id="infoHorariosForaExpediente" style="display:none;margin-top:18px;padding-top:16px;border-top:1px dashed #3a2a0b;"></div>
+ </div>
+
+ <div class="adv-card card-analise-avancada" id="cardTempoEntreAtendimentos">
+  <div class="adv-card-title">
+   <h3>⏱️ Tempo entre atendimentos registrados</h3>
+   <span>mostra os intervalos entre uma venda registrada e a próxima — útil para identificar períodos de pouca movimentação</span>
+  </div>
+  <div id="resumoTempoEntreAtendimentos" class="biobel-gap-grid"></div>
+  <div id="listaTempoEntreAtendimentos" class="biobel-gap-list"></div>
+  <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">⚠️ Isso mede <strong>tempo sem venda registrada</strong>. A planilha não informa a duração do atendimento de cada cliente, então não dá para afirmar quanto tempo cada vendedora levou para atender.</p>
  </div>
 
  <div class="adv-card card-analise-avancada">
@@ -2190,12 +2223,12 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
   <div style="display:flex;flex-direction:column;gap:14px;">
    <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
-    <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v10.23 — 28/09/2026</div>
-    <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">🧠 Nova <strong>Central de Inteligência</strong>: o painel agora lê os dados da planilha para apontar possíveis inconsistências, comparar automaticamente os dias, explicar os principais números e destacar o que chamou atenção no período.</div>
+    <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v10.24 — 28/09/2026</div>
+    <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">📊 Novo gráfico mostra as vendas de cada dia separadas por <strong>manhã, meio-dia e tarde</strong>. ⏱️ Nova análise calcula o tempo entre vendas registradas e identifica intervalos longos, inclusive a janela de <strong>15h–15h45</strong>. 📅 A comparação semanal agora usa semanas reais de <strong>segunda a domingo</strong>, e os cálculos de calendário deixaram de ficar presos ao ano 2026.</div>
    </div>
    <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
-    <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v10.22 — 28/09/2026</div>
-    <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">🧾 Gravação do fechamento reforçada: o horário em <strong>O26</strong> agora tenta primeiro uma chamada JSONP, reduzindo falhas de CORS. O painel também informa claramente quando a ponte do Google Apps Script não está configurada ou não confirma a gravação.</div>
+    <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v10.23 — 28/09/2026</div>
+    <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">🧠 Nova <strong>Central de Inteligência</strong>: o painel agora lê os dados da planilha para apontar possíveis inconsistências, comparar automaticamente os dias, explicar os principais números e destacar o que chamou atenção no período.</div>
    </div>
    <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
     <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v10.22 — 28/09/2026</div>
@@ -3269,6 +3302,7 @@ let daysDataOriginal = null; // guarda os dados ao vivo enquanto a pessoa esta v
 let chart = null;
 let chartProdutosPizza = null;
 let chartRadarDiasSemana = null;
+let chartVendasPorPeriodo = null;
 
 function money(v) {
  return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(v)||0);
@@ -10195,7 +10229,7 @@ function verificarMetaMensalBatidaEmail(totalSales, metaGoal){
  if(metaGoal<=0 || totalSales<metaGoal || daysData.length===0){ el.style.display='none'; return; }
 
  const mesRef = String(daysData[0].dia).split('.')[1];
- const chaveMes = '2026-'+mesRef;
+ const chaveMes = String(anoReferenciaPlanilha())+'-'+mesRef;
  if(localStorage.getItem('biobel_email_meta_enviado_mes')===chaveMes){ el.style.display='none'; return; }
 
  const email = getEmailContadora();
@@ -10382,7 +10416,7 @@ function diaParaNumeroSemana(diaStr){
  const partes = String(diaStr||'').split('.').map(Number);
  if(partes.length<2) return null;
  const [dia, mes] = partes;
- return new Date(2026, mes-1, dia).getDay();
+ return new Date(anoReferenciaPlanilha(), mes-1, dia).getDay();
 }
 
 function initPorDiaSemanaView(){
@@ -10487,7 +10521,7 @@ function renderPorDiaSemanaView(dow){
   const clima = climaDoDia(valor, mediaGeralTodosOsDias);
 
   const partes = String(d.dia).split('.').map(Number);
-  const dataObj = new Date(2026, partes[1]-1, partes[0]);
+  const dataObj = new Date(anoReferenciaPlanilha(), partes[1]-1, partes[0]);
   const dataFormatada = String(partes[0]).padStart(2,'0')+'/'+nomesMesesPt3[partes[1]-1]+'/2026';
 
   const manha = (d.porTurno||{})['manhã'] || {qtd:0,valor:0};
@@ -10855,7 +10889,7 @@ function renderCentralDeAlertas(){
    const faltando = [];
    for(let d=diasNumeros[0].dia; d<=diasNumeros[diasNumeros.length-1].dia; d++){
     if(diasComDado.has(d)) continue;
-    if(new Date(2026, mesRef-1, d).getDay()===0) continue; // domingo, loja fechada
+    if(new Date(anoReferenciaPlanilha(), mesRef-1, d).getDay()===0) continue; // domingo, loja fechada
     faltando.push(d);
    }
    if(faltando.length>0){
@@ -11102,7 +11136,7 @@ function renderAlertaDiasFaltando(){
  const faltando = [];
  for(let d=primeiroDia; d<=ultimoDia; d++){
   if(diasComDado.has(d)) continue;
-  const dataObj = new Date(2026, mesRef-1, d);
+  const dataObj = new Date(anoReferenciaPlanilha(), mesRef-1, d);
   if(dataObj.getDay()===0) continue; // domingo — loja fechada, não conta como falta
   faltando.push(String(d).padStart(2,'0')+'.'+String(mesRef).padStart(2,'0'));
  }
@@ -11184,6 +11218,8 @@ function renderInfoTab(){
  renderTipoVenda();
  renderProdutosRanking();
  renderHorariosPico();
+ renderVendasPorPeriodo();
+ renderTempoEntreAtendimentos();
  renderTurnos();
  renderGenero();
  renderRecordesVendasIndividuais();
@@ -11216,9 +11252,10 @@ function montarSeletorMeses(){
    BIOBEL — ZONA: CAMPANHAS / MARKETING E SEM MOVIMENTO
    ============================================================ */
 /* ===== Campanhas de Marketing (item 2) — compara o período da campanha com o resto do mês ===== */
+function anoReferenciaPlanilha(){ return obterAgoraBrasilia().getFullYear(); }
 function dataDoDiaParaISO(diaStr){
  const [dia, mes] = String(diaStr).split('.');
- return '2026-'+String(mes).padStart(2,'0')+'-'+String(dia).padStart(2,'0');
+ return String(anoReferenciaPlanilha())+'-'+String(mes).padStart(2,'0')+'-'+String(dia).padStart(2,'0');
 }
 function getCampanhas(){
  try{ return JSON.parse(localStorage.getItem('biobel_campanhas')||'[]'); }catch(e){ return []; }
@@ -11750,33 +11787,31 @@ function renderAcimaAbaixoMedia(){
  `;
 }
 function renderSemanasDoMes(){
- const el = document.getElementById('conteudoSemanasDoMes');
- if(!el) return;
- if(daysData.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Sem dados carregados ainda.</p>'; return; }
- const semanas = {};
+ const el=document.getElementById('conteudoSemanasDoMes'); if(!el)return;
+ if(!daysData.length){el.innerHTML='<p style="color:#93a3ba;font-size:12.5px;">Sem dados carregados ainda.</p>';return;}
+ const semanas={};
  daysData.forEach(d=>{
-  const diaNum = Number(String(d.dia).split('.')[0]);
-  const semanaNum = Math.ceil(diaNum/7);
-  if(!semanas[semanaNum]) semanas[semanaNum] = { total:0, qtd:0, dias:[] };
-  semanas[semanaNum].total += Number(d.sales)||0;
-  semanas[semanaNum].qtd += 1;
-  semanas[semanaNum].dias.push(d.dia);
+  const p=String(d.dia||'').split('.').map(Number); if(p.length<2||!p[0]||!p[1])return;
+  const dt=new Date(anoReferenciaPlanilha(),p[1]-1,p[0]),deslocamento=(dt.getDay()+6)%7;
+  const inicio=new Date(dt); inicio.setDate(dt.getDate()-deslocamento);
+  const fim=new Date(inicio); fim.setDate(inicio.getDate()+6);
+  const chave=inicio.getFullYear()+'-'+String(inicio.getMonth()+1).padStart(2,'0')+'-'+String(inicio.getDate()).padStart(2,'0');
+  if(!semanas[chave])semanas[chave]={total:0,qtd:0,dias:[],inicio,fim};
+  semanas[chave].total+=Number(d.sales)||0; semanas[chave].qtd++; semanas[chave].dias.push(d.dia);
  });
- const listaSemanas = Object.entries(semanas).sort((a,b)=>Number(a[0])-Number(b[0]));
- if(listaSemanas.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Sem dados suficientes ainda.</p>'; return; }
- const melhorSemana = [...listaSemanas].sort((a,b)=>b[1].total-a[1].total)[0];
- const piorSemana = [...listaSemanas].sort((a,b)=>a[1].total-b[1].total)[0];
-
- el.innerHTML = listaSemanas.map(([num, dados])=>{
-  const ehMelhor = melhorSemana && num===melhorSemana[0];
-  const ehPior = piorSemana && num===piorSemana[0] && listaSemanas.length>1 && !ehMelhor;
+ const lista=Object.values(semanas).sort((a,b)=>a.inicio-b.inicio); if(!lista.length){el.innerHTML='';return;}
+ const melhor=[...lista].sort((a,b)=>b.total-a.total)[0], pior=[...lista].sort((a,b)=>a.total-b.total)[0];
+ const fmt=d=>d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+ el.innerHTML=lista.map((x,i)=>{
+  const ehMelhor=x===melhor,ehPior=x===pior&&lista.length>1&&!ehMelhor;
+  const ds=[...x.dias].sort((a,b)=>{const[da,ma]=a.split('.').map(Number),[db,mb]=b.split('.').map(Number);return ma*100+da-(mb*100+db);});
   return `<div style="background:#0b1728;border:1px solid ${ehMelhor?'rgba(39,215,160,.4)':ehPior?'rgba(251,113,133,.4)':'#1e2c42'};border-radius:10px;padding:12px 14px;margin-bottom:8px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
-     <span style="font-size:12.5px;color:#dce5f2;font-weight:700;">${num}ª semana (dias ${dados.dias[0]} a ${dados.dias[dados.dias.length-1]})${ehMelhor?' 🏆':''}${ehPior?' ⚠️':''}</span>
-     <span style="font-size:14px;font-weight:900;color:${ehMelhor?'#27d7a0':ehPior?'#fb7185':'#dce5f2'};">${money(dados.total)}</span>
-    </div>
-    <div style="font-size:10.5px;color:#93a3ba;margin-top:4px;">${dados.qtd} dia${dados.qtd===1?'':'s'} lançado${dados.qtd===1?'':'s'} · média de ${money(dados.total/dados.qtd)}/dia</div>
-   </div>`;
+   <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+    <span style="font-size:12.5px;color:#dce5f2;font-weight:700;">Semana ${i+1} · ${fmt(x.inicio)} a ${fmt(x.fim)}${ehMelhor?' 🏆':''}${ehPior?' ⚠️':''}</span>
+    <span style="font-size:14px;font-weight:900;color:${ehMelhor?'#27d7a0':ehPior?'#fb7185':'#dce5f2'};">${money(x.total)}</span>
+   </div>
+   <div style="font-size:10.5px;color:#93a3ba;margin-top:4px;">${x.qtd} dia${x.qtd===1?'':'s'} lançado${x.qtd===1?'':'s'} · média de ${money(x.total/x.qtd)}/dia · dias: ${ds.join(', ')}</div>
+  </div>`;
  }).join('');
 }
 
@@ -12016,7 +12051,7 @@ function renderComparacaoMesmoPeriodo(){
   const totais = [0,0,0,0,0,0,0];
   dias.forEach(d=>{
    const diaNum = Number(String(d.dia).split('.')[0]);
-   const dow = new Date(2026, mesNum-1, diaNum).getDay();
+   const dow = new Date(anoReferenciaPlanilha(), mesNum-1, diaNum).getDay();
    totais[dow] += Number(d.sales)||0;
   });
   return totais;
@@ -12407,7 +12442,7 @@ function contarDiasUteisRestantes(mesRef, diaAtual, ultimoDiaDoMes){
  const diasAtipicos = getDiasAtipicos().map(d=>d.dia);
  let contador = 0;
  for(let dia=diaAtual+1; dia<=ultimoDiaDoMes; dia++){
-  const dow = new Date(2026, mesRef-1, dia).getDay();
+  const dow = new Date(anoReferenciaPlanilha(), mesRef-1, dia).getDay();
   if(dow===0) continue; // domingo — loja fechada, não conta como dia útil
   const diaStr = String(dia).padStart(2,'0')+'.'+String(mesRef).padStart(2,'0');
   if(diasAtipicos.includes(diaStr)) continue; // feriado marcado — também não conta
@@ -12469,7 +12504,7 @@ function calcularMediaPorDiaSemana(){
   if(diasAtipicos.includes(String(d.dia))) return; // dia marcado como atípico — não entra na média
   const dia = Number(partes[0]), mes = Number(partes[1]);
   if(!dia||!mes) return;
-  const dt = new Date(2026, mes-1, dia);
+  const dt = new Date(anoReferenciaPlanilha(), mes-1, dia);
   const dow = dt.getDay();
   if(!porDiaSemana[dow]) porDiaSemana[dow] = {soma:0,qtd:0};
   porDiaSemana[dow].soma += Number(d.sales)||0;
@@ -12704,7 +12739,7 @@ function renderRitmoAtual(totalSales, goal, remaining){
 
  const mesAtual = Number(daysData[0]?.dia?.split('.')[1]) || (new Date().getMonth()+1);
  const ultimoDiaLancado = Math.max(...daysData.map(d=>Number(String(d.dia).split('.')[0])||0));
- const cursor = new Date(2026, mesAtual-1, ultimoDiaLancado);
+ const cursor = new Date(anoReferenciaPlanilha(), mesAtual-1, ultimoDiaLancado);
  let contador = 0;
  // Limite de segurança pra nunca travar num loop infinito (ex: media absurdamente baixa).
  let tentativas = 0;
@@ -12744,7 +12779,7 @@ function renderMaisNumerosDoMes(){
  const elDiasRestantesSub = document.getElementById('infoDiasRestantesSub');
  if(elDiasRestantesValor && daysData.length>0){
   const mesRefDR = Number(String(daysData[0].dia).split('.')[1]);
-  const ultimoDiaDoMesDR = new Date(2026, mesRefDR, 0).getDate();
+  const ultimoDiaDoMesDR = new Date(anoReferenciaPlanilha(), mesRefDR, 0).getDate();
   const hojeDR = obterAgoraBrasilia();
   const diaAtualDR = hojeDR.getMonth()+1===mesRefDR ? hojeDR.getDate() : ultimoDiaDoMesDR;
   const diasRestantesDR = contarDiasUteisRestantes(mesRefDR, diaAtualDR, ultimoDiaDoMesDR);
@@ -12928,6 +12963,126 @@ function renderProdutosRanking(){
  }
 }
 
+function calcularVendasPorPeriodoDia(d){
+ const t={manha:0,meioDia:0,tarde:0};
+ Object.entries(d?.horarios||{}).forEach(([h,info])=>{
+  const n=Number(h);
+  const v=Number(typeof info==='number' ? 0 : info?.valor)||0;
+  if(!Number.isFinite(n)||v<=0) return;
+  if(n<12) t.manha+=v;
+  else if(n<14) t.meioDia+=v;
+  else t.tarde+=v;
+ });
+ if(t.manha+t.meioDia+t.tarde===0&&d?.porTurno){
+  t.manha=Number(d.porTurno['manhã']?.valor)||0;
+  t.meioDia=Number(d.porTurno['meio-dia']?.valor)||0;
+  t.tarde=Number(d.porTurno['tarde']?.valor)||0;
+ }
+ return t;
+}
+function renderVendasPorPeriodo(){
+ const canvas=document.getElementById('graficoVendasPorPeriodo');
+ const resumo=document.getElementById('resumoVendasPorPeriodo');
+ if(!canvas||typeof Chart==='undefined') return;
+ const dias=serieDiasInteligencia();
+ if(!dias.length){
+  if(chartVendasPorPeriodo){chartVendasPorPeriodo.destroy();chartVendasPorPeriodo=null;}
+  if(resumo) resumo.innerHTML='<div class="biobel-inteligencia-vazio">Nenhuma venda carregada ainda.</div>';
+  return;
+ }
+ const dados=dias.map(d=>Object.assign({dia:d.dia},calcularVendasPorPeriodoDia(d)));
+ if(chartVendasPorPeriodo) chartVendasPorPeriodo.destroy();
+ chartVendasPorPeriodo=new Chart(canvas,{
+  type:'bar',
+  data:{
+   labels:dados.map(d=>d.dia),
+   datasets:[
+    {label:'Manhã',data:dados.map(d=>d.manha),backgroundColor:'rgba(251,191,36,.72)',borderRadius:3,stack:'periodos'},
+    {label:'Meio-dia',data:dados.map(d=>d.meioDia),backgroundColor:'rgba(79,156,255,.68)',borderRadius:3,stack:'periodos'},
+    {label:'Tarde',data:dados.map(d=>d.tarde),backgroundColor:'rgba(39,215,160,.72)',borderRadius:3,stack:'periodos'}
+   ]
+  },
+  options:{
+   responsive:true,
+   maintainAspectRatio:false,
+   interaction:{mode:'index',intersect:false},
+   plugins:{
+    legend:{display:true,labels:{color:'#93a3ba',boxWidth:12,font:{size:10}}},
+    tooltip:{callbacks:{label:function(ctx){return ' '+ctx.dataset.label+': '+money(ctx.raw);}}}
+   },
+   scales:{
+    x:{stacked:true,ticks:{color:'#93a3ba',font:{size:9},maxRotation:45,minRotation:0},grid:{color:'rgba(145,161,184,.06)'}},
+    y:{stacked:true,beginAtZero:true,ticks:{color:'#93a3ba',callback:function(v){return money(v);}},grid:{color:'rgba(145,163,184,.08)'}}
+   }
+  }
+ });
+ const totais=dados.reduce(function(acc,d){
+  acc.manha+=d.manha; acc.meioDia+=d.meioDia; acc.tarde+=d.tarde;
+  return acc;
+ },{manha:0,meioDia:0,tarde:0});
+ if(resumo){
+  resumo.innerHTML=[
+   ['🌅 Manhã',totais.manha],
+   ['🌤️ Meio-dia',totais.meioDia],
+   ['🌇 Tarde',totais.tarde]
+  ].map(function(x){
+   return '<div class="item"><div class="lbl">'+x[0]+'</div><div class="val">'+money(x[1])+'</div></div>';
+  }).join('');
+ }
+}
+function minutosParaTexto(min){
+ const m=Math.max(0,Math.round(min));
+ const h=Math.floor(m/60),mm=m%60;
+ return h>0?h+'h '+String(mm).padStart(2,'0')+'min':m+'min';
+}
+function formatarHoraMinutos(min){
+ const h=Math.floor(min/60),m=min%60;
+ return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+}
+function analisarIntervalosEntreVendas(){
+ const out=[];
+ serieDiasInteligencia().forEach(function(d){
+  const hs=(d.horariosVendas||[]).map(Number).filter(Number.isFinite).sort(function(a,b){return a-b;});
+  for(let i=1;i<hs.length;i++){
+   const mins=Math.round((hs[i]-hs[i-1])*1440);
+   if(mins>0) out.push({dia:d.dia,inicio:hs[i-1]*1440,fim:hs[i]*1440,minutos:mins});
+  }
+ });
+ return out;
+}
+function renderTempoEntreAtendimentos(){
+ const resumo=document.getElementById('resumoTempoEntreAtendimentos');
+ const lista=document.getElementById('listaTempoEntreAtendimentos');
+ if(!resumo||!lista) return;
+ const ints=analisarIntervalosEntreVendas();
+ if(!ints.length){
+  resumo.innerHTML='<div class="biobel-gap-kpi"><div class="lbl">Intervalos</div><div class="val">0</div></div>';
+  lista.innerHTML='<div class="biobel-inteligencia-vazio">Ainda não há horários suficientes para calcular o tempo entre vendas.</div>';
+  return;
+ }
+ const media=ints.reduce(function(sum,x){return sum+x.minutos;},0)/ints.length;
+ const longos=ints.filter(function(x){return x.minutos>=30;}).sort(function(a,b){return b.minutos-a.minutos;});
+ const janela=ints.filter(function(x){return Math.max(x.inicio,900)<Math.min(x.fim,945);});
+ const maior=longos[0]||[...ints].sort(function(a,b){return b.minutos-a.minutos;})[0];
+ const diasJanela=[...new Set(janela.map(function(x){return x.dia;}))];
+ resumo.innerHTML=[
+  ['⏱️ Intervalos',ints.length],
+  ['📊 Média entre vendas',minutosParaTexto(media)],
+  ['🚨 Intervalos ≥ 30 min',longos.length]
+ ].map(function(x){
+  return '<div class="biobel-gap-kpi"><div class="lbl">'+x[0]+'</div><div class="val">'+x[1]+'</div></div>';
+ }).join('');
+ let html='<div class="biobel-gap-row"><span>🔎 Maior intervalo: <strong>'+escInteligencia(maior.dia)+'</strong>, '+formatarHoraMinutos(Math.round(maior.inicio))+' → '+formatarHoraMinutos(Math.round(maior.fim))+'</span><strong>'+minutosParaTexto(maior.minutos)+'</strong></div>';
+ if(diasJanela.length){
+  html+='<div class="biobel-gap-row"><span>🕒 A janela <strong>15h–15h45</strong> apareceu dentro de um intervalo sem venda registrada em</span><strong>'+diasJanela.length+' dia'+(diasJanela.length===1?'':'s')+'</strong></div>';
+ }else{
+  html+='<div class="biobel-gap-row"><span>🕒 Janela 15h–15h45</span><strong>não identificada nos gaps atuais</strong></div>';
+ }
+ html+=longos.slice(0,8).map(function(x){
+  return '<div class="biobel-gap-row"><span>📅 '+escInteligencia(x.dia)+' · '+formatarHoraMinutos(Math.round(x.inicio))+' → '+formatarHoraMinutos(Math.round(x.fim))+'</span><strong>'+minutosParaTexto(x.minutos)+'</strong></div>';
+ }).join('');
+ lista.innerHTML=html;
+}
 function renderHorariosPico(){
  const elPico = document.getElementById('infoHorarioPico');
  const elPicoSub = document.getElementById('infoHorarioPicoSub');
@@ -13194,7 +13349,7 @@ function renderRecordesVendasIndividuais(){
 
  el.innerHTML = top5.map((r,i)=>{
   const partes = String(r.dia).split('.').map(Number);
-  const dow = new Date(2026, partes[1]-1, partes[0]).getDay();
+  const dow = new Date(anoReferenciaPlanilha(), partes[1]-1, partes[0]).getDay();
   const semanaDoMes = Math.ceil(partes[0]/7);
   return `
    <div style="background:#0b1728;border:1px solid ${i===0?coresPos[0]:'#1e2c42'};border-radius:14px;padding:14px;position:relative;">
@@ -13492,7 +13647,7 @@ function nomeDiaSemanaAbrev(diaStr){
  const dia = Number(partes[0]), mes = Number(partes[1]);
  if(!dia||!mes) return '';
  const nomes = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
- const dt = new Date(2026, mes-1, dia);
+ const dt = new Date(anoReferenciaPlanilha(), mes-1, dia);
  return nomes[dt.getDay()] || '';
 }
 
@@ -15569,7 +15724,7 @@ let advSummaryDonut = null;
    BIOBEL — ZONA: RENDERIZAÇÃO / DASHBOARD AVANÇADO
    ============================================================ */
 /* ============================================================
-   BIOBEL — ZONA: INTELIGÊNCIA DA PLANILHA (v10.23)
+   BIOBEL — ZONA: INTELIGÊNCIA DA PLANILHA (v10.24)
    Quatro leituras automáticas sem cadastro de produtos/clientes:
    2) possíveis inconsistências, 3) comparação, 5) explicação e 10) destaques.
    ============================================================ */
@@ -15781,7 +15936,7 @@ function renderAdvancedDashboard(){
   const elProjecao = document.getElementById('metaProjecaoTexto');
   if(elDiasRestantes && daysData.length>0){
    const mesRef = Number(String(daysData[0].dia).split('.')[1]);
-   const anoRef = 2026;
+   const anoRef = anoReferenciaPlanilha();
    const ultimoDiaDoMes = new Date(anoRef, mesRef, 0).getDate();
    const hoje = obterAgoraBrasilia();
    const diaAtual = hoje.getMonth()+1===mesRef ? hoje.getDate() : ultimoDiaDoMes;
