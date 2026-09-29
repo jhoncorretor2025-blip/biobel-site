@@ -2223,13 +2223,12 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
   <div style="display:flex;flex-direction:column;gap:14px;">
    <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
-    <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v10.24 — 28/09/2026</div>    <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">📊 Novo gráfico mostra as vendas de cada dia separadas por <strong>manhã, meio-dia e tarde</strong>. ⏱️ Nova análise calcula o tempo entre vendas registradas e identifica intervalos longos, inclusive a janela de <strong>15h–15h45</strong>. 📅 A comparação semanal agora usa semanas reais de <strong>segunda a domingo</strong>, e os cálculos de calendário deixaram de ficar presos ao ano 2026.</div>
-   </div>
-    <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">🧠 Nova <strong>Central de Inteligência</strong>: o painel agora lê os dados da planilha para apontar possíveis inconsistências, comparar automaticamente os dias, explicar os principais números e destacar o que chamou atenção no período.</div>
+    <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v10.24 — 28/09/2026</div>
+    <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">📊 Novo gráfico mostra as vendas de cada dia separadas por <strong>manhã, meio-dia e tarde</strong>. ⏱️ Nova análise calcula o tempo entre vendas registradas e identifica intervalos longos, inclusive a janela de <strong>15h–15h45</strong>. 📅 A comparação semanal agora usa semanas reais de <strong>segunda a domingo</strong>, e os cálculos de calendário deixaram de ficar presos ao ano 2026.</div>
    </div>
    <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
-    <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v10.22 — 28/09/2026</div>
-    <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">🧾 Gravação do fechamento reforçada: o horário em <strong>O26</strong> agora tenta primeiro uma chamada JSONP, reduzindo falhas de CORS. O painel também informa claramente quando a ponte do Google Apps Script não está configurada ou não confirma a gravação.</div>
+    <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v10.23 — 28/09/2026</div>
+    <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">🧠 Nova <strong>Central de Inteligência</strong>: o painel agora lê os dados da planilha para apontar possíveis inconsistências, comparar automaticamente os dias, explicar os principais números e destacar o que chamou atenção no período.</div>
    </div>
    <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
     <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v10.22 — 28/09/2026</div>
@@ -12966,36 +12965,123 @@ function renderProdutosRanking(){
 
 function calcularVendasPorPeriodoDia(d){
  const t={manha:0,meioDia:0,tarde:0};
- Object.entries(d?.horarios||{}).forEach(([h,info])=>{const n=Number(h),v=Number(typeof info==='number'?0:info?.valor)||0;if(!Number.isFinite(n)||v<=0)return;if(n<12)t.manha+=v;else if(n<14)t.meioDia+=v;else t.tarde+=v;});
- if(t.manha+t.meioDia+t.tarde===0&&d?.porTurno){t.manha=Number(d.porTurno['manhã']?.valor)||0;t.meioDia=Number(d.porTurno['meio-dia']?.valor)||0;t.tarde=Number(d.porTurno['tarde']?.valor)||0;}
+ Object.entries(d?.horarios||{}).forEach(([h,info])=>{
+  const n=Number(h);
+  const v=Number(typeof info==='number' ? 0 : info?.valor)||0;
+  if(!Number.isFinite(n)||v<=0) return;
+  if(n<12) t.manha+=v;
+  else if(n<14) t.meioDia+=v;
+  else t.tarde+=v;
+ });
+ if(t.manha+t.meioDia+t.tarde===0&&d?.porTurno){
+  t.manha=Number(d.porTurno['manhã']?.valor)||0;
+  t.meioDia=Number(d.porTurno['meio-dia']?.valor)||0;
+  t.tarde=Number(d.porTurno['tarde']?.valor)||0;
+ }
  return t;
 }
 function renderVendasPorPeriodo(){
- const c=document.getElementById('graficoVendasPorPeriodo'),r=document.getElementById('resumoVendasPorPeriodo');if(!c||typeof Chart==='undefined')return;
- const dias=serieDiasInteligencia();if(!dias.length){if(chartVendasPorPeriodo){chartVendasPorPeriodo.destroy();chartVendasPorPeriodo=null;}if(r)r.innerHTML='<div class="biobel-inteligencia-vazio">Nenhuma venda carregada ainda.</div>';return;}
- const dados=dias.map(d=>({dia:d.dia,...calcularVendasPorPeriodoDia(d)}));if(chartVendasPorPeriodo)chartVendasPorPeriodo.destroy();
- chartVendasPorPeriodo=new Chart(c,{type:'bar',data:{labels:dados.map(d=>d.dia),datasets:[
-  {label:'Manhã',data:dados.map(d=>d.manha),backgroundColor:'rgba(251,191,36,.72)',borderRadius:3,stack:'p'},
-  {label:'Meio-dia',data:dados.map(d=>d.meioDia),backgroundColor:'rgba(79,156,255,.68)',borderRadius:3,stack:'p'},
-  {label:'Tarde',data:dados.map(d=>d.tarde),backgroundColor:'rgba(39,215,160,.72)',borderRadius:3,stack:'p'}
- ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:true,labels:{color:'#93a3ba',boxWidth:12,font:{size:10}}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${money(c.raw)}`,footer:items=>'Total do dia: '+money(items.reduce((a,x)=>a+(Number(x.raw)||0),0))}}},scales:{x:{stacked:true,ticks:{color:'#93a3ba',font:{size:9},maxRotation:45,minRotation:0},grid:{color:'rgba(145,161,184,.06)'}},y:{stacked:true,beginAtZero:true,ticks:{color:'#93a3ba',callback:v=>money(v)},grid:{color:'rgba(145,163,184,.08)'}}}});
- const tot=dados.reduce((a,d)=>({manha:a.manha+d.manha,meioDia:a.meioDia+d.meioDia,tarde:a.tarde+d.tarde}),{manha:0,meioDia:0,tarde:0});
- if(r)r.innerHTML=[['🌅 Manhã',tot.manha],['🌤️ Meio-dia',tot.meioDia],['🌇 Tarde',tot.tarde]].map(x=>`<div class="item"><div class="lbl">${x[0]}</div><div class="val">${money(x[1])}</div></div>`).join('');
+ const canvas=document.getElementById('graficoVendasPorPeriodo');
+ const resumo=document.getElementById('resumoVendasPorPeriodo');
+ if(!canvas||typeof Chart==='undefined') return;
+ const dias=serieDiasInteligencia();
+ if(!dias.length){
+  if(chartVendasPorPeriodo){chartVendasPorPeriodo.destroy();chartVendasPorPeriodo=null;}
+  if(resumo) resumo.innerHTML='<div class="biobel-inteligencia-vazio">Nenhuma venda carregada ainda.</div>';
+  return;
+ }
+ const dados=dias.map(d=>Object.assign({dia:d.dia},calcularVendasPorPeriodoDia(d)));
+ if(chartVendasPorPeriodo) chartVendasPorPeriodo.destroy();
+ chartVendasPorPeriodo=new Chart(canvas,{
+  type:'bar',
+  data:{
+   labels:dados.map(d=>d.dia),
+   datasets:[
+    {label:'Manhã',data:dados.map(d=>d.manha),backgroundColor:'rgba(251,191,36,.72)',borderRadius:3,stack:'periodos'},
+    {label:'Meio-dia',data:dados.map(d=>d.meioDia),backgroundColor:'rgba(79,156,255,.68)',borderRadius:3,stack:'periodos'},
+    {label:'Tarde',data:dados.map(d=>d.tarde),backgroundColor:'rgba(39,215,160,.72)',borderRadius:3,stack:'periodos'}
+   ]
+  },
+  options:{
+   responsive:true,
+   maintainAspectRatio:false,
+   interaction:{mode:'index',intersect:false},
+   plugins:{
+    legend:{display:true,labels:{color:'#93a3ba',boxWidth:12,font:{size:10}}},
+    tooltip:{callbacks:{label:function(ctx){return ' '+ctx.dataset.label+': '+money(ctx.raw);}}}
+   },
+   scales:{
+    x:{stacked:true,ticks:{color:'#93a3ba',font:{size:9},maxRotation:45,minRotation:0},grid:{color:'rgba(145,161,184,.06)'}},
+    y:{stacked:true,beginAtZero:true,ticks:{color:'#93a3ba',callback:function(v){return money(v);}},grid:{color:'rgba(145,163,184,.08)'}}
+   }
+  }
+ });
+ const totais=dados.reduce(function(acc,d){
+  acc.manha+=d.manha; acc.meioDia+=d.meioDia; acc.tarde+=d.tarde;
+  return acc;
+ },{manha:0,meioDia:0,tarde:0});
+ if(resumo){
+  resumo.innerHTML=[
+   ['🌅 Manhã',totais.manha],
+   ['🌤️ Meio-dia',totais.meioDia],
+   ['🌇 Tarde',totais.tarde]
+  ].map(function(x){
+   return '<div class="item"><div class="lbl">'+x[0]+'</div><div class="val">'+money(x[1])+'</div></div>';
+  }).join('');
+ }
 }
-function minutosParaTexto(min){const m=Math.max(0,Math.round(min)),h=Math.floor(m/60),mm=m%60;return h>0?h+'h '+String(mm).padStart(2,'0')+'min':m+'min';}
-function formatarHoraMinutos(min){const h=Math.floor(min/60),m=min%60;return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');}
+function minutosParaTexto(min){
+ const m=Math.max(0,Math.round(min));
+ const h=Math.floor(m/60),mm=m%60;
+ return h>0?h+'h '+String(mm).padStart(2,'0')+'min':m+'min';
+}
+function formatarHoraMinutos(min){
+ const h=Math.floor(min/60),m=min%60;
+ return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+}
 function analisarIntervalosEntreVendas(){
- const out=[];serieDiasInteligencia().forEach(d=>{const hs=(d.horariosVendas||[]).map(Number).filter(Number.isFinite).sort((a,b)=>a-b);for(let i=1;i<hs.length;i++){const mins=Math.round((hs[i]-hs[i-1])*1440);if(mins>0)out.push({dia:d.dia,inicio:hs[i-1]*1440,fim:hs[i]*1440,minutos:mins});}});return out;
+ const out=[];
+ serieDiasInteligencia().forEach(function(d){
+  const hs=(d.horariosVendas||[]).map(Number).filter(Number.isFinite).sort(function(a,b){return a-b;});
+  for(let i=1;i<hs.length;i++){
+   const mins=Math.round((hs[i]-hs[i-1])*1440);
+   if(mins>0) out.push({dia:d.dia,inicio:hs[i-1]*1440,fim:hs[i]*1440,minutos:mins});
+  }
+ });
+ return out;
 }
 function renderTempoEntreAtendimentos(){
- const r=document.getElementById('resumoTempoEntreAtendimentos'),l=document.getElementById('listaTempoEntreAtendimentos');if(!r||!l)return;
- const ints=analisarIntervalosEntreVendas();if(!ints.length){r.innerHTML='<div class="biobel-gap-kpi"><div class="lbl">Intervalos</div><div class="val">0</div></div>';l.innerHTML='<div class="biobel-inteligencia-vazio">Ainda não há horários suficientes para calcular o tempo entre vendas.</div>';return;}
- const media=ints.reduce((a,x)=>a+x.minutos,0)/ints.length,longos=ints.filter(x=>x.minutos>=30).sort((a,b)=>b.minutos-a.minutos),janela=ints.filter(x=>Math.max(x.inicio,900)<Math.min(x.fim,945)),maior=longos[0]||[...ints].sort((a,b)=>b.minutos-a.minutos)[0],diasJanela=[...new Set(janela.map(x=>x.dia))];
- r.innerHTML=[['⏱️ Intervalos',ints.length],['📊 Média entre vendas',minutosParaTexto(media)],['🚨 Intervalos ≥ 30 min',longos.length]].map(x=>`<div class="biobel-gap-kpi"><div class="lbl">${x[0]}</div><div class="val">${x[1]}</div></div>`).join('');
- let html=`<div class="biobel-gap-row"><span>🔎 Maior intervalo: <strong>${escInteligencia(maior.dia)}</strong>, ${formatarHoraMinutos(Math.round(maior.inicio))} → ${formatarHoraMinutos(Math.round(maior.fim))}</span><strong>${minutosParaTexto(maior.minutos)}</strong></div>`;
- html+=diasJanela.length?`<div class="biobel-gap-row"><span>🕒 A janela <strong>15h–15h45</strong> apareceu dentro de um intervalo sem venda registrada em</span><strong>${diasJanela.length} dia${diasJanela.length===1?'':'s'}</strong></div>`:`<div class="biobel-gap-row"><span>🕒 Janela 15h–15h45</span><strong>não identificada nos gaps atuais</strong></div>`;
- html+=longos.slice(0,8).map(x=>`<div class="biobel-gap-row"><span>📅 ${escInteligencia(x.dia)} · ${formatarHoraMinutos(Math.round(x.inicio))} → ${formatarHoraMinutos(Math.round(x.fim))}</span><strong>${minutosParaTexto(x.minutos)}</strong></div>`).join('');
- l.innerHTML=html;
+ const resumo=document.getElementById('resumoTempoEntreAtendimentos');
+ const lista=document.getElementById('listaTempoEntreAtendimentos');
+ if(!resumo||!lista) return;
+ const ints=analisarIntervalosEntreVendas();
+ if(!ints.length){
+  resumo.innerHTML='<div class="biobel-gap-kpi"><div class="lbl">Intervalos</div><div class="val">0</div></div>';
+  lista.innerHTML='<div class="biobel-inteligencia-vazio">Ainda não há horários suficientes para calcular o tempo entre vendas.</div>';
+  return;
+ }
+ const media=ints.reduce(function(sum,x){return sum+x.minutos;},0)/ints.length;
+ const longos=ints.filter(function(x){return x.minutos>=30;}).sort(function(a,b){return b.minutos-a.minutos;});
+ const janela=ints.filter(function(x){return Math.max(x.inicio,900)<Math.min(x.fim,945);});
+ const maior=longos[0]||[...ints].sort(function(a,b){return b.minutos-a.minutos;})[0];
+ const diasJanela=[...new Set(janela.map(function(x){return x.dia;}))];
+ resumo.innerHTML=[
+  ['⏱️ Intervalos',ints.length],
+  ['📊 Média entre vendas',minutosParaTexto(media)],
+  ['🚨 Intervalos ≥ 30 min',longos.length]
+ ].map(function(x){
+  return '<div class="biobel-gap-kpi"><div class="lbl">'+x[0]+'</div><div class="val">'+x[1]+'</div></div>';
+ }).join('');
+ let html='<div class="biobel-gap-row"><span>🔎 Maior intervalo: <strong>'+escInteligencia(maior.dia)+'</strong>, '+formatarHoraMinutos(Math.round(maior.inicio))+' → '+formatarHoraMinutos(Math.round(maior.fim))+'</span><strong>'+minutosParaTexto(maior.minutos)+'</strong></div>';
+ if(diasJanela.length){
+  html+='<div class="biobel-gap-row"><span>🕒 A janela <strong>15h–15h45</strong> apareceu dentro de um intervalo sem venda registrada em</span><strong>'+diasJanela.length+' dia'+(diasJanela.length===1?'':'s')+'</strong></div>';
+ }else{
+  html+='<div class="biobel-gap-row"><span>🕒 Janela 15h–15h45</span><strong>não identificada nos gaps atuais</strong></div>';
+ }
+ html+=longos.slice(0,8).map(function(x){
+  return '<div class="biobel-gap-row"><span>📅 '+escInteligencia(x.dia)+' · '+formatarHoraMinutos(Math.round(x.inicio))+' → '+formatarHoraMinutos(Math.round(x.fim))+'</span><strong>'+minutosParaTexto(x.minutos)+'</strong></div>';
+ }).join('');
+ lista.innerHTML=html;
 }
 function renderHorariosPico(){
  const elPico = document.getElementById('infoHorarioPico');
