@@ -1,3 +1,4 @@
+| v10.25 | 🛡️ Reforço de atualização do PWA/cache: o dashboard registra o service worker com versão de script e `updateViaCache: 'none'`, e o cache offline sobe para v6 para reduzir o risco de o painel ficar preso em uma versão antiga. |
 | v10.24 | 📊 Novo gráfico diário separando vendas por manhã, meio-dia e tarde; ⏱️ análise dos intervalos entre vendas registradas, incluindo a janela 15h–15h45; 📅 correção do agrupamento semanal para segunda–domingo e remoção de vários cálculos presos ao ano 2026. |
 ## v10.23 | 🧠 Central de Inteligência da planilha
 - Criada uma central que trabalha **somente com os dados que já existem na planilha**, sem cadastro novo de produtos ou clientes.
