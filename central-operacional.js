@@ -48,7 +48,7 @@ var listaVendResumo=nomesVendResumo.length ? nomesVendResumo.map(function(nome){
 var labelResumo=diaHoje?"Hoje":"Último dia lançado";
 var qtdTurnosValidos=(Number(manhaResumo.qtd)||0)+(Number(meioResumo.qtd)||0)+(Number(tardeResumo.qtd)||0);
 
-b.innerHTML='<div class="co12hero"><div><b>🧭 CENTRAL OPERACIONAL · v10.48</b><h2>Tudo que a dona precisa entender rapidamente</h2><small>Resumo simples do dia, com atendimentos, turnos, faturamento e médias. Os dados de vendas vêm da planilha.</small></div><button onclick="showTab(\\'dashboard\\')">← Voltar</button></div>'+
+b.innerHTML='<div class="co12hero"><div><b>🧭 CENTRAL OPERACIONAL · v10.48</b><h2>Tudo que a dona precisa entender rapidamente</h2><small>Resumo simples do dia, com atendimentos, turnos, faturamento e médias. Os dados de vendas vêm da planilha.</small></div><button onclick="showTab(\'dashboard\')">← Voltar</button></div>'+
 '<div class="co12kpis"><div><small>Faturamento do período</small><strong>'+m(t.t)+'</strong></div><div><small>Meta</small><strong>'+m(t.g)+'</strong></div><div><small>Atingimento</small><strong>'+(t.g?t.p.toFixed(1)+"%":"—")+'</strong></div><div><small>Dias com venda</small><strong>'+t.c+'</strong></div></div>'+
 '<section class="co12dia-resumo">'+
  '<div class="co12dia-top"><div><span class="co12dia-label">📅 '+labelResumo+'</span><h3>'+nomeDiaResumo+(diaHoje?' · '+agora.toLocaleDateString("pt-BR"):"")+'</h3><small>Visão gerencial rápida</small></div><div class="co12dia-badge">'+(diaHoje?"DADOS DE HOJE":"SEM DADOS DE HOJE")+'</div></div>'+
