@@ -17,7 +17,7 @@ Quem usa: a dona/gerente da loja e a equipe, principalmente **no celular**. **N�
 | `dashboard.html` | Visão Geral | Arquivo crítico; deve continuar funcionando |\n| `biobel-app.js` | Núcleo JavaScript compartilhado | Todas as páginas dependem dele |\n| `biobel-app.css` | CSS compartilhado | Todas as páginas dependem dele |\n| `biobel-shell.js` | Cabeçalho e navegação direta | Todas as páginas dependem dele |
 | `login.html` | Tela de entrada do painel | Autenticação só no navegador (não é segurança real) |
 | `index.html` | Site público da loja | Link do WhatsApp e endereço são reais |
-| `service-worker.js` | Cache offline (só `dashboard.html` e `login.html`) | Mudou o cache? suba `CACHE_NAME` |
+| `service-worker.js` | Cache/offline das páginas e arquivos compartilhados | Mudou o cache? suba `CACHE_NAME` |
 | `manifest.json` | Configuração do PWA | — |
 | `navigation-improvements.js` | Melhorias de navegação do site público | Tem GitHub Action ligada (ver `docs/PUBLICACAO.md`) |
 | `tools/validar.js` | **Validador — rode antes de todo commit** | — |

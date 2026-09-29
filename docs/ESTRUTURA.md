@@ -22,16 +22,15 @@
 ```
 **Arquitetura v10.39:** cada área principal tem uma página própria. O JavaScript, CSS e cabeçalho compartilhados ficam em arquivos comuns. O `dashboard.html` continua como Visão Geral.
 
-## 2. Anatomia do `dashboard.html`
-Ordem dentro do arquivo:
-1. `<head>`: Tailwind (CDN), `xlsx` e `chart.js` (CDN), `<style>` com o CSS próprio (tema escuro; existe **modo claro**, ver seção `MODO CLARO`).
-2. Cabeçalho fixo: logo, **número da versão** (`#versaoSistema`), indicador "✅ Salvo às HH:MM", nome da planilha ativa.
-3. Navegação principal (v10.6) → **Visão Geral**, **Caixa**, **Equipe**, **Ferramentas** e **Administração**. No celular, um menu único de navegação dá acesso às mesmas áreas sem duplicar atalhos. As áreas `info`, `alertas`, `campanhas` e `config` continuam existindo como seções internas/atalhos agrupados; `adm` é a área técnica chamada de Administração na interface.
-4. Uma `<section id="...Tab">` por aba (a aba Dashboard é o bloco principal com `#dashboardModoAvancado` etc.).
-5. Dois blocos `<script>` grandes no fim (todo o JavaScript). O código continua em arquivo único, mas agora possui **zonas internas de manutenção** (`BIOBEL — ZONA: ...`) para facilitar alterações pequenas sem precisar separar o painel em vários arquivos.
+## 2. Anatomia das páginas do painel
+1. `dashboard.html` concentra a Visão Geral.
+2. `central.html`, `operacao.html`, `equipe.html`, `vendas.html`, `analises.html`, `alertas.html`, `config.html` e `administracao.html` são páginas independentes, cada uma com sua própria seção de conteúdo.
+3. `biobel-shell.js` injeta o cabeçalho e os links diretos.
+4. `biobel-app.js` contém o núcleo JavaScript compartilhado e escolhe o renderizador pela propriedade `body[data-biobel-page]`.
+5. `biobel-app.css` reúne o CSS que antes ficava dentro do dashboard, evitando duplicação.
 
 ### Zonas internas do JavaScript compartilhado
-As zonas são apenas marcadores de manutenção: **não alteram a execução** e não devem ser usadas para mover funções em massa.
+As zonas agora ficam em `biobel-app.js`. Elas são apenas marcadores de manutenção: **não alteram a execução** e devem continuar sendo alteradas por partes.
 - **CORE / INICIALIZAÇÃO** → utilitários compartilhados e inicialização.
 - **EQUIPE** → rotinas, folha de ponto, faltas e exportações relacionadas.
 - **ADMINISTRAÇÃO** → acesso, financeiro, fornecedores, pessoas, comissões, custos e fluxo de caixa.
