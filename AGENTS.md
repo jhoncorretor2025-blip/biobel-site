@@ -14,7 +14,10 @@ Quem usa: a dona/gerente da loja e a equipe, principalmente **no celular**. **N�
 ## 2. Mapa rápido dos arquivos
 | Arquivo | Para que serve | Cuidado |
 |---|---|---|
-| `dashboard.html` | Visão Geral | Arquivo crítico; deve continuar funcionando |\n| `biobel-app.js` | Núcleo JavaScript compartilhado | Todas as páginas dependem dele |\n| `biobel-app.css` | CSS compartilhado | Todas as páginas dependem dele |\n| `biobel-shell.js` | Cabeçalho e navegação direta | Todas as páginas dependem dele |
+| `dashboard.html` | Visão Geral | Arquivo crítico; deve continuar funcionando |
+| `biobel-app.js` | Núcleo JavaScript compartilhado | Todas as páginas dependem dele |
+| `biobel-app.css` | CSS compartilhado | Todas as páginas dependem dele |
+| `biobel-shell.js` | Cabeçalho e navegação direta | Todas as páginas dependem dele |
 | `login.html` | Tela de entrada do painel | Autenticação só no navegador (não é segurança real) |
 | `index.html` | Site público da loja | Link do WhatsApp e endereço são reais |
 | `service-worker.js` | Cache/offline das páginas e arquivos compartilhados | Mudou o cache? suba `CACHE_NAME` |
@@ -47,7 +50,7 @@ git add -A && git commit -m "vX.Y - resumo em português" && git push
 # espere o build do Pages ficar "built" (~40-90s) e confira a versão no site
 ```
 
-## 5. Arquitetura atual (v10.39)\n- Cada área principal tem URL própria e compartilha o mesmo núcleo JavaScript/CSS e o mesmo cabeçalho.\n- O login da sessão continua único para todas as páginas.\n- A área de Administração mantém seu controle interno separado.\n\n## 6. Armadilhas já vividas (aprenda com elas)
+## 5. Arquitetura atual (v10.40)\n- Cada área principal tem URL própria e compartilha o mesmo núcleo JavaScript/CSS e o mesmo cabeçalho.\n- O login da sessão continua único para todas as páginas.\n- A área de Administração mantém seu controle interno separado.\n\n## 6. Armadilhas já vividas (aprenda com elas)
 - **Edição que apaga função sem querer:** ao usar substituição de texto, confira que o trecho âncora não engoliu a função vizinha. `node tools/validar.js` acusa "handler chama função inexistente".
 - **Ano fixo em 2026** no código (≈13 lugares: `new Date(2026, ...)`, `'2026-'+...`, função `dataDoDiaParaISO`). Cálculos de **dia da semana** vão errar a partir de 2027. Ao mexer nisso, corrija centralizando o ano.
 - **Verifique se a funcionalidade já existe antes de criar.** Já aconteceu de recriarmos à mão algo que o sistema já lia da planilha (ex.: turno por venda já vem em `d.porTurno`). Faça `grep` por palavras-chave.

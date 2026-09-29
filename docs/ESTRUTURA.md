@@ -14,13 +14,16 @@
 │   └── imagens/  (banner/, depoimentos/, produtos)
 ├── login.html                 ← tela de entrada do painel
 ├── dashboard.html             ← VISÃO GERAL
-├── central.html · operacao.html · equipe.html · vendas.html\n├── analises.html · alertas.html · config.html · administracao.html\n├── biobel-app.js · biobel-app.css · biobel-shell.js ← núcleo compartilhado\n├── manifest.json, service-worker.js   ← PWA (instalar no celular / offline)
+├── central.html · operacao.html · equipe.html · vendas.html
+├── analises.html · alertas.html · config.html · administracao.html
+├── biobel-app.js · biobel-app.css · biobel-shell.js ← núcleo compartilhado
+├── manifest.json, service-worker.js   ← PWA (instalar no celular / offline)
 ├── .nojekyll                  ← diz ao GitHub Pages pra NÃO processar com Jekyll (não apague)
 ├── .github/workflows/         ← automação que mexe no index.html
 ├── tools/  validar.js · mapa.js
 └── docs/   ESTRUTURA · CONVENCOES · PUBLICACAO · CHANGELOG · MAPA_AUTOMATICO
 ```
-**Arquitetura v10.39:** cada área principal tem uma página própria. O JavaScript, CSS e cabeçalho compartilhados ficam em arquivos comuns. O `dashboard.html` continua como Visão Geral.
+**Arquitetura v10.40:** cada área principal tem uma página própria. O JavaScript, CSS e cabeçalho compartilhados ficam em arquivos comuns. O `dashboard.html` continua como Visão Geral.
 
 ## 2. Anatomia das páginas do painel
 1. `dashboard.html` concentra a Visão Geral.
