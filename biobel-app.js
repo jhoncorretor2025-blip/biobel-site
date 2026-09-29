@@ -12957,6 +12957,38 @@ function renderCentralInteligencia(){
  renderInteligenciaAtencao(dias);
 }
 
+function renderResumoHojeMeta(){
+ const el=document.getElementById('metaResumoHoje');
+ if(!el) return;
+ const agora=obterAgoraBrasilia();
+ const chaveHoje=String(agora.getDate()).padStart(2,'0')+'.'+String(agora.getMonth()+1).padStart(2,'0');
+ const d=daysData.find(function(x){return x.dia===chaveHoje;});
+ const vendas=(d?.vendasIndividuais||[]).map(Number).filter(function(v){return Number.isFinite(v)&&v>0;});
+ const total=d ? Number(d.sales)||0 : 0;
+ const atendimentos=d ? (Number(d.qtdVendas)||vendas.length||0) : 0;
+ const maior=vendas.length?Math.max.apply(null,vendas):0;
+ const menor=vendas.length?Math.min.apply(null,vendas):0;
+ const ticket=atendimentos>0?total/atendimentos:0;
+ let mediaIntervalo=0;
+ try{
+  const analise=analisarIntervalosPorDia()[chaveHoje];
+  mediaIntervalo=analise?.media||0;
+ }catch(e){}
+ const celulas=[
+  ['💰','Vendido hoje',total?money(total):'—'],
+  ['🏆','Maior venda',maior?money(maior):'—'],
+  ['📉','Menor venda',menor?money(menor):'—'],
+  ['👥','Atendimentos',atendimentos||'—'],
+  ['⏱️','Média entre atendimentos',mediaIntervalo?minutosParaTexto(mediaIntervalo):'—'],
+  ['🧾','Ticket médio',ticket?money(ticket):'—']
+ ];
+ el.innerHTML='<div style="font-size:10px;color:#93a3ba;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px;">📌 Resumo de hoje</div>'+
+  '<div class="meta-resumo-hoje-grid">'+celulas.map(function(x){
+   return '<div class="meta-resumo-hoje-item"><div class="mrh-label">'+x[0]+' '+x[1]+'</div><strong>'+x[2]+'</strong></div>';
+  }).join('')+'</div>'+
+  '<div style="font-size:10px;color:#93a3ba;margin-top:7px;">💡 Os valores são calculados a partir das vendas registradas hoje na planilha. A média entre atendimentos usa os horários registrados e não representa a duração do atendimento.</div>';
+}
+
 function renderAdvancedDashboard(){
   sortDays();
 
@@ -13025,7 +13057,9 @@ function renderAdvancedDashboard(){
     }
    }
 
-   if(elProjecao){
+   renderResumoHojeMeta();
+
+  if(elProjecao){
     if(metaFaltam<=0){
      elProjecao.innerHTML = '<span style="color:#27d7a0;">🎉 Meta já batida!</span>';
     } else if(diasRestantesPrecisos<=0){
@@ -13295,5 +13329,5 @@ let promptDeInstalacaoGuardado=null;
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();promptDeInstalacaoGuardado=e;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='inline-block';});
 function instalarAppBiobel(){if(!promptDeInstalacaoGuardado)return;promptDeInstalacaoGuardado.prompt();promptDeInstalacaoGuardado.userChoice.then(function(){promptDeInstalacaoGuardado=null;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';});}
 window.addEventListener('appinstalled',function(){const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';try{mostrarToast('✅ Biobel instalado!');}catch(e){}});
-if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=10.48',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
+if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=10.49',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
 window.addEventListener('load',initPaginaAtiva,{once:true});
