@@ -7,8 +7,8 @@
 
 ## Passo a passo
 1. `git pull --rebase` (veja "Robô" abaixo).
-2. Edite. Rode `node tools/validar.js` até dar **🟢 APROVADO** e confira as páginas do painel. O núcleo comum agora está em `biobel-app.js`, `biobel-app.css` e `biobel-shell.js`.
-3. Suba a versão **e a data** no span `#versaoSistema` (texto visível + `mostrarToast('… versão vX.Y')` + `title`) e adicione a entrada em **Configuração → 🆕 Novidades** (dentro do `dashboard.html`) e em `docs/CHANGELOG.md`.
+2. Edite. Rode `node tools/validar.js <arquivo.html>` **em cada página que pode ter sido afetada** até dar **🟢 APROVADO** — se você mexeu em `biobel-app.js`, `biobel-shell.js`, `biobel-app.css` ou outro arquivo compartilhado, rode nas 9 páginas do painel (dashboard, central, operacao, equipe, vendas, analises, alertas, config, administracao).
+3. Suba a versão **e a data** no span `#versaoSistema` — ele é montado dentro de **`biobel-shell.js`** (não em cada página individual), então mudar em um lugar já reflete nas 9. Tem 2 pontos pra atualizar ali: o texto visível (`>vX.Y</span>`) e a mensagem do toast/title (`'… versão vX.Y'` / `title="Atualizado em DD/MM/AAAA...`). Adicione também a entrada em **Configuração → 🆕 Novidades** (essa seção mora dentro de `config.html`) e em `docs/CHANGELOG.md`.
 4. `node tools/mapa.js` (atualiza `docs/MAPA_AUTOMATICO.md`).
 5. **Um commit** com mensagem `vX.Y - resumo do que mudou e por quê`. `git push`.
 6. Espere o build: `GET https://api.github.com/repos/jhoncorretor2025-blip/biobel-site/pages` → `"status": "built"` (leva 40–100 s; o arquivo é grande). `"building"` = aguarde; `"errored"` = veja a seção abaixo.

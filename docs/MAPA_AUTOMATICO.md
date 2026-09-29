@@ -1,33 +1,52 @@
 # 🗺️ Mapa automático do sistema (gerado por `node tools/mapa.js`)
 
 > **Não edite à mão** — este arquivo é regenerado. Explicações humanas: [ESTRUTURA.md](ESTRUTURA.md).
-> Gerado a partir do `dashboard.html` versão **v10.1** (28/09/2026).
+> Gerado a partir do estado real do repositório — painel na versão **v10.42** (29/09/2026), compartilhada por `biobel-shell.js` entre as 9 páginas.
 
-## Arquivos e tamanhos
+## Páginas do painel (9)
+| Arquivo | data-biobel-page | id do conteúdo | Tamanho | IDs no HTML | Scripts locais próprios |
+|---|---|---|---|---|---|
+| `dashboard.html` | `dashboard` | `dashboardTab` | 17 KB | 63 | — |
+| `central.html` | `central` | `centralPage` | 3 KB | 8 | — |
+| `operacao.html` | `caixa` | `caixaTab` | 9 KB | 25 | — |
+| `equipe.html` | `equipe` | `equipeTab` | 24 KB | 70 | — |
+| `vendas.html` | `campanhas` | `campanhasTab` | 6 KB | 18 | — |
+| `analises.html` | `info` | `infoTab` | 33 KB | 142 | — |
+| `alertas.html` | `alertas` | `alertasTab` | 4 KB | 11 | — |
+| `config.html` | `config` | `configTab` | 49 KB | 110 | — |
+| `administracao.html` | `adm` | `admTab` | 65 KB | 187 | — |
+
+## Mapa de navegação (de `biobel-shell.js`)
+```js
+const PAGES={dashboard:"dashboard.html",central:"central.html",caixa:"operacao.html",equipe:"equipe.html",campanhas:"vendas.html",info:"analises.html",alertas:"alertas.html",config:"config.html",adm:"administracao.html"}
+```
+⚠️ Os nomes internos (`caixa`, `info`, `campanhas`) não batem sempre com os nomes de arquivo — confira sempre os dois lados.
+
+## Arquivos JavaScript compartilhados
+| Arquivo | Tamanho | Funções (aprox.) | Usado em |
+|---|---|---|---|
+| `biobel-app.js` | 666 KB | 662 | todas as 9 páginas |
+| `biobel-shell.js` | 7 KB | 1 | todas as 9 páginas |
+| `central-operacional.js` | 17 KB | 16 | central.html |
+| `inteligencia-operacional.js` | 12 KB | 13 | dashboard.html |
+
+## Outros arquivos
 | Arquivo | Tamanho |
 |---|---|
-| dashboard.html | 846 KB |
-| index.html | 17 KB |
+| index.html | 29 KB |
 | login.html | 5 KB |
-| style.css / extras.css | 11 KB / 12 KB |
-| service-worker.js | 2 KB |
+| biobel-design-system.css | 7 KB |
+| biobel-ux-refinement.css | 7 KB |
+| biobel-app.css | 51 KB |
+| service-worker.js | 3 KB |
 
-## Abas do dashboard (`<section id="...Tab">`)
-- `infoTab`
-- `alertasTab`
-- `equipeTab`
-- `campanhasTab`
-- `configTab`
-- `caixaTab`
-- `admTab`
-
-Botões de aba: `tabDashboard → showTab('dashboard')`, `tabInfo → showTab('info')`, `tabAlertas → showTab('alertas')`, `tabCaixa → showTab('caixa')`, `tabEquipe → showTab('equipe')`, `tabCampanhas → showTab('campanhas')`, `tabConfig → showTab('config')`, `tabAdm → showTab('adm')`
-
-## Seções do código JavaScript (comentários `/* ===== Nome ===== */`)
-Para achar uma: `grep -n "===== Nome" dashboard.html`
-- MODO CLARO
+## Seções do código JavaScript em `biobel-app.js` (comentários `/* ===== Nome ===== */`)
+Para achar uma: `grep -n "===== Nome" biobel-app.js`
+- BIOBEL — ZONA: CORE / INICIALIZAÇÃO
+   Utilitários compartilhados e estado inicial do painel.
 - Máscara de moeda (Real) para campos de texto
 - Toast com "Desfazer" — pra remoções, dá uma segunda chance rápida sem precisar recriar tudo
+- BIOBEL — ZONA: EQUIPE / ROTINAS E ATIVIDADES
 - Atividades da Gerência (Alessandra) — lista própria, separada da rotina Gabi/Day
 - Item 4: Aviso de armazenamento quase cheio — evita a pessoa perder dados sem entender
    por quê, se um dia o limite do navegador (geralmente uns 5-10MB) chegar perto do fim.
@@ -41,12 +60,14 @@ Para achar uma: `grep -n "===== Nome" dashboard.html`
 - Tour Guiado — aparece sozinho na primeira vez, explica as abas principais
 - Grupos colapsáveis genéricos na ADM (Funcionários, Fornecedores, etc.)
 - Modo Simples/Completo do Dashboard — esconde graficos e tabelas tecnicas
+- BIOBEL — ZONA: EQUIPE / FOLHA DE PONTO E FALTAS
 - Folha de Ponto — entrada, intervalo, saída, com cálculo automático de horas
 - Registro de Faltas — justificadas ou não
 - Exportar Boletos — PDF e CSV, respeitando o filtro/busca que estiver ativo na tela
 - Log de alterações (simples, guarda as últimas 30)
 - Logo personalizada da Biobel (usada no relatório mensal em PDF)
 - Link "Trabalhe Conosco" (Google Forms) — aparece automaticamente no site público
+- BIOBEL — ZONA: ADMINISTRAÇÃO / ACESSO E DADOS DE GESTÃO
 - Área ADM/Gerência (login próprio, separado do login principal do painel)
 - Chave PIX de cada funcionária (pra Alessandra saber como pagar)
 - Aviso antes de sair com algo digitado e não salvo
@@ -62,12 +83,14 @@ Para achar uma: `grep -n "===== Nome" dashboard.html`
 - Resumo de "o que precisa de atenção", logo no topo
 - Filtro rápido de status nos boletos
 - Assistente Guiado de Desligamento — passo a passo, bem simples, uma pergunta por vez
+- BIOBEL — ZONA: ADMINISTRAÇÃO / FINANCEIRO E FORNECEDORES
 - Gastos Fixos (aluguel, água, luz, internet...)
 - Boletos de Fornecedores (gastos variáveis)
 - Padrão de parcelamento por fornecedor — lembra o jeito que cada um costuma parcelar
 - Ranking de Fornecedores e Gastos por Marca — quem/o que mais pesa no bolso
 - Dados dos Fornecedores — telefone e CNPJ, guardado por nome
 - Histórico de Preços por Fornecedor (item 7)
+- BIOBEL — ZONA: ADMINISTRAÇÃO / PESSOAS E COMISSÕES
 - Comissão por Níveis de Meta (Gabriela e Day, cada uma recebe o valor do nível atingido)
 - Hora extra fixa (Gabriela, 2h/semana)
 - Data de Admissão — Gabriela (CLT), pra calcular férias e FGTS
@@ -78,16 +101,19 @@ Para achar uma: `grep -n "===== Nome" dashboard.html`
 - Aniversários (Gabriela e Day) — pra gerente lembrar
 - Contrato de Estágio — Day (início e prazo de renovação)
 - Promoção de Day: Estágio -> CLT
+- BIOBEL — ZONA: ADMINISTRAÇÃO / CUSTOS, ESTOQUE E CAPITAL
 - Impostos (DAS/MEI/Simples Nacional) — valor manual, sem inventar número
 - Taxa da Máquina de Cartão (débito/crédito)
 - Valor do Estoque Parado (manual, sem coluna de custo na planilha)
 - Reserva de Emergência / Capital de Giro (manual)
 - Participação no Lucro (opcional, separada da comissão por metas)
+- BIOBEL — ZONA: ADMINISTRAÇÃO / FLUXO DE CAIXA E DRE
 - Alerta de Fluxo de Caixa (avisa se as contas a vencer não vão caber no saldo disponível)
 - Projeção de Fluxo de Caixa — 3 meses (item 14)
 - DRE Simplificado (resumo formal do período)
 - Comissões e participação no lucro por vendedora
 - Histórico de comissões já registradas (fica salvo mesmo depois que o mês virar)
+- BIOBEL — ZONA: DADOS / BACKUP E METAS
 - Backup automático (roda sozinho 1x por semana, guardado dentro do próprio navegador)
 - Item 7: Validação de CPF e CNPJ — confere os dígitos verificadores de verdade, não só
    se tem a quantidade certa de números. Não bloqueia salvar, só avisa visualmente.
@@ -95,6 +121,7 @@ Para achar uma: `grep -n "===== Nome" dashboard.html`
 - Dados da Empresa (CNPJ, razão social)
 - E-mail quando bater a meta do mês (item 10)
 - Resumo semanal automático por e-mail (item 11) — só segunda-feira, uma vez por semana
+- BIOBEL — ZONA: ANÁLISES / COMPARATIVOS E INDICADORES
 - Tela "Por Dia da Semana" — compara todas as ocorrências do mesmo dia da semana
 - Meta de quantidade de vendas (opcional)
 - Metas trimestral e anual (opcional)
@@ -108,7 +135,10 @@ Para achar uma: `grep -n "===== Nome" dashboard.html`
 - Comparar meses arquivados lado a lado
 - Comparar Mesmo Período — este mês (em andamento) x mês passado (arquivado)
 - Acima/Abaixo da Média, e Melhor/Pior Semana do Mês (aba Dias)
+- BIOBEL — ZONA: CAMPANHAS / MARKETING E SEM MOVIMENTO
 - Campanhas de Marketing (item 2) — compara o período da campanha com o resto do mês
+- BIOBEL — ZONA: CLIMA / CORRELAÇÃO E PREVISÕES
+   ATENÇÃO: manter esta zona isolada ao fazer refatorações.
 - Correlação com Clima (item 12) — marcação manual, sem depender de API externa
 - Busca automática do clima de hoje — API gratuita Open-Meteo, sem precisar de chave
 - Previsão futura do clima — busca uma vez por dia e guarda em cache, reaproveitada por
@@ -119,21 +149,30 @@ Para achar uma: `grep -n "===== Nome" dashboard.html`
 - Dias Atípicos — excluídos das médias por dia da semana, sem sumir do faturamento total
 - Contagem de dias úteis restantes — pula domingo (loja fechada) e feriados marcados
 - Recordes de Vendas Individuais (Top 5 melhores/piores)
+- BIOBEL — ZONA: EXPORTAÇÕES / RELATÓRIOS E FECHAMENTO
 - Fechamento Mensal Formal (retrato travado dos números, guardado no histórico)
 - Exportar Excel (planilha de verdade, pronta pra levar pro contador)
+- BIOBEL — ZONA: DADOS / GOOGLE SHEETS E PLANILHAS
 - Múltiplas planilhas salvas (troca rápida entre meses)
 - Aviso de mês divergente (itens 1, 2, 3, 4, 9)
-
-## Funções globais: 594
-Para achar uma: `grep -n "^function nome\|^async function nome" dashboard.html`
+- Conversão robusta de valores vindos da planilha
+- PROCESSAMENTO DE DADOS DA PLANILHA =====
+   REGRA CRÍTICA DO CAIXA:
+   O fechamento da gaveta é o valor informado pela própria planilha.
+   Nunca substituir esse valor por uma conta parcial. Se não for localizado,
+   marcar como ausente e bloquear o fechamento/impressão.
+- BIOBEL — ZONA: RENDERIZAÇÃO / DASHBOARD AVANÇADO
+- BIOBEL — ZONA: INTELIGÊNCIA DA PLANILHA (v10.24)
+   Quatro leituras automáticas sem cadastro de produtos/clientes:
+   2) possíveis inconsistências, 3) comparação, 5) explicação e 10) destaques.
 
 ## Bibliotecas externas (CDN)
 - https://cdn.tailwindcss.com
 - https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js
 - https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js
 
-## Chaves de dados no navegador: 122
-Prefixo comum `biobel_`. Agrupadas pelo 1º termo depois do prefixo (chaves terminadas em `_` são prefixos + sufixo dinâmico):
+## Chaves de dados no navegador (localStorage): 126
+Prefixo comum `biobel_`. Agrupadas pelo 1º termo depois do prefixo:
 
 **adm** (33): `biobel_adm_autenticado`, `biobel_adm_boletos`, `biobel_adm_comissoes`, `biobel_adm_data_admissao_gabriela`, `biobel_adm_fechamentos_mensais`, `biobel_adm_gastos_fixos`, `biobel_adm_historico_comissoes`, `biobel_adm_historico_ferias_gabriela`, `biobel_adm_historico_recesso_day`, `biobel_adm_inicio_estagio_day`, `biobel_adm_inicio_informal_gabriela`, `biobel_adm_migracao_salarios_v2`, `biobel_adm_migracao_vencimentos_v1`, `biobel_adm_nascimento_`, `biobel_adm_nascimento_day`, `biobel_adm_nascimento_gabriela`, `biobel_adm_niveis_comissao`, `biobel_adm_pct_participacao_lucro`, `biobel_adm_renovacao_estagio_meses`, `biobel_adm_reunioes`, `biobel_adm_secao_isolada`, `biobel_adm_seed_dados_pessoais_v1`, `biobel_adm_taxa_credito`, `biobel_adm_taxa_debito`, `biobel_adm_tipo_imposto`, `biobel_adm_usuario_logado`, `biobel_adm_valor_estoque`, `biobel_adm_valor_estoque_data`, `biobel_adm_valor_hora_extra`, `biobel_adm_valor_hora_extra_definido_manualmente`, `biobel_adm_valor_imposto_mensal`, `biobel_adm_valor_reserva`, `biobel_adm_valor_reserva_data`
 
@@ -155,7 +194,7 @@ Prefixo comum `biobel_`. Agrupadas pelo 1º termo depois do prefixo (chaves term
 
 **notif** (3): `biobel_notif_mes_divergente_dia`, `biobel_notif_meta_dia`, `biobel_notif_vencimentos_dia`
 
-**seed** (3): `biobel_seed_msg_alessandra_v1`, `biobel_seed_pix_v1`, `biobel_seed_planilha_setembro_v1`
+**ultimo** (3): `biobel_ultimo_backup_automatico`, `biobel_ultimo_erro_conexao`, `biobel_ultimo_horario_fechamento_registrado`
 
 **arquivo** (2): `biobel_arquivo_ex_funcionarios`, `biobel_arquivo_meses`
 
@@ -169,13 +208,15 @@ Prefixo comum `biobel_`. Agrupadas pelo 1º termo depois do prefixo (chaves term
 
 **modo** (2): `biobel_modo_compacto`, `biobel_modo_travado_gastos`
 
-**ultimo** (2): `biobel_ultimo_backup_automatico`, `biobel_ultimo_erro_conexao`
+**seed** (2): `biobel_seed_msg_alessandra_v1`, `biobel_seed_pix_v1`
 
 **abrir** (1): `biobel_abrir_assistente_desligamento_apos_login`
 
 **apps** (1): `biobel_apps_script_url`
 
 **card** (1): `biobel_card_colapsado_`
+
+**central** (1): `biobel_central_v10_39`
 
 **clima** (1): `biobel_clima_dias`
 
@@ -193,6 +234,8 @@ Prefixo comum `biobel_`. Agrupadas pelo 1º termo depois do prefixo (chaves term
 
 **faltas** (1): `biobel_faltas`
 
+**fechamento** (1): `biobel_fechamento_caixa_confirmado_`
+
 **folha** (1): `biobel_folha_ponto`
 
 **font** (1): `biobel_font_pct`
@@ -204,6 +247,8 @@ Prefixo comum `biobel_`. Agrupadas pelo 1º termo depois do prefixo (chaves term
 **hide** (1): `biobel_hide_legends`
 
 **info** (1): `biobel_info_secao_ativa`
+
+**inteligencia** (1): `biobel_inteligencia_v10_13`
 
 **ja** (1): `biobel_ja_trocou_mes_automatico`
 
@@ -226,6 +271,8 @@ Prefixo comum `biobel_`. Agrupadas pelo 1º termo depois do prefixo (chaves term
 **notificacoes** (1): `biobel_notificacoes_ativas`
 
 **padroes** (1): `biobel_padroes_parcelado_fornecedor`
+
+**pendente** (1): `biobel_pendente_horario_fechamento`
 
 **planilhas** (1): `biobel_planilhas_salvas`
 

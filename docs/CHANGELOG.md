@@ -1,3 +1,21 @@
+## v10.42 | 🐛🔧 Dois bugs críticos corrigidos + documentação atualizada
+- **Corrigido:** código JavaScript duplicado (~70 KB, cópia do próprio biobel-app.js) que tinha
+  sobrado colado por engano dentro do `<body>` das 9 páginas do painel, fora de qualquer
+  `<script>` — o navegador mostrava aquele código como texto visível na tela. Removido de
+  todas as 9 páginas.
+- **Corrigido:** o menu de navegação só abria a página inicial. Causa: uma linha em
+  `biobel-app.js`, no nível raiz do arquivo (roda ao carregar, em todas as páginas),
+  assumia um elemento (`daySelect`) que só existe no Dashboard, sem proteção — o erro
+  travava o carregamento do script inteiro nas outras 8 páginas, então o conteúdo delas
+  nunca ficava visível. Corrigido com `?.`; verificado que não havia outros pontos com o
+  mesmo risco (checado com simulação real da execução do script, página por página).
+- `tools/validar.js` atualizado para entender scripts compartilhados entre páginas
+  (`<script src="arquivo.js">` local) e não dar mais falso positivo de "handler não existe"
+  nessa arquitetura nova.
+- Documentação (`AGENTS.md`, `docs/ESTRUTURA.md`, `docs/CONVENCOES.md`, `docs/PUBLICACAO.md`)
+  reescrita para refletir a divisão em 9 páginas com JS/CSS compartilhados — a versão anterior
+  ainda descrevia o painel como um arquivo único.
+
 ## v10.41 | 🛠️ Correções da nova arquitetura
 - Corrigidos caminhos da logo nas páginas do painel para funcionar corretamente no GitHub Pages.
 - Atualizado o cache do PWA para incluir os JS/CSS compartilhados usados pelas páginas separadas.
