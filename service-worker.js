@@ -6,7 +6,7 @@
 // internet, a versão mais nova é buscada e exibida; o cache só entra em ação quando o
 // aparelho está genuinamente sem conexão.
 
-const CACHE_NAME = 'biobel-cache-v10.35';
+const CACHE_NAME = 'biobel-cache-v10.36';
 const ARQUIVOS_ESSENCIAIS = ['./dashboard.html', './login.html'];
 
 self.addEventListener('message', (event) => {
