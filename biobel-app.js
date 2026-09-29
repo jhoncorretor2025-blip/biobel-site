@@ -7855,6 +7855,7 @@ function renderInfoTab(){
  renderProdutosRanking();
  renderHorariosPico();
  renderVendasPorPeriodo();
+ renderEscalaAtendimentoHoje();
  renderTempoEntreAtendimentos();
  renderTurnos();
  renderGenero();
@@ -9675,6 +9676,87 @@ function formatarHoraMinutos(min){
  const h=Math.floor(min/60),m=min%60;
  return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
 }
+function minutosParaTexto(min){
+ const m=Math.max(0,Math.round(min));
+ const h=Math.floor(m/60),mm=m%60;
+ return h>0?h+'h '+String(mm).padStart(2,'0')+'min':m+'min';
+}
+function formatarHoraMinutos(min){
+ const h=Math.floor(min/60)%24,m=min%60;
+ return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+}
+function minutosHorario(hhmm){
+ const m=String(hhmm||'').match(/^(\d{1,2}):(\d{2})/);
+ return m ? Number(m[1])*60+Number(m[2]) : null;
+}
+/* Escala real da loja:
+   Seg–sex: Alessandra de manhã; Alessandra + Day à tarde.
+   Sábado: Alessandra + Day no mesmo turno.
+   O corte manhã/tarde é 12h. A abertura/fechamento vêm da Configuração. */
+function obterEscalaAtendimento(dataObj){
+ const dow=dataObj?.getDay?.();
+ const horario=getHorarioFuncionamento();
+ const abertura=minutosHorario(horario.abertura) ?? 540;
+ const fechamento=minutosHorario(dow===6 ? horario.fechamentoSabado : horario.fechamentoSemana) ?? (dow===6 ? 960 : 1080);
+ if(dow===0) return [];
+ if(dow===6){
+  return [{id:'sabado',nome:'Sábado',inicio:abertura,fim:fechamento,funcionarias:['Alessandra','Day']}];
+ }
+ const corte=Math.min(12*60,fechamento);
+ const partes=[];
+ if(corte>abertura) partes.push({id:'manha',nome:'Manhã',inicio:abertura,fim:corte,funcionarias:['Alessandra']});
+ if(fechamento>12*60) partes.push({id:'tarde',nome:'Tarde',inicio:12*60,fim:fechamento,funcionarias:['Alessandra','Day']});
+ return partes;
+}
+function nomeFuncionarioEscala(nome){
+ const n=String(nome||'').trim().toLowerCase();
+ if(n==='alesandra'||n==='alessandra') return 'Alessandra';
+ if(n==='day'||n==='dayane') return 'Day';
+ return normalizarNome(nome);
+}
+function registrosComHorarioDoDia(d){
+ return (Array.isArray(d?.registrosVendas)?d.registrosVendas:[])
+  .map(function(r){
+   const horario=Number(r?.horario);
+   return {...r,horario:Number.isFinite(horario)?horario:null};
+  })
+  .filter(function(r){ return r.horario!==null && r.horario>=0 && r.horario<1; })
+  .sort(function(a,b){return a.horario-b.horario;});
+}
+function horarioParaMinutos(frac){
+ return Math.round(Number(frac)*1440);
+}
+function intervaloEntreRegistros(lista){
+ const out=[];
+ for(let i=1;i<lista.length;i++){
+  const a=horarioParaMinutos(lista[i-1].horario);
+  const b=horarioParaMinutos(lista[i].horario);
+  const m=b-a;
+  if(m>0) out.push({inicio:a,fim:b,minutos:m,anterior:lista[i-1],atual:lista[i]});
+ }
+ return out.sort(function(a,b){return b.minutos-a.minutos;});
+}
+function obterRegistrosPeriodo(d,parte){
+ return registrosComHorarioDoDia(d).filter(function(r){
+  const m=horarioParaMinutos(r.horario);
+  return m>=parte.inicio && m<parte.fim;
+ });
+}
+function turnoFallbackCorrespondente(id){
+ return id==='tarde' ? ['tarde','meio-dia'] : id==='manha' ? ['manhã'] : ['manhã','meio-dia','tarde'];
+}
+function obterContagemVendedoraPeriodo(d,nome,parte){
+ const alvo=nomeFuncionarioEscala(nome);
+ const registros=obterRegistrosPeriodo(d,parte);
+ const comNome=registros.filter(function(r){return nomeFuncionarioEscala(r.vendedora)===alvo;});
+ if(comNome.length) return comNome.length;
+ // Fallback para dados antigos carregados antes de o registro guardar o horário exato.
+ const porTurnoVend=d?.porTurnoVend||{};
+ const turnos=turnoFallbackCorrespondente(parte.id);
+ return turnos.reduce(function(s,t){
+  return s+(Number(porTurnoVend?.[t]?.[String(nome)]?.qtd)||0);
+ },0);
+}
 function analisarIntervalosEntreVendas(){
  const out=[];
  const porDia=analisarIntervalosPorDia();
@@ -9706,6 +9788,65 @@ function analisarIntervalosPorDia(){
   item.media=item.intervalos.length?soma/item.intervalos.length:0;
  });
  return porDia;
+}
+function renderEscalaAtendimentoHoje(){
+ const el=document.getElementById('resumoEscalaAtendimentoHoje');
+ if(!el) return;
+ const agora=obterAgoraBrasilia();
+ const nomesDias=['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+ const chave=String(agora.getDate()).padStart(2,'0')+'.'+String(agora.getMonth()+1).padStart(2,'0');
+ const d=daysData.find(function(x){return x.dia===chave;});
+ const escala=obterEscalaAtendimento(agora);
+ if(!escala.length){
+  el.innerHTML='<div style="padding:14px;border:1px solid #26364e;border-radius:12px;background:#0b1728;color:#93a3ba;">🏠 Hoje é domingo. A loja está fechada.</div>';
+  return;
+ }
+ const registros=d?registrosComHorarioDoDia(d):[];
+ const cards=escala.map(function(parte){
+  const regs=d ? obterRegistrosPeriodo(d,parte) : [];
+  const intervalos=intervaloEntreRegistros(regs);
+  const qtd=regs.length || (d ? parte.funcionarias.reduce(function(s,n){return s+obterContagemVendedoraPeriodo(d,n,parte);},0) : 0);
+  const horas=Math.max(0,(parte.fim-parte.inicio)/60);
+  const staff=parte.funcionarias.length;
+  const staffHours=horas*staff;
+  const tempoDisponivel=qtd>0 ? staffHours*60/qtd : 0;
+  const maior=intervalos[0]||null, segundo=intervalos[1]||null;
+  const nomesHtml=parte.funcionarias.map(function(nome){
+   const count=d?obterContagemVendedoraPeriodo(d,nome,parte):0;
+   const tempo=count>0 ? horas*60/count : null;
+   return '<div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 11px;">'+
+    '<div style="font-size:11px;color:#93a3ba;">👤 '+nome+'</div>'+
+    '<strong style="display:block;margin-top:3px;font-size:19px;color:#dce5f2;">'+count+'</strong>'+
+    '<div style="font-size:10.5px;color:#93a3ba;">atendimento'+(count===1?'':'s')+' no período'+(tempo!==null?' · '+minutosParaTexto(tempo)+' de janela/atendimento':'')+'</div>'+
+   '</div>';
+  }).join('');
+  const tempoIgual=qtd>0 ? horas*60/(qtd/staff) : 0;
+  const faixa=formatarHoraMinutos(parte.inicio)+'–'+formatarHoraMinutos(parte.fim);
+  return '<div style="border:1px solid #1e2c42;border-radius:14px;padding:14px;background:linear-gradient(180deg,#0d1a2c,#0a1525);">'+
+   '<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;">'+
+    '<div><div style="font-size:15px;font-weight:900;color:#f6f9fd;">'+(parte.id==='sabado'?'🗓️ ':'')+parte.nome+'</div>'+
+    '<div style="font-size:11px;color:#93a3ba;margin-top:2px;">🕒 '+faixa+' · '+staff+' atendente'+(staff===1?'':'s')+'</div></div>'+
+    '<div style="font-size:11px;font-weight:800;color:#27d7a0;background:rgba(39,215,160,.08);border:1px solid rgba(39,215,160,.2);border-radius:999px;padding:5px 9px;">'+parte.funcionarias.join(' + ')+'</div>'+
+   '</div>'+
+   '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:12px;">'+
+    '<div><div style="font-size:9.5px;color:#93a3ba;text-transform:uppercase;font-weight:800;">Atendimentos</div><div style="font-size:23px;font-weight:900;color:#27d7a0;">'+qtd+'</div></div>'+
+    '<div><div style="font-size:9.5px;color:#93a3ba;text-transform:uppercase;font-weight:800;">Ritmo da equipe</div><div style="font-size:16px;font-weight:900;color:#dce5f2;">'+(qtd?minutosParaTexto(horas*60/qtd):'—')+'</div><div style="font-size:9.5px;color:#93a3ba;">entre atendimentos, pela janela</div></div>'+
+    '<div><div style="font-size:9.5px;color:#93a3ba;text-transform:uppercase;font-weight:800;">Por atendente</div><div style="font-size:16px;font-weight:900;color:#dce5f2;">'+(qtd?minutosParaTexto(tempoIgual):'—')+'</div><div style="font-size:9.5px;color:#93a3ba;">se a demanda for dividida igualmente</div></div>'+
+    '<div><div style="font-size:9.5px;color:#93a3ba;text-transform:uppercase;font-weight:800;">Maior intervalo real</div><div style="font-size:16px;font-weight:900;color:#fbbf24;">'+(maior?minutosParaTexto(maior.minutos):'—')+'</div><div style="font-size:9.5px;color:#93a3ba;">entre registros com horário</div></div>'+
+   '</div>'+
+   '<div style="margin-top:12px;font-size:11px;color:#93a3ba;background:#0b1728;border-radius:10px;padding:9px 11px;">'+
+    (qtd>0 ? '📌 '+formatarQuantidadeAtendimentos(qtd)+' em '+horas.toFixed(1).replace('.',',')+'h de janela com '+staff+' pessoa'+(staff===1?'':'s')+' = <strong style="color:#dce5f2;">'+minutosParaTexto(tempoDisponivel)+' de trabalho disponível por atendimento</strong> considerando todas as horas das atendentes.' : '📥 Nenhum atendimento com horário exato carregado neste período.')+
+   '</div>'+
+   '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:8px;margin-top:9px;">'+nomesHtml+'</div>'+
+   (maior?'<div style="font-size:10.5px;color:#93a3ba;margin-top:9px;">🥇 Maior: '+formatarHoraMinutos(maior.inicio)+' → '+formatarHoraMinutos(maior.fim)+' · '+minutosParaTexto(maior.minutos)+(segundo?' &nbsp;|&nbsp; 🥈 2º: '+formatarHoraMinutos(segundo.inicio)+' → '+formatarHoraMinutos(segundo.fim)+' · '+minutosParaTexto(segundo.minutos):'')+'</div>':'')+
+  '</div>';
+ }).join('');
+ const avisoSemHorario=d && Number(d.qtdVendas)>0 && registros.length===0
+  ? '<div style="margin-top:10px;padding:9px 11px;border:1px solid rgba(251,191,36,.25);background:rgba(251,191,36,.06);border-radius:10px;color:#fbbf24;font-size:11px;">⚠️ Há '+formatarQuantidadeAtendimentos(Number(d.qtdVendas)||0)+' no dia, mas nenhuma delas trouxe horário exato suficiente para calcular a escala de tempo.</div>'
+  : '';
+ el.innerHTML='<div style="font-size:11px;color:#93a3ba;margin-bottom:10px;">Hoje, '+nomesDias[agora.getDay()]+' · '+chave+'/2026 · escala automática da loja</div>'+
+  '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;">'+cards+'</div>'+
+  '<div style="margin-top:10px;font-size:10.5px;color:#93a3ba;">👥 A escala considera Alessandra sozinha pela manhã, Alessandra + Day à tarde e as duas juntas no sábado. O campo “tempo disponível por atendimento” é uma conta de carga de trabalho; <strong>não é a duração real de cada cliente</strong>.</div>'+avisoSemHorario;
 }
 function renderTempoEntreAtendimentos(){
  const resumo=document.getElementById('resumoTempoEntreAtendimentos');
@@ -9740,32 +9881,18 @@ function renderTempoEntreAtendimentos(){
  ].map(function(x){
   return '<div class="biobel-gap-kpi"><div class="lbl">'+x[0]+'</div><div class="val">'+x[1]+'</div></div>';
  }).join('');
-
  const resumoGeral='<div class="biobel-gap-row"><span>🥇 Maior tempo sem atendimento registrado</span><strong>'+escInteligencia(maiorGeral.dia)+' · '+formatarHoraMinutos(Math.round(maiorGeral.inicio))+' → '+formatarHoraMinutos(Math.round(maiorGeral.fim))+' · '+minutosParaTexto(maiorGeral.minutos)+'</strong></div>'+
   (segundoGeral?'<div class="biobel-gap-row"><span>🥈 Segundo maior tempo</span><strong>'+escInteligencia(segundoGeral.dia)+' · '+formatarHoraMinutos(Math.round(segundoGeral.inicio))+' → '+formatarHoraMinutos(Math.round(segundoGeral.fim))+' · '+minutosParaTexto(segundoGeral.minutos)+'</strong></div>':'')+
   '<div class="biobel-gap-row"><span>📊 Média geral entre registros</span><strong>'+minutosParaTexto(mediaGeral)+'</strong></div>';
-
  const tabela=dias.map(function(d){
   const maior=d.maior, segundo=d.segundo;
   const maiorTxt=maior?formatarHoraMinutos(Math.round(maior.inicio))+' → '+formatarHoraMinutos(Math.round(maior.fim))+' ('+minutosParaTexto(maior.minutos)+')':'—';
   const segundoTxt=segundo?formatarHoraMinutos(Math.round(segundo.inicio))+' → '+formatarHoraMinutos(Math.round(segundo.fim))+' ('+minutosParaTexto(segundo.minutos)+')':'—';
   const mediaTxt=d.media?minutosParaTexto(d.media):'—';
-  return '<tr>'+
-    '<td>'+escInteligencia(d.dia)+'</td>'+
-    '<td>'+formatarQuantidadeAtendimentos(d.atendimentos)+'</td>'+
-    '<td>'+maiorTxt+'</td>'+
-    '<td>'+segundoTxt+'</td>'+
-    '<td>'+mediaTxt+'</td>'+
-    '<td>'+d.intervalos.filter(function(x){return x.minutos>=30;}).length+'</td>'+
-   '</tr>';
+  return '<tr><td>'+escInteligencia(d.dia)+'</td><td>'+formatarQuantidadeAtendimentos(d.atendimentos)+'</td><td>'+maiorTxt+'</td><td>'+segundoTxt+'</td><td>'+mediaTxt+'</td><td>'+d.intervalos.filter(function(x){return x.minutos>=30;}).length+'</td></tr>';
  }).join('');
-
  lista.innerHTML=resumoGeral+
-  '<div style="overflow-x:auto;margin-top:12px;">'+
-   '<table class="biobel-gap-table"><thead><tr>'+
-    '<th>Dia</th><th>Registros</th><th>Maior intervalo</th><th>2º maior</th><th>Média</th><th>≥30 min</th>'+
-   '</tr></thead><tbody>'+tabela+'</tbody></table>'+
-  '</div>'+
+  '<div style="overflow-x:auto;margin-top:12px;"><table class="biobel-gap-table"><thead><tr><th>Dia</th><th>Registros</th><th>Maior intervalo</th><th>2º maior</th><th>Média</th><th>≥30 min</th></tr></thead><tbody>'+tabela+'</tbody></table></div>'+
   '<div style="font-size:11px;color:#93a3ba;margin-top:10px;">💡 A média de cada dia considera somente os intervalos entre os registros de venda daquele dia. Quanto maior o intervalo, maior foi o período sem venda registrada. Isso não mede a duração real do atendimento.</div>';
 }
 function renderHorariosPico(){
@@ -12223,7 +12350,8 @@ function extractRegistrosVendas(rows){
   const turno = (turnoRaw && typeof turnoRaw==='string' && ['manhã','meio-dia','tarde'].includes(turnoRaw.trim())) ? turnoRaw.trim() : null;
   const qtdItensRaw = rows[r]?.[8];
   const qtdItens = (typeof qtdItensRaw==='number' && qtdItensRaw>0) ? qtdItensRaw : null;
-  registros.push({ valor: valorVenda, vendedora, turno, qtdItens });
+  const horarioFrac = extrairFracaoTempo(rows[r]?.[11]);
+  registros.push({ valor: valorVenda, vendedora, turno, qtdItens, horario: horarioFrac, hora: formatarHoraFracao(horarioFrac) });
  }
  return registros;
 }
