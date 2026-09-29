@@ -1,3 +1,8 @@
+## v10.51 — Correção da posição de hoje no mês
+- **Correção:** “Posição de hoje no mês” agora compara o faturamento do dia atual com os demais dias já lançados no mês.
+- **Exemplo:** se 29/09 tem R$ 1.200,00 e está abaixo de outros 20 dias, mostra **21º de 25**.
+- **Novo:** mostra quanto falta para ultrapassar o dia imediatamente acima no ranking.
+
 ## v10.50 — Posição acumulada do mês
 - **Novo:** indicador de posição do mês conforme o faturamento acumulado atual é comparado com os meses anteriores registrados no histórico.
 - **Dinâmico:** a posição é recalculada automaticamente conforme novas vendas entram.
