@@ -991,9 +991,9 @@ function initModoDashboard(){
  const shell = document.getElementById('dashboardModoAvancado');
  const btn = document.getElementById('btnAlternarModoDashboard');
  if(!shell) return;
- // Padrão é o modo simples — quem quiser ver tudo (gráficos, tabela detalhada, resumo técnico)
- // clica pra abrir; a preferência fica guardada nesse aparelho.
- const modo = localStorage.getItem('biobel_dashboard_modo') || 'simples';
+ // A Visão Geral completa fica visível por padrão. Só esconde se a pessoa escolher explicitamente
+ // o modo simples pelo botão "Ver modo simples".
+ const modo = localStorage.getItem('biobel_dashboard_modo');
  const simples = modo==='simples';
  shell.style.display = simples ? 'none' : '';
  if(btn) btn.textContent = simples ? '🔍 Ver modo completo' : '🔎 Ver modo simples';
@@ -13395,5 +13395,5 @@ let promptDeInstalacaoGuardado=null;
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();promptDeInstalacaoGuardado=e;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='inline-block';});
 function instalarAppBiobel(){if(!promptDeInstalacaoGuardado)return;promptDeInstalacaoGuardado.prompt();promptDeInstalacaoGuardado.userChoice.then(function(){promptDeInstalacaoGuardado=null;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';});}
 window.addEventListener('appinstalled',function(){const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';try{mostrarToast('✅ Biobel instalado!');}catch(e){}});
-if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=10.52',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
+if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=10.53',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
 window.addEventListener('load',initPaginaAtiva,{once:true});
