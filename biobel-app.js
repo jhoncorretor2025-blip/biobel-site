@@ -12960,65 +12960,47 @@ function renderCentralInteligencia(){
 function renderPosicaoMesDashboard(){
  const el=document.getElementById('metaPosicaoMes');
  if(!el) return;
- const hoje=obterAgoraBrasilia();
- const mesAtual=String(hoje.getMonth()+1).padStart(2,'0');
- const totalAtual=daysData.reduce(function(s,d){return s+(Number(d.sales)||0);},0);
- let historico={};
- try{historico=JSON.parse(localStorage.getItem('biobel_historico_meses')||'{}');}catch(e){historico={};}
- const anteriores=Object.entries(historico)
-  .filter(function(entry){return entry[0]!==mesAtual;})
-  .map(function(entry){return {mes:entry[0],valor:Number(entry[1])||0};})
-  .filter(function(x){return x.valor>0;});
- if(totalAtual<=0){
-  el.innerHTML='<span style="color:#93a3ba;">🏆 Posição do mês: ainda sem faturamento registrado.</span>';
+ const agora=obterAgoraBrasilia();
+ const hojeChave=String(agora.getDate()).padStart(2,'0')+'.'+String(agora.getMonth()+1).padStart(2,'0');
+ const hoje=daysData.find(function(d){return d.dia===hojeChave;});
+ if(!hoje){
+  el.innerHTML='<div style="padding:8px 10px;border-radius:10px;background:#0b1728;border:1px solid #1e2c42;font-size:11.5px;color:#93a3ba;">📊 Hoje ainda não tem faturamento registrado para entrar no ranking.</div>';
   return;
  }
- const totalMeses=anteriores.length+1;
- const acima=anteriores.filter(function(x){return x.valor>totalAtual;}).length;
- const posicao=acima+1;
- const empate=anteriores.filter(function(x){return Math.abs(x.valor-totalAtual)<0.01;}).length;
- const textoPos=posicao+'º de '+totalMeses+' mês'+(totalMeses===1?'':'es');
- const detalhe=anteriores.length===0
-  ? 'Primeiro mês com histórico disponível para comparação.'
-  : (empate>0
-    ? 'Empatado em valor com '+empate+' mês'+(empate===1?'':'es')+' do histórico.'
-    : 'A posição sobe automaticamente conforme o faturamento acumulado ultrapassa os meses anteriores.');
- el.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:8px 10px;border-radius:10px;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.16);">'+
-   '<span style="font-size:11.5px;color:#dce5f2;font-weight:800;">🏆 Posição do mês: <strong style="color:#fbbf24;">'+textoPos+'</strong></span>'+
-   '<span style="font-size:10.5px;color:#93a3ba;">'+detalhe+'</span>'+
-  '</div>';
-}
 
-function renderResumoHojeMeta(){
- const el=document.getElementById('metaResumoHoje');
- if(!el) return;
- const agora=obterAgoraBrasilia();
- const chaveHoje=String(agora.getDate()).padStart(2,'0')+'.'+String(agora.getMonth()+1).padStart(2,'0');
- const d=daysData.find(function(x){return x.dia===chaveHoje;});
- const vendas=(d?.vendasIndividuais||[]).map(Number).filter(function(v){return Number.isFinite(v)&&v>0;});
- const total=d ? Number(d.sales)||0 : 0;
- const atendimentos=d ? (Number(d.qtdVendas)||vendas.length||0) : 0;
- const maior=vendas.length?Math.max.apply(null,vendas):0;
- const menor=vendas.length?Math.min.apply(null,vendas):0;
- const ticket=atendimentos>0?total/atendimentos:0;
- let mediaIntervalo=0;
- try{
-  const analise=analisarIntervalosPorDia()[chaveHoje];
-  mediaIntervalo=analise?.media||0;
- }catch(e){}
- const celulas=[
-  ['💰','Vendido hoje',total?money(total):'—'],
-  ['🏆','Maior venda',maior?money(maior):'—'],
-  ['📉','Menor venda',menor?money(menor):'—'],
-  ['👥','Atendimentos',atendimentos||'—'],
-  ['⏱️','Média entre atendimentos',mediaIntervalo?minutosParaTexto(mediaIntervalo):'—'],
-  ['🧾','Ticket médio',ticket?money(ticket):'—']
- ];
- el.innerHTML='<div style="font-size:10px;color:#93a3ba;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px;">📌 Resumo de hoje</div>'+
-  '<div class="meta-resumo-hoje-grid">'+celulas.map(function(x){
-   return '<div class="meta-resumo-hoje-item"><div class="mrh-label">'+x[0]+' '+x[1]+'</div><strong>'+x[2]+'</strong></div>';
-  }).join('')+'</div>'+
-  '<div style="font-size:10px;color:#93a3ba;margin-top:7px;">💡 Os valores são calculados a partir das vendas registradas hoje na planilha. A média entre atendimentos usa os horários registrados e não representa a duração do atendimento.</div>';
+ // Posição de HOJE entre os dias já lançados no mês, pelo faturamento do próprio dia.
+ // Ex.: R$ 1.200,00 em 21º de 25 dias lançados.
+ const diasRanking=daysData
+  .filter(function(d){return Number(d.sales)||0>0;})
+  .slice()
+  .sort(function(a,b){
+   const dif=(Number(b.sales)||0)-(Number(a.sales)||0);
+   if(Math.abs(dif)>0.01) return dif;
+   return String(a.dia).localeCompare(String(b.dia),undefined,{numeric:true});
+  });
+ const idx=diasRanking.findIndex(function(d){return d.dia===hojeChave;});
+ if(idx<0) return;
+ const posicao=idx+1;
+ const totalDias=diasRanking.length;
+ const valorHoje=Number(hoje.sales)||0;
+ const acima=posicao-1;
+ const abaixo=totalDias-posicao;
+
+ let movimento='';
+ if(posicao===1){
+  movimento='🥇 Hoje está em 1º lugar entre os dias com venda.';
+ }else if(posicao===totalDias){
+  movimento='📉 Hoje está em último lugar entre os dias com venda.';
+ }else{
+  const diaAnterior=diasRanking[posicao-2];
+  const faltaParaSubir=Math.max(0,(Number(diaAnterior.sales)||0)-valorHoje);
+  movimento='⬆️ Faltam '+money(faltaParaSubir)+' para ultrapassar o '+posicao+'º lugar e subir para '+(posicao-1)+'º.';
+ }
+
+ el.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:8px 10px;border-radius:10px;background:rgba(79,156,255,.06);border:1px solid rgba(79,156,255,.18);">'+
+  '<span style="font-size:11.5px;color:#dce5f2;font-weight:800;">📊 Posição de hoje no mês: <strong style="color:#4f9cff;">'+posicao+'º de '+totalDias+'</strong></span>'+
+  '<span style="font-size:10.5px;color:#93a3ba;">'+movimento+'</span>'+
+ '</div>';
 }
 
 function renderAdvancedDashboard(){
@@ -13362,5 +13344,5 @@ let promptDeInstalacaoGuardado=null;
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();promptDeInstalacaoGuardado=e;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='inline-block';});
 function instalarAppBiobel(){if(!promptDeInstalacaoGuardado)return;promptDeInstalacaoGuardado.prompt();promptDeInstalacaoGuardado.userChoice.then(function(){promptDeInstalacaoGuardado=null;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';});}
 window.addEventListener('appinstalled',function(){const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';try{mostrarToast('✅ Biobel instalado!');}catch(e){}});
-if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=10.50',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
+if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=10.51',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
 window.addEventListener('load',initPaginaAtiva,{once:true});
