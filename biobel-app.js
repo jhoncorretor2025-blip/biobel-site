@@ -9813,16 +9813,103 @@ function analisarIntervalosPorDia(){
  });
  return porDia;
 }
+let escalaAtendimentoFiltro='hoje';
+function obterDataPorChaveDia(chave){
+ const m=String(chave||'').match(/^(\d{2})\.(\d{2})$/);
+ if(!m) return null;
+ return new Date(anoReferenciaPlanilha(),Number(m[2])-1,Number(m[1]));
+}
+function obterDadosEscalaDia(d){
+ const dataObj=obterDataPorChaveDia(d?.dia);
+ if(!dataObj) return null;
+ return {data:dataObj,registros:registrosComHorarioDoDia(d)};
+}
+function resumoTotalEscala(){
+ const linhas=[];
+ let totalAtendimentos=0, totalMinutosDisponiveis=0;
+ const porPessoa={};
+ const intervalosPessoa=[];
+ daysData.forEach(function(d){
+  const base=obterDadosEscalaDia(d);
+  if(!base) return;
+  const escala=obterEscalaAtendimento(base.data);
+  escala.forEach(function(parte){
+   const regs=obterRegistrosPeriodo(d,parte);
+   const staff=parte.funcionarias.length;
+   const horas=Math.max(0,(parte.fim-parte.inicio)/60);
+   const qtd=regs.length;
+   totalAtendimentos+=qtd;
+   totalMinutosDisponiveis+=horas*60*staff;
+   parte.funcionarias.forEach(function(nome){
+    if(!porPessoa[nome]) porPessoa[nome]={atendimentos:0,intervalos:[],minutosDisponiveis:0};
+    const rp=analisarRitmoPorFuncionaria(regs)[nome];
+    if(rp){
+     porPessoa[nome].atendimentos+=rp.atendimentos;
+     porPessoa[nome].intervalos.push.apply(porPessoa[nome].intervalos,rp.intervalos);
+    }
+    porPessoa[nome].minutosDisponiveis+=horas*60;
+   });
+   // Ritmo geral só entre registros do mesmo turno/dia, nunca cruzando dias.
+   const ints=intervaloEntreRegistros(regs);
+   intervalosPessoa.push.apply(intervalosPessoa,ints);
+  });
+ });
+ Object.keys(porPessoa).forEach(function(nome){
+  const p=porPessoa[nome];
+  p.media=p.intervalos.length?p.intervalos.reduce(function(s,x){return s+x.minutos;},0)/p.intervalos.length:0;
+  p.maior=p.intervalos.slice().sort(function(a,b){return b.minutos-a.minutos;})[0]||null;
+ });
+ const mediaGeral=intervalosPessoa.length?intervalosPessoa.reduce(function(s,x){return s+x.minutos;},0)/intervalosPessoa.length:0;
+ const maiorGeral=intervalosPessoa.slice().sort(function(a,b){return b.minutos-a.minutos;})[0]||null;
+ return {dias:daysData.length,totalAtendimentos,totalMinutosDisponiveis,porPessoa,mediaGeral,maiorGeral};
+}
 function renderEscalaAtendimentoHoje(){
  const el=document.getElementById('resumoEscalaAtendimentoHoje');
+ const filtro=document.getElementById('filtroEscalaAtendimentoDia');
  if(!el) return;
  const agora=obterAgoraBrasilia();
  const nomesDias=['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
- const chave=String(agora.getDate()).padStart(2,'0')+'.'+String(agora.getMonth()+1).padStart(2,'0');
+
+ // Mantém o filtro escolhido mesmo quando a planilha atualiza automaticamente.
+ const selecionado=filtro?.value || escalaAtendimentoFiltro || 'hoje';
+ escalaAtendimentoFiltro=selecionado;
+
+ if(selecionado==='total'){
+  const total=resumoTotalEscala();
+  const pessoas=Object.entries(total.porPessoa);
+  const cardsPessoas=pessoas.map(function([nome,p]){
+   const disponibilidade=p.atendimentos>0?p.minutosDisponiveis/p.atendimentos:0;
+   return '<div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 11px;">'+
+    '<div style="font-size:11px;color:#93a3ba;">👤 '+escInteligencia(nome)+'</div>'+
+    '<strong style="display:block;margin-top:3px;font-size:21px;color:#dce5f2;">'+p.atendimentos+'</strong>'+
+    '<div style="font-size:10.5px;color:#93a3ba;">atendimentos no período</div>'+
+    '<div style="margin-top:7px;font-size:10.5px;color:#93a3ba;">⏱️ Média entre os atendimentos: <strong style="color:#27d7a0;">'+(p.media?minutosParaTexto(p.media):'—')+'</strong></div>'+
+    '<div style="font-size:10.5px;color:#93a3ba;">🥇 Maior intervalo: <strong style="color:#fbbf24;">'+(p.maior?minutosParaTexto(p.maior.minutos):'—')+'</strong></div>'+
+    '<div style="font-size:10.5px;color:#93a3ba;">🧮 Tempo de janela por atendimento: <strong style="color:#dce5f2;">'+(disponibilidade?minutosParaTexto(disponibilidade):'—')+'</strong></div>'+
+   '</div>';
+  }).join('');
+  el.innerHTML=
+   '<div style="font-size:11px;color:#93a3ba;margin-bottom:10px;">📊 Total do período · '+total.dias+' dia'+(total.dias===1?'':'s')+' carregado'+(total.dias===1?'':'s')+'</div>'+
+   '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:12px;">'+
+    '<div class="adv-kpi green"><div class="label">👥 Total de atendimentos</div><div class="value">'+total.totalAtendimentos+'</div><div class="sub">somando os dias carregados</div></div>'+
+    '<div class="adv-kpi blue"><div class="label">👩 Alessandra</div><div class="value">'+(total.porPessoa.Alessandra?.atendimentos||0)+'</div><div class="sub">atendimentos</div></div>'+
+    '<div class="adv-kpi blue"><div class="label">👩 Day</div><div class="value">'+(total.porPessoa.Day?.atendimentos||0)+'</div><div class="sub">atendimentos</div></div>'+
+    '<div class="adv-kpi gold"><div class="label">📊 Média entre registros</div><div class="value">'+(total.mediaGeral?minutosParaTexto(total.mediaGeral):'—')+'</div><div class="sub">sem cruzar dias diferentes</div></div>'+
+   '</div>'+
+   '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px;">'+cardsPessoas+'</div>'+
+   (total.maiorGeral?'<div style="margin-top:9px;font-size:10.5px;color:#93a3ba;">🥇 Maior intervalo do período: '+escInteligencia(total.maiorGeral.dia)+' · '+formatarHoraMinutos(total.maiorGeral.inicio)+' → '+formatarHoraMinutos(total.maiorGeral.fim)+' · '+minutosParaTexto(total.maiorGeral.minutos)+'</div>':'')+
+   '<div style="margin-top:10px;font-size:10.5px;color:#93a3ba;">💡 O total soma os atendimentos dos dias carregados. As médias de tempo consideram apenas intervalos dentro do mesmo dia/turno.</div>';
+  return;
+ }
+
+ let chave=selecionado;
+ if(chave==='hoje') chave=String(agora.getDate()).padStart(2,'0')+'.'+String(agora.getMonth()+1).padStart(2,'0');
  const d=daysData.find(function(x){return x.dia===chave;});
- const escala=obterEscalaAtendimento(agora);
- if(!escala.length){
-  el.innerHTML='<div style="padding:14px;border:1px solid #26364e;border-radius:12px;background:#0b1728;color:#93a3ba;">🏠 Hoje é domingo. A loja está fechada.</div>';
+ const dataObj=obterDataPorChaveDia(chave);
+ const escala=dataObj?obterEscalaAtendimento(dataObj):[];
+ if(!dataObj||!escala.length){
+  const nome=chave==='hoje'?'hoje':chave;
+  el.innerHTML='<div style="padding:14px;border:1px solid #26364e;border-radius:12px;background:#0b1728;color:#93a3ba;">📥 '+(d?'Não há escala configurada para este dia.':'Não há dados carregados para '+nome+'.')+'</div>';
   return;
  }
  const registros=d?registrosComHorarioDoDia(d):[];
@@ -9842,9 +9929,9 @@ function renderEscalaAtendimentoHoje(){
    const tempo=rPessoa.media||null;
    const maiorPessoa=rPessoa.maior;
    return '<div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 11px;">'+
-    '<div style="font-size:11px;color:#93a3ba;">👤 '+nome+'</div>'+
+    '<div style="font-size:11px;color:#93a3ba;">👤 '+escInteligencia(nome)+'</div>'+
     '<strong style="display:block;margin-top:3px;font-size:21px;color:#dce5f2;">'+count+'</strong>'+
-    '<div style="font-size:10.5px;color:#93a3ba;">atendimento'+(count===1?'':'s')+' no período</div>'+
+    '<div style="font-size:10.5px;color:#93a3ba;">atendimentos no período</div>'+
     '<div style="margin-top:7px;font-size:10.5px;color:#93a3ba;">⏱️ Média entre os atendimentos: <strong style="color:#27d7a0;">'+(tempo?minutosParaTexto(tempo):'—')+'</strong></div>'+
     '<div style="font-size:10.5px;color:#93a3ba;">🥇 Maior intervalo dela: <strong style="color:#fbbf24;">'+(maiorPessoa?minutosParaTexto(maiorPessoa.minutos):'—')+'</strong></div>'+
    '</div>';
@@ -9873,7 +9960,7 @@ function renderEscalaAtendimentoHoje(){
  const avisoSemHorario=d && Number(d.qtdVendas)>0 && registros.length===0
   ? '<div style="margin-top:10px;padding:9px 11px;border:1px solid rgba(251,191,36,.25);background:rgba(251,191,36,.06);border-radius:10px;color:#fbbf24;font-size:11px;">⚠️ Há '+formatarQuantidadeAtendimentos(Number(d.qtdVendas)||0)+' no dia, mas nenhuma delas trouxe horário exato suficiente para calcular a escala de tempo.</div>'
   : '';
- el.innerHTML='<div style="font-size:11px;color:#93a3ba;margin-bottom:10px;">Hoje, '+nomesDias[agora.getDay()]+' · '+chave+'/2026 · escala automática da loja</div>'+
+ el.innerHTML='<div style="font-size:11px;color:#93a3ba;margin-bottom:10px;">'+(selecionado==='hoje'?'Hoje, ':'Dia ')+nomesDias[dataObj.getDay()]+' · '+chave+'/'+dataObj.getFullYear()+' · escala automática da loja</div>'+
   '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;">'+cards+'</div>'+
   '<div style="margin-top:10px;font-size:10.5px;color:#93a3ba;">👥 A escala considera Alessandra sozinha pela manhã, Alessandra + Day à tarde e as duas juntas no sábado. O campo “tempo disponível por atendimento” é uma conta de carga de trabalho; <strong>não é a duração real de cada cliente</strong>.</div>'+avisoSemHorario;
 }
@@ -13208,5 +13295,5 @@ let promptDeInstalacaoGuardado=null;
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();promptDeInstalacaoGuardado=e;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='inline-block';});
 function instalarAppBiobel(){if(!promptDeInstalacaoGuardado)return;promptDeInstalacaoGuardado.prompt();promptDeInstalacaoGuardado.userChoice.then(function(){promptDeInstalacaoGuardado=null;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';});}
 window.addEventListener('appinstalled',function(){const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';try{mostrarToast('✅ Biobel instalado!');}catch(e){}});
-if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=10.46',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
+if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=10.47',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
 window.addEventListener('load',initPaginaAtiva,{once:true});
