@@ -824,7 +824,7 @@ body.light-mode .tabs-scroll-wrap .tab-btn[aria-selected="true"]{
 
 
 <style id="fix-menus-flutuantes-v10-32">
-/* v10.37 — Menus internos não ficam mais flutuando sobre o conteúdo.
+/* v10.38 — Menus internos não ficam mais flutuando sobre o conteúdo.
    Eles permanecem no fluxo normal da página e só acompanham o bloco de Configuração. */
 .config-chips{
   position:relative!important;
@@ -884,7 +884,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 29/09/2026 — versão v10.37')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 29/09/2026. Correção visual dos menus internos.">v10.37</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 29/09/2026 — versão v10.38')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 29/09/2026. Correção visual dos menus internos.">v10.38</span>
   <span id="indicadorUltimoSalvamento" class="no-print" style="font-size:11px;color:#27d7a0;font-weight:700;display:none;white-space:nowrap;" title="Tudo o que você faz salva sozinho no aparelho — esse é o horário do último salvamento"></span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
@@ -16602,13 +16602,13 @@ window.addEventListener('appinstalled', function(){
 });
 
 
-/* v10.37 — atualização robusta do PWA.
+/* v10.38 — atualização robusta do PWA.
    Este código fica dentro do script principal: o bloco anterior tinha <script> aninhado,
    fazia o navegador encerrar o JS principal antes do render() e deixava "render();" visível na tela. */
 if('serviceWorker' in navigator){
   window.addEventListener('load', async function(){
     try{
-      const reg = await navigator.serviceWorker.register('service-worker.js?v=10.37',{updateViaCache:'none'});
+      const reg = await navigator.serviceWorker.register('service-worker.js?v=10.38',{updateViaCache:'none'});
       await reg.update();
       if(reg.waiting){
         reg.waiting.postMessage({type:'SKIP_WAITING'});
