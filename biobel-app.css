@@ -849,3 +849,11 @@ body.light-mode .config-chips{
 @media(min-width:761px){.biobel-mobile-direct{display:none!important}}
 
 .biobel-gap-table{width:100%;border-collapse:separate;border-spacing:0;min-width:720px;font-size:11.5px;color:#dce5f2;background:#0b1728;border:1px solid #1e2c42;border-radius:12px;overflow:hidden}.biobel-gap-table th{padding:9px 10px;text-align:left;color:#93a3ba;font-size:10px;text-transform:uppercase;letter-spacing:.05em;background:#101c2d;border-bottom:1px solid #1e2c42;white-space:nowrap}.biobel-gap-table td{padding:10px;border-bottom:1px solid rgba(30,44,66,.75);vertical-align:middle}.biobel-gap-table tbody tr:last-child td{border-bottom:0}.biobel-gap-table tbody tr:hover{background:rgba(79,156,255,.05)}
+
+/* v10.49 — resumo executivo de hoje no card de meta */
+.meta-resumo-hoje-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.meta-resumo-hoje-item{min-width:0;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 10px}
+.meta-resumo-hoje-item .mrh-label{font-size:9.5px;color:#93a3ba;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta-resumo-hoje-item strong{display:block;margin-top:5px;font-size:16px;color:#dce5f2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:1100px){.meta-resumo-hoje-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:640px){.meta-resumo-hoje-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
