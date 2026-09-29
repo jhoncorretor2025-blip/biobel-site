@@ -10915,7 +10915,7 @@ function buildReceipt(type, day){
   const d=daysData.find(x=>x.dia===day);
   if(!d) return false;
   const metaBatida = (Number(d.sales)||0) >= getDailyGoal();
-  el.innerHTML=`<div class="receipt-center"><strong style="font-size:17px">BIOBEL</strong><br>FECHAMENTO DE CAIXA<br>${d.dia}/08/2026</div>
+  el.innerHTML=`<div class="receipt-center"><strong style="font-size:17px">BIOBEL</strong><br>FECHAMENTO DE CAIXA<br>${diaComAno(d.dia)}</div>
   <div class="receipt-line"></div>
   <div class="receipt-row"><span>Saldo inicial (abertura)</span><strong>${money(d.initial)}</strong></div>
   <div class="receipt-row"><span>Vendas do dia</span><strong>${money(d.sales)}</strong></div>
@@ -10930,7 +10930,7 @@ function buildReceipt(type, day){
   const d=daysData.find(x=>x.dia===day);
   if(!d) return false;
   const metaBatida = (Number(d.sales)||0) >= getDailyGoal();
-  el.innerHTML=`<div class="receipt-center"><strong style="font-size:17px">BIOBEL</strong><br>FECHAMENTO DE CAIXA<br>${d.dia}/08/2026</div>
+  el.innerHTML=`<div class="receipt-center"><strong style="font-size:17px">BIOBEL</strong><br>FECHAMENTO DE CAIXA<br>${diaComAno(d.dia)}</div>
   <div class="receipt-line"></div>
   <div class="receipt-row"><span>Saldo inicial (abertura)</span><strong>${money(d.initial)}</strong></div>
   <div class="receipt-row"><span>Faturamento do dia (total)</span><strong>${money(d.sales)}</strong></div>
@@ -13400,5 +13400,5 @@ let promptDeInstalacaoGuardado=null;
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();promptDeInstalacaoGuardado=e;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='inline-block';});
 function instalarAppBiobel(){if(!promptDeInstalacaoGuardado)return;promptDeInstalacaoGuardado.prompt();promptDeInstalacaoGuardado.userChoice.then(function(){promptDeInstalacaoGuardado=null;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';});}
 window.addEventListener('appinstalled',function(){const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';try{mostrarToast('✅ Biobel instalado!');}catch(e){}});
-if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=10.53',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
+if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=10.54',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
 window.addEventListener('load',initPaginaAtiva,{once:true});
