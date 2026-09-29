@@ -857,3 +857,12 @@ body.light-mode .config-chips{
 .meta-resumo-hoje-item strong{display:block;margin-top:5px;font-size:16px;color:#dce5f2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media(max-width:1100px){.meta-resumo-hoje-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:640px){.meta-resumo-hoje-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* v10.52 — resumo secundário do dia no fechamento de caixa */
+.caixa-resumo-sec-top{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 2px 6px;color:#93a3ba;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+.caixa-resumo-sec-top small{font-size:10px;font-weight:600;text-transform:none;letter-spacing:0}
+.caixa-resumo-sec-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.caixa-resumo-sec-grid>div{background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:8px 10px;min-width:0}
+.caixa-resumo-sec-grid small{display:block;color:#93a3ba;font-size:9.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.caixa-resumo-sec-grid strong{display:block;margin-top:4px;color:#dce5f2;font-size:12.5px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:700px){.caixa-resumo-sec-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
