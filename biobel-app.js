@@ -9736,6 +9736,28 @@ function intervaloEntreRegistros(lista){
  }
  return out.sort(function(a,b){return b.minutos-a.minutos;});
 }
+function analisarRitmoPorFuncionaria(lista){
+ const porPessoa={};
+ lista.forEach(function(r){
+  const nome=nomeFuncionarioEscala(r.vendedora);
+  if(!nome || nome==='null' || nome==='undefined') return;
+  if(!porPessoa[nome]) porPessoa[nome]=[];
+  porPessoa[nome].push(r);
+ });
+ const out={};
+ Object.entries(porPessoa).forEach(function([nome,regs]){
+  regs.sort(function(a,b){return a.horario-b.horario;});
+  const ints=intervaloEntreRegistros(regs);
+  const soma=ints.reduce(function(s,x){return s+x.minutos;},0);
+  out[nome]={
+   atendimentos:regs.length,
+   intervalos:ints,
+   media:ints.length?soma/ints.length:0,
+   maior:ints[0]||null
+  };
+ });
+ return out;
+}
 function obterRegistrosPeriodo(d,parte){
  return registrosComHorarioDoDia(d).filter(function(r){
   const m=horarioParaMinutos(r.horario);
@@ -9813,13 +9835,18 @@ function renderEscalaAtendimentoHoje(){
   const staffHours=horas*staff;
   const tempoDisponivel=qtd>0 ? staffHours*60/qtd : 0;
   const maior=intervalos[0]||null, segundo=intervalos[1]||null;
+  const ritmoPorPessoa=analisarRitmoPorFuncionaria(regs);
   const nomesHtml=parte.funcionarias.map(function(nome){
-   const count=d?obterContagemVendedoraPeriodo(d,nome,parte):0;
-   const tempo=count>0 ? horas*60/count : null;
-   return '<div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 11px;">'+
+   const rPessoa=ritmoPorPessoa[nome]||{atendimentos:0,intervalos:[],media:0,maior:null};
+   const count=rPessoa.atendimentos || (d?obterContagemVendedoraPeriodo(d,nome,parte):0);
+   const tempo=rPessoa.media||null;
+   const maiorPessoa=rPessoa.maior;
+   return '<div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 11px;">'+
     '<div style="font-size:11px;color:#93a3ba;">👤 '+nome+'</div>'+
-    '<strong style="display:block;margin-top:3px;font-size:19px;color:#dce5f2;">'+count+'</strong>'+
-    '<div style="font-size:10.5px;color:#93a3ba;">atendimento'+(count===1?'':'s')+' no período'+(tempo!==null?' · '+minutosParaTexto(tempo)+' de janela/atendimento':'')+'</div>'+
+    '<strong style="display:block;margin-top:3px;font-size:21px;color:#dce5f2;">'+count+'</strong>'+
+    '<div style="font-size:10.5px;color:#93a3ba;">atendimento'+(count===1?'':'s')+' no período</div>'+
+    '<div style="margin-top:7px;font-size:10.5px;color:#93a3ba;">⏱️ Média entre os atendimentos: <strong style="color:#27d7a0;">'+(tempo?minutosParaTexto(tempo):'—')+'</strong></div>'+
+    '<div style="font-size:10.5px;color:#93a3ba;">🥇 Maior intervalo dela: <strong style="color:#fbbf24;">'+(maiorPessoa?minutosParaTexto(maiorPessoa.minutos):'—')+'</strong></div>'+
    '</div>';
   }).join('');
   const tempoIgual=qtd>0 ? horas*60/(qtd/staff) : 0;
