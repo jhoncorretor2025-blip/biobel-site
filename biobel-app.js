@@ -12957,6 +12957,38 @@ function renderCentralInteligencia(){
  renderInteligenciaAtencao(dias);
 }
 
+function renderPosicaoMesDashboard(){
+ const el=document.getElementById('metaPosicaoMes');
+ if(!el) return;
+ const hoje=obterAgoraBrasilia();
+ const mesAtual=String(hoje.getMonth()+1).padStart(2,'0');
+ const totalAtual=daysData.reduce(function(s,d){return s+(Number(d.sales)||0);},0);
+ let historico={};
+ try{historico=JSON.parse(localStorage.getItem('biobel_historico_meses')||'{}');}catch(e){historico={};}
+ const anteriores=Object.entries(historico)
+  .filter(function(entry){return entry[0]!==mesAtual;})
+  .map(function(entry){return {mes:entry[0],valor:Number(entry[1])||0};})
+  .filter(function(x){return x.valor>0;});
+ if(totalAtual<=0){
+  el.innerHTML='<span style="color:#93a3ba;">🏆 Posição do mês: ainda sem faturamento registrado.</span>';
+  return;
+ }
+ const totalMeses=anteriores.length+1;
+ const acima=anteriores.filter(function(x){return x.valor>totalAtual;}).length;
+ const posicao=acima+1;
+ const empate=anteriores.filter(function(x){return Math.abs(x.valor-totalAtual)<0.01;}).length;
+ const textoPos=posicao+'º de '+totalMeses+' mês'+(totalMeses===1?'':'es');
+ const detalhe=anteriores.length===0
+  ? 'Primeiro mês com histórico disponível para comparação.'
+  : (empate>0
+    ? 'Empatado em valor com '+empate+' mês'+(empate===1?'':'es')+' do histórico.'
+    : 'A posição sobe automaticamente conforme o faturamento acumulado ultrapassa os meses anteriores.');
+ el.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:8px 10px;border-radius:10px;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.16);">'+
+   '<span style="font-size:11.5px;color:#dce5f2;font-weight:800;">🏆 Posição do mês: <strong style="color:#fbbf24;">'+textoPos+'</strong></span>'+
+   '<span style="font-size:10.5px;color:#93a3ba;">'+detalhe+'</span>'+
+  '</div>';
+}
+
 function renderResumoHojeMeta(){
  const el=document.getElementById('metaResumoHoje');
  if(!el) return;
@@ -13058,6 +13090,7 @@ function renderAdvancedDashboard(){
    }
 
    renderResumoHojeMeta();
+  renderPosicaoMesDashboard();
 
   if(elProjecao){
     if(metaFaltam<=0){
@@ -13329,5 +13362,5 @@ let promptDeInstalacaoGuardado=null;
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();promptDeInstalacaoGuardado=e;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='inline-block';});
 function instalarAppBiobel(){if(!promptDeInstalacaoGuardado)return;promptDeInstalacaoGuardado.prompt();promptDeInstalacaoGuardado.userChoice.then(function(){promptDeInstalacaoGuardado=null;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';});}
 window.addEventListener('appinstalled',function(){const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';try{mostrarToast('✅ Biobel instalado!');}catch(e){}});
-if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=10.49',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
+if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=10.50',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
 window.addEventListener('load',initPaginaAtiva,{once:true});
