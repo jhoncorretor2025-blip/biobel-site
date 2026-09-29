@@ -1,3 +1,8 @@
+## v10.50 — Posição acumulada do mês
+- **Novo:** indicador de posição do mês conforme o faturamento acumulado atual é comparado com os meses anteriores registrados no histórico.
+- **Dinâmico:** a posição é recalculada automaticamente conforme novas vendas entram.
+- **Transparente:** mostra a posição no formato “Xº de Y meses” e informa quando há empate.
+
 ## v10.49 — Resumo rápido de hoje no Dashboard
 - **Novo:** linha de indicadores no card de meta com vendido hoje, maior venda, menor venda, atendimentos, média entre atendimentos e ticket médio.
 - **Novo:** a linha é calculada automaticamente com os registros do dia atual da planilha.
