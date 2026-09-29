@@ -991,8 +991,13 @@ function initModoDashboard(){
  const shell = document.getElementById('dashboardModoAvancado');
  const btn = document.getElementById('btnAlternarModoDashboard');
  if(!shell) return;
- // A Visão Geral completa fica visível por padrão. Só esconde se a pessoa escolher explicitamente
- // o modo simples pelo botão "Ver modo simples".
+ // Migração única: uma versão anterior gravava "simples" como padrão e escondia a Visão Geral.
+ // Agora a Visão Geral completa é o padrão. Depois da migração, a pessoa ainda pode escolher
+ // manualmente o modo simples pelo botão.
+ if(localStorage.getItem('biobel_dashboard_modo_migracao')!=='10.53'){
+  localStorage.removeItem('biobel_dashboard_modo');
+  localStorage.setItem('biobel_dashboard_modo_migracao','10.53');
+ }
  const modo = localStorage.getItem('biobel_dashboard_modo');
  const simples = modo==='simples';
  shell.style.display = simples ? 'none' : '';
