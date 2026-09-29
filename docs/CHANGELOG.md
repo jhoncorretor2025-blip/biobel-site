@@ -1,3 +1,9 @@
+## v10.52 — Resumo secundário no fechamento de caixa
+- **Novo:** no Fechamento Rápido, acima dos valores do caixa, aparece um resumo do dia selecionado.
+- **Mostra:** posição do dia no mês, quantidade de atendimentos, quem trabalhou e total vendido.
+- **Dinâmico:** acompanha o dia escolhido no seletor do caixa.
+- **Importante:** a equipe exibida segue a escala configurada (Alessandra manhã + Alessandra/Day à tarde; sábado juntas).
+
 ## v10.51 — Correção da posição de hoje no mês
 - **Correção:** “Posição de hoje no mês” agora compara o faturamento do dia atual com os demais dias já lançados no mês.
 - **Exemplo:** se 29/09 tem R$ 1.200,00 e está abaixo de outros 20 dias, mostra **21º de 25**.
