@@ -864,7 +864,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 28/09/2026 — versão v10.26')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 28/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v10.26</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 29/09/2026 — versão v10.27')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 29/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v10.27</span>
   <span id="indicadorUltimoSalvamento" class="no-print" style="font-size:11px;color:#27d7a0;font-weight:700;display:none;white-space:nowrap;" title="Tudo o que você faz salva sozinho no aparelho — esse é o horário do último salvamento"></span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
@@ -2357,6 +2357,12 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
    <p class="text-sm text-slate-400 mt-1">O que mudou nas últimas atualizações, resumido de forma simples.</p>
   </div>
   <div style="display:flex;flex-direction:column;gap:14px;">
+   <div style="background:#0b1728;border:1px solid rgba(39,215,160,.35);border-radius:10px;padding:12px 14px;">
+    <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v10.27 — 29/09/2026</div>
+    <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">💰 Correção do fechamento do caixa: quando o valor final não é encontrado na planilha, o sistema calcula o <strong>dinheiro físico que deve permanecer na gaveta</strong> usando saldo inicial + vendas em dinheiro − retiradas. Também aceita variações do rótulo de fechamento para evitar R$ 0,00 indevido.</div>
+   </div>
+   
+
    <div style="background:#0b1728;border:1px solid rgba(227,160,183,.28);border-radius:10px;padding:12px 14px;">
     <div style="font-size:12px;font-weight:800;color:#e3a0b7;margin-bottom:6px;">v10.26 — 29/09/2026</div>
     <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">🎨 Refinamento visual do painel: identidade da Biobel mais consistente, cards com melhor hierarquia, navegação mais clara, botões e campos padronizados, gráficos/tabelas com menos ruído e ajustes para celular.</div>
@@ -15605,6 +15611,7 @@ function numeroPlanilha(v){
 function processarLinhasDoDia(sheetName, rows){
  const colM=12;
  let initial=0,closing=0,withdrawals=0,sales=0;
+ let encontrouFechamento=false;
  for(let r=0;r<rows.length;r++){
   const label=String(rows[r]?.[colM]??'').toLowerCase();
   if(label.includes('inicio do caixa')){
@@ -15620,12 +15627,32 @@ function processarLinhasDoDia(sheetName, rows){
     if(String(bruto??'').toLowerCase().includes('fechamento')) break;
    }
   }
-  if(label.includes('fechamento do caixa')){
+  // O fechamento físico do caixa é dinheiro em espécie:
+  // saldo inicial + vendas em dinheiro - retiradas/despesas.
+  // Aceita variações do rótulo para não cair em R$ 0,00 por erro de leitura.
+  if(
+   label.includes('fechamento do caixa') ||
+   label.includes('saldo final do caixa') ||
+   label.includes('saldo final') ||
+   label.includes('valor que ficou no caixa')
+  ){
    for(let rr=r+1;rr<Math.min(r+8,rows.length);rr++){
-    const bruto=rows[rr]?.[colM]; const v=numeroPlanilha(bruto);
-    if(v!==0 || bruto===0){closing=v;break;}
+    const bruto=rows[rr]?.[colM];
+    const textoBruto=String(bruto??'').trim();
+    const v=numeroPlanilha(bruto);
+    if(v!==0 || bruto===0 || textoBruto!==''){
+     closing=v;
+     encontrouFechamento=true;
+     break;
+    }
    }
-   if(!closing) closing=numeroPlanilha(rows[r+1]?.[0]);
+   if(!encontrouFechamento){
+    const candidato=numeroPlanilha(rows[r+1]?.[0]);
+    if(candidato!==0 || rows[r+1]?.[0]===0){
+     closing=candidato;
+     encontrouFechamento=true;
+    }
+   }
   }
   // Busca "entrada do dia" por rótulo — aceita número real, texto numérico e valor em reais.
   if(sales===0){
@@ -15649,6 +15676,11 @@ function processarLinhasDoDia(sheetName, rows){
  if(sales===0){
   const totalPagamentos=dinheiro+debito+credito+pix;
   if(totalPagamentos>0) sales=totalPagamentos;
+ }
+ // Se a planilha não trouxe um fechamento válido, calcula o valor físico esperado do caixa.
+ // Cartão/PIX não entram no dinheiro que ficou na gaveta.
+ if(!encontrouFechamento){
+  closing=Math.max(0, initial+dinheiro-withdrawals);
  }
  const vendedoras=extractSellerTotals(rows);
  const vendedorasDetalhe=extractSellerDetalhes(rows);
