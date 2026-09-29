@@ -600,6 +600,56 @@ function flashCard(wrapId){
  });
 }
 
+function renderResumoSecundarioCaixa(day){
+ const el=document.getElementById('resumoSecundarioCaixa');
+ if(!el) return;
+ const d=daysData.find(function(x){return x.dia===day;});
+ if(!d){
+  el.style.display='none';
+  return;
+ }
+ const valor=Number(d.sales)||0;
+ const diasMes=daysData.filter(function(x){return String(x.dia||'').split('.')[1]===String(day||'').split('.')[1] && (Number(x.sales)||0)>0;});
+ diasMes.sort(function(a,b){
+  const dif=(Number(b.sales)||0)-(Number(a.sales)||0);
+  if(Math.abs(dif)>0.01) return dif;
+  const [da,ma]=String(a.dia).split('.').map(Number),[db,mb]=String(b.dia).split('.').map(Number);
+  return (ma*100+da)-(mb*100+db);
+ });
+ const pos=diasMes.findIndex(function(x){return x.dia===day;})+1;
+ const totalDias=diasMes.length;
+ const atendimentos=Number(d.qtdVendas)||0;
+
+ // Escala informativa da equipe para o dia selecionado.
+ const dataObj=(typeof obterDataPorChaveDia==='function')?obterDataPorChaveDia(day):null;
+ let equipe=[];
+ if(dataObj){
+  const escala=(typeof obterEscalaAtendimento==='function')?obterEscalaAtendimento(dataObj):[];
+  const nomes=[];
+  escala.forEach(function(p){(p.funcionarias||[]).forEach(function(nome){if(!nomes.includes(nome))nomes.push(nome);});});
+  equipe=nomes;
+ }
+ if(!equipe.length){
+  // Fallback: quem aparece registrado em venda.
+  equipe=Object.keys(d.vendedoras||{});
+ }
+ const dataEhHoje=ehHoje(day);
+ const posTxt=pos>0 ? pos+'º de '+totalDias+' dias com venda' : 'sem posição';
+ const atendTxt=atendimentos+' atendimento'+(atendimentos===1?'':'s');
+ const equipeTxt=equipe.length?equipe.join(' + '):'equipe não identificada';
+ el.style.display='block';
+ el.innerHTML='<div class="caixa-resumo-sec-top">'+
+  '<span>📊 '+(dataEhHoje?'Resumo de hoje':'Resumo do dia')+'</span>'+
+  '<small>'+diaComAno(day)+(dataEhHoje?' · hoje':'')+'</small>'+
+ '</div>'+
+ '<div class="caixa-resumo-sec-grid">'+
+  '<div><small>🏆 Posição no mês</small><strong>'+posTxt+'</strong></div>'+
+  '<div><small>👥 Atendimentos</small><strong>'+atendTxt+'</strong></div>'+
+  '<div><small>👩‍💼 Quem trabalhou</small><strong>'+escInteligencia(equipeTxt)+'</strong></div>'+
+  '<div><small>💰 Vendas do dia</small><strong>'+money(valor)+'</strong></div>'+
+ '</div>';
+}
+
 function updateSimpleDay(day){
  const d=daysData.find(x=>x.dia===day);
  if(!d) return;
@@ -616,6 +666,7 @@ function updateSimpleDay(day){
  }
  updateGoalBanner('simpleGoalBanner',Number(d.sales)||0);
  atualizarBadgeDia('simple',d.dia);
+ renderResumoSecundarioCaixa(d.dia);
  flashCard('valoresSimpleWrap');
 }
 
@@ -13344,5 +13395,5 @@ let promptDeInstalacaoGuardado=null;
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();promptDeInstalacaoGuardado=e;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='inline-block';});
 function instalarAppBiobel(){if(!promptDeInstalacaoGuardado)return;promptDeInstalacaoGuardado.prompt();promptDeInstalacaoGuardado.userChoice.then(function(){promptDeInstalacaoGuardado=null;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';});}
 window.addEventListener('appinstalled',function(){const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';try{mostrarToast('✅ Biobel instalado!');}catch(e){}});
-if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=10.51',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
+if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=10.52',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
 window.addEventListener('load',initPaginaAtiva,{once:true});
