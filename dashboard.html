@@ -824,7 +824,7 @@ body.light-mode .tabs-scroll-wrap .tab-btn[aria-selected="true"]{
 
 
 <style id="fix-menus-flutuantes-v10-32">
-/* v10.36 — Menus internos não ficam mais flutuando sobre o conteúdo.
+/* v10.37 — Menus internos não ficam mais flutuando sobre o conteúdo.
    Eles permanecem no fluxo normal da página e só acompanham o bloco de Configuração. */
 .config-chips{
   position:relative!important;
@@ -884,7 +884,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 29/09/2026 — versão v10.36')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 29/09/2026. Correção visual dos menus internos.">v10.36</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 29/09/2026 — versão v10.37')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 29/09/2026. Correção visual dos menus internos.">v10.37</span>
   <span id="indicadorUltimoSalvamento" class="no-print" style="font-size:11px;color:#27d7a0;font-weight:700;display:none;white-space:nowrap;" title="Tudo o que você faz salva sozinho no aparelho — esse é o horário do último salvamento"></span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
@@ -15837,23 +15837,31 @@ function processarLinhasDoDia(sheetName, rows){
  const initialInfo=extrairValorPorRotulo(rows,v=>textoNormalizadoPlanilha(v).includes('inicio do caixa'));
  const retiradaInfo=extrairValorPorRotulo(rows,v=>textoNormalizadoPlanilha(v).includes('retirada do caixa'));
 
- let sales=0,salesCelula=null;
- for(let r=0;r<rows.length&&sales===0;r++){
-  for(let c=0;c<(rows[r]?.length||0)&&sales===0;c++){
-   const cel=rows[r]?.[c];
-   if(typeof cel!=='string'||!textoNormalizadoPlanilha(cel).includes('entrada do dia')) continue;
-   for(let cc=c+1;cc<Math.min(c+3,rows[r].length);cc++){
-    const bruto=rows[r][cc];
-    if(valorPlanilhaPreenchido(bruto)){ sales=numeroPlanilha(bruto); salesCelula=colunaExcel(cc)+String(r+1); break; }
+ const {dinheiro,debito,credito,pix}=pagamentos;
+ const totalPagamentos=dinheiro+debito+credito+pix;
+
+ // Fonte oficial da venda diária: soma dos totais de pagamento.
+ // Isso evita que alterações de layout/fórmulas em "Entrada do dia" façam o
+ // sistema capturar uma célula errada e transformar dezenas de milhares em milhões.
+ let sales=totalPagamentos;
+ let salesCelula='TOTAL_PAGAMENTOS';
+
+ // Fallback somente quando a planilha não trouxe nenhum total de pagamento.
+ // Nesse caso, tenta localizar "Entrada do dia" nos formatos antigos.
+ if(sales<=0){
+  sales=0;
+  salesCelula=null;
+  for(let r=0;r<rows.length&&sales===0;r++){
+   for(let c=0;c<(rows[r]?.length||0)&&sales===0;c++){
+    const cel=rows[r]?.[c];
+    if(typeof cel!=='string'||!textoNormalizadoPlanilha(cel).includes('entrada do dia')) continue;
+    for(let cc=c+1;cc<Math.min(c+3,rows[r].length);cc++){
+     const bruto=rows[r][cc];
+     if(valorPlanilhaPreenchido(bruto)){ sales=numeroPlanilha(bruto); salesCelula=colunaExcel(cc)+String(r+1); break; }
+    }
    }
   }
- }
- if(sales===0&&valorPlanilhaPreenchido(rows[1]?.[15])){ sales=numeroPlanilha(rows[1][15]); salesCelula='P2'; }
-
- const {dinheiro,debito,credito,pix}=pagamentos;
- if(sales===0){
-  const totalPagamentos=dinheiro+debito+credito+pix;
-  if(totalPagamentos>0) sales=totalPagamentos;
+  if(sales===0&&valorPlanilhaPreenchido(rows[1]?.[15])){ sales=numeroPlanilha(rows[1][15]); salesCelula='P2'; }
  }
 
  const fechamentoInfo=extrairFechamentoCaixaDaPlanilha(rows);
@@ -16594,13 +16602,13 @@ window.addEventListener('appinstalled', function(){
 });
 
 
-/* v10.36 — atualização robusta do PWA.
+/* v10.37 — atualização robusta do PWA.
    Este código fica dentro do script principal: o bloco anterior tinha <script> aninhado,
    fazia o navegador encerrar o JS principal antes do render() e deixava "render();" visível na tela. */
 if('serviceWorker' in navigator){
   window.addEventListener('load', async function(){
     try{
-      const reg = await navigator.serviceWorker.register('service-worker.js?v=10.36',{updateViaCache:'none'});
+      const reg = await navigator.serviceWorker.register('service-worker.js?v=10.37',{updateViaCache:'none'});
       await reg.update();
       if(reg.waiting){
         reg.waiting.postMessage({type:'SKIP_WAITING'});
