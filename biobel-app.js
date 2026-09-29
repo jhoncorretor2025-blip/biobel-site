@@ -9677,47 +9677,96 @@ function formatarHoraMinutos(min){
 }
 function analisarIntervalosEntreVendas(){
  const out=[];
- serieDiasInteligencia().forEach(function(d){
-  const hs=(d.horariosVendas||[]).map(Number).filter(Number.isFinite).sort(function(a,b){return a-b;});
-  for(let i=1;i<hs.length;i++){
-   const mins=Math.round((hs[i]-hs[i-1])*1440);
-   if(mins>0) out.push({dia:d.dia,inicio:hs[i-1]*1440,fim:hs[i]*1440,minutos:mins});
-  }
+ const porDia=analisarIntervalosPorDia();
+ Object.values(porDia).forEach(function(d){
+  d.intervalos.forEach(function(x){out.push(x);});
  });
  return out;
+}
+function formatarQuantidadeAtendimentos(q){
+ return q+' atendimento'+(q===1?'':'s');
+}
+function analisarIntervalosPorDia(){
+ const porDia={};
+ serieDiasInteligencia().forEach(function(d){
+  const hs=(d.horariosVendas||[]).map(Number).filter(Number.isFinite).sort(function(a,b){return a-b;});
+  const item=porDia[d.dia]=porDia[d.dia]||{dia:d.dia,atendimentos:hs.length,intervalos:[],media:0,maior:null,segundo:null,primeiroHorario:hs.length?hs[0]:null,ultimoHorario:hs.length?hs[hs.length-1]:null};
+  item.atendimentos=hs.length;
+  let soma=0;
+  for(let i=1;i<hs.length;i++){
+   const minutos=Math.round((hs[i]-hs[i-1])*1440);
+   if(minutos<=0) continue;
+   const intervalo={dia:d.dia,inicio:hs[i-1]*1440,fim:hs[i]*1440,minutos:minutos};
+   item.intervalos.push(intervalo);
+   soma+=minutos;
+  }
+  item.intervalos.sort(function(a,b){return b.minutos-a.minutos;});
+  item.maior=item.intervalos[0]||null;
+  item.segundo=item.intervalos[1]||null;
+  item.media=item.intervalos.length?soma/item.intervalos.length:0;
+ });
+ return porDia;
 }
 function renderTempoEntreAtendimentos(){
  const resumo=document.getElementById('resumoTempoEntreAtendimentos');
  const lista=document.getElementById('listaTempoEntreAtendimentos');
  if(!resumo||!lista) return;
+ const porDia=analisarIntervalosPorDia();
+ const dias=Object.values(porDia).sort(function(a,b){
+  return String(a.dia).localeCompare(String(b.dia),undefined,{numeric:true});
+ });
  const ints=analisarIntervalosEntreVendas();
- if(!ints.length){
-  resumo.innerHTML='<div class="biobel-gap-kpi"><div class="lbl">Intervalos</div><div class="val">0</div></div>';
-  lista.innerHTML='<div class="biobel-inteligencia-vazio">Ainda não há horários suficientes para calcular o tempo entre vendas.</div>';
+ if(!dias.length||!ints.length){
+  resumo.innerHTML=[
+   ['📅 Dias analisados',dias.length],
+   ['⏱️ Intervalos',ints.length],
+   ['👥 Atendimentos registrados',dias.reduce(function(s,x){return s+x.atendimentos;},0)]
+  ].map(function(x){
+   return '<div class="biobel-gap-kpi"><div class="lbl">'+x[0]+'</div><div class="val">'+x[1]+'</div></div>';
+  }).join('');
+  lista.innerHTML='<div class="biobel-inteligencia-vazio">Ainda não há horários suficientes para calcular o tempo entre atendimentos.</div>';
   return;
  }
- const media=ints.reduce(function(sum,x){return sum+x.minutos;},0)/ints.length;
- const longos=ints.filter(function(x){return x.minutos>=30;}).sort(function(a,b){return b.minutos-a.minutos;});
- const janela=ints.filter(function(x){return Math.max(x.inicio,900)<Math.min(x.fim,945);});
- const maior=longos[0]||[...ints].sort(function(a,b){return b.minutos-a.minutos;})[0];
- const diasJanela=[...new Set(janela.map(function(x){return x.dia;}))];
+ const mediaGeral=ints.reduce(function(sum,x){return sum+x.minutos;},0)/ints.length;
+ const maiorGeral=ints.slice().sort(function(a,b){return b.minutos-a.minutos;})[0];
+ const segundoGeral=ints.slice().sort(function(a,b){return b.minutos-a.minutos;})[1]||null;
+ const gaps30=ints.filter(function(x){return x.minutos>=30;}).length;
+ const totalAtendimentos=dias.reduce(function(s,x){return s+x.atendimentos;},0);
  resumo.innerHTML=[
-  ['⏱️ Intervalos',ints.length],
-  ['📊 Média entre vendas',minutosParaTexto(media)],
-  ['🚨 Intervalos ≥ 30 min',longos.length]
+  ['📅 Dias analisados',dias.length],
+  ['👥 Atendimentos registrados',totalAtendimentos],
+  ['📊 Média geral entre atendimentos',minutosParaTexto(mediaGeral)],
+  ['🚨 Intervalos ≥ 30 min',gaps30]
  ].map(function(x){
   return '<div class="biobel-gap-kpi"><div class="lbl">'+x[0]+'</div><div class="val">'+x[1]+'</div></div>';
  }).join('');
- let html='<div class="biobel-gap-row"><span>🔎 Maior intervalo: <strong>'+escInteligencia(maior.dia)+'</strong>, '+formatarHoraMinutos(Math.round(maior.inicio))+' → '+formatarHoraMinutos(Math.round(maior.fim))+'</span><strong>'+minutosParaTexto(maior.minutos)+'</strong></div>';
- if(diasJanela.length){
-  html+='<div class="biobel-gap-row"><span>🕒 A janela <strong>15h–15h45</strong> apareceu dentro de um intervalo sem venda registrada em</span><strong>'+diasJanela.length+' dia'+(diasJanela.length===1?'':'s')+'</strong></div>';
- }else{
-  html+='<div class="biobel-gap-row"><span>🕒 Janela 15h–15h45</span><strong>não identificada nos gaps atuais</strong></div>';
- }
- html+=longos.slice(0,8).map(function(x){
-  return '<div class="biobel-gap-row"><span>📅 '+escInteligencia(x.dia)+' · '+formatarHoraMinutos(Math.round(x.inicio))+' → '+formatarHoraMinutos(Math.round(x.fim))+'</span><strong>'+minutosParaTexto(x.minutos)+'</strong></div>';
+
+ const resumoGeral='<div class="biobel-gap-row"><span>🥇 Maior tempo sem atendimento registrado</span><strong>'+escInteligencia(maiorGeral.dia)+' · '+formatarHoraMinutos(Math.round(maiorGeral.inicio))+' → '+formatarHoraMinutos(Math.round(maiorGeral.fim))+' · '+minutosParaTexto(maiorGeral.minutos)+'</strong></div>'+
+  (segundoGeral?'<div class="biobel-gap-row"><span>🥈 Segundo maior tempo</span><strong>'+escInteligencia(segundoGeral.dia)+' · '+formatarHoraMinutos(Math.round(segundoGeral.inicio))+' → '+formatarHoraMinutos(Math.round(segundoGeral.fim))+' · '+minutosParaTexto(segundoGeral.minutos)+'</strong></div>':'')+
+  '<div class="biobel-gap-row"><span>📊 Média geral entre registros</span><strong>'+minutosParaTexto(mediaGeral)+'</strong></div>';
+
+ const tabela=dias.map(function(d){
+  const maior=d.maior, segundo=d.segundo;
+  const maiorTxt=maior?formatarHoraMinutos(Math.round(maior.inicio))+' → '+formatarHoraMinutos(Math.round(maior.fim))+' ('+minutosParaTexto(maior.minutos)+')':'—';
+  const segundoTxt=segundo?formatarHoraMinutos(Math.round(segundo.inicio))+' → '+formatarHoraMinutos(Math.round(segundo.fim))+' ('+minutosParaTexto(segundo.minutos)+')':'—';
+  const mediaTxt=d.media?minutosParaTexto(d.media):'—';
+  return '<tr>'+
+    '<td>'+escInteligencia(d.dia)+'</td>'+
+    '<td>'+formatarQuantidadeAtendimentos(d.atendimentos)+'</td>'+
+    '<td>'+maiorTxt+'</td>'+
+    '<td>'+segundoTxt+'</td>'+
+    '<td>'+mediaTxt+'</td>'+
+    '<td>'+d.intervalos.filter(function(x){return x.minutos>=30;}).length+'</td>'+
+   '</tr>';
  }).join('');
- lista.innerHTML=html;
+
+ lista.innerHTML=resumoGeral+
+  '<div style="overflow-x:auto;margin-top:12px;">'+
+   '<table class="biobel-gap-table"><thead><tr>'+
+    '<th>Dia</th><th>Registros</th><th>Maior intervalo</th><th>2º maior</th><th>Média</th><th>≥30 min</th>'+
+   '</tr></thead><tbody>'+tabela+'</tbody></table>'+
+  '</div>'+
+  '<div style="font-size:11px;color:#93a3ba;margin-top:10px;">💡 A média de cada dia considera somente os intervalos entre os registros de venda daquele dia. Quanto maior o intervalo, maior foi o período sem venda registrada. Isso não mede a duração real do atendimento.</div>';
 }
 function renderHorariosPico(){
  const elPico = document.getElementById('infoHorarioPico');
