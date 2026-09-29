@@ -16591,13 +16591,29 @@ window.addEventListener('appinstalled', function(){
  mostrarToast('✅ Biobel instalado!');
 });
 
+
+<script id="biobel-sw-update-v10-32">
+/* v10.32 — força a checagem do Service Worker novo e atualiza a página quando ele assumir o controle. */
 if('serviceWorker' in navigator){
- window.addEventListener('load', function(){
-  navigator.serviceWorker.register('service-worker.js?v=10.25',{updateViaCache:'none'}).catch(function(e){
-   console.error('Não foi possível registrar o service worker:', e);
+  window.addEventListener('load', async function(){
+    try{
+      const reg = await navigator.serviceWorker.register('service-worker.js?v=10.32',{updateViaCache:'none'});
+      await reg.update();
+      if(reg.waiting){
+        reg.waiting.postMessage({type:'SKIP_WAITING'});
+      }
+      navigator.serviceWorker.addEventListener('controllerchange', function(){
+        if(!window.__biobelSwReloaded){
+          window.__biobelSwReloaded = true;
+          window.location.reload();
+        }
+      });
+    }catch(e){
+      console.error('Não foi possível atualizar o service worker:',e);
+    }
   });
- });
 }
+</script>
 render();
 </script>
 <script>
