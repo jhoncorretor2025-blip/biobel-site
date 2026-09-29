@@ -1,3 +1,11 @@
+## v10.48 — Resumo executivo do dia na Central
+- **Novo:** a Central passou a mostrar uma leitura gerencial simples do dia ou do último dia lançado.
+- **Novo:** faturamento do dia, quantidade de atendimentos, média por venda e horário da primeira/última venda.
+- **Novo:** atendimentos e valores separados por manhã, meio-dia e tarde.
+- **Novo:** valores registrados por cada atendente no dia para facilitar a leitura rápida.
+- **Mantido:** metas, tarefas, agenda, ocorrências, manutenção, contas, estoque e demais ferramentas da Central.
+- **Importante:** os dados locais já existentes da Central continuam preservados.
+
 ## v10.47 — Filtro por dia e total da escala
 - **Novo:** filtro no card de escala para alternar entre **Hoje**, qualquer dia lançado e **Total do período**.
 - **Novo:** o total soma os atendimentos dos dias carregados e mantém a separação entre Alessandra e Day.
