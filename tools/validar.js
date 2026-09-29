@@ -31,12 +31,24 @@ const ORFAOS_CONHECIDOS = new Set(['avgClosing','avisoPoucosDadosGastos','banner
 
 // 1) sintaxe
 const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]);
-let codigoTodo = '';
+// Arquitetura de páginas separadas (desde v10.39): funções podem estar em arquivos .js
+// compartilhados, referenciados via <script src="arquivo.js">. Carrega o texto desses
+// arquivos locais (ignora CDN https://...) só para checar se handlers existem — não valida
+// a sintaxe deles aqui (isso já é validado quando o próprio arquivo roda pelo Node).
+const srcsLocais = [...html.matchAll(/<script src="([^"]+)"/g)].map(m => m[1]).filter(s => !s.startsWith('http'));
+let codigoExterno = '';
+srcsLocais.forEach(src => {
+  const caminho = path.join(path.dirname(arquivo), src);
+  if (fs.existsSync(caminho)) codigoExterno += '\n' + fs.readFileSync(caminho, 'utf8');
+});
+if (srcsLocais.length) ok(`Lendo ${srcsLocais.length} script(s) local(is) referenciado(s): ${srcsLocais.join(', ')}`);
+let codigoTodo = codigoExterno;
 scripts.forEach((s, i) => {
   codigoTodo += '\n' + s;
   try { new Function(s); ok(`Script inline #${i} com sintaxe válida`); }
   catch (e) { erro(`Script inline #${i} com erro de sintaxe: ${e.message}`); }
 });
+const codigoInlineDoArquivo = scripts.join('\n');
 
 // 2) balanceamento
 const cont = (re) => (html.match(re) || []).length;
@@ -48,7 +60,11 @@ sA === sF ? ok(`<section> balanceadas (${sA})`) : erro(`<section> desbalanceadas
 // 3) ids órfãos
 const idsHtml = [...html.matchAll(/\bid="([^"$\{]+)"/g)].map(m => m[1]);
 const idsSet = new Set(idsHtml);
-const usados = new Set([...codigoTodo.matchAll(/getElementById\(\s*['"]([^'"$\{]+)['"]\s*\)/g)].map(m => m[1]));
+// Importante: em scripts compartilhados entre páginas (arquitetura desde v10.39), o mesmo
+// arquivo .js referencia getElementById de elementos de VÁRIAS páginas — cada uma só tem os
+// seus próprios. Por isso essa checagem específica usa só o código DESTE arquivo (inline),
+// não o codigoExterno, senão toda página reportaria "órfãos" que na verdade são de outra página.
+const usados = new Set([...codigoInlineDoArquivo.matchAll(/getElementById\(\s*['"]([^'"$\{]+)['"]\s*\)/g)].map(m => m[1]));
 const orfaos = [...usados].filter(id => !idsSet.has(id));
 const novos = orfaos.filter(id => !ORFAOS_CONHECIDOS.has(id));
 novos.length ? erro('getElementById para ids que NÃO existem no HTML: ' + novos.join(', '))
