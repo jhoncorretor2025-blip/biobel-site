@@ -1,7 +1,7 @@
 
 (function(){
 "use strict";
-var K="biobel_central_v10_12",S={tasks:[],agenda:[],stock:[],occ:[],maint:[],accounts:[]};
+var K="biobel_central_v10_35",S={tasks:[],agenda:[],stock:[],occ:[],maint:[],accounts:[]};
 try{S=Object.assign(S,JSON.parse(localStorage.getItem(K)||"{}")||{});}catch(e){}
 function save(){try{localStorage.setItem(K,JSON.stringify(S));}catch(e){}}
 function n(v){return Number(String(v||"").replace(".","").replace(",","."))||0}
@@ -15,7 +15,7 @@ function render(){
 ensure();var t=st(),a=t.a,b=document.getElementById("co12");
 if(!b)return;
 var mid=Math.floor(a.length/2),x=a.slice(0,mid).reduce(function(s,y){return s+n(y.sales)},0),y=a.slice(mid).reduce(function(s,z){return s+n(z.sales)},0),delta=x?((y-x)/x*100):0;
-b.innerHTML='<div class="co12hero"><div><b>🧭 CENTRAL OPERACIONAL · v10.12</b><h2>Tudo que precisa de atenção em um só lugar</h2><small>Vendas continuam vindo da planilha. Registros desta Central ficam somente no armazenamento local do navegador.</small></div><button onclick="showTab(\'dashboard\')">← Voltar</button></div>'+
+b.innerHTML='<div class="co12hero"><div><b>🧭 CENTRAL OPERACIONAL · v10.35</b><h2>Tudo que precisa de atenção em um só lugar</h2><small>Vendas continuam vindo da planilha. Registros desta Central ficam somente no armazenamento local do navegador.</small></div><button onclick="showTab(\'dashboard\')">← Voltar</button></div>'+
 '<div class="co12kpis"><div><small>Faturamento</small><strong>'+m(t.t)+'</strong></div><div><small>Meta</small><strong>'+m(t.g)+'</strong></div><div><small>Atingimento</small><strong>'+(t.g?t.p.toFixed(1)+"%":"—")+'</strong></div><div><small>Dias com venda</small><strong>'+t.c+'</strong></div></div>'+
 '<div class="co12grid"><section><h3>📌 Tarefas + agenda</h3><div class="co12form"><input id="ct" placeholder="Tarefa"><input id="cd" type="date"><button onclick="cAddTask()">Adicionar</button></div><div id="ctlist"></div><div class="co12form"><input id="ca" placeholder="Compromisso"><input id="cad" type="date"><button onclick="cAddAgenda()">Agendar</button></div><div id="calist"></div></section><section><h3>🔔 Notificações</h3><div id="cnot"></div></section></div>'+
 '<div class="co12grid"><section><h3>📊 Painel executivo</h3><p>Ticket médio diário: <b>'+m(t.c?t.t/t.c:0)+'</b></p><p>Tendência: <b>'+(delta>5?"📈 Acelerando":delta<-5?"📉 Desacelerando":"➡️ Estável")+'</b> ('+delta.toFixed(1)+'%)</p><p>Melhor dia: <b>'+esc((a.slice().sort(function(q,r){return n(r.sales)-n(q.sales)})[0]||{}).dia||"—")+'</b></p></section><section><h3>🎯 Simuladores</h3><div class="co12form"><input id="cg" type="number" placeholder="Venda/dia"><button onclick="cGoal()">Simular meta</button></div><div id="cgr"></div><div class="co12form"><input id="cc" type="number" placeholder="Comissão %"><button onclick="cComm()">Simular comissão</button></div><div id="ccr"></div></section></div>'+
@@ -45,11 +45,18 @@ window.cMaint=function(){var x=document.getElementById("mn");if(!x.value)return;
 window.cGoal=function(){var t=st(),v=n(document.getElementById("cg").value);document.getElementById("cgr").innerHTML="Projeção: <b>"+m(v*t.a.length)+"</b>. Diferença para meta: <b>"+m(v*t.a.length-t.g)+"</b>."}
 window.cComm=function(){var t=st(),v=n(document.getElementById("cc").value);document.getElementById("ccr").innerHTML="Comissão estimada: <b>"+m(t.t*v/100)+"</b>."}
 window.cRecon=function(){var t=st(),r=S.accounts.filter(function(x){return x.type==="Receber"}).reduce(function(a,x){return a+n(x.value)},0);document.getElementById("crec").innerHTML="<small>Planilha: "+m(t.t)+" • Receber local: "+m(r)+" • Diferença: "+m(t.t-r)+" (informativa).</small>"}
-window.cExport=function(type){var t=st(),z="Biobel Central v10.12\nFaturamento: "+m(t.t)+"\nMeta: "+m(t.g)+"\nAtingimento: "+(t.g?t.p.toFixed(1)+"%":"—")+"\nDias com venda: "+t.c;var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([type==="csv"?"Campo;Valor\nFaturamento;"+t.t+"\nMeta;"+t.g+"\nDias;"+t.c:z],{type:type==="csv"?"text/csv":"text/plain"}));a.download="biobel-central-v10-12."+type;a.click()}
+window.cExport=function(type){var t=st(),z="Biobel Central v10.35\nFaturamento: "+m(t.t)+"\nMeta: "+m(t.g)+"\nAtingimento: "+(t.g?t.p.toFixed(1)+"%":"—")+"\nDias com venda: "+t.c;var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([type==="csv"?"Campo;Valor\nFaturamento;"+t.t+"\nMeta;"+t.g+"\nDias;"+t.c:z],{type:type==="csv"?"text/csv":"text/plain"}));a.download="biobel-central-v10-12."+type;a.click()}
 window.cAsk=function(){var q=document.getElementById("ask").value.toLowerCase(),t=st(),a=/meta/.test(q)?"🎯 Meta: "+m(t.g)+". Atingimento: "+(t.g?t.p.toFixed(1)+"%":"não configurada"):/tend|cres|queda/.test(q)?"📈 Veja o painel executivo para a tendência calculada sobre as duas metades do período.":/vended/.test(q)?"👥 Os dados de vendedoras vêm da planilha carregada.":"💰 Faturamento atual: "+m(t.t)+" em "+t.c+" dias com venda.";document.getElementById("ans").innerHTML=a}
 var old=window.showTab;window.showTab=function(tab){ensure();var ct=document.getElementById("centralTab");if(ct)ct.classList.add("hidden");if(tab==="central"){if(old)old("dashboard");document.querySelectorAll("main[id$='Tab'],section[id$='Tab']").forEach(function(x){x.classList.add("hidden")});document.getElementById("centralTab").classList.remove("hidden");document.title="Central Operacional — Biobel";render();return}if(old)old(tab)}
 function nav(){var d=document.querySelector(".biobel-nav-links");if(d&&!document.getElementById("navCentralBtn")){var b=document.createElement("button");b.id="navCentralBtn";b.className="biobel-nav-item";b.innerHTML="🧭 <span>Central</span>";b.onclick=function(){showTab("central")};d.insertBefore(b,d.children[1]||null)}var m=document.getElementById("menuMaisDropdown");if(m&&!document.getElementById("mobCentral")){var x=document.createElement("button");x.id="mobCentral";x.innerHTML="🧭 Central Operacional";x.onclick=function(){m.style.display="none";showTab("central")};m.insertBefore(x,m.children[1]||null)}}
-function init(){ensure();css();nav();render()}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();window.addEventListener("load",nav,{once:true})
+window.renderCentralOperacional=render;
+window.addEventListener('biobel:data-updated',function(){
+  var tab=document.getElementById('centralTab');
+  if(tab && !tab.classList.contains('hidden')) render();
+});
+function init(){ensure();css();nav();render()}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
+window.addEventListener("load",nav,{once:true})
 })();
 /* v10.16 — Navegação protegida de Configuração e Administração.
    Este bloco fica separado para corrigir a navegação sem mexer no núcleo do leitor de planilha. */
@@ -101,11 +108,8 @@ function init(){ensure();css();nav();render()}if(document.readyState==="loading"
     if(texto.indexOf("configuração")!==-1) btn.onclick=function(){abrirAreaProtegida("config");fecharMenus();};
    });
   }
-  var versao=document.getElementById("versaoSistema");
-  if(versao){
-   versao.textContent="v10.16";
-   versao.setAttribute("title","Atualizado em 28/09/2026 — v10.16. Navegação de Configuração e Administração corrigida.");
-  }
+  // A versão exibida no cabeçalho pertence ao dashboard principal.
+  // Não sobrescrever versaoSistema aqui: isso fazia a Central voltar visualmente para a v10.16.
  }
  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",aplicar,{once:true});
  else aplicar();
