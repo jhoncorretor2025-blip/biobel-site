@@ -6,7 +6,7 @@
 // internet, a versão mais nova é buscada e exibida; o cache só entra em ação quando o
 // aparelho está genuinamente sem conexão.
 
-const CACHE_NAME = 'biobel-cache-v10.33';
+const CACHE_NAME = 'biobel-cache-v10.34';
 const ARQUIVOS_ESSENCIAIS = ['./dashboard.html', './login.html'];
 
 self.addEventListener('message', (event) => {
@@ -21,12 +21,19 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((nomes) =>
-      Promise.all(nomes.filter((n) => n !== CACHE_NAME).map((n) => caches.delete(n)))
-    )
-  );
-  self.clients.claim();
+  event.waitUntil((async () => {
+    const nomes = await caches.keys();
+    await Promise.all(
+      nomes.filter((n) => n !== CACHE_NAME).map((n) => caches.delete(n))
+    );
+    await self.clients.claim();
+    const janelas = await self.clients.matchAll({type:'window', includeUncontrolled:true});
+    await Promise.all(
+      janelas
+        .filter((client) => client.url.startsWith(self.location.origin))
+        .map((client) => client.navigate(client.url).catch(() => null))
+    );
+  })());
 });
 
 self.addEventListener('fetch', (event) => {
