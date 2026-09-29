@@ -1,3 +1,4 @@
+| v10.24 | 📊 Novo gráfico diário separando vendas por manhã, meio-dia e tarde; ⏱️ análise dos intervalos entre vendas registradas, incluindo a janela 15h–15h45; 📅 correção do agrupamento semanal para segunda–domingo e remoção de vários cálculos presos ao ano 2026. |
 ## v10.23 | 🧠 Central de Inteligência da planilha
 - Criada uma central que trabalha **somente com os dados que já existem na planilha**, sem cadastro novo de produtos ou clientes.
 - **Possíveis inconsistências:** cruza vendas, meios de pagamento, vendas individuais e diferença de caixa para apontar o que merece conferência.
