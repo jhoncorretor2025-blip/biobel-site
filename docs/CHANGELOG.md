@@ -1,3 +1,9 @@
+## v10.46 — Comparativo individual de atendimentos e tempo
+- **Novo:** cada turno mantém a contagem separada de atendimentos da Alessandra e da Day.
+- **Novo:** além da quantidade, o card mostra a média de tempo entre os atendimentos de cada uma e o maior intervalo individual, quando há horários exatos registrados.
+- **Mantido:** o comparativo da equipe continua mostrando ritmo geral, maior intervalo e divisão da carga do período.
+- **Importante:** os tempos são calculados pelos horários das vendas registradas e não representam, por si só, a duração real de cada atendimento.
+
 
 ## v10.45 — Escala de atendimento e ritmo por atendente
 - **Novo:** card "Hoje — escala e ritmo de atendimento" na Análises.
