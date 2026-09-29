@@ -864,7 +864,7 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   <span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;" title="Você está usando o app instalado, não o navegador">📲 App</span>
   <button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print text-xs text-slate-300 hover:text-white" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 10px;" title="Instalar o Biobel como app no celular">📲 Instalar app</button>
   <!-- LEMBRETE: atualizar a versão E a data juntas em toda publicação (dentro do title E do onclick) -->
-  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 29/09/2026 — versão v10.27')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 29/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v10.27</span>
+  <span id="versaoSistema" class="no-print" onclick="mostrarToast('📅 Sistema atualizado em 29/09/2026 — versão v10.28')" style="font-size:13px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:4px 10px;cursor:pointer;" title="Atualizado em 29/09/2026. Se esse número não bater com a última versão que eu te avisei, é sinal de cache — feche e abra o navegador de novo.">v10.28</span>
   <span id="indicadorUltimoSalvamento" class="no-print" style="font-size:11px;color:#27d7a0;font-weight:700;display:none;white-space:nowrap;" title="Tudo o que você faz salva sozinho no aparelho — esse é o horário do último salvamento"></span>
   <span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>
   <span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>
@@ -2358,6 +2358,11 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
   </div>
   <div style="display:flex;flex-direction:column;gap:14px;">
    <div style="background:#0b1728;border:1px solid rgba(39,215,160,.35);border-radius:10px;padding:12px 14px;">
+    <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v10.28 — 29/09/2026</div>
+    <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">✅ Novo fluxo de <strong>Fechar caixa</strong>: confirma os valores, abre a impressão e, ao voltar, mostra um botão para <strong>Confirmar fechamento</strong>. Depois da confirmação, o sistema registra o dia e o horário e deixa claro na tela que o caixa foi fechado.</div>
+   </div>
+
+   <div style="background:#0b1728;border:1px solid rgba(39,215,160,.35);border-radius:10px;padding:12px 14px;">
     <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v10.27 — 29/09/2026</div>
     <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">💰 Correção do fechamento do caixa: quando o valor final não é encontrado na planilha, o sistema calcula o <strong>dinheiro físico que deve permanecer na gaveta</strong> usando saldo inicial + vendas em dinheiro − retiradas. Também aceita variações do rótulo de fechamento para evitar R$ 0,00 indevido.</div>
    </div>
@@ -2562,13 +2567,19 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
     <button id="btnIrHojeSimple" onclick="irParaHoje('simple')" class="no-print bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" style="display:none;" title="Voltar pro dia de hoje">📍 Hoje</button>
     <span class="no-print" style="width:1px;height:24px;background:#1c2c42;display:inline-block;"></span>
     <button id="btnRefreshSimple" onclick="loadGoogleSheet()" class="no-print bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🔄 Atualizar</button>
-    <button onclick="printSimpleDay()" class="no-print bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🖨 Imprimir</button>
+    <button id="btnFecharCaixaSimple" onclick="iniciarFechamentoCaixaSimple()" class="no-print bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" title="Confere o caixa, abre a impressão e depois permite confirmar o fechamento">✅ Fechar caixa</button>
+    <button onclick="printSimpleDay()" class="no-print bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🖨 Imprimir</button>
     <button onclick="exportarDiaComoTxt('simple')" class="no-print bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" title="Copia o resumo desse dia em texto">📄 TXT</button>
     <button onclick="compartilharDiaWhatsApp('simple')" class="no-print bg-emerald-500 hover:bg-emerald-400 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" title="Abre o WhatsApp com o resumo do dia pronto">💬 WhatsApp</button>
     <button onclick="compartilharDiaNativo('simple')" class="btn-compartilhar-nativo no-print bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" style="display:none;" title="Compartilhar pelo menu do celular">📤 Compartilhar</button>
    </div>
   </div>
   <div id="badgeDiaSimple" class="no-print" style="display:none;margin-bottom:10px;"></div>
+  <div id="statusFechamentoCaixaSimple" class="no-print" style="display:none;margin:0 0 14px;padding:12px 14px;border-radius:12px;border:1px solid rgba(39,215,160,.35);background:rgba(39,215,160,.07);">
+   <div id="statusFechamentoCaixaSimpleTexto" style="font-size:13px;font-weight:800;color:#27d7a0;"></div>
+   <div id="statusFechamentoCaixaSimpleSub" style="font-size:11.5px;color:#93a3ba;margin-top:4px;"></div>
+   <button id="btnConfirmarFechamentoCaixaSimple" onclick="confirmarFechamentoCaixaSimple()" style="display:none;margin-top:10px;background:#0ea97a;color:#fff;border:none;border-radius:10px;padding:9px 13px;font-size:12px;font-weight:800;cursor:pointer;">✅ Confirmar fechamento</button>
+  </div>
   <p class="no-print text-xs text-slate-500 mb-1">Não achou o dia de hoje na lista? <a href="#" onclick="loadGoogleSheet();return false;" class="text-emerald-400 underline">Clique aqui para atualizar</a>.</p>
   <p class="no-print text-xs text-slate-500 mb-6">🖨️ O recibo é formatado para impressora de recibo (58/80mm). Numa impressora comum (A4), pode sair pequeno no canto da folha.</p>
   <div id="simpleGoalBanner" class="meta-dia-banner"></div>
@@ -3982,6 +3993,7 @@ function flashCard(wrapId){
 function updateSimpleDay(day){
  const d=daysData.find(x=>x.dia===day);
  if(!d) return;
+ renderStatusFechamentoCaixaSimple(day);
  document.getElementById('simpleInitial').textContent=money(d.initial);
  document.getElementById('simpleSales').textContent=money(d.sales);
  document.getElementById('simpleWithdrawals').textContent=money(d.withdrawals);
@@ -14788,6 +14800,103 @@ function printMonthly(){
  buildReceipt('monthly');
  startReceiptPrint('monthly');
 }
+function getChaveFechamentoCaixaSimple(dia){
+ return 'biobel_fechamento_caixa_confirmado_'+String(dia||'').replace(/[^0-9.]/g,'_');
+}
+
+function renderStatusFechamentoCaixaSimple(dia){
+ const box=document.getElementById('statusFechamentoCaixaSimple');
+ const txt=document.getElementById('statusFechamentoCaixaSimpleTexto');
+ const sub=document.getElementById('statusFechamentoCaixaSimpleSub');
+ const btn=document.getElementById('btnConfirmarFechamentoCaixaSimple');
+ if(!box||!txt||!sub||!btn) return;
+
+ const chave=getChaveFechamentoCaixaSimple(dia);
+ let registro=null;
+ try{ registro=JSON.parse(localStorage.getItem(chave)||'null'); }catch(e){ registro=null; }
+
+ if(registro?.confirmado){
+  box.style.display='block';
+  box.style.borderColor='rgba(39,215,160,.45)';
+  box.style.background='rgba(39,215,160,.08)';
+  txt.textContent='✅ Caixa fechado e confirmado';
+  sub.textContent='Dia '+diaComAno(dia)+' confirmado às '+(registro.hora||'—')+'.';
+  btn.style.display='none';
+ }else{
+  box.style.display='none';
+  btn.style.display='none';
+ }
+}
+
+function prepararConfirmacaoFechamentoCaixaSimple(dia){
+ const box=document.getElementById('statusFechamentoCaixaSimple');
+ const txt=document.getElementById('statusFechamentoCaixaSimpleTexto');
+ const sub=document.getElementById('statusFechamentoCaixaSimpleSub');
+ const btn=document.getElementById('btnConfirmarFechamentoCaixaSimple');
+ if(!box||!txt||!sub||!btn) return;
+
+ box.style.display='block';
+ box.style.borderColor='rgba(234,179,8,.45)';
+ box.style.background='rgba(234,179,8,.07)';
+ txt.textContent='🖨️ Impressão concluída — confirme o fechamento';
+ sub.textContent='Confira a gaveta e clique em “Confirmar fechamento” para registrar que o caixa foi conferido.';
+ btn.style.display='inline-block';
+ btn.disabled=false;
+ btn.style.opacity='1';
+}
+
+function confirmarFechamentoCaixaSimple(){
+ const dia=document.getElementById('simpleDaySelect')?.value;
+ if(!dia) return mostrarToast('⚠️ Selecione um dia antes de confirmar o fechamento.');
+
+ const d=daysData.find(x=>x.dia===dia);
+ if(!d) return mostrarToast('⚠️ Não encontrei os dados desse dia.');
+
+ const agora=obterAgoraBrasilia();
+ const hora=String(agora.getHours()).padStart(2,'0')+':'+String(agora.getMinutes()).padStart(2,'0');
+ const registro={
+  confirmado:true,
+  dia:String(dia),
+  hora,
+  confirmadoEm:String(agora.paraChaveISO())+' '+hora,
+  valorFechamento:Number(d.closing)||0
+ };
+ localStorage.setItem(getChaveFechamentoCaixaSimple(dia),JSON.stringify(registro));
+
+ const btn=document.getElementById('btnConfirmarFechamentoCaixaSimple');
+ if(btn) btn.style.display='none';
+ renderStatusFechamentoCaixaSimple(dia);
+ registrarAlteracao('Fechamento de caixa confirmado: '+diaComAno(dia)+' — '+money(registro.valorFechamento));
+ renderLogAlteracoes();
+ mostrarToast('✅ Fechamento do dia '+diaComAno(dia)+' confirmado com sucesso!');
+}
+
+function iniciarFechamentoCaixaSimple(){
+ const dia=document.getElementById('simpleDaySelect')?.value;
+ if(!dia) return mostrarToast('⚠️ Selecione um dia antes de fechar o caixa.');
+
+ const d=daysData.find(x=>x.dia===dia);
+ if(!d) return mostrarToast('⚠️ Não encontrei os dados desse dia. Atualize a planilha e tente novamente.');
+
+ confirmarBiobel(
+  'Fechar o caixa do dia '+diaComAno(dia)+'?\n\n'+
+  '💼 Inicial: '+money(d.initial)+'\n'+
+  '💰 Vendas: '+money(d.sales)+'\n'+
+  '💸 Retiradas: '+money(d.withdrawals)+'\n'+
+  '🔒 Valor no caixa: '+money(d.closing)+'\n\n'+
+  'Depois da confirmação, o sistema abrirá a impressão do fechamento. Ao voltar da impressão, você poderá confirmar que o caixa foi conferido.',
+  ()=>{
+   const btn=document.getElementById('btnFecharCaixaSimple');
+   if(btn){ btn.disabled=true; btn.textContent='⏳ Preparando...'; }
+   if(buildReceipt('daily-simple',dia)){
+    startReceiptPrint('daily-simple');
+    setTimeout(()=>prepararConfirmacaoFechamentoCaixaSimple(dia),800);
+   }
+   if(btn){ btn.disabled=false; btn.textContent='✅ Fechar caixa'; }
+  }
+ );
+}
+
 function printSimpleDay(){
  const day=document.getElementById('simpleDaySelect').value;
  if(!day) return mostrarToast('⚠️ Selecione um dia antes de imprimir.');
