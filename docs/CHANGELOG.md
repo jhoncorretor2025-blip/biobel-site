@@ -1,3 +1,8 @@
+## v10.41 | 🛠️ Correções da nova arquitetura
+- Corrigidos caminhos da logo nas páginas do painel para funcionar corretamente no GitHub Pages.
+- Atualizado o cache do PWA para incluir os JS/CSS compartilhados usados pelas páginas separadas.
+- Mantida a estrutura de dados e a planilha existentes.
+
 | v10.40 | 🧩 Painel dividido em páginas independentes com núcleo compartilhado: HTMLs separados por área, JavaScript/CSS compartilhados, links diretos, login de sessão mantido e PWA atualizado. |
 | v10.39 | 🧩 Preparação da migração para páginas independentes e núcleo compartilhado. |
 | v10.26 | 🎨 Refinamento visual do painel: identidade da Biobel mais consistente, cards com melhor hierarquia, navegação mais clara, controles padronizados, gráficos/tabelas com menos ruído e ajustes de leitura no celular. |
