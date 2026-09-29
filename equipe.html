@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="theme-color" content="#0ea97a"><meta name="robots" content="noindex,nofollow"><link rel="icon" type="image/png" href="/logo_biobel_gravatai.png"><link rel="manifest" href="manifest.json"><title>Biobel — Visão Geral</title><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="biobel-design-system.css"><link rel="stylesheet" href="biobel-ux-refinement.css"><link rel="stylesheet" href="biobel-app.css"></head><body data-biobel-page="dashboard">
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="theme-color" content="#0ea97a"><meta name="robots" content="noindex,nofollow"><link rel="icon" type="image/png" href="/logo_biobel_gravatai.png"><link rel="manifest" href="manifest.json"><title>Biobel — Equipe</title><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="biobel-design-system.css"><link rel="stylesheet" href="biobel-ux-refinement.css"><link rel="stylesheet" href="biobel-app.css"></head><body data-biobel-page="equipe">
 TYPE html>
 <html lang="pt-BR">
 <head>
@@ -855,235 +855,285 @@ body.light-mode .config-chips{
 <a href="#dashboardTab" style="position:absolute;left:-9999px;top:0;z-index:9999;background:#0ea97a;color:#04241a;padding:12px 18px;border-radius:0 0 10px 0;font-weight:700;text-decoration:none" onfocus="this.style.left='0'" onblur="this.style.left='-9999px'">Pular para o conteúdo</a>
 
 
-<div id="biobel-shell"></div><main id="dashboardTab" class="max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabDashboard">
+<div id="biobel-shell"></div><section id="equipeTab" class="hidden max-w-5xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabEquipe">
 
-  <div id="indicadorClimaTopo" class="no-print" style="display:none;justify-content:flex-end;margin-bottom:4px;"></div>
-  <div class="no-print" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:6px;">
-   <button onclick="showTab('caixa')" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(39,215,160,.35);border-radius:14px;padding:16px 10px;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;text-align:center;">⚡<br>Fechar Caixa</button>
-   <button onclick="showTab('equipe')" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(79,156,255,.35);border-radius:14px;padding:16px 10px;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;text-align:center;">📋<br>Folha de Ponto</button>
-   <button onclick="showTab('alertas')" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(251,191,36,.35);border-radius:14px;padding:16px 10px;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;text-align:center;">🚨<br>Ver Alertas</button>
-   <button onclick="showTab('info')" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(139,92,246,.35);border-radius:14px;padding:16px 10px;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;text-align:center;">📊<br>Como Estou Indo?</button>
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7" style="border-color:rgba(251,113,133,.35);">
+  <div class="mb-3">
+   <h2 class="text-xl font-bold">🚪 Uma funcionária está saindo da empresa?</h2>
+   <p class="text-sm text-slate-400 mt-1">Clique aqui pra ir direto no lugar certo de registrar o desligamento — precisa da senha da área da gerência.</p>
   </div>
+  <button onclick="iniciarProcessoDesligamentoGuiado()" class="w-full bg-rose-600 hover:bg-rose-500 px-4 py-3 rounded-xl font-semibold text-sm">🚪 Registrar desligamento de funcionária</button>
+ </div>
 
-  <div class="no-print" style="display:flex;justify-content:flex-end;margin-bottom:-6px;">
-   <button id="btnAlternarModoDashboard" onclick="alternarModoDashboard()" style="background:#0b1728;border:1px solid #1e2c42;border-radius:999px;padding:6px 14px;font-size:12px;color:#93a3ba;cursor:pointer;font-weight:700;">🔍 Ver modo completo</button>
-  </div>
+ <div class="no-print" style="display:flex;gap:8px;margin-bottom:4px;">
+  <button type="button" id="btnEquipeSubAbaPonto" onclick="mostrarEquipeSubAba('ponto')" class="config-chip active" style="flex:1;text-align:center;">💳 PIX & Ponto</button>
+  <button type="button" id="btnEquipeSubAbaRotina" onclick="mostrarEquipeSubAba('rotina')" class="config-chip" style="flex:1;text-align:center;">✅ Rotina & Atividades</button>
+ </div>
 
-  <div id="avisoMesDivergente" class="no-print" style="display:none;"></div>
-  <div id="bannerClimaChuva" class="no-print" style="display:none;"></div>
-  <div id="checklistChuvaDashboard" class="no-print" style="display:none;"></div>
-  <div class="no-print" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:10px 14px;margin-bottom:6px;">
-   <span style="font-size:12px;color:#93a3ba;font-weight:700;">🌦️ Clima de hoje:</span>
-   <button onclick="marcarClimaHojeRapido('Sol')" style="background:#1c2c42;border:none;color:#dce5f2;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;">☀️ Sol</button>
-   <button onclick="marcarClimaHojeRapido('Nublado')" style="background:#1c2c42;border:none;color:#dce5f2;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;">☁️ Nublado</button>
-   <button onclick="marcarClimaHojeRapido('Chuva')" style="background:#1c2c42;border:none;color:#dce5f2;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;">🌧️ Chuva</button>
-   <button onclick="marcarClimaHojeRapido('Frio')" style="background:#1c2c42;border:none;color:#dce5f2;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;">🥶 Frio</button>
-   <span id="climaHojeMarcadoTexto" style="font-size:11.5px;color:#27d7a0;font-weight:700;"></span>
-   <span style="font-size:10px;color:#93a3ba;">(o sistema tenta detectar sozinho — clique pra corrigir se estiver errado)</span>
+ <div id="equipeSubAbaPonto">
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7" style="border-color:rgba(79,156,255,.35);">
+  <div class="mb-4">
+   <h2 class="text-xl font-bold">💳 Chaves PIX — Pagamento Rápido</h2>
+   <p class="text-sm text-slate-400 mt-1">Pra pagar a Gabriela e a Day sem precisar procurar em outro lugar.</p>
   </div>
-  <div id="previsaoProximosDiasFaixa" class="no-print" style="display:none;margin-bottom:6px;"></div>
-  <div id="bannerClimaSol" class="no-print" style="display:none;"></div>
-  <div id="avisoFimDeSemanaChuvoso" class="no-print" style="display:none;"></div>
-  <div id="avisoProximaPlanilha" class="no-print" style="display:none;"></div>
-  <div id="metaDestaqueTopo" class="no-print" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid #1e2c42;border-radius:20px;padding:24px 28px;margin-bottom:16px;">
-   <div style="font-size:11px;color:#93a3ba;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">🎯 Meta do mês</div>
-   <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;">
-    <span id="metaDestaqueValor" style="font-size:38px;font-weight:900;color:#27d7a0;line-height:1;">R$ 0,00</span>
-    <span style="font-size:16px;color:#93a3ba;">de <strong id="metaDestaqueTotal" style="color:#dce5f2;">R$ 0,00</strong></span>
-    <span id="metaDestaquePct" style="font-size:16px;font-weight:900;color:#27d7a0;background:rgba(39,215,160,.12);padding:3px 10px;border-radius:999px;">0%</span>
+  <div id="conteudoChavesPixEquipe"></div>
+ </div>
+
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7" id="cardFolhaDePonto" style="border-color:rgba(6,182,212,.35);">
+  <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
+   <div>
+    <h2 class="text-xl font-bold">⏱️ Folha de Ponto</h2>
+    <p class="text-sm text-slate-400 mt-1">Registro de entrada, intervalo e saída — o sistema calcula as horas e a hora extra sozinho.</p>
    </div>
-   <div style="background:#0b1728;border-radius:999px;height:14px;overflow:hidden;margin-top:14px;">
-    <div id="metaDestaqueBar" style="height:100%;width:0%;background:linear-gradient(90deg,#27d7a0,#0ea97a);transition:width .4s;"></div>
-   </div>
-   <div style="font-size:13px;color:#93a3ba;margin-top:10px;">Faltam <strong id="metaDestaqueFaltam" style="color:#dce5f2;">R$ 0,00</strong> para bater a meta.</div>
-   <div style="font-size:12.5px;color:#93a3ba;margin-top:6px;">📅 <span id="metaDiasRestantes">0</span></div>
-   <div id="metaProjecaoTexto" style="font-size:12px;margin-top:6px;"></div>
-   <div id="metaPorDiaTexto" style="font-size:12.5px;margin-top:8px;font-weight:700;"></div>
-   <div id="bannerEmailMetaBatida" style="display:none;margin-top:12px;"></div>
-   <div id="bannerResumoSemanalEmail" style="display:none;margin-top:12px;"></div>
   </div>
 
-  <div class="adv-card no-print" style="margin-bottom:16px;">
-   <div class="adv-card-title">
-    <h3>📅 Calendário Comercial</h3>
-    <span>datas especiais que vêm por aí — bom pra todo mundo já ir se preparando</span>
-   </div>
-   <div id="listaDatasComerciaisDashboard" style="display:flex;flex-direction:column;gap:8px;"></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+   <select id="pontoFuncionariaSelect" onchange="renderFolhaDePonto()" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <option value="Gabriela">Gabriela</option>
+    <option value="Day">Day</option>
+   </select>
+   <input id="pontoMesSelect" type="month" onchange="renderFolhaDePonto()" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
   </div>
 
-  <div id="centralInteligenciaBiobel" class="adv-card no-print" style="margin-bottom:16px;background:linear-gradient(135deg,rgba(13,26,44,.98),rgba(8,19,32,.98));border-color:rgba(39,215,160,.25);">
-   <div class="adv-card-title">
-    <h3>🧠 Central de Inteligência</h3>
-    <span>lê a planilha e destaca o que merece atenção</span>
+  <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:12px 14px;margin-bottom:14px;">
+   <div style="font-size:11px;font-weight:800;color:#93a3ba;text-transform:uppercase;margin-bottom:8px;">⏰ Horário padrão dela — Segunda a Sexta</div>
+   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
+    <input id="pontoPadraoEntradaInput" type="time" value="09:00" style="background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:7px 10px;color:#dce5f2;font-size:12.5px;">
+    <span style="color:#93a3ba;font-size:12px;">até</span>
+    <input id="pontoPadraoSaidaInput" type="time" value="18:00" style="background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:7px 10px;color:#dce5f2;font-size:12.5px;">
    </div>
-   <div id="intelFrasePrincipal" style="font-size:13px;line-height:1.55;color:#dce5f2;background:rgba(39,215,160,.07);border:1px solid rgba(39,215,160,.18);border-radius:12px;padding:11px 13px;margin-bottom:12px;"></div>
-   <div class="biobel-inteligencia-grid">
-    <div class="biobel-inteligencia-box">
-     <h4>🚨 2. Possíveis inconsistências</h4>
-     <div class="sub">Conferência automática dos números lidos na planilha.</div>
-     <div id="intelErros" class="biobel-inteligencia-list"></div>
+   <div style="border-top:1px solid #1e2c42;padding-top:10px;margin-bottom:10px;">
+    <div style="font-size:11px;font-weight:800;color:#93a3ba;text-transform:uppercase;margin-bottom:8px;">🔶 Sábado — carga contratada (diferente da janela normal)</div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+     <input id="pontoHorasContratadasSabadoInput" type="number" step="0.5" min="0" value="4" style="width:90px;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:7px 10px;color:#dce5f2;font-size:12.5px;">
+     <span style="color:#93a3ba;font-size:12px;">horas contratadas aos sábados</span>
     </div>
-    <div class="biobel-inteligencia-box">
-     <h4>📊 3. Comparação automática</h4>
-     <div class="sub">Último dia lançado, dia anterior e média dos dias anteriores.</div>
-     <div id="intelComparacao" class="biobel-inteligencia-list"></div>
+    <p style="font-size:10px;color:#93a3ba;margin-top:6px;">💡 O sábado não segue a janela de segunda a sexta — ele tem uma carga própria (ex: 4h). Tudo que passar disso vira hora extra, mesmo que ela saia dentro do "horário normal" (ex: até às 16h).</p>
+   </div>
+   <button onclick="salvarHorarioPadraoEAtualizar()" class="w-full bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded-lg font-semibold text-xs">💾 Salvar horários</button>
+   <div id="cargaHorariaSemanalTexto" style="font-size:11px;color:#93a3ba;margin-top:10px;padding-top:10px;border-top:1px solid #1e2c42;"></div>
+  </div>
+
+  <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:14px;margin-bottom:16px;">
+   <div style="font-size:11px;font-weight:800;color:#93a3ba;text-transform:uppercase;margin-bottom:10px;">➕ Registrar um dia</div>
+   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:8px;">
+    <div>
+     <label for="pontoDataInput" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Data</label>
+     <input id="pontoDataInput" type="date" style="width:100%;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12.5px;">
     </div>
-    <div class="biobel-inteligencia-box">
-     <h4>💡 5. O que os números estão mostrando</h4>
-     <div class="sub">Explicação simples, sem precisar interpretar a tabela.</div>
-     <div id="intelExplicacao" class="biobel-inteligencia-list"></div>
+    <div>
+     <label for="pontoEntradaInput" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Entrada</label>
+     <input id="pontoEntradaInput" type="time" style="width:100%;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12.5px;">
     </div>
-    <div class="biobel-inteligencia-box">
-     <h4>👀 10. O que chamou atenção</h4>
-     <div class="sub">Principais fatos encontrados no período carregado.</div>
-     <div id="intelAtencao" class="biobel-inteligencia-list"></div>
+    <div>
+     <label for="pontoInicioIntervaloInput" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Início intervalo</label>
+     <input id="pontoInicioIntervaloInput" type="time" style="width:100%;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12.5px;">
+    </div>
+    <div>
+     <label for="pontoFimIntervaloInput" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Fim intervalo</label>
+     <input id="pontoFimIntervaloInput" type="time" style="width:100%;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12.5px;">
+    </div>
+    <div>
+     <label for="pontoSaidaInput" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Saída</label>
+     <input id="pontoSaidaInput" type="time" style="width:100%;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12.5px;">
+    </div>
+   </div>
+   <input id="pontoObservacaoInput" type="text" placeholder="Observação (opcional)" style="width:100%;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12.5px;margin-bottom:8px;">
+   <button id="btnAdicionarPonto" onclick="adicionarRegistroPonto()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Registrar</button>
+   <button id="btnCancelarEdicaoPonto" onclick="cancelarEdicaoPonto()" style="display:none;margin-top:8px;background:none;border:none;color:#93a3ba;font-size:12px;text-decoration:underline;cursor:pointer;width:100%;">✕ Cancelar edição</button>
+   <p style="font-size:10.5px;color:#93a3ba;margin-top:8px;">💡 Se não tiver intervalo naquele dia, pode deixar "Início intervalo" e "Fim intervalo" em branco.</p>
+  </div>
+
+  <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:14px;margin-bottom:16px;">
+   <div style="font-size:11px;font-weight:800;color:#93a3ba;text-transform:uppercase;margin-bottom:10px;">🚫 Registrar uma falta</div>
+   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:8px;">
+    <div>
+     <label for="faltaDataInput" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Data</label>
+     <input id="faltaDataInput" type="date" style="width:100%;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12.5px;">
+    </div>
+    <div>
+     <label for="faltaJustificadaSelect" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Foi justificada?</label>
+     <select id="faltaJustificadaSelect" style="width:100%;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12.5px;">
+      <option value="sim">✅ Sim, justificada</option>
+      <option value="nao">❌ Não justificada</option>
+     </select>
+    </div>
+   </div>
+   <input id="faltaMotivoInput" type="text" placeholder="Motivo (ex: atestado médico, sem aviso, etc.)" style="width:100%;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12.5px;margin-bottom:8px;">
+   <button id="btnAdicionarFalta" onclick="adicionarFalta()" class="w-full bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/40 text-rose-300 px-4 py-2.5 rounded-xl font-semibold text-sm">🚫 Registrar falta</button>
+   <button id="btnCancelarEdicaoFalta" onclick="cancelarEdicaoFalta()" style="display:none;margin-top:8px;background:none;border:none;color:#93a3ba;font-size:12px;text-decoration:underline;cursor:pointer;width:100%;">✕ Cancelar edição</button>
+   <div id="listaFaltas" style="margin-top:12px;display:flex;flex-direction:column;gap:6px;"></div>
+  </div>
+
+  <div id="resumoFolhaDePonto" style="margin-bottom:14px;"></div>
+  <div id="listaFolhaDePonto" style="display:flex;flex-direction:column;gap:6px;"></div>
+
+  <button onclick="carregarExemploCartaoPontoAgosto()" class="no-print w-full bg-blue-600 hover:bg-blue-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="margin-top:6px;">🧪 Carregar exemplo do cartão de ponto (agosto) pra testar</button>
+  <button id="btnImprimirFolhaPonto" onclick="imprimirFolhaDePonto()" class="no-print w-full bg-purple-600 hover:bg-purple-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="background:#8b5cf6;margin-top:8px;">🖨️ Imprimir / Exportar PDF</button>
+  <button onclick="exportarFolhaDePontoCSV()" class="no-print w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="margin-top:8px;">📊 Exportar CSV (abre no Excel)</button>
+ </div>
+ </div>
+
+ <div id="equipeSubAbaRotina" style="display:none;">
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7" style="border-color:rgba(139,92,246,.35);">
+  <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
+   <div>
+    <h2 class="text-xl font-bold">🎯 Atividades da Gerência</h2>
+    <p class="text-sm text-slate-400 mt-1">As tarefas da Alessandra — separadas da rotina da equipe porque são mais de gestão do que de loja.</p>
+   </div>
+  </div>
+  <div id="listaAtividadesGerencia" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
+  <div style="display:flex;gap:8px;">
+   <input id="novaAtividadeGerenciaInput" type="text" placeholder="Ex: Gravar vídeos pras redes sociais" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+   <button onclick="adicionarAtividadeGerencia()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">➕ Adicionar</button>
+  </div>
+ </div>
+
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7" style="border-color:rgba(34,197,94,.35);">
+  <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
+   <div>
+    <h2 class="text-xl font-bold">👩‍💼 Rotina da Equipe</h2>
+    <p class="text-sm text-slate-400 mt-1">Checklist semanal de atividades — marca sozinho e fica salvo.</p>
+   </div>
+   <div class="flex items-center gap-2 flex-wrap">
+    <button id="btnEquipeEditMode" onclick="toggleEquipeEditMode()" class="no-print bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">⚙️ Configurar atividades</button>
+    <button onclick="printEquipeWeek()" class="no-print bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🖨 Imprimir semana</button>
+    <button onclick="resetEquipeWeek()" class="no-print bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/40 text-rose-300 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🔄 Reiniciar semana</button>
+   </div>
+  </div>
+  <div id="equipeResetMsg" style="display:none;" class="mb-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300 font-semibold"></div>
+  <div id="equipeEditHint" style="display:none;" class="mb-4 rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-3 text-sm text-blue-300">
+   ✏️ <strong>Modo de edição ligado.</strong> Agora dá pra <strong>remover</strong> (🗑), <strong>mover</strong> tarefas entre Gabi e Dai (🔁) e <strong>adicionar</strong> novas tarefas no fim de cada lista.
+   <button onclick="restaurarRotinaPadrao()" class="ml-2 text-rose-300 underline">Restaurar lista original</button>
+  </div>
+  <div class="no-print" style="background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+   <label for="equipeAssinaturaInput" style="font-size:12px;color:#93a3ba;font-weight:700;white-space:nowrap;">✍️ Quem está fazendo hoje?</label>
+   <input id="equipeAssinaturaInput" type="text" placeholder="Digite seu nome" oninput="salvarAssinaturaAtual()" style="flex:1;min-width:140px;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:6px 10px;color:#dce5f2;font-size:12.5px;">
+  </div>
+ </div>
+
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
+  <div class="flex items-center justify-between gap-3 mb-3 flex-wrap">
+   <h3 class="font-bold text-slate-200">☀️ Rotina diária base (todos os dias)</h3>
+   <span id="equipeProgressoDiariaTexto" class="text-xs text-slate-400 font-semibold whitespace-nowrap">0 de 0</span>
+  </div>
+  <div style="background:#0b1728;border-radius:999px;height:8px;overflow:hidden;margin-bottom:14px;">
+   <div id="equipeProgressoDiariaBar" style="height:100%;width:0%;background:linear-gradient(90deg,#27d7a0,#0ea97a);transition:width .3s;"></div>
+  </div>
+  <div id="equipeRotinaDiaria" class="space-y-2"></div>
+ </div>
+
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
+  <div class="flex gap-2 flex-wrap mb-5" id="equipeDayTabs"></div>
+  <div id="equipeComparativoHoje" style="margin-bottom:14px;"></div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+   <div id="equipeColunaGabi" style="background:rgba(39,215,160,.05);border:1px solid rgba(39,215,160,.15);border-radius:14px;padding:14px;">
+    <div class="flex items-center justify-between gap-2 mb-2">
+     <div style="display:flex;align-items:center;gap:8px;">
+      <span style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#27d7a0,#0ea97a);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#04241a;flex-shrink:0;">G</span>
+      <h3 class="font-bold text-emerald-400">💇‍♀️ GABI</h3>
+     </div>
+     <span id="equipeProgressoGabiTexto" class="text-xs text-slate-400 font-semibold whitespace-nowrap">0 de 0</span>
+    </div>
+    <div style="background:#0b1728;border-radius:999px;height:8px;overflow:hidden;margin-bottom:12px;">
+     <div id="equipeProgressoGabiBar" style="height:100%;width:0%;background:linear-gradient(90deg,#27d7a0,#0ea97a);transition:width .3s;"></div>
+    </div>
+    <div id="equipeListaGabi" class="space-y-2"></div>
+   </div>
+   <div id="equipeColunaDai" style="background:rgba(79,156,255,.05);border:1px solid rgba(79,156,255,.15);border-radius:14px;padding:14px;">
+    <div class="flex items-center justify-between gap-2 mb-2">
+     <div style="display:flex;align-items:center;gap:8px;">
+      <span style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#4f9cff,#2f78e0);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#04162e;flex-shrink:0;">D</span>
+      <h3 class="font-bold text-blue-400">✨ DAI</h3>
+     </div>
+     <span id="equipeProgressoDaiTexto" class="text-xs text-slate-400 font-semibold whitespace-nowrap">0 de 0</span>
+    </div>
+    <div style="background:#0b1728;border-radius:999px;height:8px;overflow:hidden;margin-bottom:12px;">
+     <div id="equipeProgressoDaiBar" style="height:100%;width:0%;background:linear-gradient(90deg,#4f9cff,#2f78e0);transition:width .3s;"></div>
+    </div>
+    <div id="equipeListaDai" class="space-y-2"></div>
+   </div>
+  </div>
+ </div>
+
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
+  <div class="mb-3">
+   <h2 class="text-base font-bold text-slate-300">📋 Informações da semana <span class="text-xs font-normal text-slate-500">(mexe só de vez em quando)</span></h2>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-2">
+   <div>
+    <label class="block text-xs text-slate-400 font-semibold mb-1" for="equipeWeekStart">Semana referente a (de)</label>
+    <input id="equipeWeekStart" type="date" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+   </div>
+   <div>
+    <label class="block text-xs text-slate-400 font-semibold mb-1" for="equipeWeekEnd">Semana referente a (até)</label>
+    <input id="equipeWeekEnd" type="date" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+   </div>
+   <div>
+    <label class="block text-xs text-slate-400 font-semibold mb-1" for="equipeNomeGabi">Vendedora (Gabi)</label>
+    <input id="equipeNomeGabi" type="text" placeholder="Nome" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+   </div>
+   <div>
+    <label class="block text-xs text-slate-400 font-semibold mb-1" for="equipeNomeDai">Estagiária (Dai)</label>
+    <input id="equipeNomeDai" type="text" placeholder="Nome" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+   </div>
+  </div>
+ </div>
+
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
+  <div class="mb-5">
+   <h2 class="text-base font-bold text-slate-300">🕘 Horário de trabalho da equipe <span class="text-xs font-normal text-slate-500">(mexe só de vez em quando)</span></h2>
+   <p class="text-sm text-slate-400 mt-1">Só pra referência — fica salvo aqui, no painel.</p>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+   <div>
+    <div style="font-size:12px;font-weight:800;color:#27d7a0;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">💇‍♀️ Gabi</div>
+    <label class="block text-xs text-slate-400 font-semibold mb-1">Segunda a sexta</label>
+    <div class="flex items-center gap-2 mb-3">
+     <input id="horaGabiSemanaInicio" type="time" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm" value="09:00">
+     <span class="text-slate-500 text-xs">até</span>
+     <input id="horaGabiSemanaFim" type="time" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm" value="18:00">
+    </div>
+    <label class="block text-xs text-slate-400 font-semibold mb-1">Sábado</label>
+    <div class="flex items-center gap-2">
+     <input id="horaGabiSabadoInicio" type="time" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm" value="09:00">
+     <span class="text-slate-500 text-xs">até</span>
+     <input id="horaGabiSabadoFim" type="time" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm" value="16:00">
+    </div>
+   </div>
+   <div>
+    <div style="font-size:12px;font-weight:800;color:#4f9cff;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">✨ Dai</div>
+    <label class="block text-xs text-slate-400 font-semibold mb-1">Segunda a sexta</label>
+    <div class="flex items-center gap-2 mb-3">
+     <input id="horaDaiSemanaInicio" type="time" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm" value="13:00">
+     <span class="text-slate-500 text-xs">até</span>
+     <input id="horaDaiSemanaFim" type="time" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm" value="18:00">
+    </div>
+    <label class="block text-xs text-slate-400 font-semibold mb-1">Sábado</label>
+    <div class="flex items-center gap-2">
+     <input id="horaDaiSabadoInicio" type="time" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm" value="09:00">
+     <span class="text-slate-500 text-xs">até</span>
+     <input id="horaDaiSabadoFim" type="time" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm" value="16:00">
     </div>
    </div>
   </div>
+  <button onclick="saveHorarioEquipe()" class="mt-5 w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-xl font-semibold text-sm">Salvar horário da equipe</button>
+  <div id="horarioEquipeStatus" class="mt-3 text-sm text-slate-400"></div>
+ </div>
 
-  <div class="adv-shell" id="dashboardModoAvancado">
-
-    <aside class="adv-sidebar no-print">
-      <div class="adv-brand">Resumo</div>
-
-      <div class="adv-summary">
-        <div class="mini">
-          <div class="k">Faturamento total</div>
-          <div class="v g" id="advTotalSales">R$ 0,00</div>
-        </div>
-        <div class="mini">
-          <div class="k">Total de fechamentos</div>
-          <div class="v b" id="advTotalClosing">R$ 0,00</div>
-        </div>
-        <div class="mini">
-          <div class="k">Dias lançados</div>
-          <div class="v p" id="advDaysCount">0</div>
-        </div>
-        <div class="mini">
-          <div class="k">Média de fechamento</div>
-          <div class="v y" id="advAvgClosing">R$ 0,00</div>
-        </div>
-      </div>
-
-      <div class="adv-update">
-        <div class="k" style="color:#93a3ba;font-size:11px;">Última atualização</div>
-        <div id="advLastUpdate" style="font-size:12px;margin-top:4px;color:#dce5f2;">—</div>
-        <button id="btnRefreshSidebar" class="adv-btn green" style="width:100%;margin-top:10px;" onclick="loadGoogleSheet()" title="Atalho: Alt+A">↻ Atualizar agora</button>
-        <button class="adv-btn" style="width:100%;margin-top:8px;background:#1c2c42;color:#dce5f2;" onclick="ativarModoApresentacao()" title="Deixa o painel em tela cheia, com fontes maiores e alternando entre telas — pensado pra ficar numa TV da loja">📺 Modo Apresentação</button>
-      </div>
-    </aside>
-
-    <section class="adv-main">
-      <div class="adv-topbar">
-        <div class="adv-topbar-left">
-          <div class="adv-select-wrap">📅 <span>Selecione o Dia:</span>
-            <select id="daySelect" class="adv-select" aria-label="Selecionar dia do caixa"></select>
-          </div>
-        </div>
-        <div class="adv-pills">
-          <div class="adv-pill">💼 Inicial: <b id="advPillInitial">R$ 0,00</b></div>
-          <div class="adv-pill">✅ Fechamento: <b id="advPillClosing">R$ 0,00</b></div>
-          <div class="adv-pill">💰 Total Vendas: <b id="advPillSales">R$ 0,00</b></div>
-        </div>
-      </div>
-
-      <div id="emptyStateDashboard" class="empty-state adv-card" style="display:none;">
-        <div class="icon">📭</div>
-        <div class="title">Nenhum dado carregado ainda</div>
-        <div class="desc">Clique em "↻ Atualizar agora" para buscar a planilha do Google Sheets, ou use o botão "Carregar Excel/CSV" no topo da página.</div>
-      </div>
-
-      <div id="dashboardContent">
-      <div class="adv-grid4">
-        <div class="adv-kpi green">
-          <div class="label">Saldo inicial (caixa)</div>
-          <div class="value" id="advInitial">R$ 0,00</div>
-          <div class="sub">Reposição e fundo de troco</div>
-        </div>
-        <div class="adv-kpi blue">
-          <div class="label">Entradas (vendas dia)</div>
-          <div class="value" id="advSales">R$ 0,00</div>
-          <div class="sub">Total faturado no dia</div>
-        </div>
-        <div class="adv-kpi red">
-          <div class="label">Saídas / retiradas</div>
-          <div class="value" id="advWithdrawals">R$ 0,00</div>
-          <div class="sub">Retiradas ou sangrias de gaveta</div>
-        </div>
-        <div class="adv-kpi green">
-          <div class="label">Fechamento do caixa</div>
-          <div class="value" id="advClosing">R$ 0,00</div>
-          <div class="sub">Valor conferido na gaveta</div>
-        </div>
-      </div>
-
-      <div id="cardDiferencaCaixa" class="adv-card" style="margin-top:16px;"></div>
-
-      <div class="adv-content2">
-        <div class="adv-card">
-          <div class="adv-card-title">
-            <h3>📊 Vendas Diárias × Meta Diária</h3>
-            <span>comparação dia a dia com a meta configurada</span>
-          </div>
-          <div class="adv-chart"><canvas id="closingChart"></canvas></div>
-        </div>
-
-        <div class="adv-card" id="cardVendasPorPeriodo">
-          <div class="adv-card-title">
-            <h3>📊 Vendas por período — dia a dia</h3>
-            <span>mostra quanto foi vendido de manhã, no meio-dia e à tarde em cada dia lançado</span>
-          </div>
-          <div class="biobel-periodo-chart-wrap"><canvas id="graficoVendasPorPeriodo" role="img" aria-label="Gráfico diário de vendas por manhã, meio-dia e tarde"></canvas></div>
-          <div id="resumoVendasPorPeriodo" class="biobel-periodo-resumo"></div>
-          <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">💡 A divisão usa o horário real registrado na planilha: manhã até 11h59, meio-dia das 12h às 13h59 e tarde a partir das 14h.</p>
-        </div>
-
-        <div class="adv-card">
-          <div class="adv-card-title">
-            <h3>🍩 Resumo Geral</h3>
-            <span>visão acumulada</span>
-          </div>
-          <div class="adv-donut"><canvas id="summaryDonut"></canvas></div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
-            <div class="adv-pill">Faturamento<br><b id="donutSales">R$ 0,00</b></div>
-            <div class="adv-pill">Fechamentos<br><b id="donutClosing">R$ 0,00</b></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="adv-card adv-table-card">
-        <div class="adv-card-title">
-          <h3>📋 Resumo Diário</h3>
-          <div class="adv-actions">
-            <button class="adv-btn green" onclick="printMonthly()">🖨 Imprimir Relatório</button>
-            <button class="adv-btn blue" onclick="printDaily()">🖨 Imprimir Dia</button>
-            <button class="adv-btn" style="background:#8b5cf6;color:#fff;" onclick="gerarRelatorioMensalPDF()" id="btnGerarPdfMensal">📑 Relatório em PDF</button>
-          </div>
-        </div>
-
-        <div class="scroll-hint">⇔ arraste a tabela para o lado para ver mais colunas</div>
-        <div class="table-scroll-wrap">
-        <div style="overflow:auto">
-          <table class="adv-table">
-            <thead>
-              <tr>
-                <th>Data</th>
-                <th class="right">Saldo inicial</th>
-                <th class="right">Vendas do dia</th>
-                <th class="right">Retiradas</th>
-                <th class="right">Fechamento</th>
-                <th class="right" title="Fechamento menos saldo inicial. Só reflete dinheiro físico, não inclui cartão/Pix.">Variação (dinheiro)</th>
-              </tr>
-            </thead>
-            <tbody id="advTableBody"></tbody>
-          </table>
-        </div>
-        </div>
-      </div>
-      </div>
-    </section>
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
+  <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
+   <div>
+    <h3 class="font-bold text-slate-200">📈 Histórico Semanal de Vistorias/Checklists</h3>
+    <p class="text-xs text-slate-500 mt-1">Fica registrado automaticamente toda vez que a semana é reiniciada.</p>
+   </div>
+   <button onclick="limparHistoricoEquipe()" class="no-print text-xs text-slate-500 hover:text-rose-400 underline whitespace-nowrap">Limpar histórico</button>
   </div>
-</main></div>`;
+  <div id="equipeHistorico" class="space-y-3"></div>
+ </div>
+ </div>
+
+</section></div>`;
  renderChecklistChuvaDashboard();
 }
 function renderChecklistChuvaDashboard(){
@@ -2380,4 +2430,4 @@ function verComprovanteBoleto(id){
  if(!b || !b.comprovante) return;
  const win = window.open('', '_blank');
  if(win) win.document.write('<title>Comprovante — '+b.fornecedor+'</title><body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="'+b.comprovante+'" style="max-width:100%;max-height:100vh;">
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js"></script><script src="biobel-app.js"></script><script src="inteligencia-operacional.js"></script></body></html>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js"></script><script src="biobel-app.js"></script></body></html>

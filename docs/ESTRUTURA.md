@@ -13,14 +13,14 @@
 │   ├── navigation-improvements.js   (injetado por GitHub Action, ver PUBLICACAO.md)
 │   └── imagens/  (banner/, depoimentos/, produtos)
 ├── login.html                 ← tela de entrada do painel
-├── dashboard.html             ← PAINEL DE GESTÃO (arquivo único, o coração do projeto)
-├── manifest.json, service-worker.js   ← PWA (instalar no celular / offline)
+├── dashboard.html             ← VISÃO GERAL
+├── central.html · operacao.html · equipe.html · vendas.html\n├── analises.html · alertas.html · config.html · administracao.html\n├── biobel-app.js · biobel-app.css · biobel-shell.js ← núcleo compartilhado\n├── manifest.json, service-worker.js   ← PWA (instalar no celular / offline)
 ├── .nojekyll                  ← diz ao GitHub Pages pra NÃO processar com Jekyll (não apague)
 ├── .github/workflows/         ← automação que mexe no index.html
 ├── tools/  validar.js · mapa.js
 └── docs/   ESTRUTURA · CONVENCOES · PUBLICACAO · CHANGELOG · MAPA_AUTOMATICO
 ```
-**Decisão de projeto:** o `dashboard.html` é **um arquivo só** de propósito (sem build, sem npm, publicação = copiar o arquivo). Não "modularize" sem combinar com o dono: o service worker, o PWA e o modo de publicação dependem disso.
+**Arquitetura v10.39:** cada área principal tem uma página própria. O JavaScript, CSS e cabeçalho compartilhados ficam em arquivos comuns. O `dashboard.html` continua como Visão Geral.
 
 ## 2. Anatomia do `dashboard.html`
 Ordem dentro do arquivo:
@@ -30,7 +30,7 @@ Ordem dentro do arquivo:
 4. Uma `<section id="...Tab">` por aba (a aba Dashboard é o bloco principal com `#dashboardModoAvancado` etc.).
 5. Dois blocos `<script>` grandes no fim (todo o JavaScript). O código continua em arquivo único, mas agora possui **zonas internas de manutenção** (`BIOBEL — ZONA: ...`) para facilitar alterações pequenas sem precisar separar o painel em vários arquivos.
 
-### Zonas internas do JavaScript
+### Zonas internas do JavaScript compartilhado
 As zonas são apenas marcadores de manutenção: **não alteram a execução** e não devem ser usadas para mover funções em massa.
 - **CORE / INICIALIZAÇÃO** → utilitários compartilhados e inicialização.
 - **EQUIPE** → rotinas, folha de ponto, faltas e exportações relacionadas.
@@ -43,10 +43,10 @@ As zonas são apenas marcadores de manutenção: **não alteram a execução** e
 
 **Regra de segurança:** em uma melhoria futura, alterar uma zona por vez, validar o painel e só então avançar para a próxima.
 
-### Como cada área navega por dentro
+### Como cada área navega agora
 | Área | Como funciona | Onde mexer |
 |---|---|---|
-| Abas principais | `showTab('info'│'caixa'│...)` | função `showTab` |
+| Páginas principais | links diretos entre os arquivos HTML | `biobel-shell.js` + `showTab()` de compatibilidade |
 | **Configuração** | chips `#chipX` + cards `#configSecaoX`; `mostrarSecaoConfig('X')` lê o array `secoes` | adicionar nome ao array `secoes` |
 | **Informação Geral** | chips `#chipInfoX` + `#infoSecaoX`; `mostrarSecaoInfo('X')` (Financeiro, Vendedoras, Dias, Avancado, Comparar, PorDiaSemana) | idem |
 | **Equipe** | sub-abas `mostrarEquipeSubAba('ponto'│'rotina')` | — |

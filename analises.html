@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="theme-color" content="#0ea97a"><meta name="robots" content="noindex,nofollow"><link rel="icon" type="image/png" href="/logo_biobel_gravatai.png"><link rel="manifest" href="manifest.json"><title>Biobel — Visão Geral</title><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="biobel-design-system.css"><link rel="stylesheet" href="biobel-ux-refinement.css"><link rel="stylesheet" href="biobel-app.css"></head><body data-biobel-page="dashboard">
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="theme-color" content="#0ea97a"><meta name="robots" content="noindex,nofollow"><link rel="icon" type="image/png" href="/logo_biobel_gravatai.png"><link rel="manifest" href="manifest.json"><title>Biobel — Análises</title><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="biobel-design-system.css"><link rel="stylesheet" href="biobel-ux-refinement.css"><link rel="stylesheet" href="biobel-app.css"></head><body data-biobel-page="info">
 TYPE html>
 <html lang="pt-BR">
 <head>
@@ -855,235 +855,519 @@ body.light-mode .config-chips{
 <a href="#dashboardTab" style="position:absolute;left:-9999px;top:0;z-index:9999;background:#0ea97a;color:#04241a;padding:12px 18px;border-radius:0 0 10px 0;font-weight:700;text-decoration:none" onfocus="this.style.left='0'" onblur="this.style.left='-9999px'">Pular para o conteúdo</a>
 
 
-<div id="biobel-shell"></div><main id="dashboardTab" class="max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabDashboard">
+<div id="biobel-shell"></div><section id="infoTab" class="hidden max-w-5xl 2xl:max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabInfo">
 
-  <div id="indicadorClimaTopo" class="no-print" style="display:none;justify-content:flex-end;margin-bottom:4px;"></div>
-  <div class="no-print" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:6px;">
-   <button onclick="showTab('caixa')" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(39,215,160,.35);border-radius:14px;padding:16px 10px;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;text-align:center;">⚡<br>Fechar Caixa</button>
-   <button onclick="showTab('equipe')" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(79,156,255,.35);border-radius:14px;padding:16px 10px;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;text-align:center;">📋<br>Folha de Ponto</button>
-   <button onclick="showTab('alertas')" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(251,191,36,.35);border-radius:14px;padding:16px 10px;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;text-align:center;">🚨<br>Ver Alertas</button>
-   <button onclick="showTab('info')" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(139,92,246,.35);border-radius:14px;padding:16px 10px;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;text-align:center;">📊<br>Como Estou Indo?</button>
-  </div>
+ <div class="adv-card no-print" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+  <span style="font-size:12px;color:#93a3ba;font-weight:800;">📂 Planilha conectada:</span>
+  <select id="seletorPlanilhaInfoGeral" aria-label="Selecionar planilha salva pra ler" style="background:#0b1728;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12px;flex:1;min-width:160px;">
+   <option value="">— Escolher planilha salva —</option>
+  </select>
+  <button id="btnLerPlanilhaInfoGeral" onclick="lerPlanilhaSelecionadaInfoGeral()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">📥 Ler planilha selecionada</button>
+  <button id="btnVoltarPadraoInfoGeral" onclick="voltarPlanilhaPadrao()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" title="Volta pra planilha principal, marcada como padrão">🏠 Planilha padrão</button>
+  <button onclick="exportarInfoComoTxt()" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" title="Copia e baixa um resumo em texto, pronto pra colar em outras IAs">📄 Exportar TXT</button>
+ </div>
+ <div id="linhaSeletorMes" class="no-print" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+  <span style="font-size:12px;color:#93a3ba;font-weight:800;">📅 Ver dados de:</span>
+  <select id="seletorMes" aria-label="Selecionar mês (ao vivo ou arquivado)" onchange="visualizarMes(this.value)" style="background:#0b1728;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12px;min-width:200px;"><option value="">Mês atual (ao vivo)</option></select>
+  <button id="btnVoltarMesAtual" onclick="visualizarMes('')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-xl font-semibold text-sm whitespace-nowrap" style="display:none;" title="Voltar pro mês atual">📍 Mês atual</button>
+ </div>
+ <span id="avisoMesPassado" style="display:none;"></span>
 
-  <div class="no-print" style="display:flex;justify-content:flex-end;margin-bottom:-6px;">
-   <button id="btnAlternarModoDashboard" onclick="alternarModoDashboard()" style="background:#0b1728;border:1px solid #1e2c42;border-radius:999px;padding:6px 14px;font-size:12px;color:#93a3ba;cursor:pointer;font-weight:700;">🔍 Ver modo completo</button>
-  </div>
+ <div id="infoAlertaDiferencaFechamento" class="no-print" style="display:none;"></div>
+ <div id="infoAlertaDiaAbaixoMeta" class="no-print" style="display:none;"></div>
+ <div id="infoAlertaVendasForaPadrao" class="no-print" style="display:none;"></div>
+ <div id="infoAlertaDiasFaltando" class="no-print" style="display:none;"></div>
+ <div id="infoRecordeMes" class="no-print" style="display:none;"></div>
+ <div id="infoMetasLongoPrazo" style="display:none;"></div>
 
-  <div id="avisoMesDivergente" class="no-print" style="display:none;"></div>
-  <div id="bannerClimaChuva" class="no-print" style="display:none;"></div>
-  <div id="checklistChuvaDashboard" class="no-print" style="display:none;"></div>
-  <div class="no-print" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:10px 14px;margin-bottom:6px;">
-   <span style="font-size:12px;color:#93a3ba;font-weight:700;">🌦️ Clima de hoje:</span>
-   <button onclick="marcarClimaHojeRapido('Sol')" style="background:#1c2c42;border:none;color:#dce5f2;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;">☀️ Sol</button>
-   <button onclick="marcarClimaHojeRapido('Nublado')" style="background:#1c2c42;border:none;color:#dce5f2;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;">☁️ Nublado</button>
-   <button onclick="marcarClimaHojeRapido('Chuva')" style="background:#1c2c42;border:none;color:#dce5f2;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;">🌧️ Chuva</button>
-   <button onclick="marcarClimaHojeRapido('Frio')" style="background:#1c2c42;border:none;color:#dce5f2;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;">🥶 Frio</button>
-   <span id="climaHojeMarcadoTexto" style="font-size:11.5px;color:#27d7a0;font-weight:700;"></span>
-   <span style="font-size:10px;color:#93a3ba;">(o sistema tenta detectar sozinho — clique pra corrigir se estiver errado)</span>
+ <div class="info-resumo-rapido no-print" style="grid-template-columns:repeat(5,1fr);">
+  <div class="item"><div class="lbl">Faturamento</div><div class="val" id="resumoFaturamento" aria-live="polite">R$ 0,00</div></div>
+  <div class="item"><div class="lbl">Meta Atingida</div><div class="val" id="resumoPctMeta" aria-live="polite">0%</div></div>
+  <div class="item"><div class="lbl">Falta p/ Meta</div><div class="val" id="resumoFaltaMeta" aria-live="polite">R$ 0,00</div></div>
+  <div class="item"><div class="lbl">Média Necessária/Dia Útil</div><div class="val" id="resumoMediaNecessaria" aria-live="polite">R$ 0,00</div></div>
+  <div class="item"><div class="lbl">Caixa c/ Divergência</div><div class="val" id="resumoCaixaDivergencia" aria-live="polite">—</div></div>
+ </div>
+ <div style="font-size:10.5px;color:#93a3ba;text-align:center;margin-top:-6px;margin-bottom:14px;">💡 "Lucro estimado" e "Estoque baixo" apareceriam aqui se a planilha tivesse colunas de custo/margem/estoque — hoje ela não tem.</div>
+
+ <div class="config-chips no-print" style="position:static;top:auto;background:transparent;padding:0 0 4px;margin-bottom:14px;">
+  <button type="button" id="chipInfoFinanceiro" onclick="mostrarSecaoInfo('Financeiro')" class="config-chip active" role="tab" aria-selected="true">💰 Financeiro</button>
+  <button type="button" id="chipInfoVendedoras" onclick="mostrarSecaoInfo('Vendedoras')" class="config-chip" role="tab" aria-selected="false">👥 Vendedoras</button>
+  <button type="button" id="chipInfoDias" onclick="mostrarSecaoInfo('Dias')" class="config-chip" role="tab" aria-selected="false">📅 Dias</button>
+  <button type="button" id="chipInfoAvancado" onclick="mostrarSecaoInfo('Avancado')" class="config-chip" role="tab" aria-selected="false">🔍 Análises avançadas</button>
+  <button type="button" id="chipInfoComparar" onclick="mostrarSecaoInfo('Comparar')" class="config-chip" role="tab" aria-selected="false">📊 Comparar meses</button>
+  <button type="button" id="chipInfoPorDiaSemana" onclick="mostrarSecaoInfo('PorDiaSemana')" class="config-chip" role="tab" aria-selected="false">📆 Por Dia da Semana</button>
+ </div>
+
+ <div id="infoSecaoFinanceiro">
+
+ <div class="adv-card">
+  <div class="adv-card-title">
+   <h3>🎯 Meta do mês</h3>
+   <span>faturamento acumulado x meta</span>
   </div>
-  <div id="previsaoProximosDiasFaixa" class="no-print" style="display:none;margin-bottom:6px;"></div>
-  <div id="bannerClimaSol" class="no-print" style="display:none;"></div>
-  <div id="avisoFimDeSemanaChuvoso" class="no-print" style="display:none;"></div>
-  <div id="avisoProximaPlanilha" class="no-print" style="display:none;"></div>
-  <div id="metaDestaqueTopo" class="no-print" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid #1e2c42;border-radius:20px;padding:24px 28px;margin-bottom:16px;">
-   <div style="font-size:11px;color:#93a3ba;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">🎯 Meta do mês</div>
-   <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;">
-    <span id="metaDestaqueValor" style="font-size:38px;font-weight:900;color:#27d7a0;line-height:1;">R$ 0,00</span>
-    <span style="font-size:16px;color:#93a3ba;">de <strong id="metaDestaqueTotal" style="color:#dce5f2;">R$ 0,00</strong></span>
-    <span id="metaDestaquePct" style="font-size:16px;font-weight:900;color:#27d7a0;background:rgba(39,215,160,.12);padding:3px 10px;border-radius:999px;">0%</span>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+   <div>
+    <div style="font-size:11px;color:#93a3ba;font-weight:800;letter-spacing:.06em;text-transform:uppercase;">Total vendido até agora</div>
+    <div style="font-size:30px;font-weight:900;color:#27d7a0;margin-top:6px;" id="infoTotalSales">R$ 0,00</div>
    </div>
-   <div style="background:#0b1728;border-radius:999px;height:14px;overflow:hidden;margin-top:14px;">
-    <div id="metaDestaqueBar" style="height:100%;width:0%;background:linear-gradient(90deg,#27d7a0,#0ea97a);transition:width .4s;"></div>
+   <div>
+    <div style="font-size:11px;color:#93a3ba;font-weight:800;letter-spacing:.06em;text-transform:uppercase;">Meta do mês</div>
+    <div style="font-size:30px;font-weight:900;color:#f6f9fd;margin-top:6px;" id="infoGoalValue">R$ 45.000,00</div>
    </div>
-   <div style="font-size:13px;color:#93a3ba;margin-top:10px;">Faltam <strong id="metaDestaqueFaltam" style="color:#dce5f2;">R$ 0,00</strong> para bater a meta.</div>
-   <div style="font-size:12.5px;color:#93a3ba;margin-top:6px;">📅 <span id="metaDiasRestantes">0</span></div>
-   <div id="metaProjecaoTexto" style="font-size:12px;margin-top:6px;"></div>
-   <div id="metaPorDiaTexto" style="font-size:12.5px;margin-top:8px;font-weight:700;"></div>
-   <div id="bannerEmailMetaBatida" style="display:none;margin-top:12px;"></div>
-   <div id="bannerResumoSemanalEmail" style="display:none;margin-top:12px;"></div>
   </div>
+  <div style="background:#0b1728;border:1px solid var(--line);border-radius:999px;height:26px;overflow:hidden;position:relative;">
+   <div id="infoGoalBar" style="height:100%;background:linear-gradient(90deg,#27d7a0,#0ea97a);width:0%;transition:width .4s;"></div>
+   <div id="infoGoalPct" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;">0%</div>
+  </div>
+  <div style="display:flex;justify-content:space-between;margin-top:10px;font-size:12px;color:#93a3ba;">
+   <span>Faltam <b id="infoGoalRemaining" style="color:#dce5f2">R$ 0,00</b> para bater a meta</span>
+   <a href="#" onclick="showTab('config');return false;" class="no-print" style="color:var(--green);text-decoration:underline;">Alterar meta em Configuração →</a>
+  </div>
+  <div id="infoGoalDetalheWrap" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);grid-template-columns:1fr 1fr;gap:14px;">
+   <div style="background:#0b1728;border-radius:12px;padding:10px 14px;">
+    <div style="font-size:10.5px;color:#93a3ba;font-weight:800;letter-spacing:.05em;text-transform:uppercase;">📅 Dias úteis restantes</div>
+    <div style="font-size:20px;font-weight:900;color:#f6f9fd;margin-top:4px;" id="infoDiasRestantesMeta">0</div>
+   </div>
+   <div style="background:#0b1728;border-radius:12px;padding:10px 14px;">
+    <div style="font-size:10.5px;color:#93a3ba;font-weight:800;letter-spacing:.05em;text-transform:uppercase;">📊 Precisa vender, em média</div>
+    <div style="font-size:20px;font-weight:900;color:#27d7a0;margin-top:4px;" id="infoMediaNecessariaMeta">R$ 0,00 <span style="font-size:11px;color:#93a3ba;font-weight:700;">/dia</span></div>
+   </div>
+  </div>
+  <div id="infoRitmoAtualWrap" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line);"></div>
+ </div>
 
-  <div class="adv-card no-print" style="margin-bottom:16px;">
+ <div class="adv-card">
+  <div class="adv-card-title">
+   <h3>💳 Total recebido por forma de pagamento</h3>
+   <span>acumulado até o momento</span>
+  </div>
+  <div class="adv-grid4" style="margin-top:0;">
+   <div class="adv-kpi green">
+    <div class="label">💵 Dinheiro</div>
+    <div class="value" id="infoDinheiro">R$ 0,00</div>
+    <div class="sub" id="infoDinheiroPct">0% do total</div>
+   </div>
+   <div class="adv-kpi blue">
+    <div class="label">💳 Cartão de Débito</div>
+    <div class="value" id="infoDebito">R$ 0,00</div>
+    <div class="sub" id="infoDebitoPct">0% do total</div>
+   </div>
+   <div class="adv-kpi gold">
+    <div class="label">💳 Cartão de Crédito</div>
+    <div class="value" id="infoCredito">R$ 0,00</div>
+    <div class="sub" id="infoCreditoPct">0% do total</div>
+   </div>
+   <div class="adv-kpi red">
+    <div class="label">📲 Pix</div>
+    <div class="value" id="infoPix">R$ 0,00</div>
+    <div class="sub" id="infoPixPct">0% do total</div>
+   </div>
+  </div>
+  <div class="adv-grid4" style="margin-top:16px;">
+   <div class="adv-kpi green">
+    <div class="label">🎯 Ticket Médio por Venda</div>
+    <div class="value" id="infoTicketMedio">R$ 0,00</div>
+    <div class="sub" id="infoTicketMedioSub">baseado nas vendas com contagem disponível</div>
+   </div>
+   <div class="adv-kpi blue">
+    <div class="label">🧾 Total de Atendimentos/Vendas</div>
+    <div class="value" id="infoQtdVendas">0</div>
+    <div class="sub" id="infoQtdVendasSub">no mês, somando todos os dias lançados</div>
+   </div>
+   <div class="adv-kpi green">
+    <div class="label">🧺 Total de Itens Vendidos</div>
+    <div class="value" id="infoTotalItensVendidos">0</div>
+    <div class="sub" id="infoTotalItensVendidosSub">soma da coluna "qt de produtos", no mês</div>
+   </div>
+   <div class="adv-kpi gold">
+    <div class="label">📈 Projeção até o Fim do Mês</div>
+    <div class="value" id="infoProjecao">R$ 0,00</div>
+    <div class="sub" id="infoProjecaoSub">baseado na média diária até agora</div>
+   </div>
+   <div class="adv-kpi red">
+    <div class="label">📊 Comparativo com o Mês Anterior</div>
+    <div class="value" id="infoComparativoMes">—</div>
+    <div class="sub" id="infoComparativoMesSub">ainda sem dados do mês passado</div>
+   </div>
+  </div>
+ </div>
+
+ <div class="adv-card">
+  <div class="adv-card-title">
+   <h3>💸 Caixa físico</h3>
+   <span>despesas do mês e quanto tem na gaveta agora</span>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+   <div class="adv-kpi red">
+    <div class="label">💸 Retiradas/Despesas do Mês</div>
+    <div class="value" id="infoDespesasMes">R$ 0,00</div>
+    <div class="sub" id="infoDespesasMesSub">somando todos os dias lançados</div>
+   </div>
+   <div class="adv-kpi green">
+    <div class="label">🔒 Saldo Atual da Gaveta</div>
+    <div class="value" id="infoSaldoGaveta">R$ 0,00</div>
+    <div class="sub" id="infoSaldoGavetaSub">referente ao último fechamento lançado</div>
+   </div>
+  </div>
+ </div>
+
+ <div class="adv-card">
+  <div class="adv-card-title">
+   <h3>📈 Mais números do mês</h3>
+   <span>médias, recordes e comparação justa</span>
+  </div>
+  <div class="adv-grid4" style="margin-top:0;">
+   <div class="adv-kpi blue">
+    <div class="label">📊 Média de Vendas por Dia</div>
+    <div class="value" id="infoMediaDiaria">R$ 0,00</div>
+    <div class="sub" id="infoMediaDiariaSub">considerando os dias já lançados</div>
+   </div>
+   <div class="adv-kpi green">
+    <div class="label">🚀 Maior Venda do Mês</div>
+    <div class="value" id="infoMaiorVenda">R$ 0,00</div>
+    <div class="sub" id="infoMaiorVendaSub">—</div>
+   </div>
+   <div class="adv-kpi red">
+    <div class="label">📉 Menor Venda do Mês</div>
+    <div class="value" id="infoMenorVenda">R$ 0,00</div>
+    <div class="sub" id="infoMenorVendaSub">—</div>
+   </div>
+   <div class="adv-kpi gold">
+    <div class="label">✅ Dias que Bateram a Meta</div>
+    <div class="value" id="infoDiasMetaBatida">0 de 0</div>
+    <div class="sub" id="infoDiasMetaBatidaSub">meta diária considerada</div>
+   </div>
+   <div class="adv-kpi blue">
+    <div class="label">🧾 Média de Atendimentos por Dia</div>
+    <div class="value" id="infoMediaAtendimentos">0</div>
+    <div class="sub" id="infoMediaAtendimentosSub">quantidade de vendas, não valor em R$</div>
+   </div>
+   <div class="adv-kpi gold">
+    <div class="label">📅 Dias Restantes do Mês</div>
+    <div class="value" id="infoDiasRestantesValor">0</div>
+    <div class="sub" id="infoDiasRestantesSub" style="line-height:1.4;">—</div>
+   </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px;">
+   <div class="adv-kpi blue">
+    <div class="label">📆 Melhor Dia da Semana (soma total)</div>
+    <div class="value" id="infoMelhorDiaSemana">—</div>
+    <div class="sub" id="infoMelhorDiaSemanaSub">somando todas as ocorrências desse dia no histórico</div>
+   </div>
+   <div class="adv-kpi green">
+    <div class="label">⚖️ Comparativo até o Mesmo Dia (mês passado)</div>
+    <div class="value" id="infoComparativoMesmoDia">—</div>
+    <div class="sub" id="infoComparativoMesmoDiaSub">comparação mais justa que o total do mês fechado</div>
+   </div>
+  </div>
+ </div>
+
+ <div class="adv-card">
+  <div class="adv-card-title">
+   <h3>📅 Melhores e piores dias da semana</h3>
+   <span>soma total de vendas por dia da semana (todas as sextas somadas, todas as quintas somadas, etc.)</span>
+  </div>
+  <div style="max-width:320px;margin:0 auto 16px;"><canvas id="graficoRadarDiasSemana" role="img" aria-label="Gráfico de radar comparando o desempenho de cada dia da semana"></canvas></div>
+  <div class="adv-content2" style="margin-top:0;">
+   <div>
+    <div style="font-size:12px;font-weight:800;color:#27d7a0;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">🏆 Melhores dias (até 3)</div>
+    <div id="infoMelhoresDiasSemana" style="display:flex;flex-direction:column;gap:10px;"></div>
+   </div>
+   <div>
+    <div style="font-size:12px;font-weight:800;color:#fb7185;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">📉 Piores dias (até 3)</div>
+    <div id="infoPioresDiasSemana" style="display:flex;flex-direction:column;gap:10px;"></div>
+   </div>
+  </div>
+ </div>
+
+ <div class="adv-card">
+  <div class="adv-card-title">
+   <h3>📊 Faturamento por dia da semana (todos)</h3>
+   <span>quanto já faturou em cada dia da semana, somando todas as ocorrências do mês</span>
+  </div>
+  <div id="infoTodosDiasSemana" style="display:flex;flex-direction:column;gap:8px;"></div>
+ </div>
+
+ <div class="adv-card">
+  <div class="adv-card-title">
+   <h3>📉 Dias com menos movimento (por turno)</h3>
+   <span>os 3 dias da semana com menor média de atendimentos de manhã, e os 3 com menor média à tarde — direto da coluna de turno da sua planilha, somando o mês inteiro</span>
+  </div>
+  <div id="menosMovimentoPorTurno" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;"></div>
+ </div>
+
+ <div class="adv-card">
+  <div class="adv-card-title">
+   <h3>🕐 Turnos — Manhã vs Tarde</h3>
+   <span>de forma geral (somando todos os dias do mês), qual turno tem mais movimento e qual tem menos — direto da coluna de turno da sua planilha</span>
+  </div>
+  <div id="comparativoTurnos"></div>
+ </div>
+
+ </div>
+ <!-- fim infoSecaoFinanceiro -->
+
+ <div id="infoSecaoVendedoras" style="display:none;">
+ <div class="adv-content2">
+  <div class="adv-card">
    <div class="adv-card-title">
-    <h3>📅 Calendário Comercial</h3>
-    <span>datas especiais que vêm por aí — bom pra todo mundo já ir se preparando</span>
+    <h3>🏆 Ranking de vendedoras</h3>
+    <span>quem mais vendeu no mês</span>
    </div>
-   <div id="listaDatasComerciaisDashboard" style="display:flex;flex-direction:column;gap:8px;"></div>
+   <div id="infoSellerRanking" style="display:flex;flex-direction:column;gap:10px;"></div>
+   <div id="infoInsightVendedoras" style="display:none;"></div>
+   <div style="border-top:1px solid #1e2c42;margin:16px 0 12px;padding-top:14px;">
+    <div style="font-size:12px;font-weight:800;color:#93a3ba;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">🔀 Ticket Médio e Forma de Pagamento Preferida</div>
+    <div id="infoSellerCruzamento" style="display:flex;flex-direction:column;gap:12px;"></div>
+   </div>
   </div>
+ </div>
 
-  <div id="centralInteligenciaBiobel" class="adv-card no-print" style="margin-bottom:16px;background:linear-gradient(135deg,rgba(13,26,44,.98),rgba(8,19,32,.98));border-color:rgba(39,215,160,.25);">
+ <div class="adv-card">
+  <div class="adv-card-title">
+   <h3>⚖️ Comparar duas vendedoras</h3>
+   <span>lado a lado, pra conversas de feedback baseadas em dado real</span>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+   <select id="compararVend1" aria-label="Escolher primeira vendedora" onchange="renderCompararVendedoras()" style="background:#0b1728;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12px;"><option value="">— Escolher —</option></select>
+   <select id="compararVend2" aria-label="Escolher segunda vendedora" onchange="renderCompararVendedoras()" style="background:#0b1728;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12px;"><option value="">— Escolher —</option></select>
+  </div>
+  <div id="resultadoCompararVendedoras"></div>
+ </div>
+ </div>
+ <!-- fim infoSecaoVendedoras -->
+
+ <div id="infoSecaoDias" style="display:none;">
+  <div class="adv-card">
    <div class="adv-card-title">
-    <h3>🧠 Central de Inteligência</h3>
-    <span>lê a planilha e destaca o que merece atenção</span>
+    <h3>📣 Campanhas de Marketing</h3>
+    <span>marque o período de uma promoção pra comparar o desempenho com o resto do mês</span>
    </div>
-   <div id="intelFrasePrincipal" style="font-size:13px;line-height:1.55;color:#dce5f2;background:rgba(39,215,160,.07);border:1px solid rgba(39,215,160,.18);border-radius:12px;padding:11px 13px;margin-bottom:12px;"></div>
-   <div class="biobel-inteligencia-grid">
-    <div class="biobel-inteligencia-box">
-     <h4>🚨 2. Possíveis inconsistências</h4>
-     <div class="sub">Conferência automática dos números lidos na planilha.</div>
-     <div id="intelErros" class="biobel-inteligencia-list"></div>
-    </div>
-    <div class="biobel-inteligencia-box">
-     <h4>📊 3. Comparação automática</h4>
-     <div class="sub">Último dia lançado, dia anterior e média dos dias anteriores.</div>
-     <div id="intelComparacao" class="biobel-inteligencia-list"></div>
-    </div>
-    <div class="biobel-inteligencia-box">
-     <h4>💡 5. O que os números estão mostrando</h4>
-     <div class="sub">Explicação simples, sem precisar interpretar a tabela.</div>
-     <div id="intelExplicacao" class="biobel-inteligencia-list"></div>
-    </div>
-    <div class="biobel-inteligencia-box">
-     <h4>👀 10. O que chamou atenção</h4>
-     <div class="sub">Principais fatos encontrados no período carregado.</div>
-     <div id="intelAtencao" class="biobel-inteligencia-list"></div>
-    </div>
+   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+    <input id="campanhaNomeInput" type="text" placeholder="Nome (ex: Dia das Mães)" style="flex:1;min-width:150px;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <input id="campanhaInicioInput" type="date" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <input id="campanhaFimInput" type="date" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="adicionarCampanha()" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">➕ Marcar</button>
    </div>
+   <div id="listaCampanhas"></div>
   </div>
 
-  <div class="adv-shell" id="dashboardModoAvancado">
-
-    <aside class="adv-sidebar no-print">
-      <div class="adv-brand">Resumo</div>
-
-      <div class="adv-summary">
-        <div class="mini">
-          <div class="k">Faturamento total</div>
-          <div class="v g" id="advTotalSales">R$ 0,00</div>
-        </div>
-        <div class="mini">
-          <div class="k">Total de fechamentos</div>
-          <div class="v b" id="advTotalClosing">R$ 0,00</div>
-        </div>
-        <div class="mini">
-          <div class="k">Dias lançados</div>
-          <div class="v p" id="advDaysCount">0</div>
-        </div>
-        <div class="mini">
-          <div class="k">Média de fechamento</div>
-          <div class="v y" id="advAvgClosing">R$ 0,00</div>
-        </div>
-      </div>
-
-      <div class="adv-update">
-        <div class="k" style="color:#93a3ba;font-size:11px;">Última atualização</div>
-        <div id="advLastUpdate" style="font-size:12px;margin-top:4px;color:#dce5f2;">—</div>
-        <button id="btnRefreshSidebar" class="adv-btn green" style="width:100%;margin-top:10px;" onclick="loadGoogleSheet()" title="Atalho: Alt+A">↻ Atualizar agora</button>
-        <button class="adv-btn" style="width:100%;margin-top:8px;background:#1c2c42;color:#dce5f2;" onclick="ativarModoApresentacao()" title="Deixa o painel em tela cheia, com fontes maiores e alternando entre telas — pensado pra ficar numa TV da loja">📺 Modo Apresentação</button>
-      </div>
-    </aside>
-
-    <section class="adv-main">
-      <div class="adv-topbar">
-        <div class="adv-topbar-left">
-          <div class="adv-select-wrap">📅 <span>Selecione o Dia:</span>
-            <select id="daySelect" class="adv-select" aria-label="Selecionar dia do caixa"></select>
-          </div>
-        </div>
-        <div class="adv-pills">
-          <div class="adv-pill">💼 Inicial: <b id="advPillInitial">R$ 0,00</b></div>
-          <div class="adv-pill">✅ Fechamento: <b id="advPillClosing">R$ 0,00</b></div>
-          <div class="adv-pill">💰 Total Vendas: <b id="advPillSales">R$ 0,00</b></div>
-        </div>
-      </div>
-
-      <div id="emptyStateDashboard" class="empty-state adv-card" style="display:none;">
-        <div class="icon">📭</div>
-        <div class="title">Nenhum dado carregado ainda</div>
-        <div class="desc">Clique em "↻ Atualizar agora" para buscar a planilha do Google Sheets, ou use o botão "Carregar Excel/CSV" no topo da página.</div>
-      </div>
-
-      <div id="dashboardContent">
-      <div class="adv-grid4">
-        <div class="adv-kpi green">
-          <div class="label">Saldo inicial (caixa)</div>
-          <div class="value" id="advInitial">R$ 0,00</div>
-          <div class="sub">Reposição e fundo de troco</div>
-        </div>
-        <div class="adv-kpi blue">
-          <div class="label">Entradas (vendas dia)</div>
-          <div class="value" id="advSales">R$ 0,00</div>
-          <div class="sub">Total faturado no dia</div>
-        </div>
-        <div class="adv-kpi red">
-          <div class="label">Saídas / retiradas</div>
-          <div class="value" id="advWithdrawals">R$ 0,00</div>
-          <div class="sub">Retiradas ou sangrias de gaveta</div>
-        </div>
-        <div class="adv-kpi green">
-          <div class="label">Fechamento do caixa</div>
-          <div class="value" id="advClosing">R$ 0,00</div>
-          <div class="sub">Valor conferido na gaveta</div>
-        </div>
-      </div>
-
-      <div id="cardDiferencaCaixa" class="adv-card" style="margin-top:16px;"></div>
-
-      <div class="adv-content2">
-        <div class="adv-card">
-          <div class="adv-card-title">
-            <h3>📊 Vendas Diárias × Meta Diária</h3>
-            <span>comparação dia a dia com a meta configurada</span>
-          </div>
-          <div class="adv-chart"><canvas id="closingChart"></canvas></div>
-        </div>
-
-        <div class="adv-card" id="cardVendasPorPeriodo">
-          <div class="adv-card-title">
-            <h3>📊 Vendas por período — dia a dia</h3>
-            <span>mostra quanto foi vendido de manhã, no meio-dia e à tarde em cada dia lançado</span>
-          </div>
-          <div class="biobel-periodo-chart-wrap"><canvas id="graficoVendasPorPeriodo" role="img" aria-label="Gráfico diário de vendas por manhã, meio-dia e tarde"></canvas></div>
-          <div id="resumoVendasPorPeriodo" class="biobel-periodo-resumo"></div>
-          <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">💡 A divisão usa o horário real registrado na planilha: manhã até 11h59, meio-dia das 12h às 13h59 e tarde a partir das 14h.</p>
-        </div>
-
-        <div class="adv-card">
-          <div class="adv-card-title">
-            <h3>🍩 Resumo Geral</h3>
-            <span>visão acumulada</span>
-          </div>
-          <div class="adv-donut"><canvas id="summaryDonut"></canvas></div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
-            <div class="adv-pill">Faturamento<br><b id="donutSales">R$ 0,00</b></div>
-            <div class="adv-pill">Fechamentos<br><b id="donutClosing">R$ 0,00</b></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="adv-card adv-table-card">
-        <div class="adv-card-title">
-          <h3>📋 Resumo Diário</h3>
-          <div class="adv-actions">
-            <button class="adv-btn green" onclick="printMonthly()">🖨 Imprimir Relatório</button>
-            <button class="adv-btn blue" onclick="printDaily()">🖨 Imprimir Dia</button>
-            <button class="adv-btn" style="background:#8b5cf6;color:#fff;" onclick="gerarRelatorioMensalPDF()" id="btnGerarPdfMensal">📑 Relatório em PDF</button>
-          </div>
-        </div>
-
-        <div class="scroll-hint">⇔ arraste a tabela para o lado para ver mais colunas</div>
-        <div class="table-scroll-wrap">
-        <div style="overflow:auto">
-          <table class="adv-table">
-            <thead>
-              <tr>
-                <th>Data</th>
-                <th class="right">Saldo inicial</th>
-                <th class="right">Vendas do dia</th>
-                <th class="right">Retiradas</th>
-                <th class="right">Fechamento</th>
-                <th class="right" title="Fechamento menos saldo inicial. Só reflete dinheiro físico, não inclui cartão/Pix.">Variação (dinheiro)</th>
-              </tr>
-            </thead>
-            <tbody id="advTableBody"></tbody>
-          </table>
-        </div>
-        </div>
-      </div>
-      </div>
-    </section>
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>📊 Acima ou Abaixo da Média</h3>
+    <span>separa os dias que venderam mais ou menos que a média do mês</span>
+   </div>
+   <div id="conteudoAcimaAbaixoMedia"><p style="color:#93a3ba;font-size:12.5px;">Carregando...</p></div>
   </div>
-</main></div>`;
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>📆 Melhor e Pior Semana do Mês</h3>
+    <span>agrupa os dias por semana (1ª, 2ª, 3ª...) e compara o total de cada uma</span>
+   </div>
+   <div id="conteudoSemanasDoMes"><p style="color:#93a3ba;font-size:12.5px;">Carregando...</p></div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>🌦️ Clima do Dia</h3>
+    <span>marque manualmente se choveu, fez sol, ou outro clima — depois o sistema mostra se isso parece influenciar as vendas</span>
+   </div>
+   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+    <input id="climaDataInput" type="date" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <select id="climaTipoSelect" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     <option value="Sol">☀️ Sol</option>
+     <option value="Nublado">☁️ Nublado</option>
+     <option value="Chuva">🌧️ Chuva</option>
+     <option value="Frio">🥶 Frio intenso</option>
+    </select>
+    <button onclick="adicionarClimaDia()" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">➕ Marcar</button>
+   </div>
+   <button onclick="preencherClimaHistoricoAutomatico()" class="no-print w-full bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-xl font-semibold text-sm" style="margin-bottom:10px;">🔄 Preencher automaticamente os dias já lançados desse mês</button>
+   <div id="tirinhaPrevisaoClima" style="margin-bottom:14px;"></div>
+   <div id="conteudoCorrelacaoClima"></div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>🔶 Correlação de Clima — só Sábados</h3>
+    <span>o sábado tem regra própria de horário e costuma ser o dia mais forte de venda, então vale ver o clima separado dos outros dias</span>
+   </div>
+   <div id="conteudoCorrelacaoClimaSabados"></div>
+  </div>
+
+  <button onclick="exportarRelatorioClimaPDF()" class="no-print w-full bg-purple-600 hover:bg-purple-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="margin-bottom:14px;">📑 Exportar relatório Clima x Vendas (PDF)</button>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>📅 Dias que mais venderam</h3>
+    <span>ranking do mês</span>
+   </div>
+   <div style="display:flex;gap:6px;margin-bottom:10px;">
+    <input id="buscaDiaInput" type="text" placeholder="Buscar dia (ex: 20.08)" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12px;">
+    <button onclick="buscarPosicaoDia()" style="background:#2f78e0;color:#fff;border:0;border-radius:8px;padding:8px 12px;font-size:12px;cursor:pointer;">🔎 Ver posição</button>
+   </div>
+   <div id="resultadoBuscaDia" style="display:none;background:#0b1728;border:1px solid #2f78e0;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:13px;color:#dce5f2;"></div>
+   <div id="infoTopDays" style="display:flex;flex-direction:column;gap:10px;"></div>
+  </div>
+ </div>
+ <!-- fim infoSecaoDias -->
+
+ <div id="infoSecaoAvancado" style="display:none;">
+ <div class="adv-content2">
+  <div class="adv-card card-analise-avancada">
+   <div class="adv-card-title">
+    <h3>🏬 Presencial x Online</h3>
+    <span>quantos atendimentos de cada tipo</span>
+   </div>
+   <div id="infoTipoVenda" style="display:flex;flex-direction:column;gap:14px;"></div>
+  </div>
+
+  <div class="adv-card card-analise-avancada">
+   <div class="adv-card-title">
+    <h3>🛍️ Produtos mais vendidos</h3>
+    <span>por quantidade, no mês</span>
+   </div>
+   <div style="max-width:220px;margin:0 auto 16px;"><canvas id="graficoProdutosPizza" role="img" aria-label="Gráfico de pizza com os produtos mais vendidos"></canvas></div>
+   <div id="infoProdutosRanking" style="display:flex;flex-direction:column;gap:10px;"></div>
+  </div>
+ </div>
+
+ <div class="adv-card card-analise-avancada">
+  <div class="adv-card-title">
+   <h3>⏰ Horários de pico</h3>
+   <span>em qual horário do dia mais vende, dentro do funcionamento normal da loja</span>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+   <div class="adv-kpi green">
+    <div class="label">🔥 Horário de mais movimento</div>
+    <div class="value" id="infoHorarioPico">—</div>
+    <div class="sub" id="infoHorarioPicoSub">baseado em todas as vendas registradas</div>
+   </div>
+   <div class="adv-kpi red">
+    <div class="label">🥶 Horário de menos movimento</div>
+    <div class="value" id="infoHorarioFraco">—</div>
+    <div class="sub" id="infoHorarioFracoSub">entre os horários com pelo menos 1 venda</div>
+   </div>
+  </div>
+  <div id="infoHorariosLista" style="display:flex;flex-direction:column;gap:8px;"></div>
+  <div id="infoRecomendacaoHorarioPico" style="display:none;"></div>
+  <div id="infoHorariosForaExpediente" style="display:none;margin-top:18px;padding-top:16px;border-top:1px dashed #3a2a0b;"></div>
+ </div>
+
+ <div class="adv-card card-analise-avancada" id="cardTempoEntreAtendimentos">
+  <div class="adv-card-title">
+   <h3>⏱️ Tempo entre atendimentos registrados</h3>
+   <span>mostra os intervalos entre uma venda registrada e a próxima — útil para identificar períodos de pouca movimentação</span>
+  </div>
+  <div id="resumoTempoEntreAtendimentos" class="biobel-gap-grid"></div>
+  <div id="listaTempoEntreAtendimentos" class="biobel-gap-list"></div>
+  <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">⚠️ Isso mede <strong>tempo sem venda registrada</strong>. A planilha não informa a duração do atendimento de cada cliente, então não dá para afirmar quanto tempo cada vendedora levou para atender.</p>
+ </div>
+
+ <div class="adv-card card-analise-avancada">
+  <div class="adv-card-title">
+   <h3>🌅 Vendas por turno</h3>
+   <span>manhã x meio-dia x tarde, e quem mais vendeu em cada um</span>
+  </div>
+  <div id="infoTurnosResumo" style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px;"></div>
+  <div id="infoTurnosCruzamento" style="display:flex;flex-direction:column;gap:14px;"></div>
+ </div>
+
+ <div class="adv-card card-analise-avancada">
+  <div class="adv-card-title">
+   <h3>🚻 Perfil de clientes</h3>
+   <span>vendas para mulheres x homens, somando todo o histórico</span>
+  </div>
+  <div id="infoGeneroResumo" style="display:flex;flex-direction:column;gap:14px;"></div>
+  <p class="simple-legend" style="font-size:11px;color:#93a3ba;margin-top:12px;">💡 Esse dado depende de quem lança a venda preencher certinho o campo "gênero" na planilha — se a maioria aparecer sempre igual, vale checar com a equipe se estão preenchendo esse campo.</p>
+ </div>
+
+ <div class="adv-card card-analise-avancada">
+  <div class="adv-card-title">
+   <h3>🏅 Recordes de Vendas Individuais (Top 5)</h3>
+   <span>as maiores e menores vendas de um cliente só, com filtro por vendedora</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+   <div style="display:flex;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;overflow:hidden;">
+    <button type="button" id="btnRecordeMelhores" onclick="alternarRecordeVendas('melhores')" style="border:0;padding:8px 16px;font-size:12.5px;font-weight:800;cursor:pointer;background:#27d7a0;color:#04241a;">🏆 Melhores</button>
+    <button type="button" id="btnRecordePiores" onclick="alternarRecordeVendas('piores')" style="border:0;padding:8px 16px;font-size:12.5px;font-weight:800;cursor:pointer;background:transparent;color:#93a3ba;">📉 Piores</button>
+    <button type="button" id="btnRecordeItens" onclick="alternarRecordeVendas('itens')" style="border:0;padding:8px 16px;font-size:12.5px;font-weight:800;cursor:pointer;background:transparent;color:#93a3ba;">🧺 Mais itens</button>
+   </div>
+   <select id="filtroRecordeVendedora" aria-label="Filtrar recordes por vendedora" onchange="renderRecordesVendasIndividuais()" style="background:#0b1728;border:1px solid #1e2c42;border-radius:8px;padding:8px 10px;color:#dce5f2;font-size:12px;"><option value="">Todas as vendedoras</option></select>
+   <span id="mediaRecordeVendas" style="margin-left:auto;background:rgba(79,156,255,.12);border:1px solid rgba(79,156,255,.3);color:#4f9cff;font-size:12px;font-weight:800;padding:6px 12px;border-radius:999px;white-space:nowrap;">Média: R$ 0,00</span>
+  </div>
+  <div id="listaRecordeVendas" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;"></div>
+  <p class="simple-legend" style="font-size:11px;color:#93a3ba;margin-top:14px;">💡 Não temos um campo de "cliente" na planilha — por isso os cards não mostram nome de cliente, só o que realmente temos registrado: valor, dia, turno e vendedora.</p>
+ </div>
+ </div>
+ <!-- fim infoSecaoAvancado -->
+
+ <div id="infoSecaoComparar" style="display:none;">
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>📅 Mesmo Período — Este Mês x Mês Passado</h3>
+    <span>compara os primeiros dias corridos de cada mês (ex: se hoje é o 2º dia útil de setembro, compara com os 2 primeiros dias úteis de agosto)</span>
+   </div>
+   <div id="conteudoComparacaoMesmoPeriodo"></div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>🏆 Top 30 Melhores Dias (de todos os meses)</h3>
+    <span>mistura o mês atual com todos os meses já arquivados — não separa por mês, é o ranking geral de sempre</span>
+   </div>
+   <div id="conteudoTop30Dias"></div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>📊 Comparar meses arquivados</h3>
+    <span>escolha até 3 meses pra ver os totais lado a lado</span>
+   </div>
+   <div id="listaMesesComparar" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
+   <button onclick="renderComparacaoMeses()" class="w-full bg-blue-600 hover:bg-blue-500 px-4 py-2.5 rounded-xl font-semibold text-sm">📊 Comparar selecionados</button>
+   <div id="resultadoComparacaoMeses" style="margin-top:18px;overflow-x:auto;"></div>
+  </div>
+ </div>
+ <!-- fim infoSecaoComparar -->
+
+ <div id="infoSecaoPorDiaSemana" style="display:none;">
+
+  <div class="adv-card" style="margin-bottom:16px;">
+   <div class="adv-card-title">
+    <h3>⚠️ Dias Atípicos (excluídos das médias por dia da semana)</h3>
+    <span>tipo um feriado com venda isolada — o dia continua contando no faturamento total, só não entra na comparação por dia da semana, pra não distorcer</span>
+   </div>
+   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+    <input id="diaAtipicoDataInput" type="date" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <input id="diaAtipicoMotivoInput" type="text" placeholder="Motivo (ex: feriado, venda isolada)" style="flex:1;min-width:180px;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="adicionarDiaAtipico()" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">➕ Marcar</button>
+   </div>
+   <div id="listaDiasAtipicos"></div>
+  </div>
+
+  <div class="config-chips no-print" style="position:static;top:auto;background:transparent;padding:0 0 10px;margin-bottom:4px;">
+   <button type="button" class="config-chip" data-dow="1" onclick="selecionarDiaSemanaView(1)">Segunda</button>
+   <button type="button" class="config-chip" data-dow="2" onclick="selecionarDiaSemanaView(2)">Terça</button>
+   <button type="button" class="config-chip" data-dow="3" onclick="selecionarDiaSemanaView(3)">Quarta</button>
+   <button type="button" class="config-chip" data-dow="4" onclick="selecionarDiaSemanaView(4)">Quinta</button>
+   <button type="button" class="config-chip" data-dow="5" onclick="selecionarDiaSemanaView(5)">Sexta</button>
+   <button type="button" class="config-chip" data-dow="6" onclick="selecionarDiaSemanaView(6)">Sábado</button>
+  </div>
+
+  <div id="hallDaFamaDiaSemana" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:18px;"></div>
+
+  <div id="cardsDiaSemanaWrap" style="display:flex;gap:14px;overflow-x:auto;padding-bottom:10px;"></div>
+ </div>
+ <!-- fim infoSecaoPorDiaSemana -->
+
+ <div class="mobile-action-bar no-print">
+  <button onclick="loadGoogleSheet()" style="background:#2f78e0;color:#fff;">🔄 Atualizar</button>
+  <button onclick="exportarInfoComoTxt()" style="background:#0ea97a;color:#04241a;">📄 Exportar TXT</button>
+ </div>
+
+</section></div>`;
  renderChecklistChuvaDashboard();
 }
 function renderChecklistChuvaDashboard(){
@@ -2380,4 +2664,4 @@ function verComprovanteBoleto(id){
  if(!b || !b.comprovante) return;
  const win = window.open('', '_blank');
  if(win) win.document.write('<title>Comprovante — '+b.fornecedor+'</title><body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="'+b.comprovante+'" style="max-width:100%;max-height:100vh;">
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js"></script><script src="biobel-app.js"></script><script src="inteligencia-operacional.js"></script></body></html>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js"></script><script src="biobel-app.js"></script></body></html>

@@ -14,7 +14,7 @@ Quem usa: a dona/gerente da loja e a equipe, principalmente **no celular**. **N�
 ## 2. Mapa rápido dos arquivos
 | Arquivo | Para que serve | Cuidado |
 |---|---|---|
-| `dashboard.html` | O painel inteiro (≈15 mil linhas) | **Arquivo crítico.** Sempre validar (seção 4) |
+| `dashboard.html` | Visão Geral | Arquivo crítico; deve continuar funcionando |\n| `biobel-app.js` | Núcleo JavaScript compartilhado | Todas as páginas dependem dele |\n| `biobel-app.css` | CSS compartilhado | Todas as páginas dependem dele |\n| `biobel-shell.js` | Cabeçalho e navegação direta | Todas as páginas dependem dele |
 | `login.html` | Tela de entrada do painel | Autenticação só no navegador (não é segurança real) |
 | `index.html` | Site público da loja | Link do WhatsApp e endereço são reais |
 | `service-worker.js` | Cache offline (só `dashboard.html` e `login.html`) | Mudou o cache? suba `CACHE_NAME` |
@@ -47,7 +47,7 @@ git add -A && git commit -m "vX.Y - resumo em português" && git push
 # espere o build do Pages ficar "built" (~40-90s) e confira a versão no site
 ```
 
-## 5. Armadilhas já vividas (aprenda com elas)
+## 5. Arquitetura atual (v10.39)\n- Cada área principal tem URL própria e compartilha o mesmo núcleo JavaScript/CSS e o mesmo cabeçalho.\n- O login da sessão continua único para todas as páginas.\n- A área de Administração mantém seu controle interno separado.\n\n## 6. Armadilhas já vividas (aprenda com elas)
 - **Edição que apaga função sem querer:** ao usar substituição de texto, confira que o trecho âncora não engoliu a função vizinha. `node tools/validar.js` acusa "handler chama função inexistente".
 - **Ano fixo em 2026** no código (≈13 lugares: `new Date(2026, ...)`, `'2026-'+...`, função `dataDoDiaParaISO`). Cálculos de **dia da semana** vão errar a partir de 2027. Ao mexer nisso, corrija centralizando o ano.
 - **Verifique se a funcionalidade já existe antes de criar.** Já aconteceu de recriarmos à mão algo que o sistema já lia da planilha (ex.: turno por venda já vem em `d.porTurno`). Faça `grep` por palavras-chave.
@@ -55,10 +55,10 @@ git add -A && git commit -m "vX.Y - resumo em português" && git push
 - **Cache do navegador/PWA** faz o usuário ver versão antiga. Se disser "não apareceu", confira o número da versão no topo antes de achar que é bug.
 - **Um feedback do usuário costuma significar "não achei"**, não "não existe". Confirme o caminho de navegação (aba → sub-aba → card) antes de programar de novo.
 
-## 6. Como conversar com o dono do sistema
+## 7. Como conversar com o dono do sistema
 Português informal e **simples**, sem jargão. Use **negrito** nas palavras-chave e emojis. Explique o "porquê" em uma frase. Diga com honestidade o que testou e o que **não** conseguiu testar (você não tem acesso ao navegador dele nem aos dados salvos no aparelho).
 
-## 7. Problemas conhecidos (não é você que quebrou)
+## 8. Problemas conhecidos (não é você que quebrou)
 - `index.html` referencia `script.js`, que **não existe** no repositório (404 silencioso). Decidir com o dono: criar o arquivo ou remover a linha.
 - Arquivos soltos na raiz sem uso aparente: `img` (arquivo de 1 byte), `test.txt`, `slide_de_fachada.png`, `imagens/roda_pe_site.png`. **Não apague sem confirmar com o dono.**
 - Login e área ADM são checados **no navegador** (quem abrir o código-fonte enxerga). Não trate como segurança real.

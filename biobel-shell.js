@@ -1,0 +1,34 @@
+/* Biobel — shell compartilhado. v10.39 */
+(function(){
+"use strict";
+const PAGES={dashboard:"dashboard.html",central:"central.html",caixa:"operacao.html",equipe:"equipe.html",campanhas:"vendas.html",info:"analises.html",alertas:"alertas.html",config:"config.html",adm:"administracao.html"};
+window.BIOBEL_PAGES=PAGES;
+const p=document.body&&document.body.dataset?document.body.dataset.biobelPage:"dashboard";
+const a=k=>p===k?" active":"";
+function montar(){
+ const m=document.getElementById("biobel-shell"); if(!m||m.dataset.ready==="yes") return;
+ m.innerHTML =
+ '<header class="biobel-shared-header">'+
+ '<div class="biobel-header-tools">'+
+ '<div class="biobel-search-wrap"><input id="inputBuscaGlobal" type="text" placeholder="🔍 Buscar (ex: aluguel, meta...)" autocomplete="off" oninput="renderResultadosBuscaGlobal&&renderResultadosBuscaGlobal()" onfocus="renderResultadosBuscaGlobal&&renderResultadosBuscaGlobal()" style="width:100%;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:7px 10px;font-size:12px;color:#dce5f2;outline:none;"><div id="resultadosBuscaGlobal" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border:1px solid #1e2c42;border-radius:10px;margin-top:4px;max-height:320px;overflow-y:auto;z-index:200;"></div></div>'+
+ '<span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;">📲 App</span>'+
+ '<button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:7px 10px;color:#cbd5e1;font-size:11px;">📲 Instalar app</button>'+
+ '<span id="versaoSistema" class="no-print" onclick="mostrarToast(\'📅 Sistema atualizado em 29/09/2026 — versão v10.39\')" style="font-size:12px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 9px;cursor:pointer;" title="Atualizado em 29/09/2026 — páginas independentes.">v10.39</span>'+
+ '<span id="indicadorUltimoSalvamento" class="no-print" style="font-size:11px;color:#27d7a0;font-weight:700;display:none;white-space:nowrap;"></span>'+
+ '<span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>'+
+ '<span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>'+
+ '<div class="no-print" style="display:flex;align-items:center;gap:2px;border:1px solid #1c2c42;border-radius:8px;overflow:hidden;"><button onclick="ajustarFonteBiobel(-1)" style="background:transparent;border:none;color:#93a3ba;padding:5px 8px;font-size:12px;font-weight:800;cursor:pointer;">A-</button><button onclick="ajustarFonteBiobel(0)" style="background:transparent;border:none;border-left:1px solid #1c2c42;border-right:1px solid #1c2c42;color:#93a3ba;padding:5px 8px;font-size:12px;font-weight:800;cursor:pointer;">A</button><button onclick="ajustarFonteBiobel(1)" style="background:transparent;border:none;color:#93a3ba;padding:5px 8px;font-size:12px;font-weight:800;cursor:pointer;">A+</button></div>'+
+ '<button id="themeToggleBtn" onclick="toggleTheme()" class="no-print" style="background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:7px 10px;color:#cbd5e1;font-size:11px;">🌙 <span id="themeToggleLabel">Modo claro</span></button>'+
+ '<button id="btnModoCompacto" onclick="alternarModoCompacto()" class="no-print" style="background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:7px 10px;color:#cbd5e1;font-size:11px;">↕️ Compacto</button>'+
+ '<button id="btnColapsarTudo" onclick="alternarColapsoTodosCards()" class="no-print" style="background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:7px 10px;color:#cbd5e1;font-size:11px;">▾ Minimizar tudo</button>'+
+ '<button onclick="iniciarTourGuiado()" class="no-print" style="background:none;border:none;color:#93a3ba;font-size:11px;text-decoration:underline;cursor:pointer;">❓ Tour</button><button onclick="confirmLogout()" class="no-print" style="background:none;border:none;color:#93a3ba;font-size:11px;text-decoration:underline;cursor:pointer;">Sair</button>'+
+ '</div>'+
+ '<div class="biobel-header-brand"><div class="biobel-brand-left"><img id="logoHeaderBiobel" src="/logo_biobel_gravatai.png" alt="Logo da loja" style="width:44px;height:44px;object-fit:contain;border-radius:8px;"><div><h1>Biobel — Fechamento de Caixa</h1><p class="text-sm text-slate-400">Leitura diária da planilha + histórico do fechamento da gaveta</p><p style="font-size:11px;color:#27d7a0;margin:3px 0 0;">🧭 Páginas independentes com dados compartilhados</p></div></div><label style="cursor:pointer;background:#0ea97a;color:#04241a;padding:9px 13px;border-radius:11px;font-size:12px;font-weight:800;white-space:nowrap;">Carregar Excel/CSV<input id="fileInput" type="file" multiple accept=".xlsx,.xls,.csv" class="hidden"></label></div></header>'+
+ '<div id="faixaErroConexao" class="no-print" style="display:none;background:linear-gradient(90deg,#3a0f16,#2a0a10);border-bottom:1px solid rgba(251,113,133,.4);padding:10px 16px;"><div style="max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;"><span style="font-size:12px;color:#fca5b1;">🔴 Não foi possível conectar à planilha.</span><button onclick="loadGoogleSheet()" style="background:#fb7185;color:#3a0f16;border:none;border-radius:9px;padding:7px 14px;font-weight:800;font-size:12px;">🔄 Tentar novamente</button></div></div>'+
+ '<nav class="biobel-nav-direct no-print" aria-label="Navegação principal"><div class="biobel-nav-direct-inner"><strong style="color:#dce5f2;font-size:13px;margin-right:4px;">🟢 BioBel</strong>'+
+ '<a class="'+a("dashboard")+'" href="'+PAGES.dashboard+'">🏠 Visão Geral</a><a class="'+a("central")+'" href="'+PAGES.central+'">🧭 Central</a><a class="'+a("caixa")+'" href="'+PAGES.caixa+'">💰 Operação</a><a class="'+a("equipe")+'" href="'+PAGES.equipe+'">👥 Equipe</a><a class="'+a("campanhas")+'" href="'+PAGES.campanhas+'">📣 Vendas</a><a class="'+a("info")+'" href="'+PAGES.info+'">📊 Análises</a><a class="'+a("alertas")+'" href="'+PAGES.alertas+'">🚨 Alertas</a><a class="'+a("config")+'" href="'+PAGES.config+'">🔧 Configuração</a><a class="'+a("adm")+'" href="'+PAGES.adm+'">⚙️ Administração</a>'+
+ '</div></nav><nav class="biobel-mobile-direct no-print"><a href="'+PAGES.dashboard+'">🏠<small>Início</small></a><a href="'+PAGES.caixa+'">💰<small>Operação</small></a><a href="'+PAGES.equipe+'">👥<small>Equipe</small></a><a href="'+PAGES.campanhas+'">📣<small>Vendas</small></a><a href="'+PAGES.adm+'">☰<small>Mais</small></a></nav>';
+ m.dataset.ready="yes";
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",montar,{once:true});else montar();
+})();

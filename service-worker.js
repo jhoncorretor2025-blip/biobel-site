@@ -6,8 +6,12 @@
 // internet, a versão mais nova é buscada e exibida; o cache só entra em ação quando o
 // aparelho está genuinamente sem conexão.
 
-const CACHE_NAME = 'biobel-cache-v10.38';
-const ARQUIVOS_ESSENCIAIS = ['./dashboard.html', './login.html'];
+const CACHE_NAME = 'biobel-cache-v10.39';
+const ARQUIVOS_ESSENCIAIS=[
+ './dashboard.html','./login.html','./central.html','./operacao.html','./equipe.html',
+ './vendas.html','./analises.html','./alertas.html','./config.html','./administracao.html',
+ './biobel-app.css','./biobel-app.js','./biobel-shell.js'
+];
 
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();

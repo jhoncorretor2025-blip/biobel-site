@@ -1,13 +1,13 @@
 # 🚀 Como publicar com segurança
 
 ## Onde o site roda
-- **GitHub Pages**, branch `main`, pasta raiz `/`. Sem build próprio: **o que está na `main` é o que vai ao ar**.
+- **GitHub Pages**, branch `main`, pasta raiz `/`. Sem build próprio: **o que está na `main` é o que vai ao ar**. O painel agora usa páginas HTML independentes + arquivos compartilhados.
 - `.nojekyll` na raiz impede o GitHub de processar com Jekyll (**não apague**).
 - URL pública: `https://jhoncorretor2025-blip.github.io/biobel-site/` (painel: `login.html` → `dashboard.html`).
 
 ## Passo a passo
 1. `git pull --rebase` (veja "Robô" abaixo).
-2. Edite. Rode `node tools/validar.js` até dar **🟢 APROVADO**.
+2. Edite. Rode `node tools/validar.js` até dar **🟢 APROVADO** e confira pelo menos as páginas `dashboard.html`, `central.html`, `operacao.html`, `equipe.html`, `analises.html`, `config.html` e `administracao.html`.
 3. Suba a versão **e a data** no span `#versaoSistema` (texto visível + `mostrarToast('… versão vX.Y')` + `title`) e adicione a entrada em **Configuração → 🆕 Novidades** (dentro do `dashboard.html`) e em `docs/CHANGELOG.md`.
 4. `node tools/mapa.js` (atualiza `docs/MAPA_AUTOMATICO.md`).
 5. **Um commit** com mensagem `vX.Y - resumo do que mudou e por quê`. `git push`.
@@ -30,4 +30,4 @@ Fazer **muitos pushes em sequência** estourou o limite de builds do Pages: todo
 Cada versão é um commit: `git revert <sha>` e push (ou restaurar o arquivo de um commit anterior). Os **dados dos usuários** ficam no aparelho e não são afetados por rollback do código; o backup de dados está em **Configuração → Backup**.
 
 ## PWA / cache
-`service-worker.js` (cache `biobel-cache-v2`) guarda `dashboard.html` e `login.html` e busca a rede com `cache: 'reload'`. Se precisar forçar todo mundo a baixar de novo, suba o número do `CACHE_NAME`.
+`service-worker.js` guarda as páginas principais e os arquivos compartilhados e busca a rede com `cache: 'reload'`. Para invalidar tudo, suba o `CACHE_NAME`.

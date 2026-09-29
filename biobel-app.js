@@ -1,0 +1,13006 @@
+
+
+/* ============================================================
+   BIOBEL — ZONA: CORE / INICIALIZAÇÃO
+   Utilitários compartilhados e estado inicial do painel.
+   ============================================================ */
+// Proteção de acesso: só entra aqui quem passou pela tela de login (login.html).
+if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
+  window.location.href = 'login.html';
+}
+// Aplica o tema salvo o mais cedo possível, para evitar "flash" de tela escura/clara.
+// Na primeira visita (sem preferência salva ainda), usa o tema do sistema operacional.
+(function(){
+  let temaSalvo = localStorage.getItem('biobel_theme');
+  if(!temaSalvo){
+    temaSalvo = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+  }
+  if(temaSalvo === 'light'){
+    document.body.classList.add('light-mode');
+  }
+})();
+
+
+
+
+const rotinaDiariaBasePadrao = [
+ {texto:'☕ Abertura (Gabi): Fazer o café fresco na chegada e dar "Bom Dia" no WhatsApp da loja.', quem:'Gabi'},
+ {texto:'📱 Durante o dia (Gabi & Dai): Atendimento focado, alinhamento do balcão e passagem do celular à tarde.', quem:'Gabi & Dai'},
+ {texto:'📸 Criação e Conteúdo (Dai): Postagem de stories e criação de artes promocionais/WhatsApp.', quem:'Dai'},
+ {texto:'🧼 Fechamento / Copa (Dai): Higienizar e deixar a cafeteira pronta na copa para a Gabi só ligar na manhã seguinte.', quem:'Dai'}
+];
+
+const rotinaSemanalPadrao = {
+ segunda: {emoji:'🟢', nome:'Segunda-feira',
+  gabi:['📦 Organizar e conferir o estoque de retaguarda','🔄 Repor produtos faltantes no balcão e prateleiras','🧹 Varrer o chão da loja','🗑️ Esvaziar os lixos e colocar para fora no fim do dia'],
+  dai:['💇‍♀️ Alinhar e organizar prateleiras do setor CAPILAR (Truss, Lowell, Haskell, etc.)','📅 Checar validades do setor Capilar (separar itens a vencer em 3 meses)','🧽 Passar pano no chão da loja','☕ Deixar a cafeteira limpa na copa para a manhã seguinte']},
+ terca: {emoji:'🔵', nome:'Terça-feira',
+  gabi:['💄 Organizar e alinhar o setor de MAQUIAGENS E PINCÉIS','🏷️ Conferir etiquetas de preços e validades das maquiagens','🧽 Passar pano no chão da loja','🚻 Limpeza rápida e higienização do banheiro'],
+  dai:['🪟 Limpar vidros/espelhos do balcão e prateleiras iluminadas','🎁 Repor sacolas, fitas, caixas e brindes no balcão de atendimento','🧹 Varrer o chão da loja','🗑️ Esvaziar os lixos e colocar para fora no fim do dia','☕ Deixar a cafeteira limpa na copa para a manhã seguinte']},
+ quarta: {emoji:'🟣', nome:'Quarta-feira',
+  gabi:['🎨 Organizar e conferir o setor de COLORAÇÕES E TINTAS (repor faltas)','🪶 Espanar produtos e passar pano rápido no vidro da vitrine (marcas de dedo)','🧹 Varrer o chão da loja','🗑️ Esvaziar os lixos e colocar para fora no fim do dia'],
+  dai:['🎀 Organizar e alinhar o setor de PERFUMARIA, KITS E PRESENTES','📅 Checar validades do setor de Perfumaria','🧽 Passar pano no chão da loja','🍽️ Organização rápida da mesa da copa/cozinha','☕ Deixar a cafeteira limpa na copa para a manhã seguinte']},
+ quinta: {emoji:'🟡', nome:'Quinta-feira (Dia de Destaques)',
+  gabi:['🪟 Ajuste da Vitrine: Trocar vitrine (se for semana de troca) OU alinhar produtos em destaque','🏷️ Checagem geral de etiquetas de preço nas prateleiras da loja','🧽 Passar pano no chão da loja','🍽️ Organização rápida da mesa da copa/cozinha'],
+  dai:['🗄️ Limpeza e organização do Balcão Principal e gavetas de atendimento','📝 Anotar produtos próximos do vencimento para ações de vendas/combos','🧹 Varrer o chão da loja','🗑️ Esvaziar os lixos e colocar para fora no fim do dia','☕ Deixar a cafeteira limpa na copa para a manhã seguinte']},
+ sexta: {emoji:'🟠', nome:'Sexta-feira',
+  gabi:['📦 Reposição reforçada de produtos para o movimento do fim de semana','📦 Reorganização rápida do estoque de apoio/caixas','🧹 Varrer o chão da loja','🗑️ Esvaziar os lixos e colocar para fora no fim do dia'],
+  dai:['🏷️ Frenteamento geral da loja (deixar todos os rótulos voltados para a frente)','🚻 Checagem e organização rápida do banheiro para o sábado','🧽 Passar pano no chão da loja','☕ Deixar a cafeteira limpa na copa para a manhã seguinte']},
+ sabado: {emoji:'🟡', nome:'Sábado (Fechamento Semanal)',
+  gabi:['💄 Reorganização rápida do setor de maquiagem/capilar pós-movimento','🧽 Passar pano na loja e deixar tudo alinhado para segunda-feira'],
+  dai:['🗄️ Organização final do balcão principal','🧹 Varrer a loja e esvaziar os lixos no encerramento','☕ Deixar a cafeteira limpa e pronta para a segunda-feira']}
+};
+
+// Cópia editável da rotina (usada em toda a aba Equipe). Começa igual ao padrão,
+// mas é substituída pela versão personalizada salva no navegador, se existir.
+function cloneRotina(obj){ return JSON.parse(JSON.stringify(obj)); }
+function carregarRotinaPersonalizada(){
+ try{
+  const raw = localStorage.getItem('biobel_equipe_rotina_custom');
+  return raw ? JSON.parse(raw) : null;
+ }catch(e){ return null; }
+}
+const rotinaCustomSalva = carregarRotinaPersonalizada();
+let rotinaDiariaBase = rotinaCustomSalva?.diaria || cloneRotina(rotinaDiariaBasePadrao);
+let rotinaSemanal = rotinaCustomSalva?.semanal || cloneRotina(rotinaSemanalPadrao);
+function salvarRotinaPersonalizada(){
+ localStorage.setItem('biobel_equipe_rotina_custom', JSON.stringify({diaria: rotinaDiariaBase, semanal: rotinaSemanal}));
+}
+
+const embeddedData = [{"dia": "01.08", "initial": 117.3, "sales": 2053.88, "withdrawals": 50, "closing": 229.3, "dinheiro": 162, "debito": 314.99, "credito": 480.97, "pix": 1095.92, "vendedoras": {"alesandra": 1285.94, "Day": 767.94}, "tipoVenda": {"presencial": 17, "online": 3}, "produtos": {"cabelo / Creme e shapoo e etc": {"qtd": 16.0, "valor": 1150.92}, "Creme": {"qtd": 3.0, "valor": 104.99}, "Perfume": {"qtd": 4.0, "valor": 130.99}, "maquiagem": {"qtd": 8.0, "valor": 427.0}, "presente": {"qtd": 1.0, "valor": 50.0}, "Coloração/Tinta": {"qtd": 6.0, "valor": 189.98}}, "horarios": {"10": {"qtd": 5, "valor": 240.99, "dinheiro": 0}, "11": {"qtd": 5, "valor": 607.97, "dinheiro": 162.0}, "13": {"qtd": 4, "valor": 509.94, "dinheiro": 0}, "15": {"qtd": 5, "valor": 474.98, "dinheiro": 0}, "16": {"qtd": 1, "valor": 220.0, "dinheiro": 0}}, "porTurno": {"manhã": {"qtd": 1, "valor": 49.99}, "tarde": {"qtd": 2, "valor": 106.0}}, "porTurnoVend": {"manhã": {"alesandra": {"qtd": 1, "valor": 49.99}}, "tarde": {"Day": {"qtd": 1, "valor": 25.0}, "alesandra": {"qtd": 1, "valor": 81.0}}}, "genero": {"mulher": {"qtd": 20, "valor": 2053.88}}}, {"dia": "03.08", "initial": 117, "sales": 1128.98, "withdrawals": 0, "closing": 279, "dinheiro": 162, "debito": 186.5, "credito": 445.49, "pix": 334.99, "vendedoras": {"alesandra": 795.99, "Gabriela": 164.0, "Day": 168.99}, "tipoVenda": {"presencial": 18, "online": 2}, "produtos": {"Creme": {"qtd": 1.0, "valor": 50.0}, "cabelo / Creme e shapoo e etc": {"qtd": 13.0, "valor": 532.99}, "maquiagem": {"qtd": 4.0, "valor": 129.99}, "Coloração/Tinta": {"qtd": 8.0, "valor": 197.0}, "Unha": {"qtd": 9.0, "valor": 184.0}, "Perfume": {"qtd": 1.0, "valor": 35.0}}, "horarios": {"10": {"qtd": 4, "valor": 222.99, "dinheiro": 60.0}, "11": {"qtd": 3, "valor": 223.0, "dinheiro": 53.0}, "12": {"qtd": 3, "valor": 109.5, "dinheiro": 0}, "13": {"qtd": 1, "valor": 40.0, "dinheiro": 40.0}, "14": {"qtd": 1, "valor": 30.0, "dinheiro": 0}, "15": {"qtd": 1, "valor": 161.5, "dinheiro": 0}, "16": {"qtd": 1, "valor": 40.0, "dinheiro": 0}, "17": {"qtd": 4, "valor": 217.0, "dinheiro": 9.0}, "8": {"qtd": 1, "valor": 49.99, "dinheiro": 0}}, "porTurno": {"manhã": {"qtd": 2, "valor": 119.99}}, "porTurnoVend": {"manhã": {"alesandra": {"qtd": 2, "valor": 119.99}}}, "genero": {"mulher": {"qtd": 20, "valor": 1128.98}}}, {"dia": "04.08", "initial": 208.05, "sales": 1459.79, "withdrawals": 400, "closing": 137.05, "dinheiro": 329, "debito": 386, "credito": 279.89, "pix": 464.9, "vendedoras": {"Gabriela": 460.0, "Day": 615.89, "alesandra": 383.9}, "tipoVenda": {"presencial": 26, "online": 3}, "produtos": {"cabelo / Creme e shapoo e etc": {"qtd": 18.0, "valor": 664.9}, "maquiagem": {"qtd": 16.0, "valor": 480.89}, "Unha": {"qtd": 1.0, "valor": 10.0}, "Perfume": {"qtd": 3.0, "valor": 190.0}, "Coloração/Tinta": {"qtd": 5.0, "valor": 114.0}}, "horarios": {"9": {"qtd": 1, "valor": 110.0, "dinheiro": 110.0}, "10": {"qtd": 3, "valor": 166.9, "dinheiro": 12.0}, "12": {"qtd": 4, "valor": 199.9, "dinheiro": 0}, "13": {"qtd": 4, "valor": 175.0, "dinheiro": 10.0}, "14": {"qtd": 3, "valor": 199.0, "dinheiro": 0}, "15": {"qtd": 8, "valor": 369.0, "dinheiro": 197.0}, "16": {"qtd": 1, "valor": 60.0, "dinheiro": 0}, "17": {"qtd": 4, "valor": 150.0, "dinheiro": 0}, "18": {"qtd": 1, "valor": 29.99, "dinheiro": 0}}, "porTurno": {"manhã": {"qtd": 1, "valor": 110.0}, "tarde": {"qtd": 12, "valor": 581.8}}, "porTurnoVend": {"manhã": {"Gabriela": {"qtd": 1, "valor": 110.0}}, "tarde": {"Day": {"qtd": 1, "valor": 99.9}, "Gabriela": {"qtd": 3, "valor": 200.0}, "alesandra": {"qtd": 8, "valor": 281.9}}}, "genero": {"mulher": {"qtd": 29, "valor": 1459.79}}}, {"dia": "05.08", "initial": 137.15, "sales": 3415.34, "withdrawals": 650, "closing": 66.5, "dinheiro": 579.35, "debito": 737.58, "credito": 1013.95, "pix": 1084.46, "vendedoras": {"alesandra": 1963.41, "Gabriela": 1004.95, "Day": 446.98}, "tipoVenda": {"presencial": 50, "online": 1}, "produtos": {"cabelo / Creme e shapoo e etc": {"qtd": 58.0, "valor": 2167.87}, "maquiagem": {"qtd": 18.0, "valor": 517.47}, "Perfume": {"qtd": 4.0, "valor": 360.0}, "Coloração/Tinta": {"qtd": 11.0, "valor": 268.0}, "Unha": {"qtd": 5.0, "valor": 70.0}, "Cabelo/acessorios": {"qtd": 3.0, "valor": 32.0}}, "horarios": {"9": {"qtd": 1, "valor": 50.0, "dinheiro": 0}, "10": {"qtd": 6, "valor": 410.58, "dinheiro": 0}, "11": {"qtd": 6, "valor": 203.0, "dinheiro": 20.0}, "12": {"qtd": 10, "valor": 1309.92, "dinheiro": 281.45}, "13": {"qtd": 3, "valor": 200.0, "dinheiro": 0}, "18": {"qtd": 2, "valor": 225.0, "dinheiro": 0}, "14": {"qtd": 3, "valor": 95.0, "dinheiro": 80.0}, "15": {"qtd": 11, "valor": 504.85, "dinheiro": 122.9}, "16": {"qtd": 6, "valor": 216.99, "dinheiro": 55.0}, "17": {"qtd": 3, "valor": 200.0, "dinheiro": 20.0}}, "porTurno": {"manhã": {"qtd": 1, "valor": 50.0}, "meio-dia": {"qtd": 8, "valor": 431.58}, "tarde": {"qtd": 25, "valor": 2094.82}}, "porTurnoVend": {"manhã": {"alesandra": {"qtd": 1, "valor": 50.0}}, "meio-dia": {"alesandra": {"qtd": 7, "valor": 420.58}, "Gabriela": {"qtd": 1, "valor": 11.0}}, "tarde": {"Gabriela": {"qtd": 9, "valor": 618.96}, "alesandra": {"qtd": 11, "valor": 1180.86}, "Day": {"qtd": 5, "valor": 295.0}}}, "genero": {"mulher": {"qtd": 50, "valor": 3295.34}, "homem": {"qtd": 1, "valor": 120.0}}}, {"dia": "06.08", "initial": 67.5, "sales": 4086.72, "withdrawals": 600, "closing": 103.5, "dinheiro": 636, "debito": 593.79, "credito": 1942.93, "pix": 914, "vendedoras": {"Gabriela": 2004.99, "alesandra": 1296.96, "Day": 784.77}, "tipoVenda": {"presencial": 40, "online": 2}, "produtos": {"cabelo / Creme e shapoo e etc": {"qtd": 41.0, "valor": 2069.98}, "maquiagem": {"qtd": 6.0, "valor": 210.0}, "Coloração/Tinta": {"qtd": 21.0, "valor": 637.97}, "Perfume": {"qtd": 7.0, "valor": 1014.97}, "Unha": {"qtd": 4.0, "valor": 28.8}, "Creme": {"qtd": 1.0, "valor": 25.0}, "Cabelo/acessorios": {"qtd": 7.0, "valor": 100.0}}, "horarios": {"9": {"qtd": 1, "valor": 140.0, "dinheiro": 0}, "11": {"qtd": 5, "valor": 760.0, "dinheiro": 160.0}, "12": {"qtd": 6, "valor": 340.0, "dinheiro": 20.0}, "13": {"qtd": 6, "valor": 767.94, "dinheiro": 10.0}, "14": {"qtd": 6, "valor": 289.0, "dinheiro": 30.0}, "15": {"qtd": 8, "valor": 728.0, "dinheiro": 285.0}, "16": {"qtd": 3, "valor": 309.8, "dinheiro": 120.0}, "17": {"qtd": 7, "valor": 751.98, "dinheiro": 11.0}}, "porTurno": {"manhã": {"qtd": 1, "valor": 140.0}, "tarde": {"qtd": 24, "valor": 2226.94}}, "porTurnoVend": {"manhã": {"Gabriela": {"qtd": 1, "valor": 140.0}}, "tarde": {"Gabriela": {"qtd": 7, "valor": 840.0}, "alesandra": {"qtd": 10, "valor": 994.97}, "Day": {"qtd": 7, "valor": 391.97}}}, "genero": {"mulher": {"qtd": 42, "valor": 4086.72}}}, {"dia": "07.08", "initial": 103.5, "sales": 3843.48, "withdrawals": 500, "closing": 150.9, "dinheiro": 547.4, "debito": 1033.58, "credito": 2102.5, "pix": 160, "vendedoras": {"Gabriela": 1325.0, "alesandra": 1353.5, "Day": 1164.98}, "tipoVenda": {"presencial": 33, "online": 2}, "produtos": {"Perfume": {"qtd": 9.0, "valor": 763.0}, "Coloração/Tinta": {"qtd": 17.0, "valor": 422.0}, "cabelo / Creme e shapoo e etc": {"qtd": 35.0, "valor": 2136.48}, "Creme": {"qtd": 1.0, "valor": 20.0}, "maquiagem": {"qtd": 9.0, "valor": 330.0}, "Unha": {"qtd": 7.0, "valor": 76.6}, "Cabelo/acessorios": {"qtd": 4.0, "valor": 95.4}}, "horarios": {"13": {"qtd": 20, "valor": 1753.5, "dinheiro": 332.0}, "14": {"qtd": 3, "valor": 769.6, "dinheiro": 0}, "15": {"qtd": 2, "valor": 85.0, "dinheiro": 0}, "16": {"qtd": 5, "valor": 545.38, "dinheiro": 165.4}, "17": {"qtd": 4, "valor": 570.0, "dinheiro": 50.0}, "18": {"qtd": 1, "valor": 120.0, "dinheiro": 0}}, "porTurno": {"meio-dia": {"qtd": 3, "valor": 192.0}, "tarde": {"qtd": 15, "valor": 1211.5}}, "porTurnoVend": {"meio-dia": {"Gabriela": {"qtd": 3, "valor": 192.0}}, "tarde": {"Gabriela": {"qtd": 5, "valor": 383.0}, "alesandra": {"qtd": 10, "valor": 828.5}}}, "genero": {"mulher": {"qtd": 35, "valor": 3843.48}}}, {"dia": "08.08", "initial": 150.9, "sales": 2828.86, "withdrawals": 100, "closing": 116.9, "dinheiro": 66, "debito": 481.9, "credito": 1334.99, "pix": 945.97, "vendedoras": {"alesandra": 602.9, "Day": 993.96, "Gabriela": 1232.0}, "tipoVenda": {"presencial": 26, "online": 6}, "produtos": {"Perfume": {"qtd": 14.0, "valor": 1228.0}, "cabelo / Creme e shapoo e etc": {"qtd": 13.0, "valor": 650.0}, "Coloração/Tinta": {"qtd": 15.0, "valor": 457.99}, "maquiagem": {"qtd": 15.0, "valor": 434.87}, "Creme": {"qtd": 1.0, "valor": 40.0}, "Unha": {"qtd": 2.0, "valor": 18.0}}, "horarios": {"9": {"qtd": 1, "valor": 60.0, "dinheiro": 0}, "10": {"qtd": 3, "valor": 257.0, "dinheiro": 32.0}, "11": {"qtd": 8, "valor": 614.0, "dinheiro": 22.0}, "12": {"qtd": 2, "valor": 95.0, "dinheiro": 0}, "13": {"qtd": 5, "valor": 529.96, "dinheiro": 0}, "14": {"qtd": 5, "valor": 208.0, "dinheiro": 12.0}, "15": {"qtd": 6, "valor": 872.9, "dinheiro": 0}, "8": {"qtd": 1, "valor": 32.0, "dinheiro": 0}}, "porTurno": {"manhã": {"qtd": 2, "valor": 119.99}, "meio-dia": {"qtd": 1, "valor": 60.0}, "tarde": {"qtd": 11, "valor": 876.0}}, "porTurnoVend": {"manhã": {"alesandra": {"qtd": 1, "valor": 60.0}, "Day": {"qtd": 1, "valor": 59.99}}, "meio-dia": {"Day": {"qtd": 1, "valor": 60.0}}, "tarde": {"alesandra": {"qtd": 3, "valor": 237.0}, "Day": {"qtd": 5, "valor": 462.0}, "Gabriela": {"qtd": 3, "valor": 177.0}}}, "genero": {"mulher": {"qtd": 32, "valor": 2828.86}}}, {"dia": "10.08", "initial": 84, "sales": 2119.4, "withdrawals": 500, "closing": 36.9, "dinheiro": 452.9, "debito": 146, "credito": 752, "pix": 768.5, "vendedoras": {"alesandra": 390.4, "Gabriela": 1096.0, "Day": 633.0}, "tipoVenda": {"presencial": 25, "online": 2}, "produtos": {"cabelo / Creme e shapoo e etc": {"qtd": 34.0, "valor": 1464.0}, "maquiagem": {"qtd": 6.0, "valor": 194.9}, "Creme": {"qtd": 4.0, "valor": 130.0}, "Coloração/Tinta": {"qtd": 2.0, "valor": 68.5}, "Perfume": {"qtd": 6.0, "valor": 262.0}}, "horarios": {"10": {"qtd": 4, "valor": 225.9, "dinheiro": 225.9}, "11": {"qtd": 3, "valor": 195.0, "dinheiro": 0}, "12": {"qtd": 2, "valor": 83.5, "dinheiro": 0}, "13": {"qtd": 6, "valor": 760.0, "dinheiro": 0}, "14": {"qtd": 2, "valor": 137.0, "dinheiro": 47.0}, "15": {"qtd": 5, "valor": 342.0, "dinheiro": 45.0}, "16": {"qtd": 1, "valor": 6.0, "dinheiro": 0}, "17": {"qtd": 4, "valor": 370.0, "dinheiro": 135.0}}, "porTurno": {"manhã": {"qtd": 1, "valor": 50.0}, "tarde": {"qtd": 9, "valor": 754.4}}, "porTurnoVend": {"manhã": {"alesandra": {"qtd": 1, "valor": 50.0}}, "tarde": {"Gabriela": {"qtd": 4, "valor": 586.0}, "alesandra": {"qtd": 5, "valor": 168.4}}}, "genero": {"mulher": {"qtd": 27, "valor": 2119.4}}}, {"dia": "11.08", "initial": 55, "sales": 2073.5, "withdrawals": 550, "closing": 109.5, "dinheiro": 604.5, "debito": 460, "credito": 220, "pix": 789, "vendedoras": {"alesandra": 874.0, "Gabriela": 819.0, "Day": 380.5}, "tipoVenda": {"presencial": 31, "online": 1}, "produtos": {"cabelo / Creme e shapoo e etc": {"qtd": 18.0, "valor": 867.0}, "Cabelo/acessorios": {"qtd": 2.0, "valor": 60.0}, "maquiagem": {"qtd": 19.0, "valor": 694.0}, "Perfume": {"qtd": 7.0, "valor": 260.0}, "Coloração/Tinta": {"qtd": 8.0, "valor": 179.0}, "Unha": {"qtd": 1, "valor": 13.5}}, "horarios": {"9": {"qtd": 2, "valor": 130.0, "dinheiro": 70.0}, "10": {"qtd": 5, "valor": 480.0, "dinheiro": 30.0}, "11": {"qtd": 2, "valor": 110.0, "dinheiro": 40.0}, "12": {"qtd": 3, "valor": 107.0, "dinheiro": 62.0}, "13": {"qtd": 5, "valor": 187.0, "dinheiro": 147.0}, "14": {"qtd": 2, "valor": 83.5, "dinheiro": 13.5}, "15": {"qtd": 7, "valor": 457.0, "dinheiro": 202.0}, "16": {"qtd": 2, "valor": 140.0, "dinheiro": 0}, "17": {"qtd": 3, "valor": 339.0, "dinheiro": 0}, "18": {"qtd": 1, "valor": 40.0, "dinheiro": 40.0}}, "porTurno": {"manhã": {"qtd": 1, "valor": 70.0}, "tarde": {"qtd": 14, "valor": 851.0}}, "porTurnoVend": {"manhã": {"alesandra": {"qtd": 1, "valor": 70.0}}, "tarde": {"Gabriela": {"qtd": 6, "valor": 377.0}, "alesandra": {"qtd": 6, "valor": 444.0}, "Day": {"qtd": 2, "valor": 30.0}}}, "genero": {"mulher": {"qtd": 32, "valor": 2073.5}}}];
+let daysData = [...embeddedData];
+let mesVisualizadoPassado = null; // null = mes atual (ao vivo). Se preenchido (ex: '07'), esta vendo um mes arquivado.
+let daysDataOriginal = null; // guarda os dados ao vivo enquanto a pessoa esta vendo um mes passado, pra poder voltar
+let chart = null;
+let chartProdutosPizza = null;
+let chartRadarDiasSemana = null;
+let chartVendasPorPeriodo = null;
+
+function money(v) {
+ return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(v)||0);
+}
+
+/* ===== Máscara de moeda (Real) para campos de texto ===== */
+function formatMoneyLive(el){
+ const digits = el.value.replace(/\D/g,'');
+ if(!digits){ el.value=''; return; }
+ const num = parseInt(digits,10)/100;
+ el.value = num.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+}
+function parseMoneyInput(str){
+ if(typeof str !== 'string' || !str.trim()) return NaN;
+ const digits = str.replace(/\D/g,'');
+ if(!digits) return NaN;
+ return parseInt(digits,10)/100;
+}
+function attachMoneyMask(id){
+ const el = document.getElementById(id);
+ if(!el) return;
+ el.addEventListener('input', ()=>formatMoneyLive(el));
+}
+
+function diaComAno(dia){
+ if(!dia) return dia;
+ return dia+'.2026';
+}
+function normalizarNome(nome){
+ if(!nome) return nome;
+ return nome.trim().toLowerCase().split(' ').filter(Boolean).map(p=>p.charAt(0).toUpperCase()+p.slice(1)).join(' ');
+}
+function confirmarBiobel(msg, aoConfirmar){
+ const overlay=document.createElement('div');
+ overlay.style.cssText='display:flex;z-index:5000;position:fixed;inset:0;background:rgba(7,17,31,.6);align-items:flex-start;justify-content:center';
+ overlay.innerHTML=`<div style="max-width:340px;margin:15vh 16px 0;padding:22px;text-align:center;background:linear-gradient(180deg,#0d1a2c,#0a1525);border:1px solid #20334e;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.35)">
+   <div style="font-size:30px;margin-bottom:8px">⚠️</div>
+   <p style="margin:0 0 18px;font-size:14px;line-height:1.5;color:#dce5f2">${msg}</p>
+   <div style="display:flex;gap:8px;justify-content:center">
+    <button type="button" id="confCanceBiobel" style="background:#1c2c42;color:#c3d0e0;border:none;border-radius:10px;padding:10px 18px;font-weight:700;font-size:13px;cursor:pointer">Cancelar</button>
+    <button type="button" id="confOkBiobel" style="background:#dc2626;color:#fff;border:none;border-radius:10px;padding:10px 18px;font-weight:700;font-size:13px;cursor:pointer">Confirmar</button>
+   </div>
+  </div>`;
+ document.body.appendChild(overlay);
+ function fechar(resultado){ overlay.remove(); if(resultado) aoConfirmar(); }
+ overlay.addEventListener('click', e=>{ if(e.target===overlay) fechar(false); });
+ overlay.querySelector('#confCanceBiobel').addEventListener('click', ()=>fechar(false));
+ overlay.querySelector('#confOkBiobel').addEventListener('click', ()=>fechar(true));
+ overlay.querySelector('#confOkBiobel').focus();
+}
+
+function confirmarBiobelAsync(msg){
+ return new Promise(resolve=>{
+  const overlay=document.createElement('div');
+  overlay.style.cssText='display:flex;z-index:5000;position:fixed;inset:0;background:rgba(7,17,31,.6);align-items:flex-start;justify-content:center';
+  overlay.innerHTML=`<div style="max-width:380px;margin:15vh 16px 0;padding:22px;text-align:center;background:linear-gradient(180deg,#0d1a2c,#0a1525);border:1px solid #20334e;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.35)">
+    <div style="font-size:30px;margin-bottom:8px">⚠️</div>
+    <p style="margin:0 0 18px;font-size:14px;line-height:1.5;color:#dce5f2;white-space:pre-line">${msg}</p>
+    <div style="display:flex;gap:8px;justify-content:center">
+     <button type="button" id="confCanceBiobelA" style="background:#1c2c42;color:#c3d0e0;border:none;border-radius:10px;padding:10px 18px;font-weight:700;font-size:13px;cursor:pointer">Cancelar</button>
+     <button type="button" id="confOkBiobelA" style="background:#0ea97a;color:#fff;border:none;border-radius:10px;padding:10px 18px;font-weight:700;font-size:13px;cursor:pointer">Continuar</button>
+    </div>
+   </div>`;
+  document.body.appendChild(overlay);
+  function fechar(resultado){ overlay.remove(); resolve(resultado); }
+  overlay.addEventListener('click', e=>{ if(e.target===overlay) fechar(false); });
+  overlay.querySelector('#confCanceBiobelA').addEventListener('click', ()=>fechar(false));
+  overlay.querySelector('#confOkBiobelA').addEventListener('click', ()=>fechar(true));
+  overlay.querySelector('#confOkBiobelA').focus();
+ });
+}
+
+/* ===== Toast com "Desfazer" — pra remoções, dá uma segunda chance rápida sem precisar recriar tudo ===== */
+let _callbackDesfazer = null;
+function mostrarToastComDesfazer(mensagem, callbackDesfazer){
+ _callbackDesfazer = callbackDesfazer;
+ let el = document.getElementById('toastBiobel');
+ if(!el){
+  el = document.createElement('div');
+  el.id = 'toastBiobel';
+  el.setAttribute('role','status');
+  el.setAttribute('aria-live','polite');
+  el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#0ea97a;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:800;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:9999;opacity:0;transition:opacity .25s,transform .25s;display:flex;align-items:center;gap:12px;';
+  document.body.appendChild(el);
+ }
+ el.style.background = '#0ea97a';
+ el.innerHTML = mensagem+' <button onclick="executarUltimoDesfazer()" style="background:rgba(255,255,255,.25);border:none;color:#fff;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:800;cursor:pointer;">↩️ Desfazer</button>';
+ el.style.opacity = '1';
+ el.style.transform = 'translateX(-50%) translateY(0)';
+ clearTimeout(window._toastBiobelTimer);
+ window._toastBiobelTimer = setTimeout(()=>{
+  el.style.opacity = '0';
+  el.style.transform = 'translateX(-50%) translateY(20px)';
+  _callbackDesfazer = null;
+ }, 5000); // um pouco mais que o toast comum, pra dar tempo de reagir e clicar
+}
+function executarUltimoDesfazer(){
+ if(!_callbackDesfazer) return;
+ const callback = _callbackDesfazer;
+ _callbackDesfazer = null;
+ callback();
+ const el = document.getElementById('toastBiobel');
+ if(el) el.style.opacity = '0';
+ mostrarToast('↩️ Desfeito!');
+}
+
+/* ============================================================
+   BIOBEL — ZONA: EQUIPE / ROTINAS E ATIVIDADES
+   ============================================================ */
+/* ===== Atividades da Gerência (Alessandra) — lista própria, separada da rotina Gabi/Day ===== */
+const ATIVIDADES_GERENCIA_PADRAO = [
+ { texto:'🎥 Gravar vídeos pras redes sociais', acao:null },
+ { texto:'🪟 Arrumar a vitrine', acao:null },
+ { texto:'🤝 Contatar fornecedores', acao:null },
+ { texto:'⭐ Chamar clientes VIP', acao:null },
+ { texto:'📢 Enviar campanha pro grupo', acao:'campanhas' },
+ { texto:'⏱️ Assinar o ponto', acao:'ponto' }
+];
+function getAtividadesGerencia(){
+ let lista;
+ try{
+  const salvo = localStorage.getItem('biobel_atividades_gerencia');
+  lista = salvo ? JSON.parse(salvo) : ATIVIDADES_GERENCIA_PADRAO.map(p=>({texto:p.texto, feita:false, acao:p.acao}));
+ }catch(e){ lista = ATIVIDADES_GERENCIA_PADRAO.map(p=>({texto:p.texto, feita:false, acao:p.acao})); }
+ // Migração: quem já tinha essa lista salva antes dos itens de campanha/ponto existirem, recebe
+ // eles agora — comparando pelo texto (não tem id nessas atividades), sem duplicar.
+ const textosAtuais = lista.map(i=>i.texto);
+ ATIVIDADES_GERENCIA_PADRAO.forEach(p=>{
+  if(p.acao && !textosAtuais.includes(p.texto)){
+   lista.push({ texto:p.texto, feita:false, acao:p.acao });
+  }
+ });
+ return lista;
+}
+function salvarAtividadesGerencia(lista){
+ localStorage.setItem('biobel_atividades_gerencia', JSON.stringify(lista));
+}
+function adicionarAtividadeGerencia(){
+ const input = document.getElementById('novaAtividadeGerenciaInput');
+ const texto = input.value.trim();
+ if(!texto){ mostrarToast('⚠️ Digite uma atividade.'); return; }
+ const lista = getAtividadesGerencia();
+ lista.push({ texto, feita:false, acao:null });
+ salvarAtividadesGerencia(lista);
+ input.value = '';
+ renderAtividadesGerencia();
+ mostrarToast('✅ Atividade adicionada!');
+}
+function alternarAtividadeGerencia(indice){
+ const lista = getAtividadesGerencia();
+ if(!lista[indice]) return;
+ lista[indice].feita = !lista[indice].feita;
+ salvarAtividadesGerencia(lista);
+ renderAtividadesGerencia();
+}
+function removerAtividadeGerencia(indice){
+ const lista = getAtividadesGerencia();
+ const item = lista[indice];
+ if(!item) return;
+ lista.splice(indice,1);
+ salvarAtividadesGerencia(lista);
+ renderAtividadesGerencia();
+ mostrarToastComDesfazer('🗑️ Atividade removida.', ()=>{
+  const listaAtual = getAtividadesGerencia();
+  listaAtual.splice(indice,0,item);
+  salvarAtividadesGerencia(listaAtual);
+  renderAtividadesGerencia();
+ });
+}
+function abrirAcaoAtividadeGerencia(acao){
+ if(acao==='campanhas') showTab('campanhas');
+ if(acao==='ponto'){ showTab('equipe'); setTimeout(()=>mostrarEquipeSubAba('ponto'), 150); }
+}
+function renderAtividadesGerencia(){
+ const el = document.getElementById('listaAtividadesGerencia');
+ if(!el) return;
+ const lista = getAtividadesGerencia();
+ if(lista.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhuma atividade cadastrada.</p>'; return; }
+ const nomesAcao = { campanhas:'📢 Ir pra Campanhas', ponto:'⏱️ Ir pro Ponto' };
+ el.innerHTML = lista.map((item,i)=>`
+   <div style="display:flex;align-items:center;gap:10px;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 14px;">
+    <input type="checkbox" ${item.feita?'checked':''} onchange="alternarAtividadeGerencia(${i})" style="width:18px;height:18px;flex-shrink:0;cursor:pointer;">
+    <span style="flex:1;font-size:13px;color:${item.feita?'#93a3ba':'#dce5f2'};text-decoration:${item.feita?'line-through':'none'};">${item.texto}</span>
+    ${item.acao?`<button onclick="abrirAcaoAtividadeGerencia('${item.acao}')" style="background:#2f78e0;color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">${nomesAcao[item.acao]||'Abrir'}</button>`:''}
+    <button onclick="removerAtividadeGerencia(${i})" aria-label="Remover atividade" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;flex-shrink:0;">🗑️</button>
+   </div>`).join('');
+}
+
+/* ===== Item 4: Aviso de armazenamento quase cheio — evita a pessoa perder dados sem entender
+   por quê, se um dia o limite do navegador (geralmente uns 5-10MB) chegar perto do fim. ===== */
+function calcularEspacoUsadoBiobel(){
+ let totalBytes = 0;
+ for(let i=0;i<localStorage.length;i++){
+  const chave = localStorage.key(i);
+  if(chave && chave.startsWith('biobel_')){
+   totalBytes += (chave.length + (localStorage.getItem(chave)||'').length) * 2; // UTF-16 ~2 bytes/caractere
+  }
+ }
+ return totalBytes;
+}
+function verificarEspacoArmazenamento(){
+ const bytesUsados = calcularEspacoUsadoBiobel();
+ const limiteEstimado = 5*1024*1024; // 5MB — estimativa conservadora, a maioria dos navegadores permite isso ou mais
+ const pctUsado = (bytesUsados/limiteEstimado)*100;
+ if(pctUsado>=80){
+  const mbUsados = (bytesUsados/1024/1024).toFixed(1);
+  mostrarToast('⚠️ O sistema já está usando '+mbUsados+'MB no aparelho — perto do limite. Fale com o suporte se aparecer erro ao salvar.');
+ }
+}
+
+/* ===== Item 11: Indicador de "última vez salvo" — intercepta TODO salvamento do sistema de uma
+   vez só, sem precisar mexer em cada função individual de salvar. ===== */
+let _timeoutIndicadorSalvo = null;
+const _setItemOriginalBiobel = localStorage.setItem.bind(localStorage);
+localStorage.setItem = function(chave, valor){
+ _setItemOriginalBiobel(chave, valor);
+ if(String(chave).startsWith('biobel_')){
+  const el = document.getElementById('indicadorUltimoSalvamento');
+  if(el){
+   const agora = obterAgoraBrasilia();
+   const hhmm = String(agora.getHours()).padStart(2,'0')+':'+String(agora.getMinutes()).padStart(2,'0');
+   el.style.display = 'inline';
+   el.textContent = '✅ Salvo às '+hhmm;
+   // Depois de um tempinho, encolhe pra só o iconezinho, pra não poluir o cabeçalho — mas o
+   // título (ao passar o mouse/tocar) continua mostrando o horário completo.
+   el.title = 'Última vez salvo: '+hhmm;
+   clearTimeout(_timeoutIndicadorSalvo);
+   _timeoutIndicadorSalvo = setTimeout(()=>{ el.textContent = '✅'; }, 4000);
+  }
+ }
+};
+
+function mostrarToast(texto){
+ // Vibração curta em confirmações de sucesso (✅) — Android tem bom suporte a isso, dá um
+ // feedback físico gostoso ao salvar algo. iPhone geralmente ignora silenciosamente, sem erro.
+ if(texto.includes('✅') && navigator.vibrate){
+  try{ navigator.vibrate(15); }catch(e){}
+ }
+ let el = document.getElementById('toastBiobel');
+ if(!el){
+  el = document.createElement('div');
+  el.id = 'toastBiobel';
+  el.setAttribute('role','status');
+  el.setAttribute('aria-live','polite');
+  el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#0ea97a;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:800;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:9999;opacity:0;transition:opacity .25s,transform .25s;';
+  document.body.appendChild(el);
+ }
+ el.textContent = texto;
+ el.style.opacity = '1';
+ el.style.transform = 'translateX(-50%) translateY(0)';
+ clearTimeout(window._toastBiobelTimer);
+ window._toastBiobelTimer = setTimeout(()=>{
+  el.style.opacity = '0';
+  el.style.transform = 'translateX(-50%) translateY(20px)';
+ }, 2600);
+}
+function sortDays() {
+ daysData.sort((a,b)=>Number(a.dia.slice(0,2))-Number(b.dia.slice(0,2)));
+}
+function render() {
+ sortDays();
+ const total=daysData.reduce((s,d)=>s+d.closing,0);
+ const max=daysData.length?Math.max(...daysData.map(d=>d.closing)):0;
+ const avg=daysData.length?total/daysData.length:0;
+ document.getElementById('totalClosing').textContent=money(total);
+ const totalSales=daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ document.getElementById('totalSales').textContent=money(totalSales);
+ document.getElementById('salesDays').textContent=`${daysData.filter(d=>(Number(d.sales)||0)>0).length} dias com vendas`;
+ document.getElementById('maxClosing').textContent=money(max);
+ document.getElementById('avgClosing').textContent=money(avg);
+
+ const select=document.getElementById('daySelect');
+ select.innerHTML=daysData.map(d=>`<option value="${d.dia}">${d.dia}</option>`).join('');
+ if(daysData.length) updateSelected(daysData[daysData.length-1].dia);
+
+ const tbody=document.getElementById('tableBody');
+ tbody.innerHTML=daysData.map(d=>`<tr class="border-t border-slate-800 hover:bg-slate-800/60">
+  <td class="p-3 font-semibold">${d.dia}</td>
+  <td class="p-3 text-right">${money(d.initial)}</td>
+  <td class="p-3 text-right">${money(d.sales)}</td>
+  <td class="p-3 text-right font-bold text-emerald-400">${money(d.closing)}</td>
+  <td class="p-3 text-right">${money(d.closing-d.initial)}</td>
+ </tr>`).join('');
+
+ drawChart();
+}
+function updateSelected(day) {
+ const d=daysData.find(x=>x.dia===day);
+ if(!d) return;
+ document.getElementById('selectedDay').textContent='Dia '+d.dia;
+ document.getElementById('selectedClosing').textContent=money(d.closing);
+}
+function drawChart() {
+ const ctx=document.getElementById('closingChart');
+ if(chart) chart.destroy();
+ chart=new Chart(ctx,{
+  type:'line',
+  data:{
+   labels:daysData.map(d=>d.dia),
+   datasets:[{
+    label:'Fechamento do caixa',
+    data:daysData.map(d=>d.closing),
+    borderWidth:3,
+    tension:.25,
+    fill:true,
+    pointRadius:5,
+    pointHoverRadius:7
+   }]
+  },
+  options:{
+   responsive:true,
+   maintainAspectRatio:false,
+   interaction:{mode:'index',intersect:false},
+   plugins:{
+    legend:{display:true,labels:{color:'#cbd5e1'}},
+    tooltip:{callbacks:{label:c=>money(c.raw)}}
+   },
+   scales:{
+    x:{ticks:{color:'#94a3b8'},grid:{color:'rgba(148,163,184,.08)'}},
+    y:{beginAtZero:true,ticks:{color:'#94a3b8',callback:v=>money(v)},grid:{color:'rgba(148,163,184,.08)'}}
+   }
+  }
+ });
+}
+document.getElementById('daySelect').addEventListener('change',e=>updateSelected(e.target.value));
+
+/* ===== Modo Apresentação / TV ===== */
+let apresentacaoIntervalo = null;
+let apresentacaoSlideAtual = 0;
+
+function gerarSlidesApresentacao(){
+ const slides = [];
+ const totalSales = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const goal = getSalesGoal();
+ const pct = goal>0 ? Math.min(100,(totalSales/goal)*100) : 0;
+
+ // Slide 1: faturamento e meta
+ slides.push(`
+  <div style="font-size:20px;color:#93a3ba;font-weight:800;margin-bottom:20px;">📊 FATURAMENTO DO MÊS</div>
+  <div style="font-size:64px;font-weight:900;color:#27d7a0;">${money(totalSales)}</div>
+  <div style="font-size:20px;color:#93a3ba;margin-top:10px;">de uma meta de ${money(goal)}</div>
+  <div style="background:#0b1728;border-radius:999px;height:36px;overflow:hidden;margin-top:30px;position:relative;">
+   <div style="height:100%;width:${pct.toFixed(1)}%;background:linear-gradient(90deg,#27d7a0,#0ea97a);"></div>
+   <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff;">${pct.toFixed(0)}%</div>
+  </div>`);
+
+ // Slide 2: ranking de vendedoras
+ const totaisVend = {};
+ daysData.forEach(d=>{
+  Object.entries(d.vendedoras||{}).forEach(([nome,valor])=>{ totaisVend[nome]=(totaisVend[nome]||0)+(Number(valor)||0); });
+ });
+ const rankingVend = Object.entries(totaisVend).sort((a,b)=>b[1]-a[1]).slice(0,3);
+ if(rankingVend.length>0){
+  const medalhas=['🥇','🥈','🥉'];
+  slides.push(`
+   <div style="font-size:20px;color:#93a3ba;font-weight:800;margin-bottom:24px;">🏆 RANKING DE VENDEDORAS</div>
+   ${rankingVend.map(([nome,valor],i)=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:24px;padding:16px 0;border-bottom:1px solid #1e2c42;">
+     <span style="color:#dce5f2;font-weight:800;">${medalhas[i]} ${nome}</span>
+     <span style="color:#27d7a0;font-weight:900;">${money(valor)}</span>
+    </div>`).join('')}`);
+ }
+
+ // Slide 3: dias que mais venderam
+ const rankingDias = [...daysData].sort((a,b)=>(Number(b.sales)||0)-(Number(a.sales)||0)).slice(0,3);
+ if(rankingDias.length>0){
+  const medalhas=['🥇','🥈','🥉'];
+  slides.push(`
+   <div style="font-size:20px;color:#93a3ba;font-weight:800;margin-bottom:24px;">📅 MELHORES DIAS DO MÊS</div>
+   ${rankingDias.map((d,i)=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:24px;padding:16px 0;border-bottom:1px solid #1e2c42;">
+     <span style="color:#dce5f2;font-weight:800;">${medalhas[i]} Dia ${diaComAno(d.dia)}</span>
+     <span style="color:#4f9cff;font-weight:900;">${money(d.sales)}</span>
+    </div>`).join('')}`);
+ }
+
+ return slides.length>0 ? slides : ['<div style="font-size:24px;color:#93a3ba;">Ainda sem dados suficientes pra mostrar aqui.</div>'];
+}
+
+function mostrarSlideApresentacao(){
+ const slides = gerarSlidesApresentacao();
+ apresentacaoSlideAtual = apresentacaoSlideAtual % slides.length;
+ const el = document.getElementById('apresentacaoConteudo');
+ if(el) el.innerHTML = slides[apresentacaoSlideAtual];
+ apresentacaoSlideAtual++;
+}
+
+function ativarModoApresentacao(){
+ const overlay = document.getElementById('modoApresentacaoOverlay');
+ if(!overlay) return;
+ overlay.style.display = 'flex';
+ apresentacaoSlideAtual = 0;
+ mostrarSlideApresentacao();
+ if(document.documentElement.requestFullscreen){
+  document.documentElement.requestFullscreen().catch(()=>{});
+ }
+ apresentacaoIntervalo = setInterval(mostrarSlideApresentacao, 8000);
+}
+function sairModoApresentacao(){
+ const overlay = document.getElementById('modoApresentacaoOverlay');
+ if(overlay) overlay.style.display = 'none';
+ if(apresentacaoIntervalo){ clearInterval(apresentacaoIntervalo); apresentacaoIntervalo=null; }
+ if(document.fullscreenElement && document.exitFullscreen){
+  document.exitFullscreen().catch(()=>{});
+ }
+}
+// Proteção contra clique duplo por impaciência — quando alguém toca um botão e não vê resposta
+// na hora, tende a tocar de novo, o que às vezes duplica a ação (registrar duas vezes, etc.).
+// Isso trava o botão por meio segundo depois de qualquer toque, sem bloquear a ação em si.
+document.addEventListener('click', e=>{
+ const btn = e.target.closest('button');
+ if(!btn || btn.disabled) return;
+ if(btn.dataset.protegidoContraDuploClique==='ativo') { e.stopImmediatePropagation(); e.preventDefault(); return; }
+ btn.dataset.protegidoContraDuploClique = 'ativo';
+ setTimeout(()=>{ delete btn.dataset.protegidoContraDuploClique; }, 500);
+}, true);
+document.addEventListener('keydown', e=>{
+ if(e.key==='Escape'){
+  const overlay = document.getElementById('modoApresentacaoOverlay');
+  if(overlay && overlay.style.display!=='none') sairModoApresentacao();
+ }
+ // Atalho "/" pra ir direto na busca global — mas só se não estiver digitando em outro campo.
+ if(e.key==='/' && document.activeElement.tagName!=='INPUT' && document.activeElement.tagName!=='TEXTAREA' && document.activeElement.tagName!=='SELECT'){
+  e.preventDefault();
+  const inputBusca = document.getElementById('inputBuscaGlobal');
+  if(inputBusca) inputBusca.focus();
+ }
+});
+
+/* ===== Horário real de Brasília (via internet, não depende do relógio nem do fuso do aparelho) =====
+   O GitHub Pages não tem servidor — sem isso, "hoje" seria só o relógio de quem estiver com a
+   página aberta, que pode estar com hora errada OU até em outro fuso horário (o celular sozinho
+   corrigir o relógio não resolve isso — o fuso horário do aparelho também precisa ser ignorado). */
+let offsetBrasiliaMs = 0;
+function partesDataBrasilia(dataObj){
+ // Extrai ano/mês/dia/hora sempre no fuso de Brasília (America/Sao_Paulo), não no fuso do navegador.
+ const fmt = new Intl.DateTimeFormat('en-CA', {
+  timeZone:'America/Sao_Paulo', year:'numeric', month:'2-digit', day:'2-digit',
+  hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false
+ });
+ const partes = {};
+ fmt.formatToParts(dataObj).forEach(p=>{ if(p.type!=='literal') partes[p.type]=p.value; });
+ const ano = Number(partes.year), mes = Number(partes.month), dia = Number(partes.day);
+ // Calcula o dia da semana a partir dos números "limpos" (via UTC), sem depender do fuso do navegador.
+ const diaSemana = new Date(Date.UTC(ano, mes-1, dia)).getUTCDay();
+ return {
+  getFullYear: ()=>ano,
+  getMonth: ()=>mes-1, // 0-indexado, igual ao Date nativo do JavaScript
+  getDate: ()=>dia,
+  getDay: ()=>diaSemana,
+  getHours: ()=>Number(partes.hour),
+  getMinutes: ()=>Number(partes.minute),
+  paraChaveISO: ()=>ano+'-'+String(mes).padStart(2,'0')+'-'+String(dia).padStart(2,'0')
+ };
+}
+function obterAgoraBrasilia(){
+ return partesDataBrasilia(new Date(Date.now() + offsetBrasiliaMs));
+}
+async function sincronizarHorarioBrasilia(){
+ try{
+  const resp = await fetch('https://worldtimeapi.org/api/timezone/America/Sao_Paulo', {cache:'no-store'});
+  if(!resp.ok) throw new Error('resposta não OK');
+  const data = await resp.json();
+  const horaReal = new Date(data.datetime);
+  if(isNaN(horaReal.getTime())) throw new Error('data inválida recebida');
+  offsetBrasiliaMs = horaReal.getTime() - Date.now();
+ }catch(e){
+  console.warn('Não foi possível sincronizar o horário de Brasília pela internet — usando o relógio do próprio aparelho como respaldo (pode ficar impreciso se o aparelho estiver com hora/fuso errado).', e);
+  offsetBrasiliaMs = 0;
+ }
+}
+sincronizarHorarioBrasilia();
+setInterval(sincronizarHorarioBrasilia, 15*60*1000); // ressincroniza a cada 15 min, pra corrigir qualquer desvio ao longo do dia
+
+function ehHoje(diaStr){
+ const partes = String(diaStr||'').split('.').map(Number);
+ if(partes.length<2) return false;
+ const [dia, mes] = partes;
+ const hoje = obterAgoraBrasilia();
+ return dia===hoje.getDate() && mes===(hoje.getMonth()+1);
+}
+
+function atualizarBadgeDia(tipo, diaStr){
+ const badgeEl = document.getElementById(tipo==='completo' ? 'badgeDiaCompleto' : 'badgeDiaSimple');
+ const btnHoje = document.getElementById(tipo==='completo' ? 'btnIrHojeCompleto' : 'btnIrHojeSimple');
+ if(!badgeEl) return;
+ const hoje = ehHoje(diaStr);
+ badgeEl.style.display = 'block';
+ if(hoje){
+  badgeEl.innerHTML = '<span class="badge-dia-hoje">✅ Mostrando hoje</span>';
+  if(btnHoje) btnHoje.style.display = 'none';
+ } else {
+  const dow = nomeDiaSemanaAbrev(diaStr);
+  badgeEl.innerHTML = '<span class="badge-dia-outro">⚠️ Mostrando '+diaComAno(diaStr)+(dow?' ('+dow+')':'')+' — não é hoje</span>';
+  if(btnHoje) btnHoje.style.display = 'inline-flex';
+ }
+}
+
+function irParaHoje(tipo){
+ const hoje = obterAgoraBrasilia();
+ const diaHojeStr = String(hoje.getDate()).padStart(2,'0')+'.'+String(hoje.getMonth()+1).padStart(2,'0');
+ const existe = daysData.find(d=>d.dia===diaHojeStr);
+ const selectId = tipo==='completo' ? 'completeDaySelect' : 'simpleDaySelect';
+ const sel = document.getElementById(selectId);
+ if(!existe){
+  mostrarToast('⚠️ O dia de hoje ('+diaComAno(diaHojeStr)+') ainda não tem lançamento na planilha.');
+  return;
+ }
+ if(sel){
+  sel.value = diaHojeStr;
+  if(tipo==='completo') updateCompleteDay(diaHojeStr);
+  else updateSimpleDay(diaHojeStr);
+ }
+}
+
+function flashCard(wrapId){
+ const wrap = document.getElementById(wrapId);
+ if(!wrap) return;
+ wrap.querySelectorAll('.rounded-xl').forEach(card=>{
+  card.classList.remove('flash-troca-dia');
+  void card.offsetWidth; // força reiniciar a animação mesmo se já rodou antes
+  card.classList.add('flash-troca-dia');
+ });
+}
+
+function updateSimpleDay(day){
+ const d=daysData.find(x=>x.dia===day);
+ if(!d) return;
+ renderStatusFechamentoCaixaSimple(day);
+ const si=document.getElementById('simpleInitial'); if(si) si.textContent=money(d.initial);
+ const ss=document.getElementById('simpleSales'); if(ss) ss.textContent=money(d.sales);
+ const sw=document.getElementById('simpleWithdrawals'); if(sw) sw.textContent=money(d.withdrawals);
+ const sc=document.getElementById('simpleClosing'); if(sc) sc.textContent=d.closingEncontrado ? money(d.closing) : '⚠️ Não encontrado';
+ const dow=nomeDiaSemanaAbrev(d.dia);
+ const elData=document.getElementById('simpleClosingData');
+ if(elData){
+  const fonte=d.closingEncontrado&&d.closingCelula ? ' • lido diretamente da planilha ('+d.closingCelula+')' : ' • fechamento não encontrado na planilha';
+  elData.textContent='referente ao dia '+diaComAno(d.dia)+(dow?' ('+dow+')':'')+fonte;
+ }
+ updateGoalBanner('simpleGoalBanner',Number(d.sales)||0);
+ atualizarBadgeDia('simple',d.dia);
+ flashCard('valoresSimpleWrap');
+}
+
+/* ===== Busca Global — pula direto pra onde a pessoa precisa, sem caçar pelo sistema ===== */
+const BIOBEL_INDICE_BUSCA = [
+ { termos:'dashboard inicio meta faturamento', label:'📊 Dashboard', acao:()=>showTab('dashboard') },
+ { termos:'calendario comercial datas especiais dia das maes pais natal', label:'📅 Calendário Comercial (Dashboard)', acao:()=>showTab('dashboard') },
+ { termos:'informação geral financeiro ticket medio projecao', label:'💰 Informação Geral → Financeiro', acao:()=>{showTab('info'); mostrarSecaoInfo('Financeiro');} },
+ { termos:'vendedoras ranking comissao', label:'👥 Informação Geral → Vendedoras', acao:()=>{showTab('info'); mostrarSecaoInfo('Vendedoras');} },
+ { termos:'dias historico calendario dias uteis', label:'📅 Informação Geral → Dias', acao:()=>{showTab('info'); mostrarSecaoInfo('Dias');} },
+ { termos:'analises avancadas recordes produtos mais vendidos itens', label:'🔍 Informação Geral → Análises avançadas', acao:()=>{showTab('info'); mostrarSecaoInfo('Avancado');} },
+ { termos:'comparar meses', label:'📊 Informação Geral → Comparar meses', acao:()=>{showTab('info'); mostrarSecaoInfo('Comparar');} },
+ { termos:'dia da semana melhor pior', label:'📆 Informação Geral → Por Dia da Semana', acao:()=>{showTab('info'); mostrarSecaoInfo('PorDiaSemana');} },
+ { termos:'alertas divergencia caixa vencimento', label:'🚨 Alertas', acao:()=>showTab('alertas') },
+ { termos:'fechamento rapido caixa simples', label:'⚡ Fechamento Rápido', acao:()=>showTab('caixa') },
+ { termos:'equipe checklist tarefas', label:'👩‍💼 Equipe', acao:()=>showTab('equipe') },
+ { termos:'campanha campanhas dia das maes dia dos pais promocao desconto whatsapp', label:'🎉 Campanhas', acao:()=>showTab('campanhas') },
+ { termos:'conexao planilha google sheets', label:'🔗 Configuração → Conexão', acao:()=>{showTab('config'); mostrarSecaoConfig('Conexao');} },
+ { termos:'planilhas salvas trocar mes', label:'📂 Configuração → Planilhas', acao:()=>{showTab('config'); mostrarSecaoConfig('Planilhas');} },
+ { termos:'metas faturamento vendedora', label:'🎯 Configuração → Metas', acao:()=>{showTab('config'); mostrarSecaoConfig('Metas');} },
+ { termos:'email contadora enviar relatorio', label:'📧 Configuração → E-mail', acao:()=>{showTab('config'); mostrarSecaoConfig('Email');} },
+ { termos:'horarios abertura fechamento loja', label:'🕘 Configuração → Horários', acao:()=>{showTab('config'); mostrarSecaoConfig('Horarios');} },
+ { termos:'historico log alteracoes', label:'📜 Configuração → Histórico', acao:()=>{showTab('config'); mostrarSecaoConfig('Log');} },
+ { termos:'backup exportar dados', label:'💾 Configuração → Backup', acao:()=>{showTab('config'); mostrarSecaoConfig('Backup');} },
+ { termos:'logo imagem marca', label:'🖼️ Configuração → Logo', acao:()=>{showTab('config'); mostrarSecaoConfig('Logo');} },
+ { termos:'site trabalhe conosco curriculo formulario', label:'🌐 Configuração → Site', acao:()=>{showTab('config'); mostrarSecaoConfig('SitePublico');} },
+ { termos:'mensagens programadas aniversario popup', label:'💬 Configuração → Mensagens', acao:()=>{showTab('config'); mostrarSecaoConfig('Mensagens');} },
+ { termos:'aluguel gastos fixos agua luz internet contadora', label:'🏠 ADM → Gastos Fixos', acao:()=>{showTab('adm'); setTimeout(()=>isolarSecaoAdm('admAncoraGastos'),250);} },
+ { termos:'boletos fornecedores comprovante compra parcelada', label:'📦 ADM → Boletos de Fornecedores', acao:()=>{showTab('adm'); setTimeout(()=>isolarSecaoAdm('admAncoraFornecedoresReal'),250);} },
+ { termos:'comissao meta gabriela day niveis', label:'🎯 ADM → Comissão por Metas', acao:()=>{showTab('adm'); setTimeout(()=>isolarSecaoAdm('admAncoraComissoes'),250);} },
+ { termos:'ferias fgts admissao gabriela', label:'🏖️ ADM → Férias e Admissão', acao:()=>{showTab('adm'); setTimeout(()=>isolarSecaoAdm('admAncoraComissoes'),250);} },
+ { termos:'estagio day recesso contrato', label:'📋 ADM → Estágio da Day', acao:()=>{showTab('adm'); setTimeout(()=>isolarSecaoAdm('admAncoraComissoes'),250);} },
+ { termos:'imposto das mei simples nacional', label:'🧾 ADM → Impostos', acao:()=>{showTab('adm'); setTimeout(()=>isolarSecaoAdm('admAncoraComissoes'),250);} },
+ { termos:'estoque valor parado', label:'📦 ADM → Estoque', acao:()=>{showTab('adm'); setTimeout(()=>isolarSecaoAdm('admAncoraComissoes'),250);} },
+ { termos:'reserva emergencia capital de giro', label:'🏦 ADM → Reserva de Emergência', acao:()=>{showTab('adm'); setTimeout(()=>isolarSecaoAdm('admAncoraComissoes'),250);} },
+ { termos:'taxa maquina cartao debito credito', label:'💳 ADM → Taxa de Cartão', acao:()=>{showTab('adm'); setTimeout(()=>isolarSecaoAdm('admAncoraResumo'),250);} },
+ { termos:'dre relatorio anual lucro fluxo de caixa ponto equilibrio', label:'📋 ADM → DRE e Relatórios', acao:()=>{showTab('adm'); setTimeout(()=>isolarSecaoAdm('admAncoraResumo'),250);} },
+ { termos:'fechamento mensal encerrar periodo', label:'🔒 ADM → Fechamento Mensal', acao:()=>{showTab('adm'); setTimeout(()=>isolarSecaoAdm('admAncoraFechamento'),250);} },
+ { termos:'reunioes fornecedores agenda', label:'🤝 ADM → Agenda de Fornecedores', acao:()=>{showTab('adm'); setTimeout(()=>isolarSecaoAdm('admAncoraAgenda'),250);} },
+];
+function normalizarBuscaGlobal(valor){
+ return String(valor||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+function pontuarBuscaGlobal(item, tokens, termoOriginal){
+ const termos = normalizarBuscaGlobal(item.termos);
+ const label = normalizarBuscaGlobal(item.label);
+ const termo = normalizarBuscaGlobal(termoOriginal);
+ let pontos = 0;
+ if(label === termo) pontos += 100;
+ if(label.includes(termo)) pontos += 45;
+ if(termos.includes(termo)) pontos += 35;
+ tokens.forEach(t=>{
+  if(!t) return;
+  if(label.includes(t)) pontos += 18;
+  if(termos.includes(t)) pontos += 10;
+ });
+ if(tokens.length>1 && tokens.every(t=>label.includes(t) || termos.includes(t))) pontos += 30;
+ return pontos;
+}
+function renderResultadosBuscaGlobal(){
+ const input = document.getElementById('inputBuscaGlobal');
+ const el = document.getElementById('resultadosBuscaGlobal');
+ if(!input || !el) return;
+ const termoOriginal = input.value.trim();
+ const termo = termoOriginal.toLowerCase();
+ if(termo.length<2){ el.style.display='none'; return; }
+ const tokens = termo.normalize('NFD').replace(/[\u0300-\u036f]/g,'').split(/\s+/).filter(t=>t.length>1);
+ const resultados = BIOBEL_INDICE_BUSCA
+  .map(item=>({...item, _score:pontuarBuscaGlobal(item,tokens,termo)}))
+  .filter(item=>item._score>0)
+  .sort((a,b)=>b._score-a._score)
+  .slice(0,8);
+ if(resultados.length===0){
+  el.style.display='block';
+  el.innerHTML = '<div style="padding:12px 14px;font-size:12px;color:#93a3ba;">Nada encontrado pra "'+input.value+'". Tente uma palavra como <strong style="color:#dce5f2;">caixa</strong>, <strong style="color:#dce5f2;">aluguel</strong>, <strong style="color:#dce5f2;">meta</strong> ou <strong style="color:#dce5f2;">fornecedor</strong>.</div>';
+  return;
+ }
+ el.style.display='block';
+ el.innerHTML = resultados.map((r,i)=>`<button onclick="executarBuscaGlobal(${i})" style="display:block;width:100%;text-align:left;background:none;border:none;border-bottom:1px solid #1c2c42;color:#dce5f2;font-size:12.5px;padding:10px 14px;cursor:pointer;">${r.label}</button>`).join('');
+ window._resultadosBuscaAtual = resultados;
+}
+function executarBuscaGlobal(i){
+ const resultados = window._resultadosBuscaAtual;
+ if(!resultados || !resultados[i]) return;
+ resultados[i].acao();
+ document.getElementById('resultadosBuscaGlobal').style.display='none';
+ document.getElementById('inputBuscaGlobal').value='';
+}
+document.addEventListener('click', function(e){
+ const el = document.getElementById('resultadosBuscaGlobal');
+ const input = document.getElementById('inputBuscaGlobal');
+ if(!el || el.style.display==='none') return;
+ if(!el.contains(e.target) && e.target!==input) el.style.display='none';
+});
+
+/* ===== Botão "Voltar ao Topo" (aparece só depois de rolar a tela) ===== */
+window.addEventListener('scroll', function(){
+ const btn = document.getElementById('btnVoltarTopo');
+ if(!btn) return;
+ btn.classList.toggle('mostrar', window.scrollY>400);
+});
+
+/* ===== Modo Compacto (reduz espaçamento entre cards, pra caber mais informação na tela) ===== */
+/* ===== Minimizar/Maximizar cards — aplica um botão em todo card automaticamente ===== */
+function inicializarColapsoCards(){
+ document.querySelectorAll('.adv-card').forEach((card, idx)=>{
+  if(card.dataset.colapsavelInit) return; // já processado antes, não duplica o botão
+  const titulo = card.querySelector(':scope > .adv-card-title');
+  if(!titulo) return;
+  card.dataset.colapsavelInit = 'yes';
+
+  // Chave estável baseada no texto do título, pra lembrar o estado entre sessões e atualizações.
+  const textoTitulo = titulo.querySelector('h3')?.textContent?.trim() || ('card_'+idx);
+  const chave = 'biobel_card_colapsado_'+textoTitulo.replace(/[^a-zA-Z0-9]/g,'_');
+
+  const btn = document.createElement('button');
+  btn.className = 'btn-colapsar-card no-print';
+  btn.setAttribute('aria-label', 'Minimizar ou maximizar esse card');
+  btn.title = 'Clique pra minimizar ou expandir esse card';
+  btn.setAttribute('type', 'button');
+  btn.textContent = '▾';
+  btn.onclick = function(e){
+   e.stopPropagation();
+   const colapsado = card.classList.toggle('adv-card-colapsado');
+   btn.textContent = colapsado ? '▸' : '▾';
+   localStorage.setItem(chave, colapsado ? 'yes' : 'no');
+  };
+  titulo.appendChild(btn);
+
+  if(localStorage.getItem(chave)==='yes'){
+   card.classList.add('adv-card-colapsado');
+   btn.textContent = '▸';
+  }
+ });
+}
+
+/* ===== Tour Guiado — aparece sozinho na primeira vez, explica as abas principais ===== */
+const TOUR_PASSOS_BIOBEL = [
+ { titulo:'👋 Bem-vindo(a) ao painel da Biobel!', texto:'Esse é um tour rápido pra você conhecer as principais partes do sistema — leva menos de 1 minuto.' },
+ { titulo:'📊 Dashboard', texto:'Aqui você vê a meta do mês, o calendário comercial e um resumo geral de como as vendas estão indo.' },
+ { titulo:'🎯 Informação Geral', texto:'Análises mais detalhadas: quem vendeu mais, comparação entre meses, melhores dias da semana, e muito mais.' },
+ { titulo:'🚨 Alertas', texto:'Fica de olho em tudo que precisa de atenção — vencimentos, quedas de faturamento, e outros avisos importantes.' },
+ { titulo:'⚡ Fechamento Rápido e 📊 Detalhamento do Dia', texto:'Duas formas de ver o fechamento de caixa: rápido (só o essencial) ou completo (tudo aberto, com gráficos e mais detalhes).' },
+ { titulo:'👩‍💼 Equipe', texto:'Aqui fica a folha de ponto, as chaves PIX pra pagamento, e a rotina semanal da equipe.' },
+ { titulo:'☰ Menu', texto:'No celular, o botão Menu reúne todas as áreas do sistema. No computador, as áreas principais ficam visíveis na barra superior.' },
+ { titulo:'🔍 Dica final', texto:'Use a busca no topo da tela (ou aperte a tecla "/") pra achar qualquer coisa rapidinho, tipo "aluguel" ou "meta". Pronto — você já sabe o essencial!' },
+];
+let tourPassoAtual = 0;
+function iniciarTourGuiado(){
+ tourPassoAtual = 0;
+ renderPassoTour();
+}
+function renderPassoTour(){
+ const el = document.getElementById('tourGuiadoOverlay');
+ if(!el) return;
+ const passo = TOUR_PASSOS_BIOBEL[tourPassoAtual];
+ const ultimoPasso = tourPassoAtual===TOUR_PASSOS_BIOBEL.length-1;
+ el.style.cssText = 'display:flex;position:fixed;inset:0;z-index:9998;background:rgba(7,17,31,.82);align-items:center;justify-content:center;padding:20px;';
+ el.innerHTML = `<div style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid #1e2c42;border-radius:20px;padding:30px 28px;max-width:400px;width:100%;box-shadow:0 24px 70px rgba(0,0,0,.55);">
+   <div style="font-size:11px;color:#93a3ba;font-weight:800;margin-bottom:10px;">PASSO ${tourPassoAtual+1} DE ${TOUR_PASSOS_BIOBEL.length}</div>
+   <div style="font-size:17px;font-weight:900;color:#dce5f2;margin-bottom:10px;">${passo.titulo}</div>
+   <div style="font-size:13.5px;color:#93a3ba;line-height:1.6;margin-bottom:22px;">${passo.texto}</div>
+   <div style="background:#0b1728;border-radius:999px;height:5px;overflow:hidden;margin-bottom:18px;">
+    <div style="height:100%;width:${((tourPassoAtual+1)/TOUR_PASSOS_BIOBEL.length*100)}%;background:linear-gradient(90deg,#27d7a0,#0ea97a);"></div>
+   </div>
+   <div style="display:flex;justify-content:space-between;align-items:center;">
+    <button onclick="pularTourGuiado()" style="background:none;border:none;color:#93a3ba;font-size:12.5px;cursor:pointer;text-decoration:underline;">Pular tour</button>
+    <div style="display:flex;gap:8px;">
+     ${tourPassoAtual>0 ? `<button onclick="voltarPassoTour()" style="background:#0b1728;border:1px solid #1e2c42;color:#dce5f2;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;">← Voltar</button>` : ''}
+     <button onclick="${ultimoPasso ? 'finalizarTourGuiado()' : 'avancarPassoTour()'}" style="background:#0ea97a;border:none;color:#04241a;border-radius:10px;padding:9px 18px;font-size:13px;font-weight:800;cursor:pointer;">${ultimoPasso ? '✅ Concluir' : 'Próximo →'}</button>
+    </div>
+   </div>
+  </div>`;
+}
+function avancarPassoTour(){
+ tourPassoAtual = Math.min(TOUR_PASSOS_BIOBEL.length-1, tourPassoAtual+1);
+ renderPassoTour();
+}
+function voltarPassoTour(){
+ tourPassoAtual = Math.max(0, tourPassoAtual-1);
+ renderPassoTour();
+}
+function finalizarTourGuiado(){
+ document.getElementById('tourGuiadoOverlay').style.display = 'none';
+ localStorage.setItem('biobel_tour_concluido', 'yes');
+}
+function pularTourGuiado(){
+ document.getElementById('tourGuiadoOverlay').style.display = 'none';
+ localStorage.setItem('biobel_tour_concluido', 'yes');
+}
+function verificarPrimeiroAcessoTour(){
+ if(!localStorage.getItem('biobel_tour_concluido')){
+  setTimeout(iniciarTourGuiado, 800);
+ }
+}
+
+/* ===== Grupos colapsáveis genéricos na ADM (Funcionários, Fornecedores, etc.) ===== */
+function alternarGrupoAdm(grupo){
+ const conteudo = document.getElementById('conteudoGrupo-'+grupo);
+ const seta = document.getElementById('setaGrupo-'+grupo);
+ if(!conteudo) return;
+ const estaAberto = conteudo.style.display !== 'none';
+ // Funciona tipo "sanfona" — ao abrir um grupo, fecha os outros automaticamente. Assim nunca
+ // fica informação de assuntos diferentes (Fornecedores, Funcionários, etc.) aberta ao mesmo
+ // tempo, e a pessoa não se depara com "outras informações" ao rolar a tela sem esperar.
+ if(!estaAberto) fecharTodosGruposAdmExceto(grupo);
+ conteudo.style.display = estaAberto ? 'none' : 'block';
+ if(seta) seta.textContent = estaAberto ? '▸' : '▾';
+ localStorage.setItem('biobel_grupo_adm_'+grupo, estaAberto ? 'no' : 'yes');
+ atualizarTextoBotaoTodosGrupos();
+}
+function renderPreviasGruposAdm(){
+ // Fornecedores: quantos boletos pendentes e quanto falta pagar no total.
+ const previaFornecedores = document.getElementById('previaGrupo-fornecedores');
+ if(previaFornecedores){
+  const pendentes = getBoletos().filter(b=>!b.pago);
+  if(pendentes.length>0){
+   const total = pendentes.reduce((s,b)=>s+(Number(b.valor)||0),0);
+   previaFornecedores.textContent = '⚠️ '+pendentes.length+' boleto'+(pendentes.length===1?'':'s')+' pendente'+(pendentes.length===1?'':'s')+' · '+money(total);
+  } else {
+   previaFornecedores.textContent = '';
+  }
+ }
+ // Funcionários: avisa se tem algum desligamento registrado que ainda não foi arquivado.
+ const previaFuncionarios = document.getElementById('previaGrupo-funcionarios');
+ if(previaFuncionarios){
+  const nomes = { gabriela:'Gabriela', day:'Day' };
+  const pendentes = ['gabriela','day'].filter(p=>getDesligamento(p)).map(p=>nomes[p]);
+  previaFuncionarios.textContent = pendentes.length>0 ? '🚪 Desligamento pendente: '+pendentes.join(', ') : '';
+ }
+}
+
+function initGruposAdm(){
+ document.querySelectorAll('[id^="conteudoGrupo-"]').forEach(conteudo=>{
+  const grupo = conteudo.id.replace('conteudoGrupo-','');
+  const seta = document.getElementById('setaGrupo-'+grupo);
+  const aberto = localStorage.getItem('biobel_grupo_adm_'+grupo) === 'yes';
+  conteudo.style.display = aberto ? 'block' : 'none';
+  if(seta) seta.textContent = aberto ? '▾' : '▸';
+  const contador = document.getElementById('contadorGrupo-'+grupo);
+  if(contador){
+   const qtdCards = conteudo.querySelectorAll(':scope > .adv-card').length;
+   contador.textContent = qtdCards+' card'+(qtdCards===1?'':'s');
+  }
+ });
+ atualizarTextoBotaoTodosGrupos();
+}
+function atualizarTextoBotaoTodosGrupos(){
+ const btn = document.getElementById('btnAlternarTodosGrupos');
+ if(!btn) return;
+ const grupos = Array.from(document.querySelectorAll('[id^="conteudoGrupo-"]'));
+ const algumFechado = grupos.some(g=>g.style.display==='none');
+ btn.textContent = algumFechado ? '▾ Expandir todos os grupos' : '▴ Recolher todos os grupos';
+}
+function alternarTodosGruposAdm(){
+ // Diferente do comportamento "sanfona" normal (que só deixa 1 grupo aberto por vez) — esse
+ // botão é uma exceção deliberada, pra quando a pessoa realmente quiser ver tudo de uma vez
+ // (ex: revisão geral, ou antes de imprimir a página inteira).
+ const grupos = Array.from(document.querySelectorAll('[id^="conteudoGrupo-"]'));
+ if(grupos.length===0) return;
+ const algumFechado = grupos.some(g=>g.style.display==='none');
+ grupos.forEach(conteudo=>{
+  const grupo = conteudo.id.replace('conteudoGrupo-','');
+  const seta = document.getElementById('setaGrupo-'+grupo);
+  conteudo.style.display = algumFechado ? 'block' : 'none';
+  if(seta) seta.textContent = algumFechado ? '▾' : '▸';
+  localStorage.setItem('biobel_grupo_adm_'+grupo, algumFechado ? 'yes' : 'no');
+ });
+ atualizarTextoBotaoTodosGrupos();
+}
+
+function alternarColapsoTodosCards(){
+ const btn = document.getElementById('btnColapsarTudo');
+ // Só considera cards que estão realmente visíveis agora (dentro da aba/sub-aba aberta) —
+ // não faz sentido mexer em cards escondidos em outras abas.
+ const cardsVisiveis = Array.from(document.querySelectorAll('.adv-card')).filter(card=>{
+  let el = card;
+  while(el){
+   if(el.classList && el.classList.contains('hidden')) return false;
+   if(el.style && el.style.display==='none') return false;
+   el = el.parentElement;
+  }
+  return true;
+ });
+ if(cardsVisiveis.length===0) return;
+
+ // Se a maioria já está aberta, a ação vira "minimizar tudo"; senão, vira "expandir tudo".
+ const qtdColapsados = cardsVisiveis.filter(c=>c.classList.contains('adv-card-colapsado')).length;
+ const deveColapsar = qtdColapsados < cardsVisiveis.length/2;
+
+ cardsVisiveis.forEach(card=>{
+  const btnCard = card.querySelector('.btn-colapsar-card');
+  const titulo = card.querySelector(':scope > .adv-card-title');
+  if(!titulo) return;
+  const textoTitulo = titulo.querySelector('h3')?.textContent?.trim() || '';
+  const chave = 'biobel_card_colapsado_'+textoTitulo.replace(/[^a-zA-Z0-9]/g,'_');
+  if(deveColapsar){
+   card.classList.add('adv-card-colapsado');
+   if(btnCard) btnCard.textContent = '▸';
+  } else {
+   card.classList.remove('adv-card-colapsado');
+   if(btnCard) btnCard.textContent = '▾';
+  }
+  localStorage.setItem(chave, deveColapsar ? 'yes' : 'no');
+ });
+
+ if(btn) btn.textContent = deveColapsar ? '▸ Expandir tudo' : '▾ Minimizar tudo';
+ mostrarToast(deveColapsar ? '✅ Cards minimizados.' : '✅ Cards expandidos.');
+}
+
+/* ===== Modo Simples/Completo do Dashboard — esconde graficos e tabelas tecnicas ===== */
+function alternarModoDashboard(){
+ const shell = document.getElementById('dashboardModoAvancado');
+ const btn = document.getElementById('btnAlternarModoDashboard');
+ if(!shell) return;
+ const estaEscondido = shell.style.display === 'none';
+ shell.style.display = estaEscondido ? '' : 'none';
+ if(btn) btn.textContent = estaEscondido ? '🔎 Ver modo simples' : '🔍 Ver modo completo';
+ localStorage.setItem('biobel_dashboard_modo', estaEscondido ? 'completo' : 'simples');
+}
+function initModoDashboard(){
+ const shell = document.getElementById('dashboardModoAvancado');
+ const btn = document.getElementById('btnAlternarModoDashboard');
+ if(!shell) return;
+ // Padrão é o modo simples — quem quiser ver tudo (gráficos, tabela detalhada, resumo técnico)
+ // clica pra abrir; a preferência fica guardada nesse aparelho.
+ const modo = localStorage.getItem('biobel_dashboard_modo') || 'simples';
+ const simples = modo==='simples';
+ shell.style.display = simples ? 'none' : '';
+ if(btn) btn.textContent = simples ? '🔍 Ver modo completo' : '🔎 Ver modo simples';
+}
+
+function alternarModoCompacto(){
+ const ativo = document.body.classList.toggle('modo-compacto');
+ localStorage.setItem('biobel_modo_compacto', ativo?'yes':'no');
+ atualizarBotaoModoCompacto();
+}
+function atualizarBotaoModoCompacto(){
+ const btn = document.getElementById('btnModoCompacto');
+ if(!btn) return;
+ const ativo = document.body.classList.contains('modo-compacto');
+ btn.style.background = ativo ? '#0ea97a' : '#0b1728';
+ btn.style.color = ativo ? '#04241a' : '#cbd5e1';
+ btn.textContent = ativo ? '↕️ Compacto ✓' : '↕️ Compacto';
+}
+(function initModoCompacto(){
+ if(localStorage.getItem('biobel_modo_compacto')==='yes'){
+  document.body.classList.add('modo-compacto');
+ }
+})();
+
+function alternarMenuFerramentas(){
+ const menu=document.getElementById('menuFerramentasDropdown');
+ const btn=document.getElementById('btnMenuFerramentas');
+ if(!menu) return;
+ const abrir=menu.style.display==='none';
+ menu.style.display=abrir?'block':'none';
+ if(btn) btn.setAttribute('aria-expanded',abrir?'true':'false');
+}
+function irParaFerramenta(tab, secao){
+ if(tab==='info' && secao) window.location.href=(window.BIOBEL_PAGES&&BIOBEL_PAGES.info||'analises.html')+'?secao='+encodeURIComponent(secao);
+ else window.location.href=(window.BIOBEL_PAGES&&BIOBEL_PAGES[tab]||'dashboard.html');
+}
+function alternarMenuMais(){
+ const menu = document.getElementById('menuMaisDropdown');
+ const btn = document.getElementById('btnMenuMais');
+ if(!menu) return;
+ const abrir = menu.style.display==='none';
+ menu.style.display = abrir ? 'block' : 'none';
+ if(btn) btn.setAttribute('aria-expanded', abrir ? 'true' : 'false');
+}
+function irParaTabViaMenu(tab){ window.location.href=(window.BIOBEL_PAGES&&BIOBEL_PAGES[tab]||'dashboard.html'); }
+document.addEventListener('click', function(e){
+ const menu = document.getElementById('menuMaisDropdown');
+ const btn = document.getElementById('btnMenuMais');
+ if(menu && menu.style.display!=='none' && !menu.contains(e.target) && e.target!==btn){
+  menu.style.display='none';
+  if(btn) btn.setAttribute('aria-expanded','false');
+ }
+ const ferramentas=document.getElementById('menuFerramentasDropdown');
+ const btnFerramentas=document.getElementById('btnMenuFerramentas');
+ if(ferramentas && ferramentas.style.display!=='none' && !ferramentas.contains(e.target) && e.target!==btnFerramentas){
+  ferramentas.style.display='none';
+  if(btnFerramentas) btnFerramentas.setAttribute('aria-expanded','false');
+ }
+});
+function showTab(tab){
+ const page=document.body?.dataset?.biobelPage||'dashboard';
+ const target=document.getElementById(tab+'Tab');
+ const map=window.BIOBEL_PAGES||{dashboard:'dashboard.html',central:'central.html',caixa:'operacao.html',equipe:'equipe.html',campanhas:'vendas.html',info:'analises.html',alertas:'alertas.html',config:'config.html',adm:'administracao.html'};
+ if(!target){if(map[tab]&&tab!==page)window.location.href=map[tab];return;}
+ const all=['dashboard','info','alertas','caixa','equipe','campanhas','config','adm'];
+ if(!all.every(id=>document.getElementById(id+'Tab')))return;
+ all.forEach(id=>document.getElementById(id+'Tab')?.classList.add('hidden'));
+ target.classList.remove('hidden');
+}
+document.getElementById('simpleDaySelect')?.addEventListener('change',e=>updateSimpleDay(e.target.value));
+
+function toggleLegend(){
+ const hidden = document.body.classList.toggle('hide-legends');
+ localStorage.setItem('biobel_hide_legends', hidden ? 'yes' : 'no');
+ updateLegendButton(hidden);
+}
+function updateLegendButton(hidden){
+ const btn = document.getElementById('btnToggleLegendCompleto');
+ if(btn) btn.textContent = hidden ? '👁 Mostrar explicações' : '🙈 Esconder explicações';
+}
+// Aplica a preferência salva assim que a página carrega.
+if (localStorage.getItem('biobel_hide_legends') === 'yes') {
+ document.body.classList.add('hide-legends');
+}
+updateLegendButton(document.body.classList.contains('hide-legends'));
+
+// ===== ABA EQUIPE (rotina semanal com checklist salvo) =====
+let equipeDiaAtual = 'segunda';
+const diasSemanaOrdem = ['segunda','terca','quarta','quinta','sexta','sabado'];
+
+function equipeCheckKey(escopo, index){
+ return `biobel_equipe_${escopo}_${index}`;
+}
+function isEquipeChecked(escopo, index){
+ return localStorage.getItem(equipeCheckKey(escopo,index)) === 'yes';
+}
+function getAssinaturaAtual(){
+ return (localStorage.getItem('biobel_equipe_assinatura_atual')||'').trim();
+}
+function salvarAssinaturaAtual(){
+ const input = document.getElementById('equipeAssinaturaInput');
+ if(!input) return;
+ localStorage.setItem('biobel_equipe_assinatura_atual', input.value.trim());
+}
+function getAssinaturasChecklist(){
+ try{ return JSON.parse(localStorage.getItem('biobel_equipe_assinaturas')||'{}'); }
+ catch(e){ return {}; }
+}
+function registrarAssinatura(key, concluido){
+ const assinaturas = getAssinaturasChecklist();
+ if(concluido){
+  const nome = getAssinaturaAtual();
+  if(nome) assinaturas[key] = {nome, quando:new Date().toISOString()};
+  else delete assinaturas[key];
+ } else {
+  delete assinaturas[key];
+ }
+ localStorage.setItem('biobel_equipe_assinaturas', JSON.stringify(assinaturas));
+}
+
+function toggleEquipeCheck(escopo, index){
+ const key = equipeCheckKey(escopo,index);
+ const novo = !isEquipeChecked(escopo,index);
+ localStorage.setItem(key, novo ? 'yes' : 'no');
+ registrarAssinatura(key, novo);
+ if(escopo==='diaria') renderEquipeRotinaDiaria();
+ else renderEquipeDia(equipeDiaAtual);
+}
+
+let equipeEditMode = false;
+
+function toggleEquipeEditMode(){
+ equipeEditMode = !equipeEditMode;
+ const btn = document.getElementById('btnEquipeEditMode');
+ if(btn) btn.textContent = equipeEditMode ? '✅ Concluir edição' : '⚙️ Configurar atividades';
+ const hint = document.getElementById('equipeEditHint');
+ if(hint) hint.style.display = equipeEditMode ? 'block' : 'none';
+ renderEquipeRotinaDiaria();
+ renderEquipeDia(equipeDiaAtual);
+}
+
+function renderEquipeChecklistItem(escopo, index, texto, editControlsHtml){
+ const checked = isEquipeChecked(escopo,index);
+ const key = equipeCheckKey(escopo,index);
+ const assinaturas = getAssinaturasChecklist();
+ const assinatura = checked ? assinaturas[key] : null;
+ let assinaturaTexto = '';
+ if(assinatura){
+  const hora = new Date(assinatura.quando).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  assinaturaTexto = `<span style="display:block;font-size:10.5px;color:#27d7a0;margin-top:2px;">✓ ${assinatura.nome} às ${hora}</span>`;
+ }
+ return `
+  <div style="display:flex;align-items:center;gap:6px;">
+   <label style="flex:1;display:flex;align-items:flex-start;gap:10px;background:${checked?'rgba(39,215,160,.1)':'#0b1728'};border:1px solid ${checked?'rgba(39,215,160,.4)':'#1c2c42'};border-radius:12px;padding:10px 12px;cursor:pointer;transition:background-color .2s,border-color .2s;">
+    <input type="checkbox" ${checked?'checked':''} onchange="toggleEquipeCheck('${escopo}',${index})" style="margin-top:3px;width:16px;height:16px;accent-color:#27d7a0;cursor:pointer;flex-shrink:0;">
+    <span style="flex:1;">
+     <span style="font-size:13px;color:${checked?'#93a3ba':'#dce5f2'};text-decoration:${checked?'line-through':'none'};">${checked?'✅ ':''}${texto}</span>
+     ${assinaturaTexto}
+    </span>
+   </label>
+   ${editControlsHtml||''}
+  </div>`;
+}
+
+function addTarefaInputHtml(scopeKey, placeholder){
+ return `<div style="display:flex;gap:8px;margin-top:8px;">
+   <input id="novaTarefa_${scopeKey}" type="text" placeholder="${placeholder||'Nova tarefa...'}" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm" onkeydown="if(event.key==='Enter'){adicionarTarefaGenerica('${scopeKey}');event.preventDefault();}">
+   <button onclick="adicionarTarefaGenerica('${scopeKey}')" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-2 rounded-xl text-sm font-semibold whitespace-nowrap">+ Adicionar</button>
+  </div>`;
+}
+
+function adicionarTarefaGenerica(scopeKey){
+ const input = document.getElementById('novaTarefa_'+scopeKey);
+ const texto = input?.value.trim();
+ if(!texto) return;
+ if(scopeKey==='diaria'){
+  rotinaDiariaBase.push({texto, quem:''});
+  renderEquipeRotinaDiaria();
+ } else {
+  const partes = scopeKey.split('_');
+  const quem = partes.pop();
+  const dia = partes.join('_');
+  rotinaSemanal[dia][quem].push(texto);
+  renderEquipeDia(dia);
+ }
+ salvarRotinaPersonalizada();
+}
+
+function limparCheckboxesEscopo(prefixo){
+ Object.keys(localStorage).forEach(k=>{ if(k.startsWith(prefixo)) localStorage.removeItem(k); });
+}
+
+function removerTarefaDiaria(index){
+ const texto = rotinaDiariaBase[index]?.texto || 'esta tarefa';
+ confirmarBiobel(`Remover a tarefa "${texto}" da rotina diária base?`, ()=>{
+  rotinaDiariaBase.splice(index,1);
+  limparCheckboxesEscopo('biobel_equipe_diaria_');
+  salvarRotinaPersonalizada();
+  renderEquipeRotinaDiaria();
+ });
+}
+
+function removerTarefaDia(dia, quem, index){
+ const texto = rotinaSemanal[dia]?.[quem]?.[index] || 'esta tarefa';
+ confirmarBiobel(`Remover a tarefa "${texto}"?`, ()=>{
+  rotinaSemanal[dia][quem].splice(index,1);
+  limparCheckboxesEscopo(`biobel_equipe_${dia}_${quem}_`);
+  salvarRotinaPersonalizada();
+  renderEquipeDia(dia);
+ });
+}
+
+function moverTarefaDia(dia, quem, index){
+ const outraQuem = quem==='gabi' ? 'dai' : 'gabi';
+ const nomeOutra = outraQuem==='gabi' ? 'GABI' : 'DAI';
+ const textoTarefa = rotinaSemanal[dia]?.[quem]?.[index] || 'esta tarefa';
+ confirmarBiobel(`Mover a tarefa "${textoTarefa}" para a ${nomeOutra}?`, ()=>{
+  const [texto] = rotinaSemanal[dia][quem].splice(index,1);
+  rotinaSemanal[dia][outraQuem].push(texto);
+  limparCheckboxesEscopo(`biobel_equipe_${dia}_gabi_`);
+  limparCheckboxesEscopo(`biobel_equipe_${dia}_dai_`);
+  salvarRotinaPersonalizada();
+  renderEquipeDia(dia);
+ });
+}
+
+function restaurarRotinaPadrao(){
+ confirmarBiobel('Isso vai apagar TODAS as suas alterações de atividades (tarefas adicionadas, removidas ou movidas) e voltar para a lista original da loja.<br><br>As tarefas marcadas também serão desmarcadas.<br><br>Tem certeza que quer restaurar?', ()=>{
+  rotinaDiariaBase = cloneRotina(rotinaDiariaBasePadrao);
+  rotinaSemanal = cloneRotina(rotinaSemanalPadrao);
+  localStorage.removeItem('biobel_equipe_rotina_custom');
+  limparCheckboxesEscopo('biobel_equipe_diaria_');
+  diasSemanaOrdem.forEach(dia=>{
+   limparCheckboxesEscopo(`biobel_equipe_${dia}_gabi_`);
+   limparCheckboxesEscopo(`biobel_equipe_${dia}_dai_`);
+  });
+  renderEquipeRotinaDiaria();
+  renderEquipeDia(equipeDiaAtual);
+ });
+}
+
+function renderComparativoEquipeHoje(dia, d){
+ const el = document.getElementById('equipeComparativoHoje');
+ if(!el) return;
+ if(getDesligamento('gabriela')){ el.innerHTML=''; return; } // sem comparativo se ela já saiu
+ const gabi = calcEquipeProgresso(`${dia}_gabi`, d.gabi.length);
+ const dai = calcEquipeProgresso(`${dia}_dai`, d.dai.length);
+ if(gabi.total===0 && dai.total===0){ el.innerHTML=''; return; }
+ let mensagem, cor;
+ if(gabi.pct===dai.pct){
+  mensagem = '⚖️ Gabi e Day estão empatadas hoje!';
+  cor = '#93a3ba';
+ } else if(gabi.pct>dai.pct){
+  mensagem = '🏆 Gabi está mais em dia hoje ('+gabi.pct.toFixed(0)+'% vs '+dai.pct.toFixed(0)+'%)';
+  cor = '#27d7a0';
+ } else {
+  mensagem = '🏆 Day está mais em dia hoje ('+dai.pct.toFixed(0)+'% vs '+gabi.pct.toFixed(0)+'%)';
+  cor = '#4f9cff';
+ }
+ el.innerHTML = `<div style="background:${cor}15;border:1px solid ${cor}40;border-radius:10px;padding:8px 14px;text-align:center;font-size:12px;font-weight:700;color:${cor};">${mensagem}</div>`;
+}
+function calcEquipeProgresso(escopo, total){
+ let done = 0;
+ for(let i=0;i<total;i++){
+  if(isEquipeChecked(escopo,i)) done++;
+ }
+ const pct = total>0 ? (done/total)*100 : 0;
+ return {done, total, pct};
+}
+function updateEquipeProgressBar(barId, textId, escopo, total){
+ const {done, pct} = calcEquipeProgresso(escopo, total);
+ const bar = document.getElementById(barId);
+ const txt = document.getElementById(textId);
+ if(bar) bar.style.width = pct.toFixed(0)+'%';
+ if(txt) txt.textContent = `${done} de ${total}`;
+}
+
+function renderEquipeRotinaDiaria(){
+ const el = document.getElementById('equipeRotinaDiaria');
+ if(!el) return;
+ let html = rotinaDiariaBase.map((item,i)=>{
+  const editControls = equipeEditMode ? `<button onclick="removerTarefaDiaria(${i})" title="Remover tarefa" class="no-print text-rose-400 hover:text-rose-300 text-lg px-2 flex-shrink-0">🗑</button>` : '';
+  return renderEquipeChecklistItem('diaria',i,item.texto,editControls);
+ }).join('');
+ if(equipeEditMode) html += addTarefaInputHtml('diaria','Nova tarefa da rotina diária...');
+ el.innerHTML = html;
+ updateEquipeProgressBar('equipeProgressoDiariaBar','equipeProgressoDiariaTexto','diaria',rotinaDiariaBase.length);
+}
+
+function renderEquipeDayTabs(){
+ const el = document.getElementById('equipeDayTabs');
+ if(!el) return;
+ // Descobre qual chave (segunda, terca...) corresponde a hoje, pra destacar visualmente na lista
+ // — ajuda a achar rápido o dia certo sem precisar contar mentalmente.
+ const diaSemanaHoje = obterAgoraBrasilia().getDay(); // 0=domingo, 1=segunda, ..., 6=sabado
+ const mapaCorrigido = {1:'segunda', 2:'terca', 3:'quarta', 4:'quinta', 5:'sexta', 6:'sabado'};
+ const chaveHoje = mapaCorrigido[diaSemanaHoje] || null;
+ el.innerHTML = diasSemanaOrdem.map(dia=>{
+  const d = rotinaSemanal[dia];
+  const ativo = dia===equipeDiaAtual;
+  const ehHoje = dia===chaveHoje;
+  return `<button onclick="selectEquipeDia('${dia}')" class="px-3 py-2 rounded-xl text-sm font-semibold whitespace-nowrap" style="background:${ativo?'#0ea97a':'#1c2c42'};color:${ativo?'#04241a':'#c3d0e0'};position:relative;${ehHoje&&!ativo?'box-shadow:0 0 0 2px #fbbf24 inset;':''}">${d.emoji} ${d.nome}${ehHoje?' <span style="font-size:9px;">🔸HOJE</span>':''}</button>`;
+ }).join('');
+}
+
+function selectEquipeDia(dia){
+ equipeDiaAtual = dia;
+ localStorage.setItem('biobel_equipe_dia_atual', dia);
+ renderEquipeDayTabs();
+ renderEquipeDia(dia);
+}
+
+function renderEquipeDia(dia){
+ const d = rotinaSemanal[dia];
+ if(!d) return;
+ // Se a Gabi já foi desligada, a coluna dela some da Rotina — ela não faz mais tarefas do dia a
+ // dia, então não faz sentido continuar aparecendo aqui como se ainda estivesse ativa.
+ const gabiDesligada = !!getDesligamento('gabriela');
+ const colunaGabi = document.getElementById('equipeColunaGabi');
+ const colunaDai = document.getElementById('equipeColunaDai');
+ if(colunaGabi) colunaGabi.style.display = gabiDesligada ? 'none' : 'block';
+ if(colunaDai) colunaDai.parentElement.style.gridTemplateColumns = gabiDesligada ? '1fr' : '';
+ const gabiEl = document.getElementById('equipeListaGabi');
+ const daiEl = document.getElementById('equipeListaDai');
+ if(gabiEl){
+  let html = d.gabi.map((texto,i)=>{
+   const editControls = equipeEditMode ? `
+    <button onclick="moverTarefaDia('${dia}','gabi',${i})" title="Mover para a DAI" class="no-print text-blue-400 hover:text-blue-300 text-lg px-1 flex-shrink-0">🔁</button>
+    <button onclick="removerTarefaDia('${dia}','gabi',${i})" title="Remover tarefa" class="no-print text-rose-400 hover:text-rose-300 text-lg px-1 flex-shrink-0">🗑</button>` : '';
+   return renderEquipeChecklistItem(`${dia}_gabi`,i,texto,editControls);
+  }).join('');
+  if(equipeEditMode) html += addTarefaInputHtml(`${dia}_gabi`,'Nova tarefa para a Gabi...');
+  gabiEl.innerHTML = html;
+ }
+ if(daiEl){
+  let html = d.dai.map((texto,i)=>{
+   const editControls = equipeEditMode ? `
+    <button onclick="moverTarefaDia('${dia}','dai',${i})" title="Mover para a GABI" class="no-print text-blue-400 hover:text-blue-300 text-lg px-1 flex-shrink-0">🔁</button>
+    <button onclick="removerTarefaDia('${dia}','dai',${i})" title="Remover tarefa" class="no-print text-rose-400 hover:text-rose-300 text-lg px-1 flex-shrink-0">🗑</button>` : '';
+   return renderEquipeChecklistItem(`${dia}_dai`,i,texto,editControls);
+  }).join('');
+  if(equipeEditMode) html += addTarefaInputHtml(`${dia}_dai`,'Nova tarefa para a Dai...');
+  daiEl.innerHTML = html;
+ }
+ updateEquipeProgressBar('equipeProgressoGabiBar','equipeProgressoGabiTexto',`${dia}_gabi`,d.gabi.length);
+ updateEquipeProgressBar('equipeProgressoDaiBar','equipeProgressoDaiTexto',`${dia}_dai`,d.dai.length);
+ renderComparativoEquipeHoje(dia, d);
+}
+
+function calcEquipeTotaisSemana(){
+ const diaria = calcEquipeProgresso('diaria', rotinaDiariaBase.length);
+ let gabiDone=0, gabiTotal=0, daiDone=0, daiTotal=0;
+ diasSemanaOrdem.forEach(dia=>{
+  const d = rotinaSemanal[dia];
+  const g = calcEquipeProgresso(`${dia}_gabi`, d.gabi.length);
+  const a = calcEquipeProgresso(`${dia}_dai`, d.dai.length);
+  gabiDone += g.done; gabiTotal += g.total;
+  daiDone += a.done; daiTotal += a.total;
+ });
+ const totalDone = diaria.done + gabiDone + daiDone;
+ const totalTasks = diaria.total + gabiTotal + daiTotal;
+ return {
+  diaria, gabi:{done:gabiDone,total:gabiTotal}, dai:{done:daiDone,total:daiTotal},
+  geral:{done:totalDone, total:totalTasks, pct: totalTasks>0 ? (totalDone/totalTasks)*100 : 0}
+ };
+}
+
+function getEquipeHistorico(){
+ try{ return JSON.parse(localStorage.getItem('biobel_equipe_historico')||'[]'); }
+ catch(e){ return []; }
+}
+function saveEquipeHistoricoEntry(entry){
+ const hist = getEquipeHistorico();
+ hist.unshift(entry);
+ if(hist.length>20) hist.length=20; // guarda só as últimas 20 semanas
+ localStorage.setItem('biobel_equipe_historico', JSON.stringify(hist));
+}
+function limparHistoricoEquipe(){
+ confirmarBiobel('Tem certeza que quer apagar todo o histórico de semanas anteriores? Essa ação não pode ser desfeita.', ()=>{
+  localStorage.removeItem('biobel_equipe_historico');
+  renderEquipeHistorico();
+ });
+}
+function renderEquipeHistorico(){
+ const el = document.getElementById('equipeHistorico');
+ if(!el) return;
+ const hist = getEquipeHistorico();
+ if(hist.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:13px;">Nenhuma semana registrada ainda. O histórico aparece aqui toda vez que você reiniciar a semana.</p>';
+  return;
+ }
+ // Mini gráfico de evolução — mostra as últimas semanas em ordem cronológica (mais antiga pra mais
+ // nova, da esquerda pra direita), pra ver de relance se o % de conclusão está subindo ou caindo.
+ const ultimasSemanas = hist.slice(0,8).slice().reverse();
+ const graficoHtml = ultimasSemanas.length>=2 ? `
+  <div style="background:#0b1728;border:1px solid #1c2c42;border-radius:12px;padding:14px 12px;margin-bottom:12px;">
+   <div style="font-size:10.5px;color:#93a3ba;font-weight:700;margin-bottom:10px;">📈 Evolução do % de conclusão por semana</div>
+   <div style="display:flex;gap:6px;align-items:flex-end;">
+    ${ultimasSemanas.map(h=>{
+     const pct = h.geral.pct;
+     const cor = pct>=90 ? '#27d7a0' : pct>=60 ? '#fbbf24' : '#fb7185';
+     return `<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;">
+       <span style="font-size:9.5px;color:#93a3ba;font-weight:700;">${pct.toFixed(0)}%</span>
+       <div style="width:100%;max-width:28px;height:50px;display:flex;align-items:flex-end;">
+        <div style="width:100%;height:${Math.max(6,pct)}%;background:${cor};border-radius:4px 4px 0 0;"></div>
+       </div>
+      </div>`;
+    }).join('')}
+   </div>
+  </div>` : '';
+ el.innerHTML = graficoHtml + hist.map(h=>{
+  const pctColor = h.geral.pct>=90 ? '#27d7a0' : h.geral.pct>=60 ? '#fbbf24' : '#fb7185';
+  return `
+   <div style="background:#0b1728;border:1px solid #1c2c42;border-radius:12px;padding:12px 14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+     <div>
+      <div style="font-size:13px;font-weight:700;color:#dce5f2;">${h.weekStart||'?'} a ${h.weekEnd||'?'}</div>
+      <div style="font-size:11px;color:#93a3ba;margin-top:2px;">Reiniciada em ${h.dataReinicio}</div>
+     </div>
+     <div style="text-align:right;">
+      <div style="font-size:18px;font-weight:900;color:${pctColor};">${h.geral.pct.toFixed(0)}%</div>
+      <div style="font-size:11px;color:#93a3ba;">${h.geral.done} de ${h.geral.total} tarefas</div>
+     </div>
+    </div>
+    <div style="background:#050d1a;border-radius:999px;height:6px;overflow:hidden;margin-top:8px;">
+     <div style="height:100%;width:${h.geral.pct.toFixed(0)}%;background:${pctColor};"></div>
+    </div>
+    <div style="display:flex;gap:16px;margin-top:8px;font-size:11px;color:#93a3ba;">
+     <span>💇‍♀️ ${h.nomeGabi||'Gabi'}: ${h.gabi.done}/${h.gabi.total}</span>
+     <span>✨ ${h.nomeDai||'Dai'}: ${h.dai.done}/${h.dai.total}</span>
+     <span>☀️ Diária: ${h.diaria.done}/${h.diaria.total}</span>
+    </div>
+   </div>`;
+ }).join('');
+}
+
+function mostrarEquipeSubAba(aba){
+ const abaPonto = document.getElementById('equipeSubAbaPonto');
+ const abaRotina = document.getElementById('equipeSubAbaRotina');
+ const btnPonto = document.getElementById('btnEquipeSubAbaPonto');
+ const btnRotina = document.getElementById('btnEquipeSubAbaRotina');
+ if(abaPonto) abaPonto.style.display = aba==='ponto' ? 'block' : 'none';
+ if(abaRotina) abaRotina.style.display = aba==='rotina' ? 'block' : 'none';
+ if(btnPonto) btnPonto.classList.toggle('active', aba==='ponto');
+ if(btnRotina) btnRotina.classList.toggle('active', aba==='rotina');
+ localStorage.setItem('biobel_equipe_sub_aba', aba);
+}
+
+function initEquipeTab(){
+ mostrarEquipeSubAba(localStorage.getItem('biobel_equipe_sub_aba') || 'ponto');
+ renderFolhaDePonto();
+ seedChavesPix();
+ renderChavesPixLista();
+ renderAtividadesGerencia();
+ const savedDia = localStorage.getItem('biobel_equipe_dia_atual');
+ if(savedDia && diasSemanaOrdem.includes(savedDia)) equipeDiaAtual = savedDia;
+
+ const assinaturaInput = document.getElementById('equipeAssinaturaInput');
+ if(assinaturaInput) assinaturaInput.value = getAssinaturaAtual();
+
+ const inputs = ['equipeWeekStart','equipeWeekEnd','equipeNomeGabi','equipeNomeDai'];
+ inputs.forEach(id=>{
+  const el = document.getElementById(id);
+  if(!el) return;
+  const saved = localStorage.getItem('biobel_'+id);
+  if(saved) el.value = saved;
+  el.addEventListener('change', ()=>localStorage.setItem('biobel_'+id, el.value));
+ });
+
+ renderEquipeRotinaDiaria();
+ renderEquipeDayTabs();
+ renderEquipeDia(equipeDiaAtual);
+ renderEquipeHistorico();
+ initHorarioEquipeUI();
+}
+
+const CAMPOS_HORARIO_EQUIPE = ['horaGabiSemanaInicio','horaGabiSemanaFim','horaGabiSabadoInicio','horaGabiSabadoFim','horaDaiSemanaInicio','horaDaiSemanaFim','horaDaiSabadoInicio','horaDaiSabadoFim'];
+function initHorarioEquipeUI(){
+ CAMPOS_HORARIO_EQUIPE.forEach(id=>{
+  const el = document.getElementById(id);
+  if(!el) return;
+  const saved = localStorage.getItem('biobel_'+id);
+  if(saved) el.value = saved;
+ });
+}
+function saveHorarioEquipe(){
+ const statusEl = document.getElementById('horarioEquipeStatus');
+ let algumVazio = false;
+ CAMPOS_HORARIO_EQUIPE.forEach(id=>{
+  const el = document.getElementById(id);
+  if(!el) return;
+  if(!el.value) algumVazio = true;
+  localStorage.setItem('biobel_'+id, el.value);
+ });
+ if(algumVazio){
+  statusEl.innerHTML = '<span class="text-rose-400">Preencha todos os horários antes de salvar.</span>';
+  return;
+ }
+ statusEl.innerHTML = '<span class="text-emerald-400">Horário da equipe salvo!</span>';
+ mostrarToast('✅ Horário de trabalho da equipe salvo!');
+}
+
+function resetEquipeWeek(){
+ confirmarBiobel('🚨 ATENÇÃO — Reiniciar semana<br><br>Isso vai desmarcar TODAS as tarefas: a rotina diária base E os checklists dos 6 dias da semana (Gabi e Dai).<br><br>O progresso desta semana será salvo no histórico antes de reiniciar.<br><br>Tem certeza que quer reiniciar tudo agora?', _resetEquipeWeekReal);
+}
+function _resetEquipeWeekReal(){
+ // Salva um retrato (snapshot) da semana atual no histórico antes de zerar tudo.
+ const totais = calcEquipeTotaisSemana();
+ const weekStart = document.getElementById('equipeWeekStart')?.value || '';
+ const weekEnd = document.getElementById('equipeWeekEnd')?.value || '';
+ const nomeGabi = document.getElementById('equipeNomeGabi')?.value || '';
+ const nomeDai = document.getElementById('equipeNomeDai')?.value || '';
+ saveEquipeHistoricoEntry({
+  weekStart, weekEnd, nomeGabi, nomeDai,
+  dataReinicio: new Date().toLocaleString('pt-BR'),
+  diaria: totais.diaria, gabi: totais.gabi, dai: totais.dai, geral: totais.geral
+ });
+
+ const prefixos = ['biobel_equipe_diaria_'];
+ diasSemanaOrdem.forEach(dia=>{
+  prefixos.push(`biobel_equipe_${dia}_gabi_`);
+  prefixos.push(`biobel_equipe_${dia}_dai_`);
+ });
+ Object.keys(localStorage).forEach(key=>{
+  if(prefixos.some(p=>key.startsWith(p))) localStorage.removeItem(key);
+ });
+ renderEquipeRotinaDiaria();
+ renderEquipeDia(equipeDiaAtual);
+ renderEquipeHistorico();
+
+ const msg = document.getElementById('equipeResetMsg');
+ if(msg){
+  msg.textContent = `✅ Semana reiniciada com sucesso às ${new Date().toLocaleTimeString('pt-BR')}. O resultado dessa semana (${totais.geral.pct.toFixed(0)}%) foi salvo no histórico.`;
+  msg.style.display = 'block';
+  setTimeout(()=>{ msg.style.display = 'none'; }, 7000);
+ }
+}
+
+/* ============================================================
+   BIOBEL — ZONA: EQUIPE / FOLHA DE PONTO E FALTAS
+   ============================================================ */
+/* ===== Folha de Ponto — entrada, intervalo, saída, com cálculo automático de horas ===== */
+function getRegistrosPonto(){
+ try{ return JSON.parse(localStorage.getItem('biobel_folha_ponto')||'[]'); }catch(e){ return []; }
+}
+function salvarRegistrosPonto(lista){
+ localStorage.setItem('biobel_folha_ponto', JSON.stringify(lista));
+}
+function getHorarioPadraoPonto(){
+ try{ return JSON.parse(localStorage.getItem('biobel_horario_padrao_ponto')||'{}'); }catch(e){ return {}; }
+}
+function salvarHorarioPadraoPonto(entrada, saida, horasContratadasSabado){
+ localStorage.setItem('biobel_horario_padrao_ponto', JSON.stringify({ entrada, saida, horasContratadasSabado }));
+}
+function calcularHorasDoDia(registro){
+ // Converte HH:MM em minutos, soma o período trabalhado e desconta o intervalo (se tiver).
+ function paraMinutos(hhmm){
+  if(!hhmm) return null;
+  const [h,m] = hhmm.split(':').map(Number);
+  return h*60+m;
+ }
+ const entrada = paraMinutos(registro.entrada);
+ const saida = paraMinutos(registro.saida);
+ if(entrada===null || saida===null) return { horas:0, extras:0 };
+ let minutosTrabalhados = saida-entrada;
+ const inicioIntervalo = paraMinutos(registro.inicioIntervalo);
+ const fimIntervalo = paraMinutos(registro.fimIntervalo);
+ if(inicioIntervalo!==null && fimIntervalo!==null){
+  minutosTrabalhados -= Math.max(0, fimIntervalo-inicioIntervalo);
+ }
+ const horas = Math.max(0, minutosTrabalhados/60);
+
+ const padrao = getHorarioPadraoPonto();
+ const dataObj = registro.data ? new Date(registro.data+'T00:00:00') : null;
+ const ehSabado = dataObj && dataObj.getDay()===6;
+
+ let extras;
+ if(ehSabado){
+  // O sábado NÃO segue a mesma lógica de "fora da janela 9h-18h" dos outros dias — ele tem uma
+  // carga contratada PRÓPRIA e menor (ex: 4h). Tudo que passar dessa carga é hora extra, mesmo
+  // que o horário de saída (16h, por exemplo) esteja dentro da janela normal de segunda a sexta.
+  const horasContratadasSabado = padrao.horasContratadasSabado!==undefined && padrao.horasContratadasSabado!==null && padrao.horasContratadasSabado!=='' ? Number(padrao.horasContratadasSabado) : 4;
+  extras = Math.max(0, horas-horasContratadasSabado);
+ } else {
+  // Segunda a sexta: hora extra é qualquer tempo FORA do horário padrão (chegar mais cedo ou
+  // sair mais tarde do que o configurado).
+  const padraoEntrada = paraMinutos(padrao.entrada || '09:00');
+  const padraoSaida = paraMinutos(padrao.saida || '18:00');
+  const extraChegouCedo = Math.max(0, padraoEntrada-entrada);
+  const extraSaiuTarde = Math.max(0, saida-padraoSaida);
+  extras = (extraChegouCedo+extraSaiuTarde)/60;
+ }
+
+ return { horas, extras };
+}
+let pontoEditandoId = null;
+function adicionarRegistroPonto(){
+ const funcionaria = document.getElementById('pontoFuncionariaSelect').value;
+ const data = document.getElementById('pontoDataInput').value;
+ const entrada = document.getElementById('pontoEntradaInput').value;
+ const inicioIntervalo = document.getElementById('pontoInicioIntervaloInput').value || null;
+ const fimIntervalo = document.getElementById('pontoFimIntervaloInput').value || null;
+ const saida = document.getElementById('pontoSaidaInput').value;
+ const observacao = document.getElementById('pontoObservacaoInput').value.trim() || null;
+
+ if(!data){ mostrarToast('⚠️ Escolha a data.'); return; }
+ if(!entrada){ mostrarToast('⚠️ Preencha ao menos a entrada.'); return; }
+ const saidaFinal = saida || null;
+
+ const lista = getRegistrosPonto();
+ if(pontoEditandoId!==null){
+  const idx = lista.findIndex(p=>p.id===pontoEditandoId);
+  if(idx>=0){
+   lista[idx] = { ...lista[idx], funcionaria, data, entrada, inicioIntervalo, fimIntervalo, saida: saidaFinal, observacao };
+   mostrarToast('✅ Registro atualizado!');
+  }
+  cancelarEdicaoPonto();
+ } else {
+  const jaExiste = lista.find(p=>p.funcionaria===funcionaria && p.data===data);
+  if(jaExiste){ mostrarToast('⚠️ Já existe um registro pra '+funcionaria+' nesse dia. Edite o existente.'); return; }
+  lista.push({ id: Date.now(), funcionaria, data, entrada, inicioIntervalo, fimIntervalo, saida: saidaFinal, observacao });
+  mostrarToast(saidaFinal ? '✅ Ponto registrado!' : '✅ Ponto registrado! (saída pendente — pode editar depois)');
+ }
+ salvarRegistrosPonto(lista);
+ document.getElementById('pontoDataInput').value='';
+ document.getElementById('pontoEntradaInput').value='';
+ document.getElementById('pontoInicioIntervaloInput').value='';
+ document.getElementById('pontoFimIntervaloInput').value='';
+ document.getElementById('pontoSaidaInput').value='';
+ document.getElementById('pontoObservacaoInput').value='';
+ renderFolhaDePonto();
+}
+function editarRegistroPonto(id){
+ const p = getRegistrosPonto().find(x=>x.id===id);
+ if(!p) return;
+ pontoEditandoId = id;
+ document.getElementById('pontoFuncionariaSelect').value = p.funcionaria;
+ document.getElementById('pontoDataInput').value = p.data;
+ document.getElementById('pontoEntradaInput').value = p.entrada;
+ document.getElementById('pontoInicioIntervaloInput').value = p.inicioIntervalo || '';
+ document.getElementById('pontoFimIntervaloInput').value = p.fimIntervalo || '';
+ document.getElementById('pontoSaidaInput').value = p.saida;
+ document.getElementById('pontoObservacaoInput').value = p.observacao || '';
+ document.getElementById('btnAdicionarPonto').textContent = '💾 Salvar edição';
+ document.getElementById('btnCancelarEdicaoPonto').style.display = 'inline-block';
+ document.getElementById('pontoDataInput').scrollIntoView({behavior:'smooth', block:'center'});
+}
+function cancelarEdicaoPonto(){
+ pontoEditandoId = null;
+ document.getElementById('pontoDataInput').value='';
+ document.getElementById('pontoEntradaInput').value='';
+ document.getElementById('pontoInicioIntervaloInput').value='';
+ document.getElementById('pontoFimIntervaloInput').value='';
+ document.getElementById('pontoSaidaInput').value='';
+ document.getElementById('pontoObservacaoInput').value='';
+ document.getElementById('btnAdicionarPonto').textContent = '➕ Registrar';
+ document.getElementById('btnCancelarEdicaoPonto').style.display = 'none';
+}
+function removerRegistroPonto(id){
+ const listaAntes = getRegistrosPonto();
+ const item = listaAntes.find(p=>p.id===id);
+ if(!item) return;
+ const lista = listaAntes.filter(p=>p.id!==id);
+ salvarRegistrosPonto(lista);
+ renderFolhaDePonto();
+ mostrarToastComDesfazer('🗑️ Registro removido.', ()=>{
+  const listaAtual = getRegistrosPonto();
+  listaAtual.push(item);
+  salvarRegistrosPonto(listaAtual);
+  renderFolhaDePonto();
+ });
+}
+function salvarHorarioPadraoEAtualizar(){
+ const entrada = document.getElementById('pontoPadraoEntradaInput').value || '09:00';
+ const saida = document.getElementById('pontoPadraoSaidaInput').value || '18:00';
+ const horasContratadasSabado = document.getElementById('pontoHorasContratadasSabadoInput').value || '4';
+ salvarHorarioPadraoPonto(entrada, saida, horasContratadasSabado);
+ mostrarToast('✅ Horário padrão salvo!');
+ renderFolhaDePonto();
+}
+function renderCargaHorariaSemanal(){
+ const el = document.getElementById('cargaHorariaSemanalTexto');
+ if(!el) return;
+ const padrao = getHorarioPadraoPonto();
+ function paraMinutos(hhmm){ const [h,m]=String(hhmm).split(':').map(Number); return h*60+(m||0); }
+ const entrada = paraMinutos(padrao.entrada || '09:00');
+ const saida = paraMinutos(padrao.saida || '18:00');
+ const horasPorDiaSemana = Math.max(0, (saida-entrada)/60 - 1); // supõe 1h de intervalo, igual ao exemplo dado
+ const horasSabado = padrao.horasContratadasSabado!==undefined && padrao.horasContratadasSabado!=='' ? Number(padrao.horasContratadasSabado) : 4;
+ const totalSemanal = (horasPorDiaSemana*5) + horasSabado;
+ el.innerHTML = '📊 Carga horária semanal (segunda a sábado): <strong style="color:#dce5f2;">'+totalSemanal.toFixed(1).replace('.0','')+'h</strong> <span style="color:#93a3ba;">('+horasPorDiaSemana.toFixed(1).replace('.0','')+'h/dia × 5 dias + '+horasSabado+'h no sábado — considerando 1h de intervalo por dia)</span>';
+}
+/* ===== Registro de Faltas — justificadas ou não ===== */
+function getFaltas(){
+ try{ return JSON.parse(localStorage.getItem('biobel_faltas')||'[]'); }catch(e){ return []; }
+}
+function salvarFaltas(lista){
+ localStorage.setItem('biobel_faltas', JSON.stringify(lista));
+}
+let faltaEditandoId = null;
+function adicionarFalta(){
+ const funcionaria = document.getElementById('pontoFuncionariaSelect').value;
+ const data = document.getElementById('faltaDataInput').value;
+ const justificada = document.getElementById('faltaJustificadaSelect').value === 'sim';
+ const motivo = document.getElementById('faltaMotivoInput').value.trim() || null;
+ if(!data){ mostrarToast('⚠️ Escolha a data da falta.'); return; }
+
+ const lista = getFaltas();
+ if(faltaEditandoId!==null){
+  const idx = lista.findIndex(f=>f.id===faltaEditandoId);
+  if(idx>=0){
+   lista[idx] = { ...lista[idx], funcionaria, data, justificada, motivo };
+   mostrarToast('✅ Falta atualizada!');
+  }
+  cancelarEdicaoFalta();
+ } else {
+  const jaExiste = lista.find(f=>f.funcionaria===funcionaria && f.data===data);
+  if(jaExiste){ mostrarToast('⚠️ Já existe uma falta registrada pra '+funcionaria+' nesse dia.'); return; }
+  lista.push({ id: Date.now(), funcionaria, data, justificada, motivo });
+  mostrarToast('✅ Falta registrada.');
+ }
+ salvarFaltas(lista);
+ document.getElementById('faltaDataInput').value='';
+ document.getElementById('faltaMotivoInput').value='';
+ renderListaFaltas();
+ renderFolhaDePonto();
+}
+function editarFalta(id){
+ const f = getFaltas().find(x=>x.id===id);
+ if(!f) return;
+ faltaEditandoId = id;
+ document.getElementById('pontoFuncionariaSelect').value = f.funcionaria;
+ document.getElementById('faltaDataInput').value = f.data;
+ document.getElementById('faltaJustificadaSelect').value = f.justificada ? 'sim' : 'nao';
+ document.getElementById('faltaMotivoInput').value = f.motivo || '';
+ document.getElementById('btnAdicionarFalta').textContent = '💾 Salvar edição';
+ document.getElementById('btnCancelarEdicaoFalta').style.display = 'inline-block';
+}
+function cancelarEdicaoFalta(){
+ faltaEditandoId = null;
+ document.getElementById('faltaDataInput').value='';
+ document.getElementById('faltaMotivoInput').value='';
+ document.getElementById('btnAdicionarFalta').textContent = '🚫 Registrar falta';
+ document.getElementById('btnCancelarEdicaoFalta').style.display = 'none';
+}
+function removerFalta(id){
+ confirmarBiobel('Remover esse registro de falta?', ()=>{
+  const lista = getFaltas().filter(f=>f.id!==id);
+  salvarFaltas(lista);
+  renderListaFaltas();
+  renderFolhaDePonto();
+  mostrarToast('🗑️ Removido.');
+ });
+}
+function renderListaFaltas(){
+ const funcionaria = document.getElementById('pontoFuncionariaSelect')?.value;
+ const mesInput = document.getElementById('pontoMesSelect')?.value;
+ const el = document.getElementById('listaFaltas');
+ if(!el || !mesInput) return;
+ const [ano, mes] = mesInput.split('-');
+ const lista = getFaltas().filter(f=>f.funcionaria===funcionaria && f.data.startsWith(ano+'-'+mes)).sort((a,b)=>a.data.localeCompare(b.data));
+ if(lista.length===0){ el.innerHTML=''; return; }
+ el.innerHTML = lista.map(f=>{
+  const dataObj = new Date(f.data+'T00:00:00');
+  return `<div style="display:flex;justify-content:space-between;align-items:center;background:#0f172a;border:1px solid ${f.justificada?'rgba(39,215,160,.3)':'rgba(251,113,133,.3)'};border-radius:8px;padding:8px 12px;">
+    <span style="font-size:12px;color:#dce5f2;">${dataObj.toLocaleDateString('pt-BR')} — ${f.justificada?'✅ Justificada':'❌ Não justificada'}${f.motivo?' · '+f.motivo:''}</span>
+    <div style="display:flex;gap:8px;">
+     <button onclick="editarFalta(${f.id})" aria-label="Editar" style="background:none;border:none;color:#4f9cff;cursor:pointer;font-size:13px;">✏️</button>
+     <button onclick="removerFalta(${f.id})" aria-label="Remover" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:13px;">🗑️</button>
+    </div>
+   </div>`;
+ }).join('');
+}
+
+function renderFolhaDePonto(){
+ const padrao = getHorarioPadraoPonto();
+ const inputEntradaPadrao = document.getElementById('pontoPadraoEntradaInput');
+ const inputSaidaPadrao = document.getElementById('pontoPadraoSaidaInput');
+ const inputSabadoPadrao = document.getElementById('pontoHorasContratadasSabadoInput');
+ if(inputEntradaPadrao && padrao.entrada) inputEntradaPadrao.value = padrao.entrada;
+ if(inputSaidaPadrao && padrao.saida) inputSaidaPadrao.value = padrao.saida;
+ if(inputSabadoPadrao && padrao.horasContratadasSabado!==undefined && padrao.horasContratadasSabado!=='') inputSabadoPadrao.value = padrao.horasContratadasSabado;
+ renderCargaHorariaSemanal();
+
+ // Marca no seletor quem já foi desligada, mas mantém a opção — importante continuar acessível
+ // pra puxar a folha de ponto dela até o último mês trabalhado, pra contadora.
+ const selectFuncionaria = document.getElementById('pontoFuncionariaSelect');
+ if(selectFuncionaria){
+  Array.from(selectFuncionaria.options).forEach(opt=>{
+   const chave = opt.value.toLowerCase();
+   const nomeBase = opt.value;
+   const desligada = !!getDesligamento(chave);
+   opt.textContent = desligada ? nomeBase+' (desligada)' : nomeBase;
+  });
+ }
+
+ const funcionaria = document.getElementById('pontoFuncionariaSelect')?.value;
+ const mesInput = document.getElementById('pontoMesSelect');
+ if(!mesInput.value){
+  const hoje = obterAgoraBrasilia();
+  mesInput.value = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0');
+ }
+ const [anoFiltro, mesFiltro] = mesInput.value.split('-');
+
+ const lista = getRegistrosPonto()
+  .filter(p=>p.funcionaria===funcionaria && p.data.startsWith(anoFiltro+'-'+mesFiltro))
+  .sort((a,b)=>a.data.localeCompare(b.data));
+
+ renderListaFaltas();
+ const faltasDoMes = getFaltas().filter(f=>f.funcionaria===funcionaria && f.data.startsWith(anoFiltro+'-'+mesFiltro));
+ const faltasJustificadas = faltasDoMes.filter(f=>f.justificada).length;
+ const faltasNaoJustificadas = faltasDoMes.filter(f=>!f.justificada).length;
+
+ const elLista = document.getElementById('listaFolhaDePonto');
+ const elResumo = document.getElementById('resumoFolhaDePonto');
+ const nomesDiasAbrev = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+ function htmlResumoFaltas(){
+  if(faltasDoMes.length===0) return '';
+  return `<div style="background:#0b1728;border:1px solid ${faltasNaoJustificadas>0?'rgba(251,113,133,.3)':'#1e2c42'};border-radius:10px;padding:12px 14px;margin-top:10px;">
+    <div style="font-size:10px;color:#93a3ba;">🚫 Faltas no mês</div>
+    <div style="font-size:15px;font-weight:900;color:#dce5f2;margin-top:2px;">${faltasDoMes.length} total <span style="font-size:11px;font-weight:600;color:#93a3ba;">(${faltasJustificadas} justificada${faltasJustificadas===1?'':'s'}, ${faltasNaoJustificadas} não justificada${faltasNaoJustificadas===1?'':'s'})</span></div>
+   </div>`;
+ }
+
+ if(lista.length===0){
+  elLista.innerHTML = '<div style="text-align:center;padding:24px 12px;"><div style="font-size:34px;opacity:.5;margin-bottom:8px;">🗓️</div><p style="color:#93a3ba;font-size:12.5px;">Nenhum registro nesse mês ainda.</p></div>';
+  elResumo.innerHTML = htmlResumoFaltas();
+  return;
+ }
+
+ let totalHoras = 0, totalExtras = 0;
+ elLista.innerHTML = lista.map(p=>{
+  const { horas, extras } = calcularHorasDoDia(p);
+  const semSaida = !p.saida;
+  if(!semSaida){ totalHoras += horas; totalExtras += extras; }
+  const dataObj = new Date(p.data+'T00:00:00');
+  const diaSemana = nomesDiasAbrev[dataObj.getDay()];
+  const ehSabado = dataObj.getDay()===6;
+  return `
+   <div style="background:#0b1728;border:1px solid ${semSaida?'rgba(251,191,36,.4)':'#1e2c42'};${ehSabado?'border-left:3px solid #64748b;':''}border-radius:10px;padding:10px 14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+     <span style="color:#dce5f2;font-weight:700;font-size:13px;">${dataObj.toLocaleDateString('pt-BR')} (${diaSemana})${ehSabado?' <span style="color:#94a3b8;font-weight:600;font-size:11px;">· sábado</span>':''}</span>
+     <div style="display:flex;align-items:center;gap:10px;">
+      <span style="color:${semSaida?'#fbbf24':'#27d7a0'};font-weight:800;font-size:12.5px;">${semSaida?'⚠️ Saída pendente':horas.toFixed(1)+'h'+(extras>0?' (+'+extras.toFixed(1)+'h extra)':'')}</span>
+      <button onclick="editarRegistroPonto(${p.id})" aria-label="Editar" style="background:none;border:none;color:#4f9cff;cursor:pointer;font-size:14px;">✏️</button>
+      <button onclick="removerRegistroPonto(${p.id})" aria-label="Remover" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;">🗑️</button>
+     </div>
+    </div>
+    <div style="font-size:11px;color:#93a3ba;margin-top:4px;">
+     ${p.entrada} → ${p.saida || '?'}${p.inicioIntervalo && p.fimIntervalo ? ' (intervalo '+p.inicioIntervalo+'-'+p.fimIntervalo+')' : ''}${p.observacao ? ' · '+p.observacao : ''}
+    </div>
+   </div>`;
+ }).join('');
+
+ elResumo.innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
+    <div style="font-size:10px;color:#93a3ba;">📅 Dias trabalhados</div>
+    <div style="font-size:18px;font-weight:900;color:#dce5f2;margin-top:2px;">${lista.length}</div>
+   </div>
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
+    <div style="font-size:10px;color:#93a3ba;">⏱️ Total de horas no mês</div>
+    <div style="font-size:18px;font-weight:900;color:#dce5f2;margin-top:2px;">${totalHoras.toFixed(1)}h</div>
+   </div>
+   <div style="background:#0b1728;border:1px solid rgba(251,191,36,.3);border-radius:10px;padding:12px 14px;">
+    <div style="font-size:10px;color:#93a3ba;">🔶 Total de hora extra</div>
+    <div style="font-size:18px;font-weight:900;color:#fbbf24;margin-top:2px;">${totalExtras.toFixed(1)}h</div>
+   </div>
+  </div>${htmlGraficoHorasPorSemana(lista)}${htmlResumoFaltas()}`;
+}
+function htmlGraficoHorasPorSemana(lista){
+ // Agrupa os dias do mês por semana (segunda a domingo) e soma as horas de cada uma, mostrando
+ // um gráfico de barras bem simples — ajuda a ver de relance se alguma semana fugiu do padrão.
+ if(lista.length===0) return '';
+ const semanas = {};
+ lista.forEach(p=>{
+  const dataObj = new Date(p.data+'T00:00:00');
+  const diaDoMes = dataObj.getDate();
+  const numeroSemana = Math.ceil((diaDoMes + new Date(dataObj.getFullYear(),dataObj.getMonth(),1).getDay())/7);
+  const { horas } = calcularHorasDoDia(p);
+  if(!semanas[numeroSemana]) semanas[numeroSemana] = 0;
+  if(p.saida) semanas[numeroSemana] += horas;
+ });
+ const chaves = Object.keys(semanas).sort((a,b)=>a-b);
+ if(chaves.length<2) return ''; // com só 1 semana de dados, o gráfico não ajuda muito
+ const maxHoras = Math.max(...Object.values(semanas), 1);
+ const barras = chaves.map(k=>{
+  const valor = semanas[k];
+  const alturaPct = Math.max(6, (valor/maxHoras)*100);
+  return `<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;">
+    <span style="font-size:10px;color:#93a3ba;font-weight:700;">${valor.toFixed(0)}h</span>
+    <div style="width:100%;max-width:36px;height:70px;display:flex;align-items:flex-end;">
+     <div style="width:100%;height:${alturaPct}%;background:linear-gradient(180deg,#06b6d4,#0891b2);border-radius:6px 6px 0 0;"></div>
+    </div>
+    <span style="font-size:9.5px;color:#93a3ba;">Sem ${k}</span>
+   </div>`;
+ }).join('');
+ return `<div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:14px 12px;margin-top:10px;">
+   <div style="font-size:10.5px;color:#93a3ba;font-weight:700;margin-bottom:10px;">📊 Horas trabalhadas por semana</div>
+   <div style="display:flex;gap:8px;align-items:flex-end;">${barras}</div>
+  </div>`;
+}
+function carregarExemploCartaoPontoAgosto(){
+ // Carrega exatamente os dados do cartão de ponto físico que você me mandou. O dia 30 é domingo
+ // (loja fechada, sem ponto) e fica de fora de propósito. O dia 31 entra com a saída da tarde
+ // pendente, exatamente como está na folha física — dá pra completar depois quando você souber.
+ confirmarBiobel('Isso vai adicionar 4 dias de exemplo (27, 28, 29 e 31 de agosto/2026) da Gabriela, baseados no cartão de ponto que você me mandou. Continuar?', ()=>{
+  const exemplos = [
+   { funcionaria:'Gabriela', data:'2026-08-27', entrada:'08:40', inicioIntervalo:'13:41', fimIntervalo:'14:47', saida:'18:00', observacao:'Exemplo do cartão físico' },
+   { funcionaria:'Gabriela', data:'2026-08-28', entrada:'08:03', inicioIntervalo:null, fimIntervalo:null, saida:'18:10', observacao:'Exemplo do cartão físico' },
+   { funcionaria:'Gabriela', data:'2026-08-29', entrada:'08:32', inicioIntervalo:null, fimIntervalo:null, saida:'16:10', observacao:'Exemplo do cartão físico' },
+   { funcionaria:'Gabriela', data:'2026-08-31', entrada:'08:45', inicioIntervalo:'13:51', fimIntervalo:'14:57', saida:null, observacao:'Saída da tarde não registrada na folha física' },
+  ];
+  let lista = getRegistrosPonto();
+  let adicionados = 0;
+  exemplos.forEach(ex=>{
+   const jaExiste = lista.some(p=>p.funcionaria===ex.funcionaria && p.data===ex.data);
+   if(!jaExiste){ lista.push({ id: Date.now()+adicionados, ...ex }); adicionados++; }
+  });
+  salvarRegistrosPonto(lista);
+  document.getElementById('pontoFuncionariaSelect').value = 'Gabriela';
+  document.getElementById('pontoMesSelect').value = '2026-08';
+  renderFolhaDePonto();
+  mostrarToast(adicionados>0 ? '✅ '+adicionados+' dia(s) de exemplo carregado(s)!' : 'ℹ️ Esses dias já estavam cadastrados.');
+ });
+}
+/* ===== Exportar Boletos — PDF e CSV, respeitando o filtro/busca que estiver ativo na tela ===== */
+function getBoletosFiltradosAtual(){
+ let lista = getBoletos();
+ if(filtroBoletoAtual==='pendentes') lista = lista.filter(b=>!b.pago);
+ else if(filtroBoletoAtual==='pagos') lista = lista.filter(b=>b.pago);
+ const termoBusca = document.getElementById('buscaBoletoInput')?.value.trim().toLowerCase();
+ if(termoBusca){
+  lista = lista.filter(b=>
+   String(b.fornecedor||'').toLowerCase().includes(termoBusca) ||
+   String(b.marca||'').toLowerCase().includes(termoBusca) ||
+   String(b.obs||'').toLowerCase().includes(termoBusca)
+  );
+ }
+ return lista;
+}
+function exportarBoletosCSV(){
+ const lista = getBoletosFiltradosAtual();
+ if(lista.length===0){ mostrarToast('⚠️ Não tem nenhum boleto pra exportar com esse filtro.'); return; }
+ const linhas = [['Fornecedor','Marca','Categoria','Valor','Vencimento','Pago?','Pago Por','Observação']];
+ lista.forEach(b=>{
+  linhas.push([
+   b.fornecedor||'', b.marca||'', b.categoria||'',
+   money(Number(b.valor)||0),
+   b.vencimento ? new Date(b.vencimento+'T00:00:00').toLocaleDateString('pt-BR') : '',
+   b.pago ? 'Sim' : 'Não',
+   b.pagoPor||'', b.obs||''
+  ]);
+ });
+ const csv = linhas.map(linha=>linha.map(campo=>'"'+String(campo).replace(/"/g,'""')+'"').join(';')).join('\r\n');
+ const blob = new Blob(['\ufeff'+csv], { type:'text/csv;charset=utf-8;' });
+ const url = URL.createObjectURL(blob);
+ const a = document.createElement('a');
+ a.href = url;
+ a.download = 'boletos-fornecedores-'+obterAgoraBrasilia().paraChaveISO()+'.csv';
+ document.body.appendChild(a);
+ a.click();
+ document.body.removeChild(a);
+ URL.revokeObjectURL(url);
+ mostrarToast('✅ CSV exportado!');
+}
+async function exportarBoletosPDF(){
+ const lista = getBoletosFiltradosAtual();
+ if(lista.length===0){ mostrarToast('⚠️ Não tem nenhum boleto pra exportar com esse filtro.'); return; }
+ try{
+  await carregarJsPDFSobDemanda();
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({unit:'mm', format:'a4'});
+  const margem = 15;
+  let y = await desenharCabecalhoPDF(doc, 'Boletos de Fornecedores', filtroBoletoAtual==='todos' ? 'Todos os boletos' : 'Somente '+(filtroBoletoAtual==='pendentes'?'pendentes':'pagos'));
+
+  doc.setFontSize(9); doc.setTextColor(20,20,20);
+  doc.setFont('helvetica','bold');
+  doc.text('Fornecedor', margem, y);
+  doc.text('Categoria', margem+55, y);
+  doc.text('Valor', margem+95, y);
+  doc.text('Vencimento', margem+125, y);
+  doc.text('Status', margem+160, y);
+  y += 2;
+  doc.line(margem, y, 195, y);
+  y += 5;
+  doc.setFont('helvetica','normal');
+
+  let total = 0;
+  lista.forEach(b=>{
+   if(y>275){ doc.addPage(); y=20; }
+   total += Number(b.valor)||0;
+   doc.text(String(b.fornecedor||'').slice(0,28), margem, y);
+   doc.text(String(b.categoria||''), margem+55, y);
+   doc.text(money(Number(b.valor)||0), margem+95, y);
+   doc.text(b.vencimento ? new Date(b.vencimento+'T00:00:00').toLocaleDateString('pt-BR') : '—', margem+125, y);
+   doc.text(b.pago ? 'Pago' : 'Pendente', margem+160, y);
+   y += 6;
+  });
+
+  y += 4;
+  doc.line(margem, y, 195, y);
+  y += 8;
+  doc.setFont('helvetica','bold'); doc.setFontSize(11);
+  doc.text('Total ('+lista.length+' boletos): '+money(total), margem, y);
+
+  doc.save('boletos-fornecedores-'+obterAgoraBrasilia().paraChaveISO()+'.pdf');
+  mostrarToast('✅ PDF exportado!');
+ }catch(e){
+  console.error(e);
+  mostrarToast('⚠️ Não foi possível gerar o PDF.');
+ }
+}
+
+function exportarFolhaDePontoCSV(){
+ const funcionaria = document.getElementById('pontoFuncionariaSelect').value;
+ const mesInput = document.getElementById('pontoMesSelect').value;
+ if(!mesInput){ mostrarToast('⚠️ Escolha o mês primeiro.'); return; }
+ const [ano, mes] = mesInput.split('-');
+ const lista = getRegistrosPonto().filter(p=>p.funcionaria===funcionaria && p.data.startsWith(ano+'-'+mes)).sort((a,b)=>a.data.localeCompare(b.data));
+ if(lista.length===0){ mostrarToast('⚠️ Sem registros nesse mês pra exportar.'); return; }
+
+ const linhas = [['Data','Entrada','Início Intervalo','Fim Intervalo','Saída','Horas Trabalhadas','Hora Extra','Observação']];
+ let totalHoras=0, totalExtras=0;
+ lista.forEach(p=>{
+  const { horas, extras } = calcularHorasDoDia(p);
+  const semSaida = !p.saida;
+  if(!semSaida){ totalHoras+=horas; totalExtras+=extras; }
+  const dataObj = new Date(p.data+'T00:00:00');
+  linhas.push([
+   dataObj.toLocaleDateString('pt-BR'),
+   p.entrada || '',
+   p.inicioIntervalo || '',
+   p.fimIntervalo || '',
+   semSaida ? 'PENDENTE' : p.saida,
+   semSaida ? '' : horas.toFixed(1).replace('.',','),
+   semSaida ? '' : extras.toFixed(1).replace('.',','),
+   p.observacao || ''
+  ]);
+ });
+ linhas.push([]);
+ linhas.push(['Total de horas', totalHoras.toFixed(1).replace('.',',')]);
+ linhas.push(['Total de hora extra', totalExtras.toFixed(1).replace('.',',')]);
+
+ // Ponto-e-vírgula como separador e BOM no início — assim o Excel brasileiro abre certinho,
+ // com acentuação correta e sem misturar com a vírgula decimal dos números.
+ const csv = linhas.map(linha=>linha.map(campo=>'"'+String(campo).replace(/"/g,'""')+'"').join(';')).join('\r\n');
+ const blob = new Blob(['\ufeff'+csv], { type:'text/csv;charset=utf-8;' });
+ const url = URL.createObjectURL(blob);
+ const a = document.createElement('a');
+ a.href = url;
+ a.download = 'folha-ponto-'+funcionaria.toLowerCase()+'-'+ano+'-'+mes+'.csv';
+ document.body.appendChild(a);
+ a.click();
+ document.body.removeChild(a);
+ URL.revokeObjectURL(url);
+ mostrarToast('✅ CSV exportado!');
+}
+
+async function imprimirFolhaDePonto(){
+ const btn = document.getElementById('btnImprimirFolhaPonto');
+ const textoOriginal = btn ? btn.textContent : '';
+ if(btn){ btn.disabled=true; btn.textContent='⏳ Gerando...'; }
+ try{
+  await carregarJsPDFSobDemanda();
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({unit:'mm', format:'a4'});
+  const funcionaria = document.getElementById('pontoFuncionariaSelect').value;
+  const mesInput = document.getElementById('pontoMesSelect').value;
+  const [ano, mes] = mesInput.split('-');
+  const nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const nomeMes = nomesMeses[Number(mes)-1]+' de '+ano;
+
+  const lista = getRegistrosPonto().filter(p=>p.funcionaria===funcionaria && p.data.startsWith(ano+'-'+mes)).sort((a,b)=>a.data.localeCompare(b.data));
+
+  const margem = 15;
+  let y = await desenharCabecalhoPDF(doc, 'Folha de Ponto — '+funcionaria, 'Referente a '+nomeMes);
+
+  doc.setFontSize(9); doc.setTextColor(20,20,20);
+  doc.setFont('helvetica','bold');
+  doc.text('Nº', margem, y);
+  doc.text('Data', margem+10, y);
+  doc.text('Entrada', margem+42, y);
+  doc.text('Intervalo', margem+69, y);
+  doc.text('Saída', margem+102, y);
+  doc.text('Horas', margem+127, y);
+  doc.text('Extra', margem+152, y);
+  y += 2;
+  doc.line(margem, y, 195, y);
+  y += 5;
+  doc.setFont('helvetica','normal');
+
+  let totalHoras = 0, totalExtras = 0, diasContados = 0;
+  lista.forEach(p=>{
+   if(y>275){ doc.addPage(); y=20; }
+   diasContados++;
+   const { horas, extras } = calcularHorasDoDia(p);
+   const semSaida = !p.saida;
+   if(!semSaida){ totalHoras += horas; totalExtras += extras; }
+   const dataObj = new Date(p.data+'T00:00:00');
+   const ehSabado = dataObj.getDay()===6;
+   if(ehSabado){
+    // Faixa cinza bem fraquinha atrás da linha inteira, só pra dar de entender que é sábado.
+    doc.setFillColor(238,238,238);
+    doc.rect(margem-2, y-4, 182, 6, 'F');
+   }
+   doc.setTextColor(20,20,20);
+   doc.text(String(diasContados), margem, y);
+   doc.text(dataObj.toLocaleDateString('pt-BR')+(ehSabado?' (sáb)':''), margem+10, y);
+   doc.text(p.entrada, margem+42, y);
+   doc.text(p.inicioIntervalo && p.fimIntervalo ? p.inicioIntervalo+'-'+p.fimIntervalo : '—', margem+69, y);
+   doc.text(semSaida ? 'pendente' : p.saida, margem+102, y);
+   doc.text(semSaida ? '—' : horas.toFixed(1)+'h', margem+127, y);
+   doc.text(semSaida ? '—' : (extras>0 ? extras.toFixed(1)+'h' : '—'), margem+152, y);
+   y += 6;
+  });
+
+  y += 4;
+  doc.line(margem, y, 195, y);
+  y += 8;
+  doc.setFont('helvetica','bold'); doc.setFontSize(11);
+  doc.text('Dias trabalhados: '+diasContados, margem, y);
+  y += 7;
+  doc.text('Total de horas: '+totalHoras.toFixed(1)+'h', margem, y);
+  y += 7;
+  doc.text('Total de hora extra: '+totalExtras.toFixed(1)+'h', margem, y);
+  y += 10;
+
+  const faltasDoMes = getFaltas().filter(f=>f.funcionaria===funcionaria && f.data.startsWith(ano+'-'+mes)).sort((a,b)=>a.data.localeCompare(b.data));
+  if(faltasDoMes.length>0){
+   doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(20,20,20);
+   doc.text('Faltas no mês', margem, y);
+   y += 7;
+   doc.setFont('helvetica','normal'); doc.setFontSize(9);
+   faltasDoMes.forEach(f=>{
+    if(y>275){ doc.addPage(); y=20; }
+    const dataObj = new Date(f.data+'T00:00:00');
+    doc.text('• '+dataObj.toLocaleDateString('pt-BR')+' — '+(f.justificada?'Justificada':'Não justificada')+(f.motivo?' ('+f.motivo+')':''), margem, y);
+    y += 6;
+   });
+   y += 8;
+  }
+
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(90,90,90);
+  doc.text('_______________________________', margem, y);
+  doc.text('_______________________________', margem+100, y);
+  y += 5;
+  doc.text('Assinatura da funcionária', margem, y);
+  doc.text('Assinatura da gerência', margem+100, y);
+
+  doc.save('folha-ponto-'+funcionaria.toLowerCase()+'-'+ano+'-'+mes+'.pdf');
+  mostrarToast('✅ Folha de ponto exportada!');
+ }catch(e){
+  console.error(e);
+  mostrarToast('⚠️ Não foi possível gerar o PDF.');
+ }finally{
+  if(btn){ btn.disabled=false; btn.textContent=textoOriginal; }
+ }
+}
+
+function printEquipeWeek(){
+ const el = document.getElementById('printReceipt');
+ const weekStart = document.getElementById('equipeWeekStart')?.value || '___';
+ const weekEnd = document.getElementById('equipeWeekEnd')?.value || '___';
+ const nomeGabi = document.getElementById('equipeNomeGabi')?.value || '________';
+ const nomeDai = document.getElementById('equipeNomeDai')?.value || '________';
+
+ let html = `<div class="receipt-center"><strong style="font-size:17px">BIOBEL</strong><br>ROTINA SEMANAL DA EQUIPE<br>Semana de ${weekStart} a ${weekEnd}</div><div class="receipt-line"></div>`;
+ html += `<strong>ROTINA DIÁRIA BASE (TODOS OS DIAS)</strong><br>`;
+ rotinaDiariaBase.forEach((item,i)=>{
+  const marcado = isEquipeChecked('diaria', i) ? '[x]' : '[ ]';
+  html += `<div class="receipt-row"><span>${marcado} ${item.texto}</span></div>`;
+ });
+ diasSemanaOrdem.forEach(dia=>{
+  const d = rotinaSemanal[dia];
+  html += `<div class="receipt-line"></div><strong>${d.emoji} ${d.nome.toUpperCase()}</strong><br>`;
+  html += `<span class="receipt-small">GABI:</span><br>`;
+  d.gabi.forEach((texto,i)=>{
+   const marcado = isEquipeChecked(`${dia}_gabi`, i) ? '[x]' : '[ ]';
+   html += `<div class="receipt-row"><span>${marcado} ${texto}</span></div>`;
+  });
+  html += `<span class="receipt-small">DAI:</span><br>`;
+  d.dai.forEach((texto,i)=>{
+   const marcado = isEquipeChecked(`${dia}_dai`, i) ? '[x]' : '[ ]';
+   html += `<div class="receipt-row"><span>${marcado} ${texto}</span></div>`;
+  });
+ });
+ html += `<div class="receipt-line"></div>`;
+ html += `<div class="receipt-row"><span>Vendedora (Gabi): ${nomeGabi}</span></div>`;
+ html += `<div class="receipt-row"><span>Estagiária (Dai): ${nomeDai}</span></div>`;
+ html += `<div class="receipt-line"></div><div class="receipt-center receipt-small">Impresso em ${new Date().toLocaleString('pt-BR')}</div>`;
+
+ el.innerHTML = html;
+ startReceiptPrint('equipe');
+}
+
+function confirmLogout(){
+ confirmarBiobel('Tem certeza que quer sair do painel administrativo?', ()=>{
+  sessionStorage.removeItem('biobel_logged_in');
+  window.location.href='login.html';
+ });
+}
+
+let nivelFonteAtual = 100;
+function aplicarFonteBiobel(pct){
+ document.documentElement.style.fontSize = pct+'%';
+ nivelFonteAtual = pct;
+ localStorage.setItem('biobel_font_pct', String(pct));
+}
+function ajustarFonteBiobel(direcao){
+ if(direcao===0){ aplicarFonteBiobel(100); mostrarToast('🔤 Fonte no tamanho padrão'); return; }
+ let novo = nivelFonteAtual + (direcao*8);
+ novo = Math.max(88, Math.min(130, novo));
+ aplicarFonteBiobel(novo);
+ mostrarToast(direcao>0 ? '🔤 Fonte aumentada' : '🔤 Fonte diminuída');
+}
+(function initFonteBiobel(){
+ const salvo = localStorage.getItem('biobel_font_pct');
+ if(salvo) aplicarFonteBiobel(parseFloat(salvo));
+})();
+
+function detectarTelaGrandeEAjustarFonte(){
+ // Sugere uma fonte um pouco maior em monitores bem grandes (tipo 4K) — só na primeira vez que
+ // detectar isso, e nunca se a pessoa já tiver mexido manualmente no A-/A/A+.
+ const jaTemPreferenciaManual = localStorage.getItem('biobel_font_pct');
+ const jaSugeriu = localStorage.getItem('biobel_zoom_auto_sugerido');
+ if(jaTemPreferenciaManual || jaSugeriu) return;
+ if(window.innerWidth >= 2560){
+  aplicarFonteBiobel(114);
+  localStorage.setItem('biobel_zoom_auto_sugerido', 'yes');
+  mostrarToast('🖥️ Detectei uma tela bem grande e deixei a fonte um pouco maior — pode ajustar em A-/A+ se preferir.');
+ }
+}
+detectarTelaGrandeEAjustarFonte();
+
+function toggleTheme(){
+ const isLight = document.body.classList.toggle('light-mode');
+ localStorage.setItem('biobel_theme', isLight ? 'light' : 'dark');
+ updateThemeButton(isLight);
+}
+function updateThemeButton(isLight){
+ const icon=document.getElementById('themeToggleIcon');
+ const label=document.getElementById('themeToggleLabel');
+ if(icon) icon.textContent = isLight ? '☀️' : '🌙';
+ if(label) label.textContent = isLight ? 'Modo escuro' : 'Modo claro';
+}
+updateThemeButton(document.body.classList.contains('light-mode'));
+
+function getSalesGoal(){
+ const saved = localStorage.getItem('biobel_sales_goal');
+ return saved ? parseFloat(saved) : 45000;
+}
+/* ===== Log de alterações (simples, guarda as últimas 30) ===== */
+function registrarAlteracao(texto){
+ let log = [];
+ try{ log = JSON.parse(localStorage.getItem('biobel_log_alteracoes')||'[]'); }catch(e){}
+ log.unshift({ texto, quando: new Date().toISOString() });
+ if(log.length>30) log = log.slice(0,30);
+ localStorage.setItem('biobel_log_alteracoes', JSON.stringify(log));
+}
+function renderLogAlteracoes(){
+ const el = document.getElementById('logAlteracoesLista');
+ if(!el) return;
+ let log = [];
+ try{ log = JSON.parse(localStorage.getItem('biobel_log_alteracoes')||'[]'); }catch(e){}
+ if(log.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12px;">Nenhuma alteração registrada ainda.</p>';
+  return;
+ }
+ el.innerHTML = log.map(item=>{
+  const data = new Date(item.quando);
+  const dataTxt = data.toLocaleDateString('pt-BR')+' às '+data.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  return `<div style="font-size:11.5px;color:#93a3ba;padding:6px 0;border-bottom:1px solid #1a2740;"><span style="color:#dce5f2;">${item.texto}</span><br>${dataTxt}</div>`;
+ }).join('');
+}
+
+function exportarLogComoTxt(){
+ let log = [];
+ try{ log = JSON.parse(localStorage.getItem('biobel_log_alteracoes')||'[]'); }catch(e){}
+ if(log.length===0){
+  mostrarToast('⚠️ Não há nenhuma alteração registrada ainda pra exportar.');
+  return;
+ }
+ let txt = '===== HISTÓRICO DE ALTERAÇÕES — BIOBEL =====\n';
+ txt += 'Gerado em: '+new Date().toLocaleString('pt-BR')+'\n\n';
+ log.forEach(item=>{
+  const data = new Date(item.quando);
+  const dataTxt = data.toLocaleDateString('pt-BR')+' às '+data.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  txt += '['+dataTxt+'] '+item.texto+'\n';
+ });
+ txt += '\n========================================\n';
+
+ const copiarPromise = (navigator.clipboard && navigator.clipboard.writeText)
+  ? navigator.clipboard.writeText(txt)
+  : Promise.reject(new Error('clipboard indisponível'));
+ copiarPromise
+  .then(()=>{ mostrarToast('✅ Copiado! Agora é só colar na sua outra IA.'); })
+  .catch(()=>{ mostrarToast('📄 Não deu pra copiar automaticamente — baixando o arquivo TXT.'); });
+
+ const blob = new Blob([txt], {type:'text/plain;charset=utf-8'});
+ const url = URL.createObjectURL(blob);
+ const a = document.createElement('a');
+ a.href = url;
+ a.download = 'biobel-historico-alteracoes.txt';
+ document.body.appendChild(a);
+ a.click();
+ document.body.removeChild(a);
+ URL.revokeObjectURL(url);
+}
+
+/* ===== Logo personalizada da Biobel (usada no relatório mensal em PDF) ===== */
+function getLogoAtivaParaExibicao(){
+ // Prioridade pra exibição simples (header/login/favicon, que não precisam de canvas):
+ // 1) arquivo enviado (já em base64) — 2) link (URL) salvo — 3) logo padrão do site.
+ const upload = localStorage.getItem('biobel_logo_custom');
+ if(upload) return upload;
+ const url = localStorage.getItem('biobel_logo_custom_url');
+ if(url) return url;
+ return '/logo_biobel_gravatai.png';
+}
+function seedLogoUrlPadrao(){
+ // Se a loja ainda não configurou nenhuma logo (nem upload, nem link), usa automaticamente
+ // o link que foi combinado como padrão — só na primeira vez, sem sobrescrever escolhas já feitas.
+ const jaTemUpload = localStorage.getItem('biobel_logo_custom');
+ const jaTemUrl = localStorage.getItem('biobel_logo_custom_url');
+ const jaEscolheuPadrao = localStorage.getItem('biobel_logo_padrao_escolhido'); // marca se a pessoa clicou "restaurar padrão" de propósito
+ if(!jaTemUpload && !jaTemUrl && !jaEscolheuPadrao){
+  localStorage.setItem('biobel_logo_custom_url', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9SwF4jZXYBWKBwWhxqdwut1wnZRS4hqyU47xNSpsuHg&s');
+ }
+}
+function aplicarLogoPersonalizadaNoSistema(){
+ // Aplica a logo (personalizada ou padrão) no cabeçalho do painel E no ícone da aba do navegador,
+ // pra deixar o sistema visualmente da loja em todos os lugares, não só no PDF.
+ seedLogoUrlPadrao();
+ const logoParaUsar = getLogoAtivaParaExibicao();
+ const logoHeader = document.getElementById('logoHeaderBiobel');
+ if(logoHeader) logoHeader.src = logoParaUsar;
+ const favicon = document.querySelector('link[rel="icon"]');
+ if(favicon) favicon.href = logoParaUsar;
+}
+function carregarLogoBiobel(event){
+ const file = event.target.files[0];
+ const statusEl = document.getElementById('logoBiobelStatus');
+ if(!file) return;
+ if(file.size > 2*1024*1024){
+  if(statusEl) statusEl.innerHTML = '<span class="text-rose-400">Imagem muito grande (máximo 2MB). Tente uma versão menor.</span>';
+  return;
+ }
+ const reader = new FileReader();
+ reader.onload = e=>{
+  const dataUrl = e.target.result;
+  localStorage.setItem('biobel_logo_custom', dataUrl);
+  localStorage.removeItem('biobel_logo_custom_url'); // arquivo enviado tem prioridade sobre um link salvo antes
+  localStorage.removeItem('biobel_logo_padrao_escolhido');
+  const preview = document.getElementById('previewLogoBiobel');
+  if(preview) preview.src = dataUrl;
+  aplicarLogoPersonalizadaNoSistema();
+  if(statusEl) statusEl.innerHTML = '<span class="text-emerald-400">✅ Logo salva! Já atualizada no cabeçalho, no ícone da aba e vai ser usada no próximo PDF.</span>';
+  mostrarToast('✅ Logo atualizada com sucesso!');
+  registrarAlteracao('Logo da Biobel personalizada foi atualizada (arquivo enviado)');
+  renderLogAlteracoes();
+ };
+ reader.onerror = ()=>{
+  if(statusEl) statusEl.innerHTML = '<span class="text-rose-400">Não consegui ler essa imagem. Tente outro arquivo.</span>';
+ };
+ reader.readAsDataURL(file);
+}
+function salvarLogoPorUrl(){
+ const url = document.getElementById('inputLogoBiobelUrl').value.trim();
+ const statusEl = document.getElementById('logoBiobelStatus');
+ if(!url){ if(statusEl) statusEl.innerHTML = '<span class="text-rose-400">Cole um link de imagem antes de salvar.</span>'; return; }
+ try{ new URL(url); }catch(e){ if(statusEl) statusEl.innerHTML = '<span class="text-rose-400">Esse link não parece válido.</span>'; return; }
+
+ localStorage.setItem('biobel_logo_custom_url', url);
+ localStorage.removeItem('biobel_logo_custom'); // link salvo tem prioridade sobre um arquivo enviado antes
+ localStorage.removeItem('biobel_logo_padrao_escolhido');
+ const preview = document.getElementById('previewLogoBiobel');
+ if(preview) preview.src = url;
+ aplicarLogoPersonalizadaNoSistema();
+ if(statusEl) statusEl.innerHTML = '<span class="text-emerald-400">✅ Link salvo! Já atualizado no cabeçalho e no ícone da aba.</span>';
+ mostrarToast('✅ Logo por link salva com sucesso!');
+ registrarAlteracao('Logo da Biobel personalizada foi atualizada (link/URL)');
+ renderLogAlteracoes();
+
+ // Testa se esse link vai conseguir virar PDF (alguns links do Google Imagens bloqueiam isso por segurança).
+ obterLogoDataUrl().then(resultado=>{
+  if(!resultado && statusEl){
+   statusEl.innerHTML = '<span class="text-amber-400">⚠️ O link foi salvo e já aparece na tela, mas não vai funcionar no PDF (bloqueio de segurança desse tipo de link). Pro PDF funcionar, envie a imagem como arquivo em vez de link.</span>';
+  }
+ });
+}
+function restaurarLogoPadrao(){
+ localStorage.removeItem('biobel_logo_custom');
+ localStorage.removeItem('biobel_logo_custom_url');
+ localStorage.setItem('biobel_logo_padrao_escolhido', 'yes'); // marca que foi escolha da pessoa, não aplica o seed de novo
+ const preview = document.getElementById('previewLogoBiobel');
+ if(preview) preview.src = '/logo_biobel_gravatai.png';
+ aplicarLogoPersonalizadaNoSistema();
+ const statusEl = document.getElementById('logoBiobelStatus');
+ if(statusEl) statusEl.innerHTML = '<span class="text-emerald-400">Logo padrão restaurada.</span>';
+ mostrarToast('✅ Voltou pra logo padrão da Biobel.');
+}
+function initLogoBiobelUI(){
+ const preview = document.getElementById('previewLogoBiobel');
+ if(!preview) return;
+ seedLogoUrlPadrao();
+ preview.src = getLogoAtivaParaExibicao();
+ const inputUrl = document.getElementById('inputLogoBiobelUrl');
+ const urlSalva = localStorage.getItem('biobel_logo_custom_url');
+ if(inputUrl && urlSalva) inputUrl.value = urlSalva;
+}
+
+/* ===== Link "Trabalhe Conosco" (Google Forms) — aparece automaticamente no site público ===== */
+function salvarLinkTrabalheConosco(){
+ const input = document.getElementById('inputLinkTrabalheConosco');
+ const statusEl = document.getElementById('statusLinkTrabalheConosco');
+ const link = input ? input.value.trim() : '';
+ localStorage.setItem('biobel_link_trabalhe_conosco_definido', 'yes');
+ if(!link){
+  localStorage.removeItem('biobel_link_trabalhe_conosco');
+  if(statusEl) statusEl.innerHTML = '<span class="text-slate-400">Campo limpo — o site volta a usar o link padrão já embutido nele.</span>';
+  mostrarToast('✅ Salvo — usando o link padrão do site agora.');
+  return;
+ }
+ try{ new URL(link); }catch(e){
+  if(statusEl) statusEl.innerHTML = '<span class="text-rose-400">Esse link não parece válido.</span>';
+  return;
+ }
+ localStorage.setItem('biobel_link_trabalhe_conosco', link);
+ if(statusEl) statusEl.innerHTML = '<span class="text-emerald-400">✅ Link salvo! Já vai aparecer no site público.</span>';
+ mostrarToast('✅ Link do Trabalhe Conosco salvo!');
+ registrarAlteracao('Link do Trabalhe Conosco atualizado');
+ renderLogAlteracoes();
+}
+function seedLinkTrabalheConosco(){
+ // Já vem com o link real cadastrado, pra ficar sincronizado com o que já está embutido no
+ // site público — só na primeira vez, sem nunca sobrescrever se alguém trocar depois.
+ const jaTemLink = localStorage.getItem('biobel_link_trabalhe_conosco');
+ const jaEscolheu = localStorage.getItem('biobel_link_trabalhe_conosco_definido');
+ if(!jaTemLink && !jaEscolheu){
+  localStorage.setItem('biobel_link_trabalhe_conosco', 'https://docs.google.com/forms/d/e/1FAIpQLSdmqyIp285ObM8e-E8SnoF-5m5MIlMDG0mUGp0uZ3gd6GBCKw/viewform?usp=publish-editor');
+ }
+}
+function initLinkTrabalheConoscoUI(){
+ const input = document.getElementById('inputLinkTrabalheConosco');
+ if(!input) return;
+ seedLinkTrabalheConosco();
+ const link = localStorage.getItem('biobel_link_trabalhe_conosco');
+ if(link) input.value = link;
+}
+function obterLogoDataUrl(){
+ // Devolve sempre uma imagem em base64 (data URL), pronta pra usar no PDF — tenta nessa ordem:
+ // 1) arquivo enviado (já é base64, sempre funciona) — 2) link (URL) salvo, convertido via canvas
+ // (pode falhar se o site de origem bloquear isso por segurança) — 3) a logo padrão do site.
+ return new Promise(resolve=>{
+  const upload = localStorage.getItem('biobel_logo_custom');
+  if(upload){ resolve(upload); return; }
+
+  function converterViaCanvas(src){
+   return new Promise(resolveConv=>{
+    try{
+     const img = new Image();
+     img.crossOrigin = 'anonymous';
+     img.onload = ()=>{
+      try{
+       const canvas = document.createElement('canvas');
+       canvas.width = img.naturalWidth || 200;
+       canvas.height = img.naturalHeight || 200;
+       const ctx = canvas.getContext('2d');
+       ctx.drawImage(img,0,0);
+       resolveConv(canvas.toDataURL('image/png'));
+      }catch(e){ resolveConv(null); } // canvas "contaminado" — o site de origem bloqueou o uso da imagem
+     };
+     img.onerror = ()=>resolveConv(null);
+     img.src = src;
+    }catch(e){ resolveConv(null); }
+   });
+  }
+
+  const url = localStorage.getItem('biobel_logo_custom_url');
+  if(url){
+   converterViaCanvas(url).then(resultado=>{
+    if(resultado) resolve(resultado);
+    else converterViaCanvas('/logo_biobel_gravatai.png').then(resolve); // link falhou — usa a padrão como respaldo
+   });
+   return;
+  }
+
+  converterViaCanvas('/logo_biobel_gravatai.png').then(resolve);
+ });
+}
+
+/* ============================================================
+   BIOBEL — ZONA: ADMINISTRAÇÃO / ACESSO E DADOS DE GESTÃO
+   ============================================================ */
+/* ===== Área ADM/Gerência (login próprio, separado do login principal do painel) ===== */
+function parseValorSimples(str){
+ // Parser simples pra campos de valor da área ADM (sem a máscara "digite os números"
+ // usada no resto do sistema) — aceita tanto "7000" quanto "7.000,50".
+ if(typeof str !== 'string') return NaN;
+ const limpo = str.replace(/R\$/gi,'').trim().replace(/\./g,'').replace(',','.');
+ return parseFloat(limpo);
+}
+function alternarMostrarSenhaAdm(){
+ const campo = document.getElementById('admLoginPass');
+ const btn = document.getElementById('btnMostrarSenhaAdm');
+ if(!campo || !btn) return;
+ const visivel = campo.type === 'text';
+ campo.type = visivel ? 'password' : 'text';
+ btn.textContent = visivel ? '👁️' : '🙈';
+}
+// Lista de quem pode entrar na área ADM. Pra adicionar mais uma pessoa, é só colocar
+// mais uma linha aqui — usuário sempre em letras minúsculas.
+const ADM_USUARIOS_VALIDOS = [
+ { usuario:'alesandra', senha:'jhonmeulindo', nomeExibicao:'Alesandra' }
+];
+function fazerLoginAdm(){
+ const usuario = (document.getElementById('admLoginUser').value||'').trim().toLowerCase();
+ const senha = document.getElementById('admLoginPass').value||'';
+ const erroEl = document.getElementById('admLoginErro');
+ const encontrado = ADM_USUARIOS_VALIDOS.find(u=>u.usuario===usuario && u.senha===senha);
+ if(encontrado){
+  sessionStorage.setItem('biobel_adm_autenticado', 'yes');
+  sessionStorage.setItem('biobel_adm_usuario_logado', encontrado.nomeExibicao);
+  document.getElementById('admLoginUser').value='';
+  document.getElementById('admLoginPass').value='';
+  if(erroEl) erroEl.textContent='';
+  mostrarConteudoAdm();
+ } else {
+  if(erroEl) erroEl.textContent = 'Usuário ou senha incorretos.';
+ }
+}
+function sairAdm(){
+ confirmarBiobel('Sair da área da gerência?', ()=>{
+  sessionStorage.removeItem('biobel_adm_autenticado');
+  sessionStorage.removeItem('biobel_adm_usuario_logado');
+  document.getElementById('admLoginWrap').style.display='block';
+  document.getElementById('admConteudoWrap').style.display='none';
+ });
+}
+/* ===== Chave PIX de cada funcionária (pra Alessandra saber como pagar) ===== */
+function getChavePix(pessoa){
+ return localStorage.getItem('biobel_chave_pix_'+pessoa) || '';
+}
+function salvarChavePix(pessoa){
+ const idInput = pessoa==='gabriela' ? 'chavePixGabrielaInput' : 'chavePixDayInput';
+ const nomeExibicao = pessoa==='gabriela' ? 'Gabriela' : 'Day';
+ const valor = document.getElementById(idInput).value.trim();
+ localStorage.setItem('biobel_chave_pix_'+pessoa, valor);
+ mostrarToast('✅ Chave PIX de '+nomeExibicao+' salva!');
+ registrarAlteracao('Chave PIX de '+nomeExibicao+' atualizada');
+ renderLogAlteracoes();
+}
+function seedChavesPix(){
+ // Já vem com as chaves PIX pré-cadastradas — só na primeira vez, sem nunca sobrescrever se
+ // alguém já tiver preenchido ou trocado manualmente depois.
+ const jaSeedou = localStorage.getItem('biobel_seed_pix_v1');
+ if(jaSeedou) return;
+ if(!localStorage.getItem('biobel_chave_pix_day')) localStorage.setItem('biobel_chave_pix_day', '86930575020');
+ if(!localStorage.getItem('biobel_chave_pix_gabriela')) localStorage.setItem('biobel_chave_pix_gabriela', '04972556005');
+ localStorage.setItem('biobel_seed_pix_v1', 'yes');
+}
+function initChavesPixUI(){
+ seedChavesPix();
+ const inputGabriela = document.getElementById('chavePixGabrielaInput');
+ const inputDay = document.getElementById('chavePixDayInput');
+ if(inputGabriela) inputGabriela.value = getChavePix('gabriela');
+ if(inputDay) inputDay.value = getChavePix('day');
+ renderChavesPixLista();
+}
+function renderChavesPixLista(){
+ const pessoas = [
+  { nome:'Gabriela', chave: getChavePix('gabriela'), pessoaKey:'gabriela' },
+  { nome:'Day', chave: getChavePix('day'), pessoaKey:'day' },
+ ].filter(p=>!getDesligamento(p.pessoaKey)); // quem já foi desligada não aparece mais aqui
+ const html = pessoas.map(p=>`
+   <div style="display:flex;justify-content:space-between;align-items:center;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
+    <div>
+     <div style="font-size:12.5px;color:#dce5f2;font-weight:700;">${p.nome}</div>
+     <div style="font-size:13px;color:${p.chave?'#4f9cff':'#fbbf24'};font-family:monospace;margin-top:2px;">${p.chave || '⚠️ Chave não cadastrada ainda'}</div>
+    </div>
+    ${p.chave ? `<button onclick="copiarChavePix('${p.chave}','${p.nome}')" style="background:#2f78e0;color:#fff;border:0;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">📋 Copiar</button>` : ''}
+   </div>`).join('');
+ const elAdm = document.getElementById('conteudoChavesPixAdm');
+ const elEquipe = document.getElementById('conteudoChavesPixEquipe');
+ if(elAdm) elAdm.innerHTML = html;
+ if(elEquipe) elEquipe.innerHTML = html;
+}
+/* ===== Aviso antes de sair com algo digitado e não salvo ===== */
+window.addEventListener('beforeunload', function(e){
+ const camposMonitorados = [
+  'novoGastoFixoNome','novoBoletoFornecedor','pontoDataInput','pontoEntradaInput',
+  'faltaDataInput','devolucaoProdutoInput'
+ ];
+ const temAlgoPreenchido = camposMonitorados.some(id=>{
+  const el = document.getElementById(id);
+  return el && el.value && String(el.value).trim().length>0;
+ });
+ if(temAlgoPreenchido){
+  e.preventDefault();
+  e.returnValue = '';
+ }
+});
+
+/* ===== Textos de Vaga — prontos pra copiar e colar nas redes sociais ===== */
+const TEXTOS_VAGA_PADRAO = {
+ estagio: `🌸 Vaga de Estágio — Biobel Cosméticos (Gravataí) 🌸
+
+A Biobel está com vaga aberta pra estágio em vendas! 💄✨
+
+O que você vai fazer:
+Atendimento ao cliente, organização da loja, apoio nas vendas e no dia a dia da equipe.
+
+O que buscamos:
+📌 Simpatia e vontade de aprender
+📌 Interesse por cosméticos e atendimento
+📌 Disponibilidade de horário (combinamos os detalhes na entrevista)
+📌 Estar cursando ou pronto(a) pra iniciar estágio
+
+Como se candidatar:
+Manda seu currículo ou chama a gente aqui pelo direct! 💌
+
+📍 Biobel Cosméticos — Gravataí/RS`,
+ clt: `💼 Vaga CLT — Vendedora (Biobel Cosméticos, Gravataí) 💼
+
+A Biobel está contratando! Vaga de vendedora com carteira assinada.
+
+O que você vai fazer:
+Atendimento ao cliente, vendas, organização da loja, participação nas metas da equipe.
+
+O que buscamos:
+📌 Experiência em vendas (desejável, não obrigatório)
+📌 Simpatia e vontade de crescer com a gente
+📌 Disponibilidade de horário comercial, incluindo sábados
+📌 Interesse por cosméticos e atendimento
+
+Benefícios:
+📌 Salário + comissão por metas batidas
+📌 Vale-transporte
+
+Como se candidatar:
+Manda seu currículo ou chama a gente aqui pelo direct! 💌
+
+📍 Biobel Cosméticos — Gravataí/RS`
+};
+function getTextoVaga(tipo){
+ const salvo = localStorage.getItem('biobel_texto_vaga_'+tipo);
+ return salvo!==null ? salvo : TEXTOS_VAGA_PADRAO[tipo];
+}
+function salvarTextoVaga(tipo){
+ const texto = document.getElementById('textoVaga'+(tipo==='clt'?'Clt':'Estagio')+'Input').value;
+ localStorage.setItem('biobel_texto_vaga_'+tipo, texto);
+ mostrarToast('✅ Texto salvo!');
+ registrarAlteracao('Texto de vaga ('+(tipo==='clt'?'CLT':'Estágio')+') atualizado');
+ renderLogAlteracoes();
+}
+function restaurarTextoVagaPadrao(tipo){
+ confirmarBiobel('Isso vai substituir o texto atual pelo modelo padrão. As suas edições atuais serão perdidas. Confirma?', ()=>{
+  localStorage.removeItem('biobel_texto_vaga_'+tipo);
+  document.getElementById('textoVaga'+(tipo==='clt'?'Clt':'Estagio')+'Input').value = TEXTOS_VAGA_PADRAO[tipo];
+  mostrarToast('✅ Texto restaurado pro padrão!');
+ });
+}
+function copiarTextoVaga(tipo){
+ const texto = document.getElementById('textoVaga'+(tipo==='clt'?'Clt':'Estagio')+'Input').value;
+ if(navigator.clipboard && navigator.clipboard.writeText){
+  navigator.clipboard.writeText(texto).then(()=>{
+   mostrarToast('✅ Texto copiado! Já pode colar no WhatsApp, Facebook, Instagram...');
+  }).catch(()=>{
+   mostrarToast('⚠️ Não copiou sozinho — selecione e copie manualmente.');
+  });
+ } else {
+  mostrarToast('⚠️ Não copiou sozinho — selecione e copie manualmente.');
+ }
+}
+function mostrarAbaVaga(tipo){
+ const blocoEstagio = document.getElementById('blocoVagaEstagio');
+ const blocoClt = document.getElementById('blocoVagaClt');
+ const btnEstagio = document.getElementById('btnAbaVagaEstagio');
+ const btnClt = document.getElementById('btnAbaVagaClt');
+ if(blocoEstagio) blocoEstagio.style.display = tipo==='estagio' ? 'block' : 'none';
+ if(blocoClt) blocoClt.style.display = tipo==='clt' ? 'block' : 'none';
+ if(btnEstagio) btnEstagio.classList.toggle('active', tipo==='estagio');
+ if(btnClt) btnClt.classList.toggle('active', tipo==='clt');
+}
+/* ===== Campanhas — datas especiais e promocionais, prontas pra copiar e colar ===== */
+const CAMPANHAS_DATA_PADRAO = [
+ { id:1, titulo:'Dia do Cliente', texto:`🎉 Hoje é Dia do Cliente e queremos comemorar com você! 💕
+
+Passa aqui na Biobel e aproveita condições especiais só de hoje, feitas com muito carinho pra agradecer sua confiança! 🛍️✨
+
+📍 Te esperamos na loja!` },
+ { id:2, titulo:'Dia das Mães', texto:`🌸 Dia das Mães chegando! 🌸
+
+Que tal presentear quem merece todo o carinho do mundo? 💐 Temos kits, perfumes e presentes especiais pensados com todo amor pra sua mãe se sentir única! 🎁
+
+📍 Vem conferir na Biobel — corre que os kits são limitados!` },
+ { id:3, titulo:'Dia dos Pais', texto:`👔 Dia dos Pais está chegando! 👔
+
+Aquele presente que ele merece, você encontra aqui! 🎁 Kits de cuidados masculinos, perfumes e muito mais, com aquele preço especial de comemoração. 💙
+
+📍 Passa na Biobel e garante o presente do seu pai!` },
+ { id:4, titulo:'Natal', texto:`🎄✨ O Natal está chegando na Biobel! ✨🎄
+
+Presenteie com carinho quem você ama! 🎁 Kits especiais, perfumes e muito mais, com aquele clima de fim de ano gostoso. 🥳
+
+📍 Vem garantir o seu antes que acabe!` },
+ { id:5, titulo:'Black Friday', texto:`🖤 BLACK FRIDAY chegou na Biobel! 🖤
+
+Os melhores descontos do ano estão aqui! 🔥 Aproveita pra garantir aqueles produtos que você já queria com um preço incrível.
+
+⏰ É só até acabar o estoque!
+
+📍 Corre pra loja!` },
+ { id:6, titulo:'Dia Internacional da Mulher', texto:`💜 Feliz Dia Internacional da Mulher! 💜
+
+Hoje o dia é todo seu! 🌷 Pra comemorar, preparamos uma condição especial pra você se cuidar e se presentear com muito carinho.
+
+📍 Te esperamos na Biobel!` },
+ { id:7, titulo:'Dia dos Namorados', texto:`💕 Dia dos Namorados está chegando! 💕
+
+Que tal um presente diferente pra surpreender quem você ama? 🎁 Perfumes, kits e presentes especiais esperando por você.
+
+📍 Vem escolher o seu na Biobel!` },
+ { id:8, titulo:'Páscoa', texto:`🐰🌸 Feliz Páscoa! 🌸🐰
+
+Pra comemorar, preparamos mimos e condições especiais em produtos selecionados! 🎁
+
+📍 Passa na Biobel e aproveita!` },
+ { id:9, titulo:'Aniversário da Loja', texto:`🎂🎉 A Biobel está de aniversário! 🎉🎂
+
+Pra comemorar com você, que sempre esteve com a gente, preparamos condições especiais só nessa semana! 💕
+
+📍 Vem celebrar com a gente na loja!` }
+];
+const CAMPANHAS_PROMO_PADRAO = [
+ { id:1, titulo:'Desconto Relâmpago', texto:`🔥 PROMOÇÃO RELÂMPAGO na Biobel! 🔥
+
+Só HOJE, produtos selecionados com até 20% OFF! 💸
+
+Corre que é por tempo limitado! ⏰
+
+📍 Te esperamos na loja!` },
+ { id:2, titulo:'Compre 1 Leve 2', texto:`🎁 COMPRE 1 LEVE 2 na Biobel! 🎁
+
+Aproveita essa condição especial em produtos selecionados — na compra de 1, o segundo é por nossa conta! 💕
+
+📍 Só até acabar o estoque — corre pra garantir o seu!` },
+ { id:3, titulo:'Últimas Unidades', texto:`⚠️ ÚLTIMAS UNIDADES na Biobel! ⚠️
+
+Alguns produtos estão acabando o estoque, e o preço está imperdível pra dar vazão! 🔥
+
+Corre que depois que acabar, acabou! ⏰
+
+📍 Vem garantir o seu antes que termine!` },
+ { id:4, titulo:'Lançamento de Produto', texto:`✨ NOVIDADE na Biobel! ✨
+
+Chegou um produto novo que você vai amar! 💄 Pra comemorar o lançamento, ele está com um preço especial só essa semana.
+
+📍 Vem conhecer na loja!` },
+ { id:5, titulo:'Indique uma Amiga', texto:`💕 INDIQUE UMA AMIGA e ganhe! 💕
+
+Traga uma amiga que ainda não conhece a Biobel e as duas ganham um mimo especial na compra! 🎁
+
+📍 Válido só essa semana — chama sua amiga e vem pra loja!` },
+ { id:6, titulo:'Cliente Fiel', texto:`⭐ Prêmio pra quem já é da família Biobel! ⭐
+
+Você que já é nossa cliente tem uma condição exclusiva te esperando! 💕 É nosso jeito de agradecer sua confiança.
+
+📍 Passa na loja e confere!` }
+];
+function getCampanhasTexto(tipo){
+ const chave = 'biobel_campanhas_'+tipo;
+ try{
+  const salvo = localStorage.getItem(chave);
+  if(salvo) return JSON.parse(salvo);
+ }catch(e){}
+ return tipo==='data' ? JSON.parse(JSON.stringify(CAMPANHAS_DATA_PADRAO)) : JSON.parse(JSON.stringify(CAMPANHAS_PROMO_PADRAO));
+}
+function salvarCampanhasTexto(tipo, lista){
+ localStorage.setItem('biobel_campanhas_'+tipo, JSON.stringify(lista));
+}
+let campanhaEditandoId = null;
+let campanhaEditandoTipo = null;
+function mostrarAbaCampanha(tipo){
+ const blocoData = document.getElementById('blocoCampanhaData');
+ const blocoPromo = document.getElementById('blocoCampanhaPromo');
+ const btnData = document.getElementById('btnAbaCampanhaData');
+ const btnPromo = document.getElementById('btnAbaCampanhaPromo');
+ if(blocoData) blocoData.style.display = tipo==='data' ? 'block' : 'none';
+ if(blocoPromo) blocoPromo.style.display = tipo==='promo' ? 'block' : 'none';
+ if(btnData) btnData.classList.toggle('active', tipo==='data');
+ if(btnPromo) btnPromo.classList.toggle('active', tipo==='promo');
+ fecharFormCampanha();
+}
+function abrirNovaCampanha(tipo){
+ campanhaEditandoId = null;
+ campanhaEditandoTipo = tipo;
+ document.getElementById('campanhaTituloInput').value = '';
+ document.getElementById('campanhaTextoInput').value = '';
+ document.getElementById('formCampanhaWrapper').style.display = 'block';
+ document.getElementById('campanhaTituloInput').scrollIntoView({behavior:'smooth', block:'center'});
+}
+function editarCampanha(tipo, id){
+ const item = getCampanhasTexto(tipo).find(c=>c.id===id);
+ if(!item) return;
+ campanhaEditandoId = id;
+ campanhaEditandoTipo = tipo;
+ document.getElementById('campanhaTituloInput').value = item.titulo;
+ document.getElementById('campanhaTextoInput').value = item.texto;
+ document.getElementById('formCampanhaWrapper').style.display = 'block';
+ document.getElementById('campanhaTituloInput').scrollIntoView({behavior:'smooth', block:'center'});
+}
+function fecharFormCampanha(){
+ campanhaEditandoId = null;
+ campanhaEditandoTipo = null;
+ const wrapper = document.getElementById('formCampanhaWrapper');
+ if(wrapper) wrapper.style.display = 'none';
+}
+function salvarCampanha(){
+ const titulo = document.getElementById('campanhaTituloInput').value.trim();
+ const texto = document.getElementById('campanhaTextoInput').value.trim();
+ if(!titulo){ mostrarToast('⚠️ Digite um título pra campanha.'); return; }
+ if(!texto){ mostrarToast('⚠️ Digite o texto da campanha.'); return; }
+ const tipo = campanhaEditandoTipo;
+ const lista = getCampanhasTexto(tipo);
+ if(campanhaEditandoId!==null){
+  const idx = lista.findIndex(c=>c.id===campanhaEditandoId);
+  if(idx>=0){ lista[idx] = { ...lista[idx], titulo, texto }; }
+  mostrarToast('✅ Campanha atualizada!');
+ } else {
+  lista.push({ id:Date.now(), titulo, texto });
+  mostrarToast('✅ Campanha adicionada!');
+ }
+ salvarCampanhasTexto(tipo, lista);
+ fecharFormCampanha();
+ renderListaCampanhasTexto(tipo);
+}
+function removerCampanhaTexto(tipo, id){
+ const lista = getCampanhasTexto(tipo);
+ const item = lista.find(c=>c.id===id);
+ if(!item) return;
+ const novaLista = lista.filter(c=>c.id!==id);
+ salvarCampanhasTexto(tipo, novaLista);
+ renderListaCampanhasTexto(tipo);
+ mostrarToastComDesfazer('🗑️ Campanha removida.', ()=>{
+  const listaAtual = getCampanhasTexto(tipo);
+  listaAtual.push(item);
+  salvarCampanhasTexto(tipo, listaAtual);
+  renderListaCampanhasTexto(tipo);
+ });
+}
+function copiarCampanha(tipo, id){
+ const item = getCampanhasTexto(tipo).find(c=>c.id===id);
+ if(!item) return;
+ if(navigator.clipboard && navigator.clipboard.writeText){
+  navigator.clipboard.writeText(item.texto).then(()=>{
+   mostrarToast('✅ Texto copiado! Já pode colar no WhatsApp, Facebook, Instagram...');
+  }).catch(()=>{
+   mostrarToast('⚠️ Não copiou sozinho — selecione e copie manualmente.');
+  });
+ } else {
+  mostrarToast('⚠️ Não copiou sozinho — selecione e copie manualmente.');
+ }
+}
+function renderListaCampanhasTexto(tipo){
+ const el = document.getElementById(tipo==='data' ? 'listaCampanhasData' : 'listaCampanhasPromo');
+ if(!el) return;
+ const lista = getCampanhasTexto(tipo);
+ if(lista.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhuma campanha cadastrada ainda.</p>'; return; }
+ el.innerHTML = lista.map(item=>{
+  const preview = item.texto.length>90 ? item.texto.slice(0,90)+'...' : item.texto;
+  return `
+  <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
+   <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+    <span style="color:#dce5f2;font-weight:800;font-size:13.5px;">${item.titulo}</span>
+    <div style="display:flex;gap:8px;flex-shrink:0;">
+     <button onclick="editarCampanha('${tipo}',${item.id})" aria-label="Editar campanha" style="background:none;border:none;color:#4f9cff;cursor:pointer;font-size:14px;">✏️</button>
+     <button onclick="removerCampanhaTexto('${tipo}',${item.id})" aria-label="Remover campanha" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;">🗑️</button>
+    </div>
+   </div>
+   <div style="font-size:11.5px;color:#93a3ba;margin-top:6px;white-space:pre-line;">${preview}</div>
+   <button onclick="copiarCampanha('${tipo}',${item.id})" class="w-full bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded-lg font-semibold text-xs" style="margin-top:10px;">📋 Copiar texto</button>
+  </div>`;
+ }).join('');
+}
+const CAMPANHAS_IDS_ORIGINAIS = { data:[1,2,3,4], promo:[1,2] };
+function migrarNovasCampanhasPadrao(){
+ // Só roda uma vez — adiciona os NOVOS modelos padrão pra quem já tinha campanhas salvas antes
+ // dessa atualização. Compara com os IDs ORIGINAIS (fixos), não com os atuais — assim, se a
+ // pessoa já tinha apagado um dos 4/2 modelos originais de propósito, ele não é revivido; só os
+ // modelos genuinamente novos (a partir do id 5 em datas, e 3 em promocionais) entram.
+ if(localStorage.getItem('biobel_campanhas_migracao_v2')==='feito') return;
+ ['data','promo'].forEach(tipo=>{
+  const salvo = localStorage.getItem('biobel_campanhas_'+tipo);
+  if(!salvo) return; // nunca salvou nada -> getCampanhasTexto já usa a lista nova completa direto
+  try{
+   const listaAtual = JSON.parse(salvo);
+   const idsAtuais = listaAtual.map(c=>c.id);
+   const idsOriginais = CAMPANHAS_IDS_ORIGINAIS[tipo];
+   const padrao = tipo==='data' ? CAMPANHAS_DATA_PADRAO : CAMPANHAS_PROMO_PADRAO;
+   const novos = padrao.filter(p=>!idsOriginais.includes(p.id) && !idsAtuais.includes(p.id));
+   if(novos.length>0) salvarCampanhasTexto(tipo, [...listaAtual, ...novos]);
+  }catch(e){}
+ });
+ localStorage.setItem('biobel_campanhas_migracao_v2', 'feito');
+}
+/* ===== Sem Movimento? Faça Isso! — checklist de ações de divulgação, reseta todo dia ===== */
+const ATIVIDADES_SEM_MOVIMENTO_PADRAO = [
+ { texto:'📘 Divulgar pelo Facebook (grupos)?', tipo:'digital' },
+ { texto:'💬 Divulgar pelo WhatsApp (grupos)?', tipo:'digital' },
+ { texto:'📸 Mandou mensagem no Instagram pra amigos, no privado', tipo:'digital' },
+ { texto:'📘 Mandou mensagem no Facebook pra amigos, no privado', tipo:'digital' },
+ { texto:'📞 Ligar pra clientes que não compram há um tempo', tipo:'digital' },
+ { texto:'🎥 Gravar um story mostrando um produto', tipo:'digital' },
+ { texto:'🧹 Organizar/repor as prateleiras e a vitrine', tipo:'loja' },
+ { texto:'📦 Conferir o que está com estoque baixo', tipo:'loja' },
+ { texto:'🚌 Foi na parada de ônibus puxar clientes?', tipo:'rua' },
+ { texto:'📄 Panfletear na rua', tipo:'rua' },
+ { texto:'🤝 Combinar uma parceria com salão/clínica vizinha', tipo:'rua' }
+];
+function getAtividadesSemMovimento(){
+ let dados;
+ try{ dados = JSON.parse(localStorage.getItem('biobel_atividades_sem_movimento')||'null'); }catch(e){ dados = null; }
+ const hoje = obterAgoraBrasilia().paraChaveISO();
+ if(!dados || dados.data!==hoje){
+  // Novo dia — reseta tudo, já que essas ações fazem sentido serem repetidas diariamente.
+  dados = { data: hoje, itens: ATIVIDADES_SEM_MOVIMENTO_PADRAO.map(p=>({texto:p.texto, tipo:p.tipo, feita:false})) };
+  localStorage.setItem('biobel_atividades_sem_movimento', JSON.stringify(dados));
+ }
+ return dados.itens;
+}
+function salvarAtividadesSemMovimento(itens){
+ const hoje = obterAgoraBrasilia().paraChaveISO();
+ localStorage.setItem('biobel_atividades_sem_movimento', JSON.stringify({data:hoje, itens}));
+}
+function alternarAtividadeSemMovimento(indice){
+ const itens = getAtividadesSemMovimento();
+ if(!itens[indice]) return;
+ itens[indice].feita = !itens[indice].feita;
+ salvarAtividadesSemMovimento(itens);
+ renderAtividadesSemMovimento();
+}
+function abrirChecklistSemMovimento(){
+ showTab('campanhas');
+ setTimeout(()=>{
+  const el = document.getElementById('listaAtividadesSemMovimento');
+  if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+ }, 200);
+}
+function renderAtividadesSemMovimento(){
+ const el = document.getElementById('listaAtividadesSemMovimento');
+ if(!el) return;
+ const itens = getAtividadesSemMovimento();
+ // Mantém o índice original para que cada checkbox continue marcando o item correto.
+ const itensComIndice = itens.map((item,i)=>({...item, indiceOriginal:i}));
+ const digitais = itensComIndice.filter(item=>item.tipo==='digital');
+ const presenciais = itensComIndice.filter(item=>item.tipo==='loja' || item.tipo==='rua');
+
+ const renderItem = item => `
+   <div style="display:flex;align-items:center;gap:10px;background:${item.feita?'rgba(39,215,160,.1)':'#0b1728'};border:1px solid ${item.feita?'rgba(39,215,160,.4)':'#1e2c42'};border-radius:10px;padding:10px 14px;transition:background-color .2s,border-color .2s;">
+    <input type="checkbox" ${item.feita?'checked':''} onchange="alternarAtividadeSemMovimento(${item.indiceOriginal})" style="width:18px;height:18px;flex-shrink:0;cursor:pointer;">
+    <span style="flex:1;font-size:13px;color:${item.feita?'#93a3ba':'#dce5f2'};text-decoration:${item.feita?'line-through':'none'};">${item.feita?'✅ ':''}${item.texto}</span>
+   </div>`;
+
+ const hoje = obterAgoraBrasilia();
+ const chaveDia = String(hoje.getDate()).padStart(2,'0')+'.'+String(hoje.getMonth()+1).padStart(2,'0');
+ const climaHoje = getClimaDias()[chaveDia];
+ const avisoRua = climaHoje==='Chuva'
+  ? '<div style="font-size:11px;color:#4f9cff;margin:-2px 0 10px;">🌧️ Hoje está chovendo. As ações de rua continuam na lista, mas podem ser feitas conforme as condições do dia.</div>'
+  : '';
+
+ el.innerHTML = `
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;">
+   <section style="border:1px solid #1e2c42;border-radius:14px;padding:12px;background:rgba(11,23,40,.45);">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+     <div style="font-size:15px;">📱</div>
+     <div>
+      <div style="font-size:13px;font-weight:800;color:#dce5f2;">Divulgação & Relacionamento</div>
+      <div style="font-size:10.5px;color:#93a3ba;">Ações para buscar e reativar clientes</div>
+     </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;">${digitais.map(renderItem).join('')}</div>
+   </section>
+
+   <section style="border:1px solid #1e2c42;border-radius:14px;padding:12px;background:rgba(11,23,40,.45);">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+     <div style="font-size:15px;">🏪</div>
+     <div>
+      <div style="font-size:13px;font-weight:800;color:#dce5f2;">Loja, Rua & Parcerias</div>
+      <div style="font-size:10.5px;color:#93a3ba;">Ações presenciais para gerar movimento</div>
+     </div>
+    </div>
+    ${avisoRua}
+    <div style="display:flex;flex-direction:column;gap:8px;">${presenciais.map(renderItem).join('')}</div>
+   </section>
+  </div>`;
+ renderChecklistChuvaDashboard();
+}
+function renderChecklistChuvaDashboard(){
+ // Espelho compacto da checklist "Sem Movimento" no Dashboard — só aparece em dia de chuva,
+ // mostrando as próximas ações digitais ainda não feitas (máx. 4), pra não precisar trocar de aba.
+ const el = document.getElementById('checklistChuvaDashboard');
+ if(!el) return;
+ const hoje = obterAgoraBrasilia();
+ const chaveDia = String(hoje.getDate()).padStart(2,'0')+'.'+String(hoje.getMonth()+1).padStart(2,'0');
+ if(getClimaDias()[chaveDia]!=='Chuva'){ el.style.display='none'; return; }
+ const itens = getAtividadesSemMovimento().map((item,i)=>({...item, indiceOriginal:i}));
+ const pendentes = itens.filter(i=>!i.feita && i.tipo==='digital').slice(0,4);
+ const feitas = itens.filter(i=>i.feita).length;
+ el.style.cssText = 'display:block;background:#0b1728;border:1px solid rgba(79,156,255,.35);border-radius:12px;padding:12px 14px;margin-bottom:6px;';
+ el.innerHTML = `<div style="font-size:12px;color:#4f9cff;font-weight:800;margin-bottom:8px;">📢 Sem Movimento? Próximas ações (${feitas}/${itens.length} feitas hoje)</div>`
+  + (pendentes.length===0
+   ? '<div style="font-size:12px;color:#27d7a0;">✅ Todas as ações digitais de hoje já foram feitas!</div>'
+   : pendentes.map(item=>`<label style="display:flex;align-items:center;gap:10px;font-size:12.5px;color:#dce5f2;padding:6px 0;cursor:pointer;"><input type="checkbox" onchange="alternarAtividadeSemMovimento(${item.indiceOriginal})" style="width:17px;height:17px;flex-shrink:0;">${item.texto}</label>`).join(''))
+  + `<button onclick="abrirChecklistSemMovimento()" style="margin-top:8px;background:none;border:none;color:#93a3ba;font-size:11px;text-decoration:underline;cursor:pointer;">ver lista completa →</button>`;
+}
+
+function initCampanhas(){
+ migrarNovasCampanhasPadrao();
+ renderListaCampanhasTexto('data');
+ renderListaCampanhasTexto('promo');
+ renderAtividadesSemMovimento();
+}
+
+function initTextosVaga(){
+ const inputEstagio = document.getElementById('textoVagaEstagioInput');
+ const inputClt = document.getElementById('textoVagaCltInput');
+ if(inputEstagio) inputEstagio.value = getTextoVaga('estagio');
+ if(inputClt) inputClt.value = getTextoVaga('clt');
+}
+
+/* ===== Dica do Dia — mensagem aleatória, uma vez por dia, lista editável ===== */
+const DICAS_DO_DIA_PADRAO = [
+ '📦 Já checou seu estoque hoje?',
+ '🪟 Já arrumou a vitrine essa semana?',
+ '📱 Já postou nas redes sociais hoje?',
+ '💰 Já conferiu o caixa de ontem com calma?',
+ '🧹 Já organizou as prateleiras da loja hoje?',
+ '📞 Já respondeu as mensagens dos clientes?',
+ '🎯 Já checou se a meta do dia está no caminho certo?',
+ '📋 Já revisou a agenda da semana?',
+ '🎁 Que tal pensar numa promoção pra essa semana?',
+ '👩‍💼 Já bateu um papo com a equipe hoje?'
+];
+function getDicasDoDia(){
+ try{
+  const salvo = localStorage.getItem('biobel_dicas_do_dia');
+  return salvo ? JSON.parse(salvo) : [...DICAS_DO_DIA_PADRAO];
+ }catch(e){ return [...DICAS_DO_DIA_PADRAO]; }
+}
+function salvarDicasDoDia(lista){
+ localStorage.setItem('biobel_dicas_do_dia', JSON.stringify(lista));
+}
+function adicionarDicaDoDia(){
+ const input = document.getElementById('novaDicaInput');
+ const texto = input.value.trim();
+ if(!texto){ mostrarToast('⚠️ Digite uma dica antes de adicionar.'); return; }
+ const lista = getDicasDoDia();
+ lista.push(texto);
+ salvarDicasDoDia(lista);
+ input.value = '';
+ renderListaDicasDoDia();
+ mostrarToast('✅ Dica adicionada!');
+}
+function removerDicaDoDia(indice){
+ confirmarBiobel('Remover essa dica da lista?', ()=>{
+  const lista = getDicasDoDia();
+  lista.splice(indice,1);
+  salvarDicasDoDia(lista);
+  renderListaDicasDoDia();
+  mostrarToast('🗑️ Removida.');
+ });
+}
+function renderListaDicasDoDia(){
+ const el = document.getElementById('listaDicasDoDia');
+ if(!el) return;
+ const lista = getDicasDoDia();
+ if(lista.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhuma dica cadastrada — o sistema não vai mostrar nada até você adicionar pelo menos uma.</p>'; return; }
+ el.innerHTML = lista.map((texto,i)=>`
+   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 14px;">
+    <span style="font-size:13px;color:#dce5f2;">${texto}</span>
+    <button onclick="removerDicaDoDia(${i})" aria-label="Remover dica" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;flex-shrink:0;">🗑️</button>
+   </div>`).join('');
+}
+function renderDicaDoDiaPopup(texto){
+ const el = document.getElementById('dicaDoDiaOverlay');
+ if(!el) return;
+ el.style.cssText = 'display:flex;position:fixed;inset:0;z-index:9997;background:rgba(7,17,31,.82);align-items:center;justify-content:center;padding:20px;';
+ el.innerHTML = `<div style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(251,191,36,.35);border-radius:20px;padding:30px 28px;max-width:380px;width:100%;box-shadow:0 24px 70px rgba(0,0,0,.55);text-align:center;">
+   <div style="font-size:11px;color:#fbbf24;font-weight:800;text-transform:uppercase;margin-bottom:14px;">💡 Dica do Dia</div>
+   <div style="font-size:17px;font-weight:800;color:#dce5f2;margin-bottom:24px;line-height:1.5;">${texto}</div>
+   <button onclick="document.getElementById('dicaDoDiaOverlay').style.display='none';" style="background:#fbbf24;border:none;color:#1a1408;border-radius:10px;padding:10px 24px;font-size:13px;font-weight:800;cursor:pointer;">Entendi!</button>
+  </div>`;
+}
+function verificarDicaDoDia(){
+ const hoje = obterAgoraBrasilia().paraChaveISO();
+ const ultimaVez = localStorage.getItem('biobel_dica_do_dia_ultima_data');
+ if(ultimaVez===hoje) return; // já mostrou hoje, não mostra de novo
+ const lista = getDicasDoDia();
+ if(lista.length===0) return;
+ const escolhida = lista[Math.floor(Math.random()*lista.length)];
+ localStorage.setItem('biobel_dica_do_dia_ultima_data', hoje);
+ setTimeout(()=>{
+  // Se o tour guiado (primeiro acesso) estiver aberto, espera mais um pouco pra não sobrepor.
+  const tourAberto = document.getElementById('tourGuiadoOverlay')?.style.display === 'flex';
+  if(tourAberto){ setTimeout(()=>renderDicaDoDiaPopup(escolhida), 5000); }
+  else{ renderDicaDoDiaPopup(escolhida); }
+ }, 1200);
+}
+function testarDicaDoDia(){
+ const lista = getDicasDoDia();
+ if(lista.length===0){ mostrarToast('⚠️ Adicione pelo menos uma dica primeiro.'); return; }
+ const escolhida = lista[Math.floor(Math.random()*lista.length)];
+ renderDicaDoDiaPopup(escolhida);
+}
+
+function copiarValorTela(id){
+ const el = document.getElementById(id);
+ if(!el) return;
+ const texto = el.textContent.trim();
+ if(navigator.clipboard && navigator.clipboard.writeText){
+  navigator.clipboard.writeText(texto).then(()=>{
+   mostrarToast('✅ Copiado: '+texto);
+  }).catch(()=>{
+   mostrarToast('⚠️ Não copiou sozinho — valor: '+texto);
+  });
+ } else {
+  mostrarToast('⚠️ Não copiou sozinho — valor: '+texto);
+ }
+}
+
+function copiarChavePix(chave, nome){
+ if(navigator.clipboard && navigator.clipboard.writeText){
+  navigator.clipboard.writeText(chave).then(()=>{
+   mostrarToast('✅ Chave PIX de '+nome+' copiada!');
+  }).catch(()=>{
+   mostrarToast('⚠️ Não copiou sozinho — chave de '+nome+': '+chave);
+  });
+ } else {
+  mostrarToast('⚠️ Não copiou sozinho — chave de '+nome+': '+chave);
+ }
+}
+
+function seedDadosPessoaisEquipe(){
+ // Pré-preenche com os dados reais já confirmados — só na primeira vez, sem nunca sobrescrever
+ // se alguém já tiver editado esses campos com a própria mão.
+ const jaMigrou = localStorage.getItem('biobel_adm_seed_dados_pessoais_v1');
+ if(jaMigrou) return;
+ if(!localStorage.getItem('biobel_adm_nascimento_gabriela')) localStorage.setItem('biobel_adm_nascimento_gabriela', '2005-05-30');
+ if(!localStorage.getItem('biobel_adm_data_admissao_gabriela')) localStorage.setItem('biobel_adm_data_admissao_gabriela', '2026-06-01');
+ if(!localStorage.getItem('biobel_adm_nascimento_day')) localStorage.setItem('biobel_adm_nascimento_day', '2009-07-03');
+ if(!localStorage.getItem('biobel_adm_inicio_estagio_day')) localStorage.setItem('biobel_adm_inicio_estagio_day', '2026-05-25');
+ localStorage.setItem('biobel_adm_seed_dados_pessoais_v1', 'yes');
+}
+/* ===== Calendário Comercial (datas especiais calculadas automaticamente) ===== */
+function calcularSegundoDomingo(ano, mes){
+ // mes: 1-indexado (5 = maio, 8 = agosto)
+ const primeiroDiaSemana = new Date(ano, mes-1, 1).getDay(); // 0=domingo
+ const diasAteoPrimeiroDomingo = primeiroDiaSemana===0 ? 0 : 7-primeiroDiaSemana;
+ const primeiroDomingo = 1+diasAteoPrimeiroDomingo;
+ return new Date(ano, mes-1, primeiroDomingo+7);
+}
+function calcularUltimaSexta(ano, mes){
+ const ultimoDiaDoMes = new Date(ano, mes, 0); // dia 0 do mês seguinte = último dia do mês atual
+ const diaSemana = ultimoDiaDoMes.getDay(); // 0=domingo...5=sexta,6=sábado
+ const diff = (diaSemana - 5 + 7) % 7;
+ return new Date(ano, mes-1, ultimoDiaDoMes.getDate()-diff);
+}
+function gerarDatasComerciais(ano){
+ return [
+  { nome:'🌸 Dia Internacional da Mulher', data: new Date(ano,2,8) },
+  { nome:'🛍️ Dia do Consumidor', data: new Date(ano,2,15) },
+  { nome:'🌷 Dia das Mães', data: calcularSegundoDomingo(ano,5) },
+  { nome:'💑 Dia dos Namorados', data: new Date(ano,5,12) },
+  { nome:'👔 Dia dos Pais', data: calcularSegundoDomingo(ano,8) },
+  { nome:'🤝 Dia do Cliente', data: new Date(ano,8,15) },
+  { nome:'🎈 Dia das Crianças', data: new Date(ano,9,12) },
+  { nome:'🛒 Black Friday', data: calcularUltimaSexta(ano,11) },
+  { nome:'🎄 Natal', data: new Date(ano,11,25) },
+  { nome:'🎉 Véspera de Ano Novo', data: new Date(ano,11,31) },
+ ];
+}
+async function renderDatasComerciais(){
+ const el = document.getElementById('listaDatasComerciaisDashboard');
+ if(!el) return;
+ const hoje = obterAgoraBrasilia();
+ const hojeData = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+ const todasAsDatas = [...gerarDatasComerciais(hoje.getFullYear()), ...gerarDatasComerciais(hoje.getFullYear()+1)];
+ const futuras = todasAsDatas
+  .map(d=>({...d, dias: Math.round((d.data.getTime()-hojeData.getTime())/86400000)}))
+  .filter(d=>d.dias>=0)
+  .sort((a,b)=>a.dias-b.dias)
+  .slice(0,6);
+
+ if(futuras.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhuma data encontrada.</p>'; return; }
+
+ // Cruza com a previsão do tempo (que só cobre uns 16 dias à frente) — só aparece o selo de
+ // clima nas datas que já entram dentro desse período; datas mais distantes ficam sem selo.
+ let previsao = [];
+ try{ previsao = await getPrevisaoClimaFutura(); }catch(e){}
+ const emojisClima = { Sol:'☀️', Nublado:'☁️', Chuva:'🌧️', Frio:'🥶' };
+
+ el.innerHTML = futuras.map((d,i)=>{
+  const destaque = i===0;
+  const dataStr = d.data.toISOString().slice(0,10);
+  const previsaoDoDia = previsao.find(p=>p.data===dataStr);
+  const seloClima = previsaoDoDia ? `<span style="margin-left:6px;" title="Previsão do tempo pra essa data">${emojisClima[previsaoDoDia.categoria]||''}</span>` : '';
+  return `
+   <div style="display:flex;justify-content:space-between;align-items:center;background:${destaque?'rgba(39,215,160,.08)':'#0b1728'};border:1px solid ${destaque?'rgba(39,215,160,.35)':'#1e2c42'};border-radius:10px;padding:10px 14px;">
+    <div>
+     <span style="color:#dce5f2;font-weight:700;font-size:13px;">${d.nome}</span>
+     <span style="color:#93a3ba;font-size:11px;margin-left:8px;">${d.data.toLocaleDateString('pt-BR')}</span>${seloClima}
+    </div>
+    <span style="color:${destaque?'#27d7a0':'#93a3ba'};font-weight:800;font-size:12.5px;white-space:nowrap;">${d.dias===0?'🎉 é hoje!':d.dias+' dia'+(d.dias===1?'':'s')}</span>
+   </div>`;
+ }).join('');
+}
+
+/* ===== Agenda de Reuniões com Fornecedores ===== */
+function getReunioes(){
+ try{ return JSON.parse(localStorage.getItem('biobel_adm_reunioes')||'[]'); }catch(e){ return []; }
+}
+function salvarReunioes(lista){
+ localStorage.setItem('biobel_adm_reunioes', JSON.stringify(lista));
+}
+let reuniaoEditandoId = null;
+function adicionarReuniao(){
+ const fornecedor = document.getElementById('novaReuniaoFornecedor').value.trim();
+ const data = document.getElementById('novaReuniaoData').value;
+ const hora = document.getElementById('novaReuniaoHora').value;
+ const assunto = document.getElementById('novaReuniaoAssunto').value.trim();
+ if(!fornecedor){ mostrarToast('⚠️ Digite o nome do fornecedor ou pessoa.'); return; }
+ if(!data){ mostrarToast('⚠️ Escolha a data da reunião.'); return; }
+
+ const lista = getReunioes();
+ if(reuniaoEditandoId!==null){
+  const idx = lista.findIndex(r=>r.id===reuniaoEditandoId);
+  if(idx>=0){
+   lista[idx] = { ...lista[idx], fornecedor, data, hora, assunto };
+   salvarReunioes(lista);
+   mostrarToast('✅ Reunião atualizada!');
+   registrarAlteracao('Reunião com "'+fornecedor+'" editada');
+  }
+  cancelarEdicaoReuniao();
+ } else {
+  lista.push({ id: Date.now(), fornecedor, data, hora, assunto, concluida:false });
+  salvarReunioes(lista);
+  mostrarToast('✅ Reunião adicionada!');
+  registrarAlteracao('Reunião com "'+fornecedor+'" agendada para '+new Date(data+'T00:00:00').toLocaleDateString('pt-BR'));
+ }
+ ['novaReuniaoFornecedor','novaReuniaoData','novaReuniaoHora','novaReuniaoAssunto'].forEach(id=>{
+  const el = document.getElementById(id);
+  if(el) el.value='';
+ });
+ renderReunioes();
+ renderLogAlteracoes();
+}
+function editarReuniao(id){
+ const r = getReunioes().find(x=>x.id===id);
+ if(!r) return;
+ reuniaoEditandoId = id;
+ document.getElementById('novaReuniaoFornecedor').value = r.fornecedor||'';
+ document.getElementById('novaReuniaoData').value = r.data||'';
+ document.getElementById('novaReuniaoHora').value = r.hora||'';
+ document.getElementById('novaReuniaoAssunto').value = r.assunto||'';
+ const btn = document.getElementById('btnAdicionarReuniao');
+ if(btn) btn.textContent = '💾 Salvar edição';
+ const btnCancelar = document.getElementById('btnCancelarEdicaoReuniao');
+ if(btnCancelar) btnCancelar.style.display = 'inline-block';
+ document.getElementById('novaReuniaoFornecedor').scrollIntoView({behavior:'smooth', block:'center'});
+}
+function cancelarEdicaoReuniao(){
+ reuniaoEditandoId = null;
+ ['novaReuniaoFornecedor','novaReuniaoData','novaReuniaoHora','novaReuniaoAssunto'].forEach(id=>{
+  const el = document.getElementById(id);
+  if(el) el.value='';
+ });
+ const btn = document.getElementById('btnAdicionarReuniao');
+ if(btn) btn.textContent = '➕ Adicionar reunião';
+ const btnCancelar = document.getElementById('btnCancelarEdicaoReuniao');
+ if(btnCancelar) btnCancelar.style.display = 'none';
+}
+function alternarConcluidaReuniao(id){
+ const lista = getReunioes();
+ const idx = lista.findIndex(r=>r.id===id);
+ if(idx<0) return;
+ lista[idx].concluida = !lista[idx].concluida;
+ salvarReunioes(lista);
+ renderReunioes();
+}
+function removerReuniao(id){
+ confirmarBiobel('Remover essa reunião da agenda?', ()=>{
+  const lista = getReunioes().filter(r=>r.id!==id);
+  salvarReunioes(lista);
+  renderReunioes();
+  mostrarToast('🗑️ Removida.');
+ });
+}
+function verificarLembreteReunioesHoje(){
+ const hoje = obterAgoraBrasilia();
+ const hojeStr = hoje.paraChaveISO();
+ const ultimaVez = localStorage.getItem('biobel_lembrete_reunioes_ultima_data');
+ if(ultimaVez===hojeStr) return; // já avisou hoje, não repete
+ const reunioesHoje = getReunioes().filter(r=>r.data===hojeStr && !r.concluida);
+ if(reunioesHoje.length===0) return;
+ localStorage.setItem('biobel_lembrete_reunioes_ultima_data', hojeStr);
+ // Espera mais tempo que a Dica do Dia (que aparece em ~1.2s), pra dar tempo da pessoa ler e
+ // fechar a primeira antes dessa aparecer — evita as duas telas surgindo uma em cima da outra.
+ setTimeout(()=>renderLembreteReunioesPopup(reunioesHoje), 4500);
+}
+function renderLembreteReunioesPopup(reunioes){
+ const el = document.getElementById('lembreteReunioesOverlay');
+ if(!el) return;
+ el.style.cssText = 'display:flex;position:fixed;inset:0;z-index:9998;background:rgba(7,17,31,.85);align-items:center;justify-content:center;padding:20px;';
+ const listaHtml = reunioes.map(r=>`
+   <div style="background:#0b1728;border:1px solid rgba(251,191,36,.3);border-radius:10px;padding:10px 14px;margin-bottom:8px;text-align:left;">
+    <div style="color:#dce5f2;font-weight:800;font-size:13px;">${r.fornecedor}</div>
+    <div style="color:#93a3ba;font-size:11.5px;margin-top:2px;">${r.hora?'⏰ '+r.hora:'Sem horário marcado'}${r.assunto?' — '+r.assunto:''}</div>
+   </div>`).join('');
+ el.innerHTML = `<div style="background:linear-gradient(135deg,#1a1408,#150f06);border:1px solid rgba(251,191,36,.4);border-radius:20px;padding:30px 28px;max-width:400px;width:100%;box-shadow:0 24px 70px rgba(0,0,0,.55);text-align:center;">
+   <div style="font-size:11px;color:#fbbf24;font-weight:800;text-transform:uppercase;margin-bottom:14px;">🤝 Reunião marcada pra hoje</div>
+   ${listaHtml}
+   <button onclick="document.getElementById('lembreteReunioesOverlay').style.display='none';" style="background:#fbbf24;border:none;color:#1a1408;border-radius:10px;padding:10px 24px;font-size:13px;font-weight:800;cursor:pointer;margin-top:10px;">Combinado!</button>
+  </div>`;
+}
+
+function renderReunioes(){
+ const el = document.getElementById('listaReunioes');
+ if(!el) return;
+ const lista = [...getReunioes()].sort((a,b)=>(a.data+((a.hora)||'00:00')).localeCompare(b.data+((b.hora)||'00:00')));
+ if(lista.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhuma reunião agendada ainda.</p>';
+  return;
+ }
+ const hoje = obterAgoraBrasilia();
+ const hojeStr = hoje.paraChaveISO();
+ el.innerHTML = lista.map(r=>{
+  const dataFormatada = new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR');
+  const ehHojeReuniao = r.data===hojeStr;
+  const jaPassou = r.data<hojeStr;
+  return `
+   <div style="background:#0b1728;border:1px solid ${ehHojeReuniao&&!r.concluida?'rgba(39,215,160,.4)':'#1e2c42'};border-radius:12px;padding:12px 14px;${r.concluida?'opacity:.6;':''}">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;">
+     <div>
+      <div style="color:#dce5f2;font-weight:800;font-size:14px;">${r.fornecedor} ${r.concluida?'<span style="color:#27d7a0;font-size:11px;font-weight:800;">✅ CONCLUÍDA</span>':ehHojeReuniao?'<span style="color:#27d7a0;font-size:11px;font-weight:800;">📍 HOJE</span>':jaPassou?'<span style="color:#fb7185;font-size:11px;font-weight:800;">⏳ ATRASADA</span>':''}</div>
+      <div style="color:#93a3ba;font-size:11.5px;margin-top:2px;">📅 ${dataFormatada}${r.hora?' às '+r.hora:''}</div>
+     </div>
+     <div style="display:flex;align-items:center;gap:8px;">
+      <button onclick="alternarConcluidaReuniao(${r.id})" aria-label="${r.concluida?'Marcar como pendente':'Marcar como concluída'}" style="background:none;border:none;color:${r.concluida?'#93a3ba':'#27d7a0'};cursor:pointer;font-size:14px;">${r.concluida?'↩️':'✅'}</button>
+      <button onclick="editarReuniao(${r.id})" aria-label="Editar reunião" style="background:none;border:none;color:#4f9cff;cursor:pointer;font-size:14px;">✏️</button>
+      <button onclick="removerReuniao(${r.id})" aria-label="Remover reunião" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;">🗑️</button>
+     </div>
+    </div>
+    ${r.assunto?`<div style="font-size:11.5px;color:#93a3ba;margin-top:6px;font-style:italic;">"${r.assunto}"</div>`:''}
+   </div>`;
+ }).join('');
+}
+
+/* ===== Mensagens Programadas (aniversários, avisos, datas especiais) ===== */
+function alternarCamposDataMensagem(){
+ const semData = document.getElementById('mensagemSemDataCheckbox').checked;
+ document.getElementById('camposDataMensagem').style.display = semData ? 'none' : 'grid';
+}
+function getMensagensProgramadas(){
+ try{ return JSON.parse(localStorage.getItem('biobel_mensagens_programadas')||'[]'); }catch(e){ return []; }
+}
+function salvarMensagensProgramadas(lista){
+ localStorage.setItem('biobel_mensagens_programadas', JSON.stringify(lista));
+}
+function seedMensagemAniversarioAlessandra(){
+ // A mensagem oficial de aniversário da Alessandra, pré-programada de 28 a 31 de agosto —
+ // só na primeira vez, sem nunca sobrescrever se alguém editar ou remover depois.
+ const jaSeedou = localStorage.getItem('biobel_seed_msg_alessandra_v1');
+ if(jaSeedou) return;
+ const mensagens = getMensagensProgramadas();
+ mensagens.push({
+  id: Date.now(),
+  diaInicio: 28,
+  diaFim: 31,
+  mes: 8,
+  mensagem: '🎉🎂 Feliz Aniversário, Alessandra!\n\nParabéns pelo seu dia! Te desejo muita paz, muito amor e, principalmente, muita saúde. 💕\n\n— Jhon kkkkkkk'
+ });
+ salvarMensagensProgramadas(mensagens);
+ localStorage.setItem('biobel_seed_msg_alessandra_v1', 'yes');
+}
+let mensagemEditandoId = null;
+function adicionarMensagemProgramada(){
+ const semData = document.getElementById('mensagemSemDataCheckbox').checked;
+ const diaInicio = semData ? null : parseInt(document.getElementById('mensagemDiaInicioInput').value, 10);
+ const diaFim = semData ? null : parseInt(document.getElementById('mensagemDiaFimInput').value, 10);
+ const mes = semData ? null : parseInt(document.getElementById('mensagemMesSelect').value, 10);
+ const mensagem = document.getElementById('mensagemTextoInput').value.trim();
+ const turnos = [];
+ if(document.getElementById('mensagemTurnoManha').checked) turnos.push('manha');
+ if(document.getElementById('mensagemTurnoTarde').checked) turnos.push('tarde');
+ const vezesPorTurno = Math.max(1, parseInt(document.getElementById('mensagemVezesPorTurnoInput').value, 10) || 3);
+
+ if(!semData){
+  if(isNaN(diaInicio) || diaInicio<1 || diaInicio>31){ mostrarToast('⚠️ Digite um dia de início válido.'); return; }
+  if(isNaN(diaFim) || diaFim<1 || diaFim>31){ mostrarToast('⚠️ Digite um dia de fim válido.'); return; }
+  if(diaFim<diaInicio){ mostrarToast('⚠️ O dia de fim não pode ser antes do dia de início.'); return; }
+ }
+ if(!mensagem){ mostrarToast('⚠️ Digite a mensagem.'); return; }
+ if(turnos.length===0){ mostrarToast('⚠️ Marque pelo menos um turno (manhã ou tarde).'); return; }
+
+ const lista = getMensagensProgramadas();
+ if(mensagemEditandoId!==null){
+  const idx = lista.findIndex(m=>m.id===mensagemEditandoId);
+  if(idx>=0){
+   lista[idx] = { ...lista[idx], diaInicio, diaFim, mes, mensagem, semData, turnos, vezesPorTurno };
+   salvarMensagensProgramadas(lista);
+   mostrarToast('✅ Mensagem atualizada!');
+   registrarAlteracao('Mensagem programada editada');
+  }
+  cancelarEdicaoMensagem();
+ } else {
+  lista.push({ id: Date.now(), diaInicio, diaFim, mes, mensagem, semData, turnos, vezesPorTurno });
+  salvarMensagensProgramadas(lista);
+  mostrarToast('✅ '+(semData?'Recado fixo':'Mensagem programada')+' adicionado'+(semData?'':'a')+'!');
+  registrarAlteracao(semData ? 'Recado fixo da equipe adicionado' : 'Mensagem programada adicionada ('+diaInicio+' a '+diaFim+')');
+ }
+ document.getElementById('mensagemDiaInicioInput').value='';
+ document.getElementById('mensagemDiaFimInput').value='';
+ document.getElementById('mensagemTextoInput').value='';
+ document.getElementById('mensagemSemDataCheckbox').checked=false;
+ document.getElementById('mensagemTurnoManha').checked=true;
+ document.getElementById('mensagemTurnoTarde').checked=true;
+ document.getElementById('mensagemVezesPorTurnoInput').value=3;
+ alternarCamposDataMensagem();
+ renderMensagensProgramadas();
+ renderLogAlteracoes();
+}
+function editarMensagemProgramada(id){
+ const m = getMensagensProgramadas().find(x=>x.id===id);
+ if(!m) return;
+ mensagemEditandoId = id;
+ document.getElementById('mensagemSemDataCheckbox').checked = !!m.semData;
+ document.getElementById('mensagemDiaInicioInput').value = m.diaInicio || '';
+ document.getElementById('mensagemDiaFimInput').value = m.diaFim || '';
+ if(m.mes) document.getElementById('mensagemMesSelect').value = m.mes;
+ document.getElementById('mensagemTextoInput').value = m.mensagem;
+ const turnos = m.turnos || ['manha','tarde']; // mensagens antigas (antes dessa opção existir) valem pros dois turnos
+ document.getElementById('mensagemTurnoManha').checked = turnos.includes('manha');
+ document.getElementById('mensagemTurnoTarde').checked = turnos.includes('tarde');
+ document.getElementById('mensagemVezesPorTurnoInput').value = m.vezesPorTurno || 3;
+ alternarCamposDataMensagem();
+ const btn = document.getElementById('btnAdicionarMensagem');
+ if(btn) btn.textContent = '💾 Salvar edição';
+ const btnCancelar = document.getElementById('btnCancelarEdicaoMensagem');
+ if(btnCancelar) btnCancelar.style.display = 'inline-block';
+ document.getElementById('mensagemTextoInput').scrollIntoView({behavior:'smooth', block:'center'});
+}
+function cancelarEdicaoMensagem(){
+ mensagemEditandoId = null;
+ document.getElementById('mensagemDiaInicioInput').value='';
+ document.getElementById('mensagemDiaFimInput').value='';
+ document.getElementById('mensagemTextoInput').value='';
+ document.getElementById('mensagemSemDataCheckbox').checked=false;
+ document.getElementById('mensagemTurnoManha').checked=true;
+ document.getElementById('mensagemTurnoTarde').checked=true;
+ document.getElementById('mensagemVezesPorTurnoInput').value=3;
+ alternarCamposDataMensagem();
+ const btn = document.getElementById('btnAdicionarMensagem');
+ if(btn) btn.textContent = '➕ Adicionar mensagem';
+ const btnCancelar = document.getElementById('btnCancelarEdicaoMensagem');
+ if(btnCancelar) btnCancelar.style.display = 'none';
+}
+function removerMensagemProgramada(id){
+ confirmarBiobel('Remover essa mensagem programada?', ()=>{
+  const lista = getMensagensProgramadas().filter(m=>m.id!==id);
+  salvarMensagensProgramadas(lista);
+  renderMensagensProgramadas();
+  mostrarToast('🗑️ Removida.');
+ });
+}
+function renderMensagensProgramadas(){
+ seedMensagemAniversarioAlessandra();
+ const el = document.getElementById('listaMensagensProgramadas');
+ if(!el) return;
+ const lista = getMensagensProgramadas();
+ const nomesMeses = ['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+ if(lista.length===0){
+  el.innerHTML = '<div style="text-align:center;padding:24px 12px;"><div style="font-size:34px;opacity:.5;margin-bottom:8px;">💬</div><p style="color:#93a3ba;font-size:12.5px;">Nenhuma mensagem programada ainda.</p></div>';
+  return;
+ }
+ el.innerHTML = lista.map(m=>{
+  const preview = m.mensagem.length>100 ? m.mensagem.slice(0,100)+'...' : m.mensagem;
+  const turnos = m.turnos || ['manha','tarde'];
+  const nomesTurnos = turnos.map(t=>t==='manha'?'☀️ Manhã':'🌇 Tarde').join(' + ');
+  const cabecalho = m.semData ? '🔁 Recado fixo (sempre ativo)' : '📅 '+m.diaInicio+' a '+m.diaFim+' de '+nomesMeses[m.mes];
+  return `
+  <div style="background:#0b1728;border:1px solid ${m.semData?'rgba(79,156,255,.35)':'#1e2c42'};border-radius:10px;padding:12px 14px;">
+   <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;">
+    <span style="color:#dce5f2;font-weight:800;font-size:13px;">${cabecalho}</span>
+    <div style="display:flex;align-items:center;gap:8px;">
+     <button onclick="editarMensagemProgramada(${m.id})" aria-label="Editar mensagem" style="background:none;border:none;color:#4f9cff;cursor:pointer;font-size:14px;">✏️</button>
+     <button onclick="removerMensagemProgramada(${m.id})" aria-label="Remover mensagem" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;">🗑️</button>
+    </div>
+   </div>
+   <div style="font-size:10.5px;color:#93a3ba;margin-top:4px;">${nomesTurnos} · ${m.vezesPorTurno||3}x por turno</div>
+   <div style="font-size:11.5px;color:#93a3ba;margin-top:6px;white-space:pre-line;">${preview}</div>
+  </div>`;
+ }).join('');
+}
+
+/* ===== Exibição da faixa (na área ADM) — até 3x de manhã e 3x à tarde por mensagem/dia ===== */
+function obterPeriodoSimplificadoDoDia(hora){
+ return hora<12 ? 'manha' : 'tarde';
+}
+function encontrarMensagemAtivaHoje(){
+ seedMensagemAniversarioAlessandra();
+ const hoje = obterAgoraBrasilia();
+ const mesAtual = hoje.getMonth()+1;
+ const diaAtual = hoje.getDate();
+ return getMensagensProgramadas().find(m=>
+  m.semData || (Number(m.mes)===mesAtual && diaAtual>=Number(m.diaInicio) && diaAtual<=Number(m.diaFim))
+ );
+}
+function renderFaixaMensagemProgramada(){
+ const el = document.getElementById('faixaMensagemProgramada');
+ if(!el) return;
+ const msg = encontrarMensagemAtivaHoje();
+ if(!msg){ el.style.display='none'; return; }
+
+ const hoje = obterAgoraBrasilia();
+ const periodo = obterPeriodoSimplificadoDoDia(hoje.getHours());
+ // Mensagens antigas (de antes dessa opção existir) valem pros dois turnos, pra não quebrar
+ // o que já estava configurado.
+ const turnosPermitidos = msg.turnos || ['manha','tarde'];
+ if(!turnosPermitidos.includes(periodo)){ el.style.display='none'; return; }
+
+ const limiteVezes = msg.vezesPorTurno || 3;
+ const chaveContador = 'biobel_msg_contador_'+msg.id+'_'+hoje.paraChaveISO()+'_'+periodo;
+ const contadorAtual = parseInt(localStorage.getItem(chaveContador)||'0', 10);
+
+ if(contadorAtual>=limiteVezes){ el.style.display='none'; return; }
+ localStorage.setItem(chaveContador, String(contadorAtual+1));
+
+ // Popup de verdade: fundo escurecido cobrindo a tela toda, card centralizado por cima de tudo.
+ el.style.cssText = 'display:flex;position:fixed;inset:0;z-index:9999;background:rgba(7,17,31,.78);align-items:center;justify-content:center;padding:20px;';
+ el.onclick = function(e){ if(e.target===el) fecharPopupMensagemProgramada(); };
+ el.innerHTML = `<div onclick="event.stopPropagation()" style="background:linear-gradient(135deg,#3d1a4a,#2a1030);border:1px solid rgba(236,72,153,.5);border-radius:20px;padding:32px 28px;position:relative;max-width:420px;width:100%;box-shadow:0 24px 70px rgba(0,0,0,.55);text-align:center;">
+   <button onclick="fecharPopupMensagemProgramada()" aria-label="Fechar mensagem" style="position:absolute;top:12px;right:14px;background:none;border:none;color:#f6f0fa;font-size:22px;cursor:pointer;opacity:.75;line-height:1;">✕</button>
+   <div style="font-size:15px;color:#f6f0fa;white-space:pre-line;line-height:1.7;">${msg.mensagem}</div>
+  </div>`;
+}
+function fecharPopupMensagemProgramada(){
+ const el = document.getElementById('faixaMensagemProgramada');
+ if(el) el.style.display='none';
+}
+
+function mostrarConteudoAdm(){
+ document.getElementById('admLoginWrap').style.display='none';
+ document.getElementById('admConteudoWrap').style.display='block';
+ const usuarioLogado = sessionStorage.getItem('biobel_adm_usuario_logado');
+ const elUsuario = document.getElementById('admUsuarioLogadoTexto');
+ if(elUsuario && usuarioLogado) elUsuario.textContent = 'Conectado como '+usuarioLogado+' — gastos fixos, boletos de fornecedores e comissões da equipe.';
+ seedDadosPessoaisEquipe();
+ initChavesPixUI();
+ renderFaixaMensagemProgramada();
+ initModoTravadoGastos();
+ renderGastosFixos();
+ renderBoletos();
+ renderComissoes();
+ renderNiveisComissao();
+ renderHoraExtra();
+ renderAdmissaoGabriela();
+ renderFeriasGabriela();
+ renderNascimento('gabriela');
+ renderNascimento('day');
+ renderEstagioDay();
+ renderRecessoDay();
+ renderPromocaoDay();
+ initGruposAdm();
+ renderPreviasGruposAdm();
+ renderListaExFuncionarios();
+ renderResumoDesligamento('gabriela');
+ renderResumoDesligamento('day');
+ renderReunioes();
+ initImpostoUI();
+ renderUltimaAtualizacaoEstoque();
+ renderUltimaAtualizacaoReserva();
+ atualizarTotaisAdm();
+ dispararNotificacaoVencimentos();
+ renderHistoricoFechamentosMensais();
+ renderRelatorioAnual();
+ renderResumoAtencaoAdm();
+
+ // Se a pessoa clicou em "Registrar desligamento" na aba Equipe antes de fazer login, agora que
+ // ela já está logada, o assistente guiado abre sozinho, sem precisar procurar nada depois.
+ if(sessionStorage.getItem('biobel_abrir_assistente_desligamento_apos_login')==='yes'){
+  sessionStorage.removeItem('biobel_abrir_assistente_desligamento_apos_login');
+  setTimeout(iniciarAssistenteDesligamento, 300);
+ }
+}
+
+/* ===== Índice de navegação (chips) da área ADM ===== */
+function fecharTodosGruposAdmExceto(grupoQueFicaAberto){
+ // Isso resolve um problema real: o sistema lembra se um grupo ficou aberto de uma sessão
+ // anterior — então se a pessoa tinha aberto "Funcionários" há um tempo e agora busca
+ // "fornecedor", o Funcionários continuava aberto do jeito que ficou, aparecendo junto
+ // enquanto ela rolava a tela, mesmo sem ter pedido por aquilo.
+ document.querySelectorAll('[id^="conteudoGrupo-"]').forEach(conteudo=>{
+  const grupo = conteudo.id.replace('conteudoGrupo-','');
+  if(grupo===grupoQueFicaAberto) return;
+  const seta = document.getElementById('setaGrupo-'+grupo);
+  if(conteudo.style.display!=='none'){
+   conteudo.style.display = 'none';
+   if(seta) seta.textContent = '▸';
+   localStorage.setItem('biobel_grupo_adm_'+grupo, 'no');
+  }
+ });
+}
+const ANCORAS_SECOES_ADM = ['admAncoraResumo','admAncoraFechamento','admAncoraGastos','admAncoraComissoes','admAncoraFuncionarios','admAncoraFornecedoresReal','admAncoraAgenda'];
+function isolarSecaoAdm(idAncoraAlvo){
+ const container = document.getElementById('admConteudoWrap');
+ if(!container) return;
+ const filhos = Array.from(container.children);
+ let mostrando = false;
+ filhos.forEach(filho=>{
+  if(filho.id && ANCORAS_SECOES_ADM.includes(filho.id)){
+   mostrando = (filho.id === idAncoraAlvo);
+  }
+  filho.style.display = mostrando ? '' : 'none';
+ });
+ // Se a seção for um grupo colapsável (Fornecedores, Funcionários, Agenda), abre ele sozinho —
+ // senão a pessoa cairia numa seção "isolada" mas ainda fechada, sem ver nada.
+ const elAncora = document.getElementById(idAncoraAlvo);
+ const proximoIrmao = elAncora?.nextElementSibling;
+ if(proximoIrmao && proximoIrmao.classList.contains('grupo-adm-header')){
+  const grupo = proximoIrmao.dataset.grupo;
+  const conteudo = document.getElementById('conteudoGrupo-'+grupo);
+  if(conteudo) conteudo.style.display = 'block';
+  const seta = document.getElementById('setaGrupo-'+grupo);
+  if(seta) seta.textContent = '▾';
+ }
+ localStorage.setItem('biobel_adm_secao_isolada', idAncoraAlvo);
+ const btnVerTudo = document.getElementById('btnAdmVerTudo');
+ if(btnVerTudo) btnVerTudo.style.display = 'inline-block';
+ window.scrollTo({top:0, behavior:'smooth'});
+}
+function mostrarTodasSecoesAdm(){
+ const container = document.getElementById('admConteudoWrap');
+ if(!container) return;
+ Array.from(container.children).forEach(filho=>{ filho.style.display = ''; });
+ localStorage.removeItem('biobel_adm_secao_isolada');
+ const btnVerTudo = document.getElementById('btnAdmVerTudo');
+ if(btnVerTudo) btnVerTudo.style.display = 'none';
+}
+function irParaSecaoAdm(idAncora){
+ const el = document.getElementById(idAncora);
+ if(!el) return;
+ // Se a âncora estiver logo antes de um grupo colapsável, abre só ele — fecha todos os outros
+ // grupos, pra não misturar assunto de outra área enquanto a pessoa rola a tela.
+ const proximoIrmao = el.nextElementSibling;
+ if(proximoIrmao && proximoIrmao.classList.contains('grupo-adm-header')){
+  const grupo = proximoIrmao.dataset.grupo;
+  fecharTodosGruposAdmExceto(grupo);
+  const conteudo = document.getElementById('conteudoGrupo-'+grupo);
+  if(conteudo && conteudo.style.display==='none') alternarGrupoAdm(grupo);
+ } else {
+  // Não é um grupo (ex: Comissões, Resumo) — mesmo assim fecha os grupos que estejam abertos,
+  // pra a pessoa achar só o que ela buscou, sem sobra de outra seção.
+  fecharTodosGruposAdmExceto(null);
+ }
+ el.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+/* ===== Resumo de "o que precisa de atenção", logo no topo ===== */
+function detectarGastosForaDoPadrao(){
+ // Agrupa os boletos por fornecedor e compara o mais recente com a média dos anteriores DELE
+ // MESMO — precisa de pelo menos 2 boletos daquele fornecedor pra ter uma média confiável.
+ const boletos = getBoletos();
+ const porFornecedor = {};
+ boletos.forEach(b=>{
+  const chave = String(b.fornecedor||'').toLowerCase().trim();
+  if(!chave) return;
+  if(!porFornecedor[chave]) porFornecedor[chave] = [];
+  porFornecedor[chave].push(b);
+ });
+ const suspeitos = [];
+ Object.values(porFornecedor).forEach(lista=>{
+  if(lista.length<2) return;
+  const ordenados = [...lista].sort((a,b)=>(b.criadoEm||'').localeCompare(a.criadoEm||''));
+  const maisRecente = ordenados[0];
+  const anteriores = ordenados.slice(1);
+  const media = anteriores.reduce((s,b)=>s+(Number(b.valor)||0),0) / anteriores.length;
+  if(media>0 && Number(maisRecente.valor)>media*1.5){
+   suspeitos.push({ fornecedor: maisRecente.fornecedor, valor: Number(maisRecente.valor), media });
+  }
+ });
+ return suspeitos;
+}
+function renderResumoAtencaoAdm(){
+ const el = document.getElementById('admResumoAtencao');
+ if(!el) return;
+ const hoje = obterAgoraBrasilia();
+ const hojeMs = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate()).getTime();
+ const pontos = [];
+
+ getGastosFixos().forEach(g=>{
+  if(g.valor===null){ pontos.push({texto:'"'+g.nome+'" ainda sem valor definido', cor:'#fbbf24'}); return; }
+  if(!g.dia && !g.diaUtil) return;
+  const dias = diasAteProximoVencimentoMensal(g.dia, g.diaUtil);
+  if(dias<=5) pontos.push({texto:g.nome+' vence em '+dias+' dia'+(dias===1?'':'s'), cor: dias<=1?'#fb7185':'#fbbf24'});
+ });
+
+ getBoletos().forEach(b=>{
+  if(b.pago || !b.vencimento) return;
+  const dataVenc = new Date(b.vencimento+'T00:00:00');
+  if(isNaN(dataVenc.getTime())) return;
+  const dias = Math.round((dataVenc.getTime()-hojeMs)/86400000);
+  if(dias<0) pontos.push({texto:b.fornecedor+' venceu há '+Math.abs(dias)+' dia'+(Math.abs(dias)===1?'':'s'), cor:'#fb7185'});
+  else if(dias<=5) pontos.push({texto:b.fornecedor+' vence em '+dias+' dia'+(dias===1?'':'s'), cor: dias<=1?'#fb7185':'#fbbf24'});
+ });
+
+ // Aniversários próximos (Gabriela e Day)
+ const hojeData = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+ [['gabriela','Gabriela'],['day','Day']].forEach(([chave,nome])=>{
+  const nascimento = getDataNascimento(chave);
+  if(!nascimento) return;
+  const { dias } = diasAteProximoAniversario(nascimento, hojeData);
+  if(dias===0) pontos.push({texto:'🎉 Hoje é aniversário de '+nome+'!', cor:'#27d7a0'});
+  else if(dias<=7) pontos.push({texto:'Aniversário de '+nome+' em '+dias+' dia'+(dias===1?'':'s'), cor:'#fbbf24'});
+ });
+
+ // Renovação de estágio da Day
+ const inicioEstagio = getDataInicioEstagio();
+ if(inicioEstagio){
+  const renovacaoMeses = getRenovacaoEstagioMeses();
+  const inicio = new Date(inicioEstagio+'T00:00:00');
+  let proximaRenovacao = new Date(inicio);
+  while(proximaRenovacao.getTime() <= hojeData.getTime()){
+   proximaRenovacao.setMonth(proximaRenovacao.getMonth() + renovacaoMeses);
+  }
+  const diasAteRenovacao = Math.round((proximaRenovacao.getTime()-hojeData.getTime())/86400000);
+  if(diasAteRenovacao<=15) pontos.push({texto:'Contrato de estágio da Day precisa renovar em '+diasAteRenovacao+' dia'+(diasAteRenovacao===1?'':'s'), cor: diasAteRenovacao<=5?'#fb7185':'#fbbf24'});
+
+  const limiteLegal = new Date(inicio);
+  limiteLegal.setMonth(limiteLegal.getMonth() + 24);
+  const diasAteLimiteLegal = Math.round((limiteLegal.getTime()-hojeData.getTime())/86400000);
+  if(diasAteLimiteLegal<=60) pontos.push({texto: diasAteLimiteLegal<0 ? 'Estágio da Day já passou do limite legal de 2 anos!' : 'Estágio da Day chega no limite legal de 2 anos em '+diasAteLimiteLegal+' dias', cor:'#fb7185'});
+ }
+
+ // Férias da Gabriela: alerta quando estiver perto de vencer ou já vencida (risco de pagamento em dobro)
+ const admissaoGabrielaAtencao = getDataAdmissaoGabriela();
+ if(admissaoGabrielaAtencao){
+  const inicioPeriodo = getDataInicioPeriodoAquisitivoFerias();
+  const fimAquisitivo = new Date(inicioPeriodo);
+  fimAquisitivo.setFullYear(fimAquisitivo.getFullYear()+1);
+  if(hojeData >= fimAquisitivo){
+   const fimConcessivo = new Date(fimAquisitivo);
+   fimConcessivo.setFullYear(fimConcessivo.getFullYear()+1);
+   const diasAteVencerFerias = Math.round((fimConcessivo.getTime()-hojeData.getTime())/86400000);
+   if(diasAteVencerFerias<0) pontos.push({texto:'🔴 Férias da Gabriela já venceram — risco de pagamento em dobro!', cor:'#fb7185'});
+   else if(diasAteVencerFerias<=60) pontos.push({texto:'Férias da Gabriela vencem em '+diasAteVencerFerias+' dias — hora de agendar', cor:'#fbbf24'});
+  }
+ }
+
+ // Contratos de gastos fixos vencendo (aluguel, internet, etc.) — até 30 dias de antecedência
+ getGastosFixos().forEach(g=>{
+  if(!g.renovacaoContrato) return;
+  const dataRenov = new Date(g.renovacaoContrato+'T00:00:00');
+  if(isNaN(dataRenov.getTime())) return;
+  const diasAteRenov = Math.round((dataRenov.getTime()-hojeData.getTime())/86400000);
+  if(diasAteRenov<0) pontos.push({texto:'Contrato de "'+g.nome+'" venceu há '+Math.abs(diasAteRenov)+' dia'+(Math.abs(diasAteRenov)===1?'':'s'), cor:'#fb7185'});
+  else if(diasAteRenov<=30) pontos.push({texto:'Contrato de "'+g.nome+'" renova em '+diasAteRenov+' dia'+(diasAteRenov===1?'':'s'), cor: diasAteRenov<=7?'#fb7185':'#fbbf24'});
+ });
+
+ // Reuniões nos próximos 3 dias
+ const hojeStrAtencao = hoje.paraChaveISO();
+ getReunioes().forEach(r=>{
+  if(r.concluida || !r.data) return;
+  const diasReuniao = Math.round((new Date(r.data+'T00:00:00').getTime()-hojeData.getTime())/86400000);
+  if(diasReuniao>=0 && diasReuniao<=3) pontos.push({texto:'Reunião com '+r.fornecedor+' '+(diasReuniao===0?'é hoje':'em '+diasReuniao+' dia'+(diasReuniao===1?'':'s')), cor: diasReuniao<=1?'#27d7a0':'#fbbf24'});
+  else if(diasReuniao<0) pontos.push({texto:'Reunião com '+r.fornecedor+' ficou pendente (era há '+Math.abs(diasReuniao)+' dia'+(Math.abs(diasReuniao)===1?'':'s')+')', cor:'#fb7185'});
+ });
+
+ // Gastos fora do padrão: compara o boleto mais recente de cada fornecedor com a média dos anteriores DELE MESMO
+ detectarGastosForaDoPadrao().forEach(g=>{
+  pontos.push({texto:'Boleto de "'+g.fornecedor+'" ('+money(g.valor)+') veio bem acima da média desse fornecedor ('+money(g.media)+')', cor:'#fbbf24'});
+ });
+
+ // Próxima data comercial, se estiver chegando perto (até 14 dias) — bom pra planejar promoção
+ const todasAsDatasComerciais = [...gerarDatasComerciais(hoje.getFullYear()), ...gerarDatasComerciais(hoje.getFullYear()+1)];
+ const proximaDataComercial = todasAsDatasComerciais
+  .map(d=>({...d, dias: Math.round((d.data.getTime()-hojeData.getTime())/86400000)}))
+  .filter(d=>d.dias>=0)
+  .sort((a,b)=>a.dias-b.dias)[0];
+ if(proximaDataComercial && proximaDataComercial.dias<=14){
+  pontos.push({texto:proximaDataComercial.nome+' em '+proximaDataComercial.dias+' dia'+(proximaDataComercial.dias===1?'':'s')+' — bom momento pra planejar promoção', cor:'#4f9cff'});
+ }
+
+ if(pontos.length===0){ el.style.display='none'; return; }
+ el.style.display='block';
+ const mostrarAte = 5;
+ el.innerHTML = `<div style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:14px;padding:14px 16px;">
+   <div style="font-size:11px;font-weight:900;color:#fbbf24;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">⚠️ Precisa de atenção (${pontos.length})</div>
+   <div style="display:flex;flex-direction:column;gap:5px;">
+    ${pontos.slice(0,mostrarAte).map(p=>`<div style="font-size:12.5px;color:#dce5f2;">• <span style="color:${p.cor};font-weight:700;">${p.texto}</span></div>`).join('')}
+    ${pontos.length>mostrarAte ? `<div style="font-size:11.5px;color:#93a3ba;margin-top:2px;">e mais ${pontos.length-mostrarAte}...</div>` : ''}
+   </div>
+  </div>`;
+}
+
+/* ===== Filtro rápido de status nos boletos ===== */
+let filtroBoletoAtual = 'todos';
+function filtrarBoletos(modo){
+ filtroBoletoAtual = modo;
+ const btnT = document.getElementById('btnFiltroBoletoTodos');
+ const btnP = document.getElementById('btnFiltroBoletoPendentes');
+ const btnG = document.getElementById('btnFiltroBoletoPagos');
+ [[btnT,'todos'],[btnP,'pendentes'],[btnG,'pagos']].forEach(([btn,m])=>{
+  if(!btn) return;
+  btn.style.background = modo===m ? '#27d7a0' : 'transparent';
+  btn.style.color = modo===m ? '#04241a' : '#93a3ba';
+ });
+ renderBoletos();
+}
+/* ===== Assistente Guiado de Desligamento — passo a passo, bem simples, uma pergunta por vez ===== */
+let assistenteDesligamentoEstado = { passo:1, pessoa:null, data:null, motivo:null, quemPediu:'funcionaria' };
+function iniciarAssistenteDesligamento(){
+ assistenteDesligamentoEstado = { passo:1, pessoa:null, data:null, motivo:null, quemPediu:'funcionaria' };
+ renderAssistenteDesligamento();
+}
+function fecharAssistenteDesligamento(){
+ const el = document.getElementById('assistenteDesligamentoOverlay');
+ if(el) el.style.display = 'none';
+}
+function assistenteDesligamentoVoltar(){
+ assistenteDesligamentoEstado.passo = Math.max(1, assistenteDesligamentoEstado.passo-1);
+ renderAssistenteDesligamento();
+}
+function assistenteDesligamentoEscolherPessoa(pessoa){
+ assistenteDesligamentoEstado.pessoa = pessoa;
+ assistenteDesligamentoEstado.passo = 2;
+ renderAssistenteDesligamento();
+}
+function assistenteDesligamentoProximoPasso2(){
+ const data = document.getElementById('assistenteDesligamentoDataInput').value;
+ if(!data){ mostrarToast('⚠️ Escolha a data antes de continuar.'); return; }
+ assistenteDesligamentoEstado.data = data;
+ assistenteDesligamentoEstado.passo = 3;
+ renderAssistenteDesligamento();
+}
+function assistenteDesligamentoProximoPasso3(){
+ assistenteDesligamentoEstado.quemPediu = document.getElementById('assistenteDesligamentoQuemPediuSelect').value;
+ assistenteDesligamentoEstado.motivo = document.getElementById('assistenteDesligamentoMotivoInput').value.trim() || null;
+ // Salva de verdade o desligamento agora, usando os mesmos campos do sistema completo — o
+ // assistente é só uma forma mais simples de preencher a mesma coisa, passo a passo.
+ const registro = { data: assistenteDesligamentoEstado.data, motivo: assistenteDesligamentoEstado.motivo, quemPediu: assistenteDesligamentoEstado.quemPediu };
+ localStorage.setItem('biobel_desligamento_'+assistenteDesligamentoEstado.pessoa, JSON.stringify(registro));
+ registrarAlteracao('Desligamento de '+(assistenteDesligamentoEstado.pessoa==='gabriela'?'Gabriela':'Day')+' registrado pelo assistente guiado');
+ renderLogAlteracoes();
+ try{ renderResumoDesligamento(assistenteDesligamentoEstado.pessoa); }catch(e){}
+ assistenteDesligamentoEstado.passo = 4;
+ renderAssistenteDesligamento();
+}
+function assistenteDesligamentoGerarPdf(){
+ gerarPdfDesligamento(assistenteDesligamentoEstado.pessoa);
+}
+function assistenteDesligamentoConcluir(){
+ // Arquiva direto, sem pedir confirmação de novo — a pessoa já passou pelas telas do assistente,
+ // que já é a confirmação em si. Uma segunda pergunta só deixaria o processo mais cansativo.
+ const pessoa = assistenteDesligamentoEstado.pessoa;
+ const desligamento = getDesligamento(pessoa);
+ if(desligamento){
+  const dadosPessoais = getDadosPessoaisDesligamento(pessoa);
+  const dataInicio = getDataInicioTrabalho(pessoa);
+  const nomeExibicao = dadosPessoais.nomeCompleto || (pessoa==='gabriela' ? 'Gabriela' : 'Day');
+  const tempo = dataInicio ? calcularTempoEntreDatas(dataInicio, desligamento.data) : null;
+  const arquivo = getArquivoExFuncionarios();
+  arquivo.unshift({
+   id: Date.now(), nomeCompleto: nomeExibicao, cpf: dadosPessoais.cpf||null, cargo: dadosPessoais.cargo||null,
+   dataInicio: dataInicio||null, dataDesligamento: desligamento.data, tempoTrabalhado: tempo?tempo.texto:null,
+   motivo: desligamento.motivo||null, quemPediu: desligamento.quemPediu||null, pessoaOrigem: pessoa
+  });
+  salvarArquivoExFuncionarios(arquivo);
+  try{ renderListaExFuncionarios(); }catch(e){}
+ }
+ fecharAssistenteDesligamento();
+ mostrarToast('✅ Prontinho! Já foi guardado no histórico.');
+}
+function renderAssistenteDesligamento(){
+ const el = document.getElementById('assistenteDesligamentoOverlay');
+ if(!el) return;
+ const passo = assistenteDesligamentoEstado.passo;
+ el.style.cssText = 'display:flex;position:fixed;inset:0;z-index:9996;background:rgba(7,17,31,.9);align-items:center;justify-content:center;padding:20px;';
+
+ let conteudo = '';
+ if(passo===1){
+  conteudo = `
+   <div style="font-size:19px;font-weight:900;color:#dce5f2;margin-bottom:8px;">🚪 Quem está saindo da empresa?</div>
+   <p style="font-size:13px;color:#93a3ba;margin-bottom:24px;">Escolha uma das duas.</p>
+   <div style="display:flex;flex-direction:column;gap:12px;">
+    <button onclick="assistenteDesligamentoEscolherPessoa('gabriela')" style="background:#0ea97a;color:#04241a;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:800;cursor:pointer;">Gabriela</button>
+    <button onclick="assistenteDesligamentoEscolherPessoa('day')" style="background:#0ea97a;color:#04241a;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:800;cursor:pointer;">Day</button>
+   </div>
+   <button onclick="fecharAssistenteDesligamento()" style="background:none;border:none;color:#93a3ba;font-size:12.5px;cursor:pointer;text-decoration:underline;margin-top:20px;">Cancelar</button>`;
+ } else if(passo===2){
+  const nome = assistenteDesligamentoEstado.pessoa==='gabriela' ? 'Gabriela' : 'Day';
+  conteudo = `
+   <div style="font-size:19px;font-weight:900;color:#dce5f2;margin-bottom:8px;">📅 Qual foi o último dia de trabalho da ${nome}?</div>
+   <p style="font-size:13px;color:#93a3ba;margin-bottom:20px;">Só isso já é suficiente pra continuar.</p>
+   <input id="assistenteDesligamentoDataInput" type="date" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:14px;color:#dce5f2;font-size:16px;margin-bottom:20px;text-align:center;">
+   <button onclick="assistenteDesligamentoProximoPasso2()" style="background:#0ea97a;color:#04241a;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:800;cursor:pointer;width:100%;">Próximo →</button>
+   <button onclick="assistenteDesligamentoVoltar()" style="background:none;border:none;color:#93a3ba;font-size:12.5px;cursor:pointer;text-decoration:underline;margin-top:16px;">← Voltar</button>`;
+ } else if(passo===3){
+  conteudo = `
+   <div style="font-size:19px;font-weight:900;color:#dce5f2;margin-bottom:8px;">📝 Mais alguma coisa?</div>
+   <p style="font-size:12.5px;color:#93a3ba;margin-bottom:16px;">É opcional — pode continuar sem preencher.</p>
+   <label style="font-size:12px;color:#93a3ba;display:block;margin-bottom:6px;text-align:left;">Quem pediu o desligamento?</label>
+   <select id="assistenteDesligamentoQuemPediuSelect" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px;color:#dce5f2;font-size:13px;margin-bottom:14px;">
+    <option value="funcionaria">Ela pediu</option>
+    <option value="empresa">A empresa decidiu</option>
+   </select>
+   <label style="font-size:12px;color:#93a3ba;display:block;margin-bottom:6px;text-align:left;">Motivo (opcional)</label>
+   <input id="assistenteDesligamentoMotivoInput" type="text" placeholder="Ex: pedido de demissão" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px;color:#dce5f2;font-size:13px;margin-bottom:20px;">
+   <button onclick="assistenteDesligamentoProximoPasso3()" style="background:#0ea97a;color:#04241a;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:800;cursor:pointer;width:100%;">Continuar →</button>
+   <button onclick="assistenteDesligamentoVoltar()" style="background:none;border:none;color:#93a3ba;font-size:12.5px;cursor:pointer;text-decoration:underline;margin-top:16px;">← Voltar</button>`;
+ } else if(passo===4){
+  const nome = assistenteDesligamentoEstado.pessoa==='gabriela' ? 'Gabriela' : 'Day';
+  const dataFormatada = new Date(assistenteDesligamentoEstado.data+'T00:00:00').toLocaleDateString('pt-BR');
+  conteudo = `
+   <div style="font-size:40px;margin-bottom:10px;">✅</div>
+   <div style="font-size:19px;font-weight:900;color:#dce5f2;margin-bottom:8px;">Tudo pronto!</div>
+   <p style="font-size:13.5px;color:#93a3ba;margin-bottom:24px;">${nome} foi desligada em <strong style="color:#dce5f2;">${dataFormatada}</strong>. As informações dela continuam guardadas, só saem da lista do dia a dia.</p>
+   <button onclick="assistenteDesligamentoGerarPdf()" style="background:#8b5cf6;color:#fff;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;cursor:pointer;width:100%;margin-bottom:10px;">🖨️ Gerar PDF pra contadora</button>
+   <button onclick="assistenteDesligamentoConcluir()" style="background:#0ea97a;color:#04241a;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;cursor:pointer;width:100%;">Concluir</button>`;
+ }
+
+ el.innerHTML = `<div style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(251,113,133,.35);border-radius:20px;padding:30px 28px;max-width:400px;width:100%;box-shadow:0 24px 70px rgba(0,0,0,.55);text-align:center;">${conteudo}</div>`;
+}
+
+function iniciarProcessoDesligamentoGuiado(){
+ // Se já estiver logada, abre o assistente na hora. Senão, pede login primeiro e abre sozinho
+ // assim que o login for concluído — a pessoa não precisa procurar nada depois de entrar.
+ if(sessionStorage.getItem('biobel_adm_autenticado')==='yes'){
+  showTab('adm');
+  setTimeout(iniciarAssistenteDesligamento, 300);
+ } else {
+  sessionStorage.setItem('biobel_abrir_assistente_desligamento_apos_login', 'yes');
+  showTab('adm');
+  mostrarToast('👉 Faça login que o assistente já abre sozinho.');
+ }
+}
+
+function initAdmTab(){
+ if(sessionStorage.getItem('biobel_adm_autenticado')==='yes'){
+  mostrarConteudoAdm();
+ } else {
+  document.getElementById('admLoginWrap').style.display='block';
+  document.getElementById('admConteudoWrap').style.display='none';
+ }
+}
+
+/* ============================================================
+   BIOBEL — ZONA: ADMINISTRAÇÃO / FINANCEIRO E FORNECEDORES
+   ============================================================ */
+/* ===== Gastos Fixos (aluguel, água, luz, internet...) ===== */
+function getGastosFixos(){
+ try{ return JSON.parse(localStorage.getItem('biobel_adm_gastos_fixos')||'[]'); }catch(e){ return []; }
+}
+function salvarGastosFixos(lista){
+ localStorage.setItem('biobel_adm_gastos_fixos', JSON.stringify(lista));
+}
+let gastoFixoEditandoId = null;
+function adicionarGastoFixo(){
+ const nome = document.getElementById('novoGastoFixoNome').value.trim();
+ const valorTexto = document.getElementById('novoGastoFixoValor').value.trim();
+ const diaInput = document.getElementById('novoGastoFixoDia').value;
+ const dia = diaInput ? parseInt(diaInput,10) : null;
+ const diaUtilInput = document.getElementById('novoGastoFixoDiaUtil').value;
+ const diaUtil = diaUtilInput ? parseInt(diaUtilInput,10) : null;
+ const categoria = document.getElementById('novoGastoFixoCategoria').value;
+ const renovacaoContrato = document.getElementById('novoGastoFixoRenovacao').value || null;
+ if(!nome){ mostrarToast('⚠️ Digite o nome do gasto.'); return; }
+
+ // Valor é opcional agora — deixar em branco salva como "a definir", pra preencher depois.
+ let valor = null;
+ if(valorTexto){
+  valor = parseValorSimples(valorTexto);
+  if(isNaN(valor) || valor<0){ mostrarToast('⚠️ Digite um valor válido, ou deixe em branco pra definir depois.'); return; }
+ }
+
+ const lista = getGastosFixos();
+ if(gastoFixoEditandoId!==null){
+  const aplicarEdicao = ()=>{
+   const idx = lista.findIndex(g=>g.id===gastoFixoEditandoId);
+   if(idx>=0){
+    lista[idx] = { ...lista[idx], nome, valor, dia: (dia && !isNaN(dia)) ? dia : null, diaUtil: (diaUtil && !isNaN(diaUtil)) ? diaUtil : null, categoria, renovacaoContrato };
+    salvarGastosFixos(lista);
+    mostrarToast('✅ Gasto fixo atualizado!');
+    registrarAlteracao('Gasto fixo "'+nome+'" editado');
+   }
+   cancelarEdicaoGastoFixo();
+   document.getElementById('novoGastoFixoNome').value='';
+   document.getElementById('novoGastoFixoValor').value='';
+   document.getElementById('novoGastoFixoDia').value='';
+   document.getElementById('novoGastoFixoDiaUtil').value='';
+   document.getElementById('novoGastoFixoCategoria').value='Aluguel/Imóvel';
+   document.getElementById('novoGastoFixoRenovacao').value='';
+   renderGastosFixos();
+   atualizarTotaisAdm();
+   renderLogAlteracoes();
+  };
+  if(getModoTravadoGastos()){
+   confirmarBiobel('Confirma a alteração desse gasto fixo?', aplicarEdicao);
+  } else {
+   aplicarEdicao();
+  }
+  return;
+ }
+ lista.push({ id: Date.now(), nome, valor, dia: (dia && !isNaN(dia)) ? dia : null, diaUtil: (diaUtil && !isNaN(diaUtil)) ? diaUtil : null, categoria, renovacaoContrato });
+ salvarGastosFixos(lista);
+ mostrarToast('✅ Gasto fixo adicionado!');
+ registrarAlteracao('Gasto fixo "'+nome+'" adicionado'+(valor!==null?' ('+money(valor)+')':' (valor a definir)'));
+ document.getElementById('novoGastoFixoNome').value='';
+ document.getElementById('novoGastoFixoValor').value='';
+ document.getElementById('novoGastoFixoDia').value='';
+ document.getElementById('novoGastoFixoDiaUtil').value='';
+ document.getElementById('novoGastoFixoCategoria').value='Aluguel/Imóvel';
+ document.getElementById('novoGastoFixoRenovacao').value='';
+ renderGastosFixos();
+ atualizarTotaisAdm();
+ renderLogAlteracoes();
+}
+function getModoTravadoGastos(){
+ return localStorage.getItem('biobel_modo_travado_gastos')==='yes';
+}
+function salvarModoTravadoGastos(){
+ const ativo = document.getElementById('modoTravadoGastosCheckbox').checked;
+ localStorage.setItem('biobel_modo_travado_gastos', ativo?'yes':'no');
+ mostrarToast(ativo ? '🔒 Proteção ativada.' : '🔓 Proteção desativada.');
+}
+function initModoTravadoGastos(){
+ const checkbox = document.getElementById('modoTravadoGastosCheckbox');
+ if(checkbox) checkbox.checked = getModoTravadoGastos();
+}
+function editarGastoFixo(id){
+ const g = getGastosFixos().find(x=>x.id===id);
+ if(!g) return;
+ gastoFixoEditandoId = id;
+ document.getElementById('novoGastoFixoNome').value = g.nome;
+ document.getElementById('novoGastoFixoValor').value = g.valor!==null ? String(g.valor).replace('.',',') : '';
+ document.getElementById('novoGastoFixoDia').value = g.dia || '';
+ document.getElementById('novoGastoFixoDiaUtil').value = g.diaUtil || '';
+ document.getElementById('novoGastoFixoCategoria').value = g.categoria || 'Outros';
+ document.getElementById('novoGastoFixoRenovacao').value = g.renovacaoContrato || '';
+ const btn = document.getElementById('btnAdicionarGastoFixo');
+ if(btn) btn.textContent = '💾 Salvar edição';
+ const btnCancelar = document.getElementById('btnCancelarEdicaoGastoFixo');
+ if(btnCancelar) btnCancelar.style.display = 'inline-block';
+ document.getElementById('novoGastoFixoNome').scrollIntoView({behavior:'smooth', block:'center'});
+}
+function cancelarEdicaoGastoFixo(){
+ gastoFixoEditandoId = null;
+ document.getElementById('novoGastoFixoNome').value='';
+ document.getElementById('novoGastoFixoValor').value='';
+ document.getElementById('novoGastoFixoDia').value='';
+ document.getElementById('novoGastoFixoDiaUtil').value='';
+ document.getElementById('novoGastoFixoCategoria').value='Aluguel/Imóvel';
+ document.getElementById('novoGastoFixoRenovacao').value='';
+ const btn = document.getElementById('btnAdicionarGastoFixo');
+ if(btn) btn.textContent = '➕ Add';
+ const btnCancelar = document.getElementById('btnCancelarEdicaoGastoFixo');
+ if(btnCancelar) btnCancelar.style.display = 'none';
+}
+function removerGastoFixo(id){
+ const listaAntes = getGastosFixos();
+ const item = listaAntes.find(g=>g.id===id);
+ if(!item) return;
+ const lista = listaAntes.filter(g=>g.id!==id);
+ salvarGastosFixos(lista);
+ renderGastosFixos();
+ atualizarTotaisAdm();
+ mostrarToastComDesfazer('🗑️ Gasto fixo removido.', ()=>{
+  const listaAtual = getGastosFixos();
+  listaAtual.push(item);
+  salvarGastosFixos(listaAtual);
+  renderGastosFixos();
+  atualizarTotaisAdm();
+ });
+}
+function seedGastosFixosPadrao(){
+ // Pré-cadastra os gastos fixos que a loja sabe que tem. Os que já têm valor conhecido
+ // (aluguel, salário, VT) já entram preenchidos; os que ainda não sabem o valor exato (luz,
+ // água, internet, contadora) ficam "a definir" até a gerente preencher.
+ const lista = getGastosFixos();
+ const nomesJaExistentes = lista.map(g=>g.nome.toLowerCase());
+ const padroes = [
+  { nome:'Aluguel', valor: 7000.00, dia: 5, categoria:'Aluguel/Imóvel' },
+  { nome:'CLT Gabriela (salário)', valor: 1836.00, diaUtil: 5, categoria:'Pessoal' },
+  { nome:'Estagiária (Dai)', valor: 750.00, categoria:'Pessoal' },
+  { nome:'Retirada Alessandra (sócia)', valor: 2500.00, dia: 5, categoria:'Sócios' },
+  { nome:'Retirada Bibiana (sócia)', valor: 2500.00, dia: 5, categoria:'Sócios' },
+  { nome:'Contadora', valor: null, categoria:'Serviços' },
+  { nome:'Luz', valor: null, categoria:'Utilidades' },
+  { nome:'Água', valor: null, categoria:'Utilidades' },
+  { nome:'Internet', valor: null, categoria:'Utilidades' },
+  { nome:'VT Gabriela (~4 semanas/mês, R$120/semana)', valor: 480.00, categoria:'Pessoal' },
+  { nome:'VT Day (~4 semanas/mês, R$120/semana)', valor: 480.00, categoria:'Pessoal' }
+ ];
+ let mudou = false;
+ padroes.forEach(({nome, valor, dia, diaUtil, categoria})=>{
+  if(!nomesJaExistentes.includes(nome.toLowerCase())){
+   lista.push({ id: Date.now()+Math.floor(Math.random()*1000), nome, valor, dia: dia||null, diaUtil: diaUtil||null, categoria });
+   mudou = true;
+  }
+ });
+ if(mudou) salvarGastosFixos(lista);
+ migrarValoresConhecidosGastosFixos();
+ migrarCategoriasGastosFixos();
+ migrarVencimentosParaValoresCorretos();
+}
+function migrarCategoriasGastosFixos(){
+ // Pra gastos fixos já cadastrados antes de existir o campo categoria — tenta adivinhar pelo
+ // nome (só como ponto de partida, a pessoa pode trocar depois), sem nunca sobrescrever se já tiver categoria.
+ const lista = getGastosFixos();
+ let mudou = false;
+ lista.forEach(g=>{
+  if(g.categoria) return;
+  const nomeNorm = g.nome.toLowerCase();
+  if(nomeNorm.includes('aluguel')) g.categoria = 'Aluguel/Imóvel';
+  else if(nomeNorm.includes('clt') || nomeNorm.includes('estagiár') || nomeNorm.includes('vt ')) g.categoria = 'Pessoal';
+  else if(nomeNorm.includes('luz') || nomeNorm.includes('água') || nomeNorm.includes('agua') || nomeNorm.includes('internet')) g.categoria = 'Utilidades';
+  else if(nomeNorm.includes('contador')) g.categoria = 'Serviços';
+  else g.categoria = 'Outros';
+  mudou = true;
+ });
+ if(mudou) salvarGastosFixos(lista);
+}
+function migrarValoresConhecidosGastosFixos(){
+ // Pra quem já tinha "Aluguel", "CLT Gabriela" ou "Estagiária (Dai)" cadastrados como "a definir"
+ // antes de a gente saber os valores reais — preenche automaticamente, uma única vez, sem nunca
+ // sobrescrever um valor que a gerente já tenha colocado com a própria mão.
+ const jaMigrou = localStorage.getItem('biobel_adm_migracao_salarios_v2');
+ if(jaMigrou) return;
+ const lista = getGastosFixos();
+ let mudou = false;
+ lista.forEach(g=>{
+  const nomeNorm = g.nome.toLowerCase();
+  if(g.valor===null && nomeNorm==='aluguel'){
+   g.valor = 7000.00; g.dia = g.dia || 5; mudou = true;
+  }
+  if(g.valor===null && (nomeNorm==='clt gabriela' || nomeNorm==='clt gabriela (salário)')){
+   g.valor = 1836.00; mudou = true;
+  }
+  if(g.valor===null && nomeNorm==='estagiária (dai)'){
+   g.valor = 750.00; mudou = true;
+  }
+ });
+ if(mudou) salvarGastosFixos(lista);
+ localStorage.setItem('biobel_adm_migracao_salarios_v2', 'yes');
+}
+function migrarVencimentosParaValoresCorretos(){
+ // Correção: o aluguel tinha vencimento cadastrado como dia 10 (número errado, era só um
+ // exemplo inicial) — o correto é dia 5. E o salário não é um dia fixo do calendário, é sempre
+ // no 5º dia útil do mês (que muda de data a cada mês). Roda só uma vez, sem nunca sobrescrever
+ // se a pessoa já tiver ajustado manualmente depois dessa correção.
+ const jaMigrou = localStorage.getItem('biobel_adm_migracao_vencimentos_v1');
+ if(jaMigrou) return;
+ const lista = getGastosFixos();
+ let mudou = false;
+ lista.forEach(g=>{
+  const nomeNorm = g.nome.toLowerCase();
+  if(nomeNorm==='aluguel' && g.dia===10){
+   g.dia = 5; mudou = true;
+  }
+  if((nomeNorm==='clt gabriela' || nomeNorm==='clt gabriela (salário)') && !g.diaUtil){
+   g.diaUtil = 5; g.dia = null; mudou = true;
+  }
+ });
+ if(mudou) salvarGastosFixos(lista);
+ localStorage.setItem('biobel_adm_migracao_vencimentos_v1', 'yes');
+}
+function calcularEnesimoDiaUtil(ano, mes, n){
+ // Acha o data exata do "n-ésimo dia útil" de um mês — considera sábado como dia útil (a loja
+ // funciona aos sábados) e só pula domingo, igual o resto do sistema já faz em outros cálculos.
+ let contador = 0;
+ let dia = 1;
+ const ultimoDiaDoMes = new Date(ano, mes+1, 0).getDate();
+ while(dia<=ultimoDiaDoMes){
+  const diaSemana = new Date(ano, mes, dia).getDay();
+  if(diaSemana!==0){ contador++; if(contador===n) return new Date(ano, mes, dia); }
+  dia++;
+ }
+ return new Date(ano, mes, ultimoDiaDoMes); // segurança: se o mês não tiver dias úteis suficientes
+}
+function diasAteProximoVencimentoMensal(diaVencimento, diaUtil){
+ // Calcula quantos dias faltam pro próximo vencimento de um gasto que se repete todo mês —
+ // pode ser um dia fixo do calendário (ex: aluguel todo dia 5) OU o "n-ésimo dia útil" (ex:
+ // salário sempre no 5º dia útil, que muda de data conforme cai o fim de semana em cada mês).
+ const hoje = obterAgoraBrasilia();
+ const hojeMs = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate()).getTime();
+ let proximo;
+ if(diaUtil){
+  proximo = calcularEnesimoDiaUtil(hoje.getFullYear(), hoje.getMonth(), diaUtil);
+  if(proximo.getTime() < hojeMs){
+   proximo = calcularEnesimoDiaUtil(hoje.getFullYear(), hoje.getMonth()+1, diaUtil);
+  }
+ } else {
+  proximo = new Date(hoje.getFullYear(), hoje.getMonth(), diaVencimento);
+  if(proximo.getTime() < hojeMs){
+   proximo = new Date(hoje.getFullYear(), hoje.getMonth()+1, diaVencimento);
+  }
+ }
+ return Math.round((proximo.getTime()-hojeMs)/86400000);
+}
+function renderGastosFixos(){
+ const el = document.getElementById('listaGastosFixos');
+ if(!el) return;
+ seedGastosFixosPadrao();
+ const lista = getGastosFixos();
+ if(lista.length===0){
+  el.innerHTML = '<div style="text-align:center;padding:24px 12px;"><div style="font-size:34px;opacity:.5;margin-bottom:8px;">🏠</div><p style="color:#93a3ba;font-size:12.5px;">Nenhum gasto fixo cadastrado ainda.</p></div>';
+  return;
+ }
+ const coresCategoria = {'Aluguel/Imóvel':'#fb7185','Pessoal':'#4f9cff','Sócios':'#f97316','Utilidades':'#fbbf24','Serviços':'#a78bfa','Outros':'#93a3ba'};
+ const emojiCategoria = {'Aluguel/Imóvel':'🏠','Pessoal':'👥','Sócios':'🤝','Utilidades':'💡','Serviços':'🧾','Outros':'📋'};
+ el.innerHTML = lista.map(g=>{
+  let avisoVencimento = '';
+  if(g.dia){
+   const dias = diasAteProximoVencimentoMensal(g.dia, g.diaUtil);
+   if(dias<=5) avisoVencimento = `<span style="color:${dias<=1?'#fb7185':'#fbbf24'};font-weight:800;font-size:10.5px;margin-left:6px;">${dias===0?'🔴 vence hoje':dias===1?'🔴 vence amanhã':'🟡 vence em '+dias+' dias'}</span>`;
+  }
+  const corCat = coresCategoria[g.categoria] || '#93a3ba';
+  return `
+  <div style="display:flex;align-items:center;justify-content:space-between;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 14px;flex-wrap:wrap;gap:8px;">
+   <div>
+    <span style="color:#dce5f2;font-weight:700;font-size:13px;">${g.nome}</span>
+    ${g.diaUtil?`<span style="color:#93a3ba;font-size:11px;margin-left:8px;">vence no ${g.diaUtil}º dia útil</span>`:g.dia?`<span style="color:#93a3ba;font-size:11px;margin-left:8px;">vence dia ${g.dia}</span>`:''}
+    ${avisoVencimento}
+    ${g.categoria?`<div style="margin-top:4px;"><span style="font-size:10px;font-weight:800;color:${corCat};background:${corCat}22;padding:2px 8px;border-radius:999px;">${emojiCategoria[g.categoria]||''} ${g.categoria}</span></div>`:''}
+    ${g.renovacaoContrato?`<div style="margin-top:4px;font-size:10.5px;color:#93a3ba;">📄 Contrato renova em ${new Date(g.renovacaoContrato+'T00:00:00').toLocaleDateString('pt-BR')}</div>`:''}
+   </div>
+   <div style="display:flex;align-items:center;gap:10px;">
+    ${g.valor!==null ? `<span style="color:#fb7185;font-weight:800;font-size:13px;">${money(g.valor)}</span>` : `<span style="color:#fbbf24;font-weight:800;font-size:12px;background:rgba(251,191,36,.1);padding:3px 8px;border-radius:999px;">⚠️ A definir</span>`}
+    <button onclick="editarGastoFixo(${g.id})" aria-label="Editar ${g.nome}" style="background:none;border:none;color:#4f9cff;cursor:pointer;font-size:14px;">✏️</button>
+    <button onclick="removerGastoFixo(${g.id})" aria-label="Remover ${g.nome}" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;">🗑️</button>
+   </div>
+  </div>`;
+ }).join('');
+}
+
+/* ===== Boletos de Fornecedores (gastos variáveis) ===== */
+function getBoletos(){
+ try{ return JSON.parse(localStorage.getItem('biobel_adm_boletos')||'[]'); }catch(e){ return []; }
+}
+function salvarBoletos(lista){
+ localStorage.setItem('biobel_adm_boletos', JSON.stringify(lista));
+}
+let boletoEditandoId = null;
+let comprovanteAnexadoTemp = null;
+function lerComprovanteAnexado(){
+ return new Promise(resolve=>{
+  const input = document.getElementById('novoBoletoComprovante');
+  const file = input && input.files[0];
+  if(!file){ resolve(comprovanteAnexadoTemp); return; } // se não escolheu arquivo novo, mantém o que já tinha (edição)
+  if(file.size > 2*1024*1024){
+   mostrarToast('⚠️ Comprovante muito grande (máximo 2MB) — foi salvo sem ele.');
+   resolve(comprovanteAnexadoTemp);
+   return;
+  }
+  const reader = new FileReader();
+  reader.onload = e=>resolve(e.target.result);
+  reader.onerror = ()=>resolve(comprovanteAnexadoTemp);
+  reader.readAsDataURL(file);
+ });
+}
+function removerComprovanteAnexado(){
+ comprovanteAnexadoTemp = null;
+ const input = document.getElementById('novoBoletoComprovante');
+ if(input) input.value = '';
+ const preview = document.getElementById('previewComprovanteBoleto');
+ if(preview) preview.style.display = 'none';
+}
+function mostrarPreviewComprovante(dataUrl){
+ const preview = document.getElementById('previewComprovanteBoleto');
+ const img = document.getElementById('imgPreviewComprovanteBoleto');
+ if(dataUrl && preview && img){
+  img.src = dataUrl;
+  preview.style.display = 'block';
+ } else if(preview){
+  preview.style.display = 'none';
+ }
+}
+function verComprovanteBoleto(id){
+ const b = getBoletos().find(x=>x.id===id);
+ if(!b || !b.comprovante) return;
+ const win = window.open('', '_blank');
+ if(win) win.document.write('<title>Comprovante — '+b.fornecedor+'</title><body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="'+b.comprovante+'" style="max-width:100%;max-height:100vh;"></body>');
+}
+
+/* ===== Padrão de parcelamento por fornecedor — lembra o jeito que cada um costuma parcelar ===== */
+/* ===== Ranking de Fornecedores e Gastos por Marca — quem/o que mais pesa no bolso ===== */
+function renderRankingFornecedores(){
+ const el = document.getElementById('rankingFornecedores');
+ if(!el) return;
+ const boletos = getBoletos();
+ if(boletos.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhum boleto cadastrado ainda.</p>'; return; }
+ const porFornecedor = {};
+ boletos.forEach(b=>{
+  const chave = String(b.fornecedor||'').trim();
+  if(!chave) return;
+  if(!porFornecedor[chave]) porFornecedor[chave] = { total:0, qtd:0 };
+  porFornecedor[chave].total += Number(b.valor)||0;
+  porFornecedor[chave].qtd += 1;
+ });
+ const ranking = Object.entries(porFornecedor).sort((a,b)=>b[1].total-a[1].total).slice(0,10);
+ const maiorValor = ranking.length>0 ? ranking[0][1].total : 1;
+ el.innerHTML = ranking.map(([nome,info],i)=>{
+  const pct = maiorValor>0 ? (info.total/maiorValor)*100 : 0;
+  return `<div>
+    <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px;">
+     <span style="color:#dce5f2;">${i+1}º — ${nome} <span style="color:#93a3ba;font-size:11px;">(${info.qtd} boleto${info.qtd===1?'':'s'})</span></span>
+     <strong style="color:#f6f9fd;">${money(info.total)}</strong>
+    </div>
+    <div style="background:#0b1728;border-radius:999px;height:8px;overflow:hidden;">
+     <div style="height:100%;width:${pct.toFixed(1)}%;background:linear-gradient(90deg,#fbbf24,#f59e0b);"></div>
+    </div>
+   </div>`;
+ }).join('');
+}
+function renderGastosPorMarca(){
+ const el = document.getElementById('gastosPorMarca');
+ if(!el) return;
+ const boletos = getBoletos().filter(b=>b.marca);
+ if(boletos.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhum boleto com marca preenchida ainda.</p>'; return; }
+ const porMarca = {};
+ boletos.forEach(b=>{
+  const chave = String(b.marca||'').trim();
+  if(!chave) return;
+  if(!porMarca[chave]) porMarca[chave] = { total:0, qtd:0 };
+  porMarca[chave].total += Number(b.valor)||0;
+  porMarca[chave].qtd += 1;
+ });
+ const lista = Object.entries(porMarca).sort((a,b)=>b[1].total-a[1].total);
+ const maiorValor = lista.length>0 ? lista[0][1].total : 1;
+ el.innerHTML = lista.map(([nome,info])=>{
+  const pct = maiorValor>0 ? (info.total/maiorValor)*100 : 0;
+  return `<div>
+    <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px;">
+     <span style="color:#dce5f2;">${nome} <span style="color:#93a3ba;font-size:11px;">(${info.qtd}x)</span></span>
+     <strong style="color:#f6f9fd;">${money(info.total)}</strong>
+    </div>
+    <div style="background:#0b1728;border-radius:999px;height:8px;overflow:hidden;">
+     <div style="height:100%;width:${pct.toFixed(1)}%;background:linear-gradient(90deg,#a78bfa,#8b5cf6);"></div>
+    </div>
+   </div>`;
+ }).join('');
+}
+
+/* ===== Dados dos Fornecedores — telefone e CNPJ, guardado por nome ===== */
+function getDadosFornecedores(){
+ try{ return JSON.parse(localStorage.getItem('biobel_dados_fornecedores')||'{}'); }catch(e){ return {}; }
+}
+function salvarDadosFornecedores(obj){ localStorage.setItem('biobel_dados_fornecedores', JSON.stringify(obj)); }
+function salvarDadosFornecedor(){
+ const nome = document.getElementById('dadosFornecedorNomeInput').value.trim();
+ const telefone = document.getElementById('dadosFornecedorTelefoneInput').value.trim();
+ const cnpj = document.getElementById('dadosFornecedorCnpjInput').value.trim();
+ if(!nome){ mostrarToast('⚠️ Digite o nome do fornecedor.'); return; }
+ const chave = nome.toLowerCase();
+ const dados = getDadosFornecedores();
+ dados[chave] = { nomeOriginal: nome, telefone, cnpj };
+ salvarDadosFornecedores(dados);
+ mostrarToast('✅ Dados salvos!');
+ document.getElementById('dadosFornecedorNomeInput').value = '';
+ document.getElementById('dadosFornecedorTelefoneInput').value = '';
+ document.getElementById('dadosFornecedorCnpjInput').value = '';
+ renderDadosFornecedores();
+}
+function removerDadosFornecedor(chave){
+ const dados = getDadosFornecedores();
+ const item = dados[chave];
+ if(!item) return;
+ delete dados[chave];
+ salvarDadosFornecedores(dados);
+ renderDadosFornecedores();
+ mostrarToastComDesfazer('🗑️ Dados removidos.', ()=>{
+  const dadosAtuais = getDadosFornecedores();
+  dadosAtuais[chave] = item;
+  salvarDadosFornecedores(dadosAtuais);
+  renderDadosFornecedores();
+ });
+}
+function renderDadosFornecedores(){
+ const el = document.getElementById('listaDadosFornecedores');
+ if(!el) return;
+ const dados = Object.entries(getDadosFornecedores());
+ if(dados.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhum fornecedor com dados cadastrados ainda.</p>'; return; }
+ el.innerHTML = dados.map(([chave,item])=>`
+   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 14px;">
+    <div>
+     <div style="color:#dce5f2;font-weight:800;font-size:13px;">${item.nomeOriginal}</div>
+     <div style="color:#93a3ba;font-size:11px;margin-top:2px;">${item.telefone?'📞 '+item.telefone:''}${item.telefone&&item.cnpj?' · ':''}${item.cnpj?'🏢 '+item.cnpj:''}${!item.telefone&&!item.cnpj?'Sem telefone/CNPJ cadastrado':''}</div>
+    </div>
+    <button onclick="removerDadosFornecedor('${chave}')" aria-label="Remover" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;flex-shrink:0;">🗑️</button>
+   </div>`).join('');
+}
+
+function getPadroesParceladoFornecedores(){
+ try{ return JSON.parse(localStorage.getItem('biobel_padroes_parcelado_fornecedor')||'{}'); }catch(e){ return {}; }
+}
+function salvarPadraoParceladoFornecedor(fornecedor, qtd, intervalo){
+ const chave = fornecedor.trim().toLowerCase();
+ if(!chave) return;
+ const padroes = getPadroesParceladoFornecedores();
+ padroes[chave] = { nomeOriginal: fornecedor.trim(), qtd, intervalo };
+ localStorage.setItem('biobel_padroes_parcelado_fornecedor', JSON.stringify(padroes));
+}
+function aplicarPadraoParceladoFornecedor(){
+ const input = document.getElementById('novoBoletoFornecedor');
+ const aviso = document.getElementById('avisoPadraoFornecedor');
+ const chave = input.value.trim().toLowerCase();
+ if(!chave){ aviso.style.display='none'; return; }
+ const padroes = getPadroesParceladoFornecedores();
+ const padrao = padroes[chave];
+ if(padrao && padrao.qtd>=1 && padrao.qtd<=3){
+  selecionarQuantasVezesBoleto(padrao.qtd); // já recalcula as datas sozinho, usando esse padrão
+  aviso.style.display = 'block';
+  aviso.innerHTML = '📌 Esse fornecedor costuma parcelar em <strong>'+padrao.qtd+'x</strong> — já preenchi sozinho, pode ajustar se for diferente dessa vez.';
+ } else {
+  aviso.style.display = 'none';
+ }
+}
+function preencherListaFornecedoresConhecidos(){
+ const datalist = document.getElementById('listaFornecedoresConhecidos');
+ if(!datalist) return;
+ const nomesBoletos = getBoletos().map(b=>b.fornecedor);
+ const nomesPadroes = Object.values(getPadroesParceladoFornecedores()).map(p=>p.nomeOriginal);
+ const nomesUnicos = [...new Set([...nomesBoletos, ...nomesPadroes])].filter(Boolean);
+ datalist.innerHTML = nomesUnicos.map(n=>`<option value="${n}">`).join('');
+}
+let quantasVezesBoletoSelecionado = 1;
+function selecionarQuantasVezesBoleto(n){
+ quantasVezesBoletoSelecionado = n;
+ for(let i=1;i<=3;i++){
+  const btn = document.getElementById('btnQuantasVezesBoleto'+i);
+  if(!btn) continue;
+  if(i===n){ btn.style.background='#0ea97a'; btn.style.color='#04241a'; }
+  else { btn.style.background='transparent'; btn.style.color='#dce5f2'; }
+ }
+ const labelVenc = document.getElementById('labelNovoBoletoVencimento');
+ if(labelVenc) labelVenc.textContent = n===1 ? 'Data de vencimento' : '1º vencimento';
+ const container = document.getElementById('parcelasExtrasBoletoContainer');
+ const datasContainer = document.getElementById('datasExtrasBoletoContainer');
+ if(!container || !datasContainer) return;
+
+ // Sugere datas automaticamente, contando a partir de hoje (dia do cadastro) — é só uma sugestão
+ // de largada, a pessoa pode trocar qualquer uma das datas na hora que quiser.
+ const hoje = obterAgoraBrasilia();
+ function somarDias(dias){
+  const d = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+  d.setDate(d.getDate()+dias);
+  return d.toISOString().slice(0,10);
+ }
+ // Se esse fornecedor já tiver um padrão próprio salvo, usa o intervalo dele em vez do genérico
+ // 30/45/60 — o padrão específico do fornecedor sempre tem prioridade sobre a sugestão padrão.
+ const fornecedorAtual = document.getElementById('novoBoletoFornecedor')?.value || '';
+ const padraoSalvo = getPadroesParceladoFornecedores()[fornecedorAtual.trim().toLowerCase()];
+ let diasSugeridos;
+ if(padraoSalvo && padraoSalvo.qtd===n){
+  diasSugeridos = [30];
+  for(let i=1;i<n;i++) diasSugeridos.push(30+(padraoSalvo.intervalo*i));
+ } else {
+  const padroesGenericos = { 1:[30], 2:[30,45], 3:[30,45,60] };
+  diasSugeridos = padroesGenericos[n] || [30];
+ }
+
+ const inputVencimentoPrincipal = document.getElementById('novoBoletoVencimento');
+ if(inputVencimentoPrincipal && !inputVencimentoPrincipal.value){
+  inputVencimentoPrincipal.value = somarDias(diasSugeridos[0]);
+ }
+
+ if(n===1){
+  container.style.display = 'none';
+  datasContainer.innerHTML = '';
+ } else {
+  container.style.display = 'block';
+  let html = '';
+  for(let i=2;i<=n;i++){
+   html += `<div>
+     <label style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">${i}º vencimento</label>
+     <input type="date" id="novoBoletoVencimentoExtra${i}" value="${somarDias(diasSugeridos[i-1])}" style="width:100%;background:#0f172a;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    </div>`;
+  }
+  datasContainer.innerHTML = html;
+  atualizarPreviewParcelasBoletoInline();
+ }
+}
+function atualizarPreviewParcelasBoletoInline(){
+ if(quantasVezesBoletoSelecionado===1) return;
+ const valorTotal = parseValorSimples(document.getElementById('novoBoletoValor').value);
+ const texto = document.getElementById('valorDivididoBoletoTexto');
+ if(!texto) return;
+ if(isNaN(valorTotal) || valorTotal<=0){ texto.textContent = '💰 Digite o valor total pra ver quanto fica cada boleto.'; return; }
+ const valorCada = valorTotal/quantasVezesBoletoSelecionado;
+ texto.textContent = '💰 Cada boleto: '+money(valorCada)+' (total '+money(valorTotal)+' ÷ '+quantasVezesBoletoSelecionado+')';
+}
+function limparFormularioBoleto(){
+ ['novoBoletoFornecedor','novoBoletoMarca','novoBoletoQuantidade','novoBoletoValidade','novoBoletoValor','novoBoletoVencimento','novoBoletoPagoPor','novoBoletoObs'].forEach(id=>{
+  const elCampo = document.getElementById(id);
+  if(elCampo) elCampo.value='';
+ });
+ document.getElementById('novoBoletoMarcaSelect').value = '';
+ document.getElementById('novoBoletoMarca').style.display = 'none';
+ document.getElementById('novoBoletoCategoria').value = 'Produto';
+ document.getElementById('novoBoletoRecorrente').checked = false;
+ selecionarQuantasVezesBoleto(1);
+ removerComprovanteAnexado();
+}
+async function adicionarBoleto(){
+ const fornecedor = document.getElementById('novoBoletoFornecedor').value.trim();
+ const marca = document.getElementById('novoBoletoMarca').value.trim();
+ const quantidade = document.getElementById('novoBoletoQuantidade').value.trim();
+ const validade = document.getElementById('novoBoletoValidade').value.trim();
+ const valor = parseValorSimples(document.getElementById('novoBoletoValor').value);
+ const vencimento = document.getElementById('novoBoletoVencimento').value; // yyyy-mm-dd (input type=date)
+ const categoria = document.getElementById('novoBoletoCategoria').value;
+ const pagoPor = document.getElementById('novoBoletoPagoPor').value.trim();
+ const recorrente = document.getElementById('novoBoletoRecorrente').checked;
+ const obs = document.getElementById('novoBoletoObs').value.trim();
+ if(!fornecedor){ mostrarToast('⚠️ Digite o nome do fornecedor.'); return; }
+ if(isNaN(valor) || valor<=0){ mostrarToast('⚠️ Digite um valor válido.'); return; }
+
+ // Se marcou 2x ou 3x (e não está editando um boleto já existente), gera vários boletos de uma
+ // vez, cada um com sua própria data e o valor total dividido igualmente entre eles.
+ if(quantasVezesBoletoSelecionado>1 && boletoEditandoId===null){
+  if(!vencimento){ mostrarToast('⚠️ Escolha a data do 1º vencimento.'); return; }
+  const n = quantasVezesBoletoSelecionado;
+  const datas = [vencimento];
+  for(let i=2;i<=n;i++){
+   const d = document.getElementById('novoBoletoVencimentoExtra'+i)?.value;
+   if(!d){ mostrarToast('⚠️ Preencha a data do '+i+'º vencimento.'); return; }
+   datas.push(d);
+  }
+  const comprovante = await lerComprovanteAnexado();
+  const compraId = 'compra_'+Date.now();
+  const valorParcela = Math.floor((valor/n)*100)/100;
+  const somaSemUltima = valorParcela*(n-1);
+  const valorUltima = Math.round((valor-somaSemUltima)*100)/100;
+  const lista = getBoletos();
+  for(let i=0;i<n;i++){
+   lista.unshift({
+    id: Date.now()+i, fornecedor, marca, quantidade, validade,
+    valor: i===n-1?valorUltima:valorParcela, vencimento: datas[i], categoria, pagoPor, recorrente,
+    obs: obs || ('Parcela '+(i+1)+'/'+n+' de uma compra parcelada'), comprovante, pago:false,
+    criadoEm: new Date().toISOString(), compraId, parcelaAtual: i+1, parcelaTotal: n
+   });
+  }
+  salvarBoletos(lista);
+  // Guarda automaticamente o intervalo usado, pra da próxima vez que digitar esse mesmo
+  // fornecedor o sistema já sugerir o mesmo jeito de parcelar.
+  const dt1 = new Date(datas[0]+'T00:00:00'), dt2 = new Date(datas[1]+'T00:00:00');
+  const intervaloDias = Math.round((dt2-dt1)/(1000*60*60*24));
+  if(intervaloDias>0) salvarPadraoParceladoFornecedor(fornecedor, n, intervaloDias);
+  mostrarToast('✅ '+n+' boletos criados, um pra cada parcela!');
+  registrarAlteracao('Compra parcelada de "'+fornecedor+'" registrada, em '+n+' parcelas');
+  limparFormularioBoleto();
+  renderBoletos();
+  atualizarTotaisAdm();
+  renderLogAlteracoes();
+  return;
+ }
+
+ const comprovante = await lerComprovanteAnexado();
+ const lista = getBoletos();
+ if(boletoEditandoId===null){
+  // Confere se já existe um boleto bem parecido (mesmo fornecedor, valor e vencimento) antes de
+  // salvar — evita cadastrar o mesmo boleto duas vezes sem querer.
+  const possívelDuplicado = lista.find(b=>
+   String(b.fornecedor||'').trim().toLowerCase()===fornecedor.toLowerCase() &&
+   Number(b.valor)===valor &&
+   b.vencimento===vencimento
+  );
+  if(possívelDuplicado){
+   const confirmou = await confirmarBiobelAsync('⚠️ Já existe um boleto de "'+fornecedor+'" com esse mesmo valor ('+money(valor)+') e essa mesma data de vencimento.\n\nPode ser duplicado sem querer — quer cadastrar mesmo assim?');
+   if(!confirmou) return;
+  }
+ }
+ if(boletoEditandoId!==null){
+  const idx = lista.findIndex(b=>b.id===boletoEditandoId);
+  if(idx>=0){
+   lista[idx] = { ...lista[idx], fornecedor, marca, quantidade, validade, valor, vencimento, categoria, pagoPor, recorrente, obs, comprovante };
+   salvarBoletos(lista);
+   mostrarToast('✅ Boleto atualizado!');
+   registrarAlteracao('Boleto de "'+fornecedor+'" editado');
+  }
+  cancelarEdicaoBoleto();
+ } else {
+  lista.unshift({ id: Date.now(), fornecedor, marca, quantidade, validade, valor, vencimento, categoria, pagoPor, recorrente, obs, comprovante, pago:false, criadoEm: new Date().toISOString() });
+  salvarBoletos(lista);
+  mostrarToast('✅ Boleto adicionado!');
+  registrarAlteracao('Boleto de "'+fornecedor+'" adicionado ('+money(valor)+')');
+ }
+ limparFormularioBoleto();
+ renderBoletos();
+ atualizarTotaisAdm();
+ renderLogAlteracoes();
+}
+const MARCAS_FORNECEDOR_CONHECIDAS = ['Truss','Porto Dez','Plattelli','Eudora','Natura'];
+function alternarCampoMarcaOutros(){
+ const select = document.getElementById('novoBoletoMarcaSelect');
+ const input = document.getElementById('novoBoletoMarca');
+ if(select.value==='__outros__'){
+  input.style.display = 'block';
+  input.value = '';
+  input.focus();
+ } else {
+  input.style.display = 'none';
+  input.value = select.value;
+ }
+}
+function preencherCampoMarca(marca){
+ const select = document.getElementById('novoBoletoMarcaSelect');
+ const input = document.getElementById('novoBoletoMarca');
+ if(!marca){ select.value=''; input.value=''; input.style.display='none'; return; }
+ if(MARCAS_FORNECEDOR_CONHECIDAS.includes(marca)){
+  select.value = marca; input.value = marca; input.style.display = 'none';
+ } else {
+  select.value = '__outros__'; input.value = marca; input.style.display = 'block';
+ }
+}
+function editarBoleto(id){
+ const b = getBoletos().find(x=>x.id===id);
+ if(!b) return;
+ boletoEditandoId = id;
+ selecionarQuantasVezesBoleto(1); // editar sempre mexe em 1 boleto só, mesmo que ele seja parte de uma compra parcelada
+ document.getElementById('novoBoletoFornecedor').value = b.fornecedor||'';
+ preencherCampoMarca(b.marca||'');
+ document.getElementById('novoBoletoQuantidade').value = b.quantidade||'';
+ document.getElementById('novoBoletoValidade').value = b.validade||'';
+ document.getElementById('novoBoletoValor').value = b.valor!==null&&b.valor!==undefined ? String(b.valor).replace('.',',') : '';
+ document.getElementById('novoBoletoVencimento').value = b.vencimento||'';
+ document.getElementById('novoBoletoCategoria').value = b.categoria||'Produto';
+ document.getElementById('novoBoletoPagoPor').value = b.pagoPor||'';
+ document.getElementById('novoBoletoRecorrente').checked = !!b.recorrente;
+ document.getElementById('novoBoletoObs').value = b.obs||'';
+ comprovanteAnexadoTemp = b.comprovante || null;
+ mostrarPreviewComprovante(comprovanteAnexadoTemp);
+ const btn = document.getElementById('btnAdicionarBoleto');
+ if(btn) btn.textContent = '💾 Salvar edição';
+ const btnCancelar = document.getElementById('btnCancelarEdicaoBoleto');
+ if(btnCancelar) btnCancelar.style.display = 'inline-block';
+ const wrapper = document.getElementById('formWrapperBoleto');
+ if(wrapper){ wrapper.style.background='rgba(79,156,255,.06)'; wrapper.style.borderRadius='12px'; wrapper.style.padding='14px'; wrapper.style.margin='0 -4px'; }
+ const titulo = document.getElementById('tituloFormBoleto');
+ if(titulo){ titulo.textContent = '✏️ Editando boleto'; titulo.style.color = '#4f9cff'; }
+ document.getElementById('novoBoletoFornecedor').scrollIntoView({behavior:'smooth', block:'center'});
+}
+function duplicarBoleto(id){
+ // Preenche o formulário com os dados desse boleto (menos vencimento e status de pago),
+ // pronto pra só ajustar o valor/data e adicionar de novo — útil pra fornecedores recorrentes.
+ const b = getBoletos().find(x=>x.id===id);
+ if(!b) return;
+ cancelarEdicaoBoleto();
+ document.getElementById('novoBoletoFornecedor').value = b.fornecedor||'';
+ preencherCampoMarca(b.marca||'');
+ document.getElementById('novoBoletoQuantidade').value = b.quantidade||'';
+ document.getElementById('novoBoletoValidade').value = b.validade||'';
+ document.getElementById('novoBoletoValor').value = b.valor!==null&&b.valor!==undefined ? String(b.valor).replace('.',',') : '';
+ document.getElementById('novoBoletoCategoria').value = b.categoria||'Produto';
+ document.getElementById('novoBoletoPagoPor').value = b.pagoPor||'';
+ document.getElementById('novoBoletoRecorrente').checked = !!b.recorrente;
+ document.getElementById('novoBoletoFornecedor').scrollIntoView({behavior:'smooth', block:'center'});
+ mostrarToast('📋 Dados copiados! Ajuste o valor e a data de vencimento novos.');
+}
+function cancelarEdicaoBoleto(){
+ boletoEditandoId = null;
+ limparFormularioBoleto();
+ const btn = document.getElementById('btnAdicionarBoleto');
+ if(btn) btn.textContent = '➕ Adicionar boleto';
+ const btnCancelar = document.getElementById('btnCancelarEdicaoBoleto');
+ if(btnCancelar) btnCancelar.style.display = 'none';
+ const wrapper = document.getElementById('formWrapperBoleto');
+ if(wrapper){ wrapper.style.background=''; wrapper.style.borderRadius=''; wrapper.style.padding=''; wrapper.style.margin=''; }
+ const titulo = document.getElementById('tituloFormBoleto');
+ if(titulo){ titulo.textContent = '➕ Adicionar novo boleto'; titulo.style.color = ''; }
+}
+function alternarPagoBoleto(id){
+ const lista = getBoletos();
+ const idx = lista.findIndex(b=>b.id===id);
+ if(idx<0) return;
+ lista[idx].pago = !lista[idx].pago;
+ salvarBoletos(lista);
+ renderBoletos();
+ mostrarToast(lista[idx].pago ? '✅ Marcado como pago.' : '↩️ Marcado como pendente.');
+}
+function removerBoleto(id){
+ const listaAntes = getBoletos();
+ const item = listaAntes.find(b=>b.id===id);
+ if(!item) return;
+ const lista = listaAntes.filter(b=>b.id!==id);
+ salvarBoletos(lista);
+ renderBoletos();
+ atualizarTotaisAdm();
+ mostrarToastComDesfazer('🗑️ Boleto removido.', ()=>{
+  const listaAtual = getBoletos();
+  listaAtual.push(item);
+  salvarBoletos(listaAtual);
+  renderBoletos();
+  atualizarTotaisAdm();
+ });
+}
+/* ===== Histórico de Preços por Fornecedor (item 7) ===== */
+function renderSeletorFornecedorHistorico(){
+ const select = document.getElementById('fornecedorHistoricoSelect');
+ if(!select) return;
+ const valorAtual = select.value;
+ const fornecedores = [...new Set(getBoletos().map(b=>String(b.fornecedor||'').trim()).filter(Boolean))].sort();
+ select.innerHTML = '<option value="">Escolha um fornecedor...</option>' + fornecedores.map(f=>`<option value="${f}">${f}</option>`).join('');
+ if(fornecedores.includes(valorAtual)) select.value = valorAtual;
+}
+function renderHistoricoPrecoFornecedor(){
+ const select = document.getElementById('fornecedorHistoricoSelect');
+ const el = document.getElementById('conteudoHistoricoPrecoFornecedor');
+ if(!select || !el) return;
+ const fornecedor = select.value;
+ if(!fornecedor){ el.innerHTML = ''; return; }
+
+ const boletosDele = getBoletos()
+  .filter(b=>String(b.fornecedor||'').trim()===fornecedor)
+  .sort((a,b)=>(a.criadoEm||'').localeCompare(b.criadoEm||''));
+
+ if(boletosDele.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12px;">Sem boletos desse fornecedor ainda.</p>'; return; }
+
+ const primeiro = Number(boletosDele[0].valor)||0;
+ const ultimo = Number(boletosDele[boletosDele.length-1].valor)||0;
+ const variacao = primeiro>0 ? ((ultimo-primeiro)/primeiro*100) : null;
+
+ el.innerHTML = `
+  ${boletosDele.length>1 && variacao!==null ? `<div style="background:${variacao>10?'rgba(251,113,133,.1)':'#0b1728'};border:1px solid ${variacao>10?'rgba(251,113,133,.3)':'#1e2c42'};border-radius:10px;padding:10px 14px;margin-bottom:10px;">
+    <span style="font-size:12.5px;color:${variacao>10?'#fb7185':'#93a3ba'};">${variacao>=0?'📈':'📉'} Do primeiro (${money(primeiro)}) pro último boleto (${money(ultimo)}): <strong>${variacao>=0?'+':''}${variacao.toFixed(1)}%</strong></span>
+   </div>` : ''}
+  <div style="max-height:280px;overflow-y:auto;">
+   ${boletosDele.map(b=>`
+    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1e2c42;font-size:12px;">
+     <span style="color:#93a3ba;">${b.criadoEm ? new Date(b.criadoEm).toLocaleDateString('pt-BR') : '—'}${b.marca?' · '+b.marca:''}</span>
+     <span style="color:#dce5f2;font-weight:700;">${money(Number(b.valor)||0)}</span>
+    </div>`).join('')}
+  </div>`;
+}
+
+function renderBoletos(){
+ renderSeletorFornecedorHistorico();
+ preencherListaFornecedoresConhecidos();
+ renderRankingFornecedores();
+ renderGastosPorMarca();
+ renderDadosFornecedores();
+ const el = document.getElementById('listaBoletos');
+ if(!el) return;
+ let lista = getBoletos();
+ if(filtroBoletoAtual==='pendentes') lista = lista.filter(b=>!b.pago);
+ else if(filtroBoletoAtual==='pagos') lista = lista.filter(b=>b.pago);
+ const termoBusca = document.getElementById('buscaBoletoInput')?.value.trim().toLowerCase();
+ if(termoBusca){
+  lista = lista.filter(b=>
+   String(b.fornecedor||'').toLowerCase().includes(termoBusca) ||
+   String(b.marca||'').toLowerCase().includes(termoBusca) ||
+   String(b.obs||'').toLowerCase().includes(termoBusca)
+  );
+ }
+ if(lista.length===0){
+  el.innerHTML = `<p style="color:#93a3ba;font-size:12.5px;">${termoBusca ? 'Nenhum boleto encontrado pra "'+termoBusca+'".' : (filtroBoletoAtual==='todos' ? 'Nenhum boleto cadastrado ainda.' : 'Nenhum boleto '+(filtroBoletoAtual==='pendentes'?'pendente':'pago')+' no momento.')}</p>`;
+  return;
+ }
+
+ // Agrupa por mês/ano em que o boleto foi cadastrado — facilita ver "quanto gastei em cada mês".
+ const nomesMesesPt = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+ const grupos = {};
+ lista.forEach(b=>{
+  let chave = 'Sem data registrada';
+  if(b.criadoEm){
+   const d = new Date(b.criadoEm);
+   if(!isNaN(d.getTime())) chave = nomesMesesPt[d.getMonth()]+' de '+d.getFullYear();
+  }
+  if(!grupos[chave]) grupos[chave] = [];
+  grupos[chave].push(b);
+ });
+
+ const hoje = obterAgoraBrasilia();
+ const hojeMs = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate()).getTime();
+
+ el.innerHTML = Object.entries(grupos).map(([mes, boletosDoMes])=>{
+  const totalDoMes = boletosDoMes.reduce((s,b)=>s+(Number(b.valor)||0),0);
+  const itensHtml = boletosDoMes.map(b=>{
+   let avisoVencimento = '';
+   if(b.vencimento && !b.pago){
+    const dataVenc = new Date(b.vencimento+'T00:00:00');
+    if(!isNaN(dataVenc.getTime())){
+     const diasRestantes = Math.round((dataVenc.getTime()-hojeMs)/86400000);
+     if(diasRestantes<0) avisoVencimento = `<span style="color:#fb7185;font-weight:800;">🔴 Venceu há ${Math.abs(diasRestantes)} dia${Math.abs(diasRestantes)===1?'':'s'}</span>`;
+     else if(diasRestantes<=5) avisoVencimento = `<span style="color:#fbbf24;font-weight:800;">🟡 Vence em ${diasRestantes} dia${diasRestantes===1?'':'s'}</span>`;
+    }
+   }
+   const vencimentoTexto = b.vencimento ? new Date(b.vencimento+'T00:00:00').toLocaleDateString('pt-BR') : '';
+   const coresCategoria = {'Produto':'#4f9cff','Manutenção':'#fbbf24','Marketing':'#a78bfa','Outros':'#93a3ba'};
+   const emojiCategoria = {'Produto':'📦','Manutenção':'🔧','Marketing':'📣','Outros':'📋'};
+   const corCat = coresCategoria[b.categoria] || '#93a3ba';
+   return `
+    <div style="background:#0b1728;border:1px solid ${b.pago?'rgba(39,215,160,.3)':'#1e2c42'};border-radius:12px;padding:12px 14px;${b.pago?'opacity:.75;':''}">
+     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;">
+      <div>
+       <div style="color:#dce5f2;font-weight:800;font-size:14px;">${b.fornecedor} ${b.parcelaTotal?`<span style="color:#818cf8;font-size:11px;font-weight:800;background:rgba(99,102,241,.15);padding:2px 8px;border-radius:999px;">🧾 ${b.parcelaAtual}/${b.parcelaTotal}</span>`:''} ${b.pago?'<span style="color:#27d7a0;font-size:11px;font-weight:800;">✅ PAGO</span>':''} ${b.recorrente?'<span style="color:#4f9cff;font-size:11px;font-weight:800;">🔁 RECORRENTE</span>':''}</div>
+       ${b.marca?`<div style="color:#93a3ba;font-size:11.5px;margin-top:2px;">Marca: ${b.marca}</div>`:''}
+       ${b.categoria?`<span style="display:inline-block;margin-top:4px;font-size:10px;font-weight:800;color:${corCat};background:${corCat}22;padding:2px 8px;border-radius:999px;">${emojiCategoria[b.categoria]||''} ${b.categoria}</span>`:''}
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+       <span style="color:#4f9cff;font-weight:900;font-size:15px;">${money(b.valor)}</span>
+       ${b.comprovante?`<button onclick="verComprovanteBoleto(${b.id})" aria-label="Ver comprovante" title="Ver comprovante" style="background:none;border:none;color:#a78bfa;cursor:pointer;font-size:14px;">📎</button>`:''}
+       <button onclick="alternarPagoBoleto(${b.id})" aria-label="${b.pago?'Marcar como pendente':'Marcar como pago'}" title="${b.pago?'Marcar como pendente':'Marcar como pago'}" style="background:none;border:none;color:${b.pago?'#93a3ba':'#27d7a0'};cursor:pointer;font-size:14px;">${b.pago?'↩️':'✅'}</button>
+       <button onclick="duplicarBoleto(${b.id})" aria-label="Duplicar boleto de ${b.fornecedor}" title="Duplicar (útil pra fornecedores recorrentes)" style="background:none;border:none;color:#93a3ba;cursor:pointer;font-size:14px;">🔁</button>
+       <button onclick="editarBoleto(${b.id})" aria-label="Editar boleto de ${b.fornecedor}" style="background:none;border:none;color:#4f9cff;cursor:pointer;font-size:14px;">✏️</button>
+       <button onclick="removerBoleto(${b.id})" aria-label="Remover boleto de ${b.fornecedor}" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;">🗑️</button>
+      </div>
+     </div>
+     <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:11.5px;color:#93a3ba;">
+      ${b.quantidade?`<span>📦 Qtd: ${b.quantidade}</span>`:''}
+      ${b.validade?`<span>⏳ Validade: ${b.validade}</span>`:''}
+      ${vencimentoTexto?`<span>📅 Vencimento: ${vencimentoTexto}</span>`:''}
+      ${b.pagoPor?`<span>👤 Pago por: ${b.pagoPor}</span>`:''}
+      ${avisoVencimento}
+     </div>
+     ${b.obs?`<div style="font-size:11.5px;color:#93a3ba;margin-top:6px;font-style:italic;">"${b.obs}"</div>`:''}
+    </div>`;
+  }).join('');
+  return `
+   <div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+     <div style="font-size:11px;font-weight:800;color:#93a3ba;text-transform:uppercase;letter-spacing:.05em;">📆 ${mes}</div>
+     <div style="font-size:11px;color:#93a3ba;">Total do mês: <strong style="color:#dce5f2;">${money(totalDoMes)}</strong></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;">${itensHtml}</div>
+   </div>`;
+ }).join('<div style="height:6px;"></div>');
+}
+
+/* ============================================================
+   BIOBEL — ZONA: ADMINISTRAÇÃO / PESSOAS E COMISSÕES
+   ============================================================ */
+/* ===== Comissão por Níveis de Meta (Gabriela e Day, cada uma recebe o valor do nível atingido) ===== */
+function getNiveisComissao(){
+ try{ return JSON.parse(localStorage.getItem('biobel_adm_niveis_comissao')||'[]'); }catch(e){ return []; }
+}
+function salvarNiveisComissao(lista){
+ localStorage.setItem('biobel_adm_niveis_comissao', JSON.stringify(lista));
+}
+function seedNiveisComissaoPadrao(){
+ // Pré-cadastra os 2 níveis já combinados: Meta R$50 mil (R$200 cada uma) e Super Meta R$55 mil
+ // (R$300 + kit presente + confraternização, cada uma).
+ const lista = getNiveisComissao();
+ if(lista.length===0){
+  salvarNiveisComissao([
+   { id: Date.now(), meta: 50000, dinheiro: 200, kitMin: 0, kitMax: 0, confraternizacao: 0 },
+   { id: Date.now()+1, meta: 55000, dinheiro: 300, kitMin: 200, kitMax: 260, confraternizacao: 110 }
+  ]);
+  return;
+ }
+ migrarNiveisComissaoParaNovosValores();
+}
+function migrarNiveisComissaoParaNovosValores(){
+ // Quem já tinha os níveis antigos (R$45 mil e R$50 mil) configurados — atualiza pros novos
+ // valores combinados (R$50 mil "Meta" e R$55 mil "Super Meta"), só uma vez, sem nunca
+ // sobrescrever se a pessoa já tiver mexido manualmente depois dessa mudança.
+ const jaMigrou = localStorage.getItem('biobel_migracao_niveis_50_55_v1');
+ if(jaMigrou) return;
+ const lista = getNiveisComissao();
+ let mudou = false;
+ lista.forEach(n=>{
+  if(n.meta===45000){ n.meta = 50000; mudou = true; }
+  else if(n.meta===50000 && (n.kitMax>0 || n.confraternizacao>0)){ n.meta = 55000; mudou = true; }
+ });
+ if(mudou) salvarNiveisComissao(lista);
+ localStorage.setItem('biobel_migracao_niveis_50_55_v1', 'yes');
+}
+let nivelComissaoEditandoId = null;
+function adicionarNivelComissao(){
+ const meta = parseValorSimples(document.getElementById('nivelMetaInput').value);
+ const dinheiro = parseValorSimples(document.getElementById('nivelDinheiroInput').value);
+ const kitMinTexto = document.getElementById('nivelKitMinInput').value.trim();
+ const kitMaxTexto = document.getElementById('nivelKitMaxInput').value.trim();
+ const confraTexto = document.getElementById('nivelConfraInput').value.trim();
+ const kitMin = kitMinTexto ? parseValorSimples(kitMinTexto) : 0;
+ const kitMax = kitMaxTexto ? parseValorSimples(kitMaxTexto) : 0;
+ const confraternizacao = confraTexto ? parseValorSimples(confraTexto) : 0;
+
+ if(isNaN(meta) || meta<=0){ mostrarToast('⚠️ Digite uma meta válida.'); return; }
+ if(isNaN(dinheiro) || dinheiro<0){ mostrarToast('⚠️ Digite um valor em dinheiro válido.'); return; }
+
+ const lista = getNiveisComissao();
+ if(nivelComissaoEditandoId!==null){
+  const idx = lista.findIndex(n=>n.id===nivelComissaoEditandoId);
+  if(idx>=0){
+   lista[idx] = { ...lista[idx], meta, dinheiro, kitMin: kitMin||0, kitMax: kitMax||0, confraternizacao: confraternizacao||0 };
+   salvarNiveisComissao(lista);
+   mostrarToast('✅ Nível atualizado!');
+   registrarAlteracao('Nível de comissão de '+money(meta)+' editado');
+  }
+  cancelarEdicaoNivel();
+ } else {
+  lista.push({ id: Date.now(), meta, dinheiro, kitMin: kitMin||0, kitMax: kitMax||0, confraternizacao: confraternizacao||0 });
+  lista.sort((a,b)=>a.meta-b.meta);
+  salvarNiveisComissao(lista);
+  mostrarToast('✅ Nível de comissão adicionado!');
+  registrarAlteracao('Nível de comissão de '+money(meta)+' adicionado');
+ }
+ ['nivelMetaInput','nivelDinheiroInput','nivelKitMinInput','nivelKitMaxInput','nivelConfraInput'].forEach(id=>{
+  const el = document.getElementById(id);
+  if(el) el.value='';
+ });
+ renderNiveisComissao();
+ renderLogAlteracoes();
+ atualizarTotaisAdm();
+}
+function editarNivelComissao(id){
+ const n = getNiveisComissao().find(x=>x.id===id);
+ if(!n) return;
+ nivelComissaoEditandoId = id;
+ document.getElementById('nivelMetaInput').value = String(n.meta).replace('.',',');
+ document.getElementById('nivelDinheiroInput').value = String(n.dinheiro).replace('.',',');
+ document.getElementById('nivelKitMinInput').value = n.kitMin ? String(n.kitMin).replace('.',',') : '';
+ document.getElementById('nivelKitMaxInput').value = n.kitMax ? String(n.kitMax).replace('.',',') : '';
+ document.getElementById('nivelConfraInput').value = n.confraternizacao ? String(n.confraternizacao).replace('.',',') : '';
+ const btn = document.getElementById('btnAdicionarNivel');
+ if(btn) btn.textContent = '💾 Salvar edição';
+ const btnCancelar = document.getElementById('btnCancelarEdicaoNivel');
+ if(btnCancelar) btnCancelar.style.display = 'inline-block';
+ document.getElementById('tituloFormNivel').textContent = '✏️ Editando nível de '+money(n.meta);
+}
+function cancelarEdicaoNivel(){
+ nivelComissaoEditandoId = null;
+ ['nivelMetaInput','nivelDinheiroInput','nivelKitMinInput','nivelKitMaxInput','nivelConfraInput'].forEach(id=>{
+  const el = document.getElementById(id);
+  if(el) el.value='';
+ });
+ const btn = document.getElementById('btnAdicionarNivel');
+ if(btn) btn.textContent = '➕ Adicionar nível';
+ const btnCancelar = document.getElementById('btnCancelarEdicaoNivel');
+ if(btnCancelar) btnCancelar.style.display = 'none';
+ const titulo = document.getElementById('tituloFormNivel');
+ if(titulo) titulo.textContent = '➕ Adicionar nível de meta';
+}
+function removerNivelComissao(id){
+ confirmarBiobel('Remover esse nível de meta?', ()=>{
+  const lista = getNiveisComissao().filter(n=>n.id!==id);
+  salvarNiveisComissao(lista);
+  renderNiveisComissao();
+  atualizarTotaisAdm();
+  mostrarToast('🗑️ Removido.');
+ });
+}
+function calcularKitMedio(n){
+ if(!n.kitMax || n.kitMax<=0) return n.kitMin||0;
+ return (n.kitMin + n.kitMax) / 2;
+}
+function calcularTotalPorPessoa(n){
+ return (n.dinheiro||0) + calcularKitMedio(n) + (n.confraternizacao||0);
+}
+function nivelAtualAtingido(){
+ // Acha o MAIOR nível de meta que o faturamento atual já alcançou (não soma os níveis, usa o melhor batido).
+ const totalSales = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const niveis = [...getNiveisComissao()].sort((a,b)=>a.meta-b.meta);
+ let atingido = null;
+ niveis.forEach(n=>{ if(totalSales>=n.meta) atingido = n; });
+ return atingido;
+}
+function renderNiveisComissao(){
+ seedNiveisComissaoPadrao();
+ const el = document.getElementById('listaNiveisComissao');
+ const elStatus = document.getElementById('statusNivelComissao');
+ if(!el) return;
+ const niveis = [...getNiveisComissao()].sort((a,b)=>a.meta-b.meta);
+
+ if(niveis.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhum nível de meta cadastrado ainda.</p>';
+ } else {
+  const nivelBatido = nivelAtualAtingido();
+  el.innerHTML = niveis.map(n=>{
+   const kitTexto = (n.kitMax>0 && n.kitMax!==n.kitMin) ? `${money(n.kitMin)} a ${money(n.kitMax)}` : (n.kitMin>0 ? money(n.kitMin) : '—');
+   const totalPessoa = calcularTotalPorPessoa(n);
+   const bateuEsse = nivelBatido && nivelBatido.id===n.id;
+   return `
+    <div style="background:${bateuEsse?'rgba(39,215,160,.08)':'#0b1728'};border:1px solid ${bateuEsse?'rgba(39,215,160,.4)':'#1e2c42'};border-radius:12px;padding:12px 14px;">
+     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+      <div>
+       <span style="color:#dce5f2;font-weight:800;font-size:14px;">Meta: ${money(n.meta)}</span>
+       ${bateuEsse?'<span style="color:#27d7a0;font-size:11px;font-weight:800;margin-left:8px;">✅ ATINGIDO</span>':''}
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+       <span style="color:#4f9cff;font-weight:900;font-size:14px;">~${money(totalPessoa)} cada uma</span>
+       <button onclick="editarNivelComissao(${n.id})" aria-label="Editar nível" style="background:none;border:none;color:#4f9cff;cursor:pointer;font-size:14px;">✏️</button>
+       <button onclick="removerNivelComissao(${n.id})" aria-label="Remover nível" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;">🗑️</button>
+      </div>
+     </div>
+     <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;font-size:11.5px;color:#93a3ba;">
+      <span>💵 Dinheiro: ${money(n.dinheiro)}</span>
+      ${(n.kitMin>0||n.kitMax>0)?`<span>🎁 Kit: ${kitTexto}</span>`:''}
+      ${n.confraternizacao>0?`<span>🎉 Confraternização: ${money(n.confraternizacao)}</span>`:''}
+     </div>
+    </div>`;
+  }).join('');
+ }
+
+ if(elStatus){
+  if(daysData.length===0){
+   elStatus.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Sem dados carregados ainda pra saber qual nível foi atingido.</p>';
+  } else {
+   const totalSales = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+   const nivelBatido = nivelAtualAtingido();
+   if(nivelBatido){
+    const totalPessoa = calcularTotalPorPessoa(nivelBatido);
+    const totalDuasPessoas = totalPessoa*2;
+    elStatus.innerHTML = `<div style="background:rgba(39,215,160,.1);border:1px solid rgba(39,215,160,.35);border-radius:12px;padding:12px 16px;color:#27d7a0;font-weight:800;font-size:13px;">✅ Nível de ${money(nivelBatido.meta)} atingido! ~${money(totalPessoa)} pra Gabriela e ~${money(totalPessoa)} pra Day (total ~${money(totalDuasPessoas)}).</div>`;
+   } else {
+    const niveisOrdenados = [...getNiveisComissao()].sort((a,b)=>a.meta-b.meta);
+    const proximo = niveisOrdenados.find(n=>totalSales<n.meta);
+    if(proximo){
+     const falta = proximo.meta-totalSales;
+     elStatus.innerHTML = `<div style="background:rgba(79,156,255,.08);border:1px solid rgba(79,156,255,.3);border-radius:12px;padding:12px 16px;color:#93a3ba;font-size:13px;">❌ Nenhum nível atingido ainda — faltam <strong style="color:#dce5f2;">${money(falta)}</strong> pra chegar em ${money(proximo.meta)}.</div>`;
+    } else {
+     elStatus.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhum nível de meta cadastrado ainda.</p>';
+    }
+   }
+  }
+ }
+}
+function custoTotalComissaoAtual(){
+ // Custo pra loja se o nível atual for pago pras duas (Gabriela e Day) — usado no Lucro Estimado.
+ const nivel = nivelAtualAtingido();
+ if(!nivel) return 0;
+ return calcularTotalPorPessoa(nivel) * 2;
+}
+
+/* ===== Hora extra fixa (Gabriela, 2h/semana) ===== */
+function getValorHoraExtra(){
+ seedValorHoraExtraPadrao();
+ const v = parseFloat(localStorage.getItem('biobel_adm_valor_hora_extra')||'0');
+ return isNaN(v) ? 0 : v;
+}
+function seedValorHoraExtraPadrao(){
+ // Pré-preenche com o valor já calculado (salário ÷ 220h × 1,5 de adicional) — só na primeira vez,
+ // sem nunca sobrescrever se a gerente já tiver colocado um valor com a própria mão.
+ const jaTemValor = localStorage.getItem('biobel_adm_valor_hora_extra');
+ const jaEscolheu = localStorage.getItem('biobel_adm_valor_hora_extra_definido_manualmente');
+ if(!jaTemValor && !jaEscolheu){
+  localStorage.setItem('biobel_adm_valor_hora_extra', '12.52');
+ }
+}
+function salvarHoraExtra(){
+ const valor = parseValorSimples(document.getElementById('valorHoraExtraInput').value);
+ if(isNaN(valor) || valor<0){ mostrarToast('⚠️ Digite um valor válido.'); return; }
+ localStorage.setItem('biobel_adm_valor_hora_extra', String(valor));
+ localStorage.setItem('biobel_adm_valor_hora_extra_definido_manualmente', 'yes');
+ mostrarToast('✅ Valor da hora extra salvo!');
+ registrarAlteracao('Valor da hora extra da Gabriela definido em '+money(valor)+'/hora');
+ renderLogAlteracoes();
+ renderHoraExtra();
+ atualizarTotaisAdm();
+}
+function calcularCustoMensalHoraExtra(){
+ const valorHora = getValorHoraExtra();
+ // Usa 52 semanas ÷ 12 meses = 4,333 semanas/mês (padrão de folha de pagamento),
+ // em vez de simplificar pra 4 semanas — é a conta certa pra bater com o cálculo trabalhista.
+ const semanasPorMes = 52/12;
+ return valorHora>0 ? valorHora*2*semanasPorMes : 0;
+}
+/* ===== Data de Admissão — Gabriela (CLT), pra calcular férias e FGTS ===== */
+/* ===== Desligamento — Gabriela e Day, com resumo em PDF pra contadora ===== */
+function getDataInicioTrabalho(pessoa){
+ if(pessoa==='gabriela') return getDataAdmissaoGabriela();
+ return getPromocaoCltDay() || getDataInicioEstagio();
+}
+function getDesligamento(pessoa){
+ try{ return JSON.parse(localStorage.getItem('biobel_desligamento_'+pessoa)||'null'); }catch(e){ return null; }
+}
+function getDadosPessoaisDesligamento(pessoa){
+ try{ return JSON.parse(localStorage.getItem('biobel_dados_pessoais_'+pessoa)||'{}'); }catch(e){ return {}; }
+}
+function salvarDadosPessoaisDesligamento(pessoa){
+ const idNome = pessoa==='gabriela' ? 'nomeCompletoGabrielaInput' : 'nomeCompletoDayInput';
+ const idCpf = pessoa==='gabriela' ? 'cpfGabrielaInput' : 'cpfDayInput';
+ const idCargo = pessoa==='gabriela' ? 'cargoGabrielaInput' : 'cargoDayInput';
+ const dados = {
+  nomeCompleto: document.getElementById(idNome).value.trim(),
+  cpf: document.getElementById(idCpf).value.trim(),
+  cargo: document.getElementById(idCargo).value.trim()
+ };
+ localStorage.setItem('biobel_dados_pessoais_'+pessoa, JSON.stringify(dados));
+ mostrarToast('✅ Dados pessoais salvos!');
+ registrarAlteracao('Dados pessoais de '+(pessoa==='gabriela'?'Gabriela':'Day')+' atualizados');
+ renderLogAlteracoes();
+}
+function alternarAvisoPrevioGabriela(){
+ const tipo = document.getElementById('tipoContratoGabrielaSelect').value;
+ const wrapper = document.getElementById('wrapperAvisoPrevioGabriela');
+ if(wrapper) wrapper.style.display = tipo==='experiencia' ? 'none' : 'block';
+}
+function calcularTempoEntreDatas(dataInicioStr, dataFimStr){
+ const inicio = new Date(dataInicioStr+'T00:00:00');
+ const fim = new Date(dataFimStr+'T00:00:00');
+ let anos = fim.getFullYear()-inicio.getFullYear();
+ let meses = fim.getMonth()-inicio.getMonth();
+ let dias = fim.getDate()-inicio.getDate();
+ if(dias<0){ meses--; dias += new Date(fim.getFullYear(), fim.getMonth(), 0).getDate(); }
+ if(meses<0){ anos--; meses += 12; }
+ return { anos, meses, dias, texto: (anos>0?anos+' ano'+(anos===1?'':'s')+', ':'')+meses+' mês'+(meses===1?'':'es')+' e '+dias+' dia'+(dias===1?'':'s') };
+}
+function salvarDesligamento(pessoa){
+ const idData = pessoa==='gabriela' ? 'dataDesligamentoGabrielaInput' : 'dataDesligamentoDayInput';
+ const idMotivo = pessoa==='gabriela' ? 'motivoDesligamentoGabrielaInput' : 'motivoDesligamentoDayInput';
+ const idQuemPediu = pessoa==='gabriela' ? 'quemPediuGabrielaSelect' : 'quemPediuDaySelect';
+ const data = document.getElementById(idData).value;
+ const motivo = document.getElementById(idMotivo).value.trim() || null;
+ const quemPediu = document.getElementById(idQuemPediu).value;
+ if(!data){ mostrarToast('⚠️ Escolha a data do desligamento.'); return; }
+ const dataInicio = getDataInicioTrabalho(pessoa);
+ if(dataInicio && data<dataInicio){ mostrarToast('⚠️ A data de desligamento não pode ser antes da data de admissão/início.'); return; }
+
+ const registro = { data, motivo, quemPediu };
+ if(pessoa==='gabriela'){
+  registro.tipoContrato = document.getElementById('tipoContratoGabrielaSelect').value;
+  registro.avisoPrevio = registro.tipoContrato==='experiencia' ? null : document.getElementById('avisoPrevioGabrielaSelect').value;
+ }
+ localStorage.setItem('biobel_desligamento_'+pessoa, JSON.stringify(registro));
+ const nomeExibicao = pessoa==='gabriela' ? 'Gabriela' : 'Day';
+ mostrarToast('✅ Desligamento de '+nomeExibicao+' registrado.');
+ registrarAlteracao('Desligamento de '+nomeExibicao+' registrado em '+new Date(data+'T00:00:00').toLocaleDateString('pt-BR'));
+ renderLogAlteracoes();
+ renderResumoDesligamento(pessoa);
+}
+function renderResumoDesligamento(pessoa){
+ const idData = pessoa==='gabriela' ? 'dataDesligamentoGabrielaInput' : 'dataDesligamentoDayInput';
+ const idMotivo = pessoa==='gabriela' ? 'motivoDesligamentoGabrielaInput' : 'motivoDesligamentoDayInput';
+ const idQuemPediu = pessoa==='gabriela' ? 'quemPediuGabrielaSelect' : 'quemPediuDaySelect';
+ const idResumo = pessoa==='gabriela' ? 'resumoDesligamentoGabriela' : 'resumoDesligamentoDay';
+ const desligamento = getDesligamento(pessoa);
+ const dadosPessoais = getDadosPessoaisDesligamento(pessoa);
+
+ const inputNome = document.getElementById(pessoa==='gabriela'?'nomeCompletoGabrielaInput':'nomeCompletoDayInput');
+ const inputCpf = document.getElementById(pessoa==='gabriela'?'cpfGabrielaInput':'cpfDayInput');
+ const inputCargo = document.getElementById(pessoa==='gabriela'?'cargoGabrielaInput':'cargoDayInput');
+ if(inputNome) inputNome.value = dadosPessoais.nomeCompleto || '';
+ if(inputCpf) inputCpf.value = dadosPessoais.cpf || '';
+ if(inputCargo) inputCargo.value = dadosPessoais.cargo || '';
+
+ const inputData = document.getElementById(idData);
+ const inputMotivo = document.getElementById(idMotivo);
+ const inputQuemPediu = document.getElementById(idQuemPediu);
+ const el = document.getElementById(idResumo);
+ const card = document.getElementById(pessoa==='gabriela' ? 'cardDesligamentoGabriela' : 'cardDesligamentoDay');
+ if(card) card.style.borderColor = desligamento ? 'rgba(251,113,133,.35)' : '';
+ const btnArquivar = document.getElementById(pessoa==='gabriela' ? 'btnArquivarGabriela' : 'btnArquivarDay');
+ if(btnArquivar) btnArquivar.style.display = desligamento ? 'block' : 'none';
+ if(inputData) inputData.value = desligamento ? desligamento.data : '';
+ if(inputMotivo) inputMotivo.value = desligamento ? (desligamento.motivo||'') : '';
+ if(inputQuemPediu && desligamento) inputQuemPediu.value = desligamento.quemPediu || 'funcionaria';
+ if(pessoa==='gabriela' && desligamento){
+  const selTipo = document.getElementById('tipoContratoGabrielaSelect');
+  const selAviso = document.getElementById('avisoPrevioGabrielaSelect');
+  if(selTipo) selTipo.value = desligamento.tipoContrato || 'normal';
+  if(selAviso && desligamento.avisoPrevio) selAviso.value = desligamento.avisoPrevio;
+  alternarAvisoPrevioGabriela();
+ }
+ if(!el) return;
+ if(!desligamento){ el.innerHTML = ''; return; }
+
+ const dataInicio = getDataInicioTrabalho(pessoa);
+ const tempo = dataInicio ? calcularTempoEntreDatas(dataInicio, desligamento.data) : null;
+ const nomesQuemPediu = { funcionaria:'A funcionária pediu', empresa:'A empresa decidiu desligar' };
+ el.innerHTML = `<div style="background:rgba(251,113,133,.08);border:1px solid rgba(251,113,133,.3);border-radius:10px;padding:12px 14px;">
+   <div style="font-size:12.5px;color:#fb7185;font-weight:800;">🚪 Desligamento em ${new Date(desligamento.data+'T00:00:00').toLocaleDateString('pt-BR')}</div>
+   ${tempo ? `<div style="font-size:11.5px;color:#93a3ba;margin-top:4px;">Tempo total trabalhado: ${tempo.texto}</div>` : ''}
+   <div style="font-size:11.5px;color:#93a3ba;margin-top:4px;">${nomesQuemPediu[desligamento.quemPediu]||''}</div>
+   ${desligamento.motivo ? `<div style="font-size:11.5px;color:#93a3ba;margin-top:4px;">Observação: ${desligamento.motivo}</div>` : ''}
+  </div>`;
+}
+/* ===== Arquivo de Ex-Funcionários — registro histórico de quem já trabalhou aqui ===== */
+function getArquivoExFuncionarios(){
+ try{ return JSON.parse(localStorage.getItem('biobel_arquivo_ex_funcionarios')||'[]'); }catch(e){ return []; }
+}
+function salvarArquivoExFuncionarios(lista){
+ localStorage.setItem('biobel_arquivo_ex_funcionarios', JSON.stringify(lista));
+}
+function arquivarExFuncionaria(pessoa){
+ const desligamento = getDesligamento(pessoa);
+ if(!desligamento){ mostrarToast('⚠️ Registre o desligamento antes de arquivar.'); return; }
+ const dadosPessoais = getDadosPessoaisDesligamento(pessoa);
+ const dataInicio = getDataInicioTrabalho(pessoa);
+ const nomeExibicao = dadosPessoais.nomeCompleto || (pessoa==='gabriela' ? 'Gabriela' : 'Day');
+ confirmarBiobel('Isso vai guardar '+nomeExibicao+' no Arquivo de Ex-Funcionários. Os dados continuam salvos, só saem da lista ativa. Confirma?', ()=>{
+  const tempo = dataInicio ? calcularTempoEntreDatas(dataInicio, desligamento.data) : null;
+  const arquivo = getArquivoExFuncionarios();
+  arquivo.unshift({
+   id: Date.now(),
+   nomeCompleto: nomeExibicao,
+   cpf: dadosPessoais.cpf || null,
+   cargo: dadosPessoais.cargo || null,
+   dataInicio: dataInicio || null,
+   dataDesligamento: desligamento.data,
+   tempoTrabalhado: tempo ? tempo.texto : null,
+   motivo: desligamento.motivo || null,
+   quemPediu: desligamento.quemPediu || null,
+   pessoaOrigem: pessoa
+  });
+  salvarArquivoExFuncionarios(arquivo);
+  mostrarToast('✅ '+nomeExibicao+' movida pro arquivo.');
+  registrarAlteracao(nomeExibicao+' arquivada como ex-funcionária');
+  renderLogAlteracoes();
+  renderListaExFuncionarios();
+ });
+}
+function removerExFuncionaria(id){
+ confirmarBiobel('Remover esse registro do arquivo? Essa ação não pode ser desfeita.', ()=>{
+  salvarArquivoExFuncionarios(getArquivoExFuncionarios().filter(f=>f.id!==id));
+  renderListaExFuncionarios();
+  mostrarToast('🗑️ Removido do arquivo.');
+ });
+}
+function renderListaExFuncionarios(){
+ const el = document.getElementById('listaExFuncionarios');
+ const contador = document.getElementById('contadorGrupo-exfuncionarios');
+ const lista = getArquivoExFuncionarios();
+ if(contador) contador.textContent = lista.length+' registro'+(lista.length===1?'':'s');
+ if(!el) return;
+ if(lista.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhuma ex-funcionária arquivada ainda.</p>'; return; }
+ el.innerHTML = lista.map(f=>`
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;margin-bottom:8px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+     <div>
+      <div style="font-size:13px;color:#dce5f2;font-weight:800;">${f.nomeCompleto}${f.cargo?' — '+f.cargo:''}</div>
+      <div style="font-size:11px;color:#93a3ba;margin-top:4px;">
+       ${f.dataInicio ? 'De '+new Date(f.dataInicio+'T00:00:00').toLocaleDateString('pt-BR')+' até ' : 'Até '}${new Date(f.dataDesligamento+'T00:00:00').toLocaleDateString('pt-BR')}
+       ${f.tempoTrabalhado ? ' ('+f.tempoTrabalhado+')' : ''}
+      </div>
+      ${f.cpf ? `<div style="font-size:11px;color:#93a3ba;margin-top:2px;">CPF: ${f.cpf}</div>` : ''}
+      ${f.motivo ? `<div style="font-size:11px;color:#93a3ba;margin-top:2px;">Observação: ${f.motivo}</div>` : ''}
+     </div>
+     <button onclick="removerExFuncionaria(${f.id})" aria-label="Remover do arquivo" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;">🗑️</button>
+    </div>
+   </div>`).join('');
+}
+
+async function exportarTodosDesligamentos(){
+ const pessoasComDesligamento = ['gabriela','day'].filter(p=>getDesligamento(p));
+ if(pessoasComDesligamento.length===0){ mostrarToast('⚠️ Nenhum desligamento registrado ainda.'); return; }
+ for(const pessoa of pessoasComDesligamento){
+  await gerarPdfDesligamento(pessoa);
+  // Um pequeno intervalo entre um PDF e outro, pra dar tempo do navegador processar o download
+  // anterior antes de começar o próximo.
+  await new Promise(resolve=>setTimeout(resolve, 600));
+ }
+ mostrarToast('✅ '+pessoasComDesligamento.length+' PDF(s) exportado(s)!');
+}
+
+async function gerarPdfDesligamento(pessoa){
+ const desligamento = getDesligamento(pessoa);
+ if(!desligamento){ mostrarToast('⚠️ Registre a data de desligamento primeiro.'); return; }
+ const dataInicio = getDataInicioTrabalho(pessoa);
+ const dadosPessoais = getDadosPessoaisDesligamento(pessoa);
+ const nomeExibicao = dadosPessoais.nomeCompleto || (pessoa==='gabriela' ? 'Gabriela' : 'Day');
+ const vinculo = pessoa==='gabriela' ? (desligamento.tipoContrato==='experiencia' ? 'CLT — Contrato de Experiência' : 'CLT') : (ehDayClt() ? 'CLT (promovida de Estágio)' : 'Estágio');
+ try{
+  await carregarJsPDFSobDemanda();
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({unit:'mm', format:'a4'});
+  const margem = 15;
+  let y = await desenharCabecalhoPDF(doc, 'Resumo de Desligamento', 'Vínculo: '+vinculo+' — documento informativo, não substitui o cálculo oficial da contabilidade');
+
+  doc.setFontSize(11); doc.setTextColor(20,20,20);
+  function linhaInfo(rotulo, valor){
+   if(!valor) return;
+   // Quebra de página automática — se não tiver mais espaço na página atual, começa uma nova
+   // em vez de deixar o texto cortado feio na borda inferior.
+   if(y>270){ doc.addPage(); y=20; doc.setFontSize(11); doc.setTextColor(20,20,20); }
+   doc.setFont('helvetica','bold'); doc.text(rotulo+':', margem, y);
+   doc.setFont('helvetica','normal'); doc.text(String(valor), margem+58, y);
+   y += 8;
+  }
+  linhaInfo('Nome completo', nomeExibicao);
+  linhaInfo('CPF', dadosPessoais.cpf);
+  const nascimento = getDataNascimento(pessoa);
+  if(nascimento) linhaInfo('Data de nascimento', new Date(nascimento+'T00:00:00').toLocaleDateString('pt-BR'));
+  linhaInfo('Cargo/função', dadosPessoais.cargo);
+  linhaInfo('Vínculo', vinculo);
+  if(dataInicio) linhaInfo('Data de admissão/início', new Date(dataInicio+'T00:00:00').toLocaleDateString('pt-BR'));
+  linhaInfo('Data de desligamento', new Date(desligamento.data+'T00:00:00').toLocaleDateString('pt-BR'));
+  if(dataInicio){
+   const tempo = calcularTempoEntreDatas(dataInicio, desligamento.data);
+   const rotuloTempo = pessoa==='gabriela' ? 'Tempo de carteira assinada (CLT)' : (ehDayClt() ? 'Tempo de CLT (desde a promoção)' : 'Tempo total trabalhado');
+   linhaInfo(rotuloTempo, tempo.texto);
+  }
+  if(pessoa==='gabriela'){
+   const dataInformal = getDataInicioInformalGabriela();
+   if(dataInformal){
+    linhaInfo('Data de início informal (antes da carteira)', new Date(dataInformal+'T00:00:00').toLocaleDateString('pt-BR'));
+    const tempoTotalLoja = calcularTempoEntreDatas(dataInformal, desligamento.data);
+    linhaInfo('Tempo total na loja (informal + CLT)', tempoTotalLoja.texto);
+   }
+  }
+  if(pessoa==='day' && ehDayClt()){
+   const inicioEstagio = getDataInicioEstagio();
+   if(inicioEstagio){
+    linhaInfo('Data de início do estágio', new Date(inicioEstagio+'T00:00:00').toLocaleDateString('pt-BR'));
+    const tempoTotalLoja = calcularTempoEntreDatas(inicioEstagio, desligamento.data);
+    linhaInfo('Tempo total na loja (estágio + CLT)', tempoTotalLoja.texto);
+   }
+  }
+  const nomesQuemPediu = { funcionaria:'A funcionária pediu o desligamento', empresa:'A empresa decidiu desligar' };
+  linhaInfo('Quem pediu o desligamento', nomesQuemPediu[desligamento.quemPediu]);
+  if(pessoa==='gabriela'){
+   if(desligamento.tipoContrato==='experiencia'){
+    linhaInfo('Aviso-prévio', 'Não se aplica (contrato de experiência)');
+   } else {
+    const nomesAviso = { trabalhado:'Trabalhado', indenizado:'Indenizado', dispensado_empresa:'Dispensado pela empresa', dispensa_pedida:'A funcionária pediu dispensa do aviso' };
+    linhaInfo('Aviso-prévio', nomesAviso[desligamento.avisoPrevio]);
+   }
+  }
+  if(desligamento.motivo) linhaInfo('Observação', desligamento.motivo);
+  const chavePix = getChavePix(pessoa);
+  if(chavePix) linhaInfo('Chave PIX', chavePix);
+
+  // Salário base (Gabriela) — puxado dos Gastos Fixos, se cadastrado com esse nome.
+  if(pessoa==='gabriela'){
+   const gastoSalario = getGastosFixos().find(g=>String(g.nome||'').toLowerCase().includes('gabriela'));
+   if(gastoSalario) linhaInfo('Último salário-base cadastrado', money(Number(gastoSalario.valor)||0));
+  }
+
+  y += 6;
+  if(y>270){ doc.addPage(); y=20; }
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(90,90,90);
+  doc.text('Documento gerado automaticamente pelo sistema, com base nos dados cadastrados. Não substitui', margem, y);
+  y += 5;
+  doc.text('o cálculo oficial de rescisão, que deve ser feito pela contabilidade.', margem, y);
+
+  doc.save('desligamento-'+pessoa+'-'+desligamento.data+'.pdf');
+  mostrarToast('✅ PDF de desligamento gerado!');
+ }catch(e){
+  console.error(e);
+  mostrarToast('⚠️ Não foi possível gerar o PDF.');
+ }
+}
+
+function getDataInicioInformalGabriela(){
+ return localStorage.getItem('biobel_adm_inicio_informal_gabriela') || '';
+}
+function salvarDataInicioInformalGabriela(){
+ const data = document.getElementById('dataInicioInformalGabrielaInput').value;
+ if(!data){ mostrarToast('⚠️ Escolha a data de início informal.'); return; }
+ const dataAdmissao = getDataAdmissaoGabriela();
+ if(dataAdmissao && data>dataAdmissao){ mostrarToast('⚠️ A data informal deveria ser antes (ou igual) da data de admissão oficial.'); return; }
+ localStorage.setItem('biobel_adm_inicio_informal_gabriela', data);
+ mostrarToast('✅ Data de início informal salva!');
+ registrarAlteracao('Data de início informal da Gabriela definida em '+new Date(data+'T00:00:00').toLocaleDateString('pt-BR'));
+ renderLogAlteracoes();
+ renderAdmissaoGabriela();
+}
+function getDataAdmissaoGabriela(){
+ return localStorage.getItem('biobel_adm_data_admissao_gabriela') || '';
+}
+function salvarDataAdmissaoGabriela(){
+ const data = document.getElementById('dataAdmissaoGabrielaInput').value;
+ if(!data){ mostrarToast('⚠️ Escolha uma data de admissão.'); return; }
+ localStorage.setItem('biobel_adm_data_admissao_gabriela', data);
+ mostrarToast('✅ Data de admissão salva!');
+ registrarAlteracao('Data de admissão da Gabriela definida em '+new Date(data+'T00:00:00').toLocaleDateString('pt-BR'));
+ renderLogAlteracoes();
+ renderAdmissaoGabriela();
+}
+function renderAdmissaoGabriela(){
+ const inputInformal = document.getElementById('dataInicioInformalGabrielaInput');
+ const dataInformal = getDataInicioInformalGabriela();
+ if(inputInformal) inputInformal.value = dataInformal;
+
+ const input = document.getElementById('dataAdmissaoGabrielaInput');
+ const el = document.getElementById('resumoAdmissaoGabriela');
+ const dataAdmissao = getDataAdmissaoGabriela();
+ if(input) input.value = dataAdmissao;
+ if(!el) return;
+ if(!dataAdmissao){ el.innerHTML = ''; return; }
+
+ const admissao = new Date(dataAdmissao+'T00:00:00');
+ const hoje = obterAgoraBrasilia();
+ const hojeData = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+
+ // Tempo de casa (anos, meses e dias completos)
+ let anos = hojeData.getFullYear() - admissao.getFullYear();
+ let meses = hojeData.getMonth() - admissao.getMonth();
+ let dias = hojeData.getDate() - admissao.getDate();
+ if(dias<0){ meses--; dias += new Date(hojeData.getFullYear(), hojeData.getMonth(), 0).getDate(); }
+ if(meses<0){ anos--; meses += 12; }
+ const mesesTotais = anos*12 + meses;
+
+ // Tempo total na loja, contando o período informal (se houver) — não afeta férias/FGTS, é só
+ // pra mostrar quanto tempo ela realmente está na Biobel desde antes da carteira assinada.
+ let tempoTotalLojaTexto = null;
+ if(dataInformal){
+  const tempo = calcularTempoEntreDatas(dataInformal, hojeData.toISOString().slice(0,10));
+  tempoTotalLojaTexto = tempo.texto;
+ }
+
+ // Próximo período aquisitivo de férias (completa a cada 12 meses desde a admissão)
+ const periodosCompletos = Math.floor(mesesTotais/12);
+ const proximoAniversario = new Date(admissao);
+ proximoAniversario.setFullYear(admissao.getFullYear() + periodosCompletos + 1);
+ const diasAteFerias = Math.round((proximoAniversario.getTime()-hojeData.getTime())/86400000);
+ const jaTemDireitoFerias = periodosCompletos>=1;
+
+ // FGTS acumulado estimado: 8% do salário-base × meses trabalhados (aproximação — assume salário
+ // constante desde a admissão; não conta reajustes, 13º nem outros valores que também compõem a base real).
+ const gastosFixos = getGastosFixos();
+ const salarioGabriela = gastosFixos.find(g=>g.nome.toLowerCase().includes('clt gabriela'));
+ const salario = salarioGabriela && salarioGabriela.valor ? salarioGabriela.valor : 0;
+ const fgtsEstimado = salario>0 ? salario*0.08*mesesTotais : 0;
+
+ el.innerHTML = `
+  ${tempoTotalLojaTexto ? `<div style="background:rgba(79,156,255,.08);border:1px solid rgba(79,156,255,.3);border-radius:10px;padding:10px 14px;margin-bottom:10px;">
+    <div style="font-size:11px;color:#4f9cff;font-weight:800;">🏪 Tempo total na loja (contando o período informal)</div>
+    <div style="font-size:13px;color:#dce5f2;margin-top:2px;">${tempoTotalLojaTexto} — desde ${new Date(dataInformal+'T00:00:00').toLocaleDateString('pt-BR')}</div>
+   </div>` : ''}
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;">
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 12px;">
+    <div style="font-size:10px;color:#93a3ba;">⏳ Tempo de casa (CLT)</div>
+    <div style="font-size:15px;font-weight:800;color:#dce5f2;margin-top:2px;">${anos>0?anos+'a ':''}${meses}m ${dias}d</div>
+   </div>
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 12px;">
+    <div style="font-size:10px;color:#93a3ba;">🏖️ Férias</div>
+    <div style="font-size:13px;font-weight:800;color:${jaTemDireitoFerias?'#27d7a0':'#93a3ba'};margin-top:2px;">
+     ${jaTemDireitoFerias ? '✅ Já tem direito' : 'Completa em '+diasAteFerias+' dia'+(diasAteFerias===1?'':'s')}
+    </div>
+   </div>
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 12px;">
+    <div style="font-size:10px;color:#93a3ba;">💰 FGTS acumulado (estimado)</div>
+    <div style="font-size:15px;font-weight:800;color:#dce5f2;margin-top:2px;">${salario>0?money(fgtsEstimado):'defina o salário'}</div>
+   </div>
+  </div>
+  ${jaTemDireitoFerias ? `<p style="font-size:11px;color:#93a3ba;margin-top:10px;">📅 Próximo aniversário de férias: ${proximoAniversario.toLocaleDateString('pt-BR')} (depois disso, começa a contar o próximo período).</p>` : ''}
+  <p style="font-size:10.5px;color:#93a3ba;margin-top:8px;">⚠️ O FGTS acima é uma <strong style="color:#dce5f2;">estimativa</strong> (8% do salário atual × meses trabalhados) — não considera reajustes salariais, 13º nem outros valores que também entram na base real. Pro extrato oficial, confira no aplicativo/site da Caixa ou com a contadora.</p>
+ `;
+}
+
+/* ===== Férias — Gabriela (histórico, período aquisitivo/concessivo, alerta de vencimento) ===== */
+function getHistoricoFerias(){
+ try{ return JSON.parse(localStorage.getItem('biobel_adm_historico_ferias_gabriela')||'[]'); }catch(e){ return []; }
+}
+function salvarHistoricoFerias(lista){
+ localStorage.setItem('biobel_adm_historico_ferias_gabriela', JSON.stringify(lista));
+}
+function registrarFerias(){
+ const inicio = document.getElementById('feriasInicioInput').value;
+ const fim = document.getElementById('feriasFimInput').value;
+ if(!inicio || !fim){ mostrarToast('⚠️ Preencha as duas datas.'); return; }
+ if(fim<inicio){ mostrarToast('⚠️ A data de volta não pode ser antes da data de início.'); return; }
+ const lista = getHistoricoFerias();
+ lista.push({ id: Date.now(), inicio, fim });
+ salvarHistoricoFerias(lista);
+ document.getElementById('feriasInicioInput').value='';
+ document.getElementById('feriasFimInput').value='';
+ mostrarToast('✅ Período de férias registrado!');
+ registrarAlteracao('Férias da Gabriela registradas: '+new Date(inicio+'T00:00:00').toLocaleDateString('pt-BR')+' a '+new Date(fim+'T00:00:00').toLocaleDateString('pt-BR'));
+ renderLogAlteracoes();
+ renderFeriasGabriela();
+}
+function removerFerias(id){
+ confirmarBiobel('Remover esse registro de férias?', ()=>{
+  const lista = getHistoricoFerias().filter(f=>f.id!==id);
+  salvarHistoricoFerias(lista);
+  renderFeriasGabriela();
+  mostrarToast('🗑️ Removido.');
+ });
+}
+function getDataInicioPeriodoAquisitivoFerias(){
+ // O período aquisitivo atual começa na admissão, OU no dia seguinte ao fim da última
+ // férias já registrada — o que for mais recente.
+ const admissao = getDataAdmissaoGabriela();
+ if(!admissao) return null;
+ const historico = getHistoricoFerias();
+ if(historico.length===0) return new Date(admissao+'T00:00:00');
+ const ultimaFerias = [...historico].sort((a,b)=>b.fim.localeCompare(a.fim))[0];
+ const proximoDia = new Date(ultimaFerias.fim+'T00:00:00');
+ proximoDia.setDate(proximoDia.getDate()+1);
+ return proximoDia;
+}
+function renderFeriasGabriela(){
+ const elStatus = document.getElementById('statusFeriasGabriela');
+ const elHist = document.getElementById('historicoFeriasGabriela');
+ if(!elStatus || !elHist) return;
+
+ const historico = [...getHistoricoFerias()].sort((a,b)=>b.inicio.localeCompare(a.inicio));
+ elHist.innerHTML = historico.length===0
+  ? '<p style="color:#93a3ba;font-size:12px;">Nenhuma férias registrada ainda.</p>'
+  : historico.map(f=>`
+     <div style="display:flex;justify-content:space-between;align-items:center;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;">
+      <span style="font-size:12.5px;color:#dce5f2;">${new Date(f.inicio+'T00:00:00').toLocaleDateString('pt-BR')} a ${new Date(f.fim+'T00:00:00').toLocaleDateString('pt-BR')}</span>
+      <button onclick="removerFerias(${f.id})" aria-label="Remover" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:13px;">🗑️</button>
+     </div>`).join('');
+
+ const admissao = getDataAdmissaoGabriela();
+ if(!admissao){ elStatus.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Defina a data de admissão no card acima primeiro.</p>'; return; }
+
+ const inicioPeriodo = getDataInicioPeriodoAquisitivoFerias();
+ const hoje = obterAgoraBrasilia();
+ const hojeData = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+
+ const fimAquisitivo = new Date(inicioPeriodo);
+ fimAquisitivo.setFullYear(fimAquisitivo.getFullYear()+1);
+ const fimConcessivo = new Date(fimAquisitivo);
+ fimConcessivo.setFullYear(fimConcessivo.getFullYear()+1);
+
+ if(hojeData < fimAquisitivo){
+  const dias = Math.round((fimAquisitivo-hojeData)/86400000);
+  elStatus.innerHTML = `<div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
+    <div style="font-size:11px;color:#93a3ba;">📆 Período aquisitivo em andamento</div>
+    <div style="font-size:13px;color:#dce5f2;font-weight:800;margin-top:2px;">Completa direito a férias em ${fimAquisitivo.toLocaleDateString('pt-BR')} (${dias} dias)</div>
+   </div>`;
+ } else {
+  const diasAteVencer = Math.round((fimConcessivo-hojeData)/86400000);
+  const venceu = diasAteVencer<0;
+  const pertoDeVencer = diasAteVencer>=0 && diasAteVencer<=60;
+  const cor = venceu ? '#fb7185' : pertoDeVencer ? '#fbbf24' : '#27d7a0';
+  const fundo = venceu ? 'rgba(251,113,133,.08)' : pertoDeVencer ? 'rgba(251,191,36,.08)' : 'rgba(39,215,160,.08)';
+  elStatus.innerHTML = `<div style="background:${fundo};border:1px solid ${cor}55;border-radius:10px;padding:12px 14px;">
+    <div style="font-size:11.5px;font-weight:800;color:${cor};">${venceu ? '🔴 Férias VENCIDAS — risco de pagamento em dobro!' : '✅ Já tem direito a férias'}</div>
+    <div style="font-size:11.5px;color:#93a3ba;margin-top:4px;">${venceu ? 'O prazo pra conceder venceu em '+fimConcessivo.toLocaleDateString('pt-BR')+', há '+Math.abs(diasAteVencer)+' dias — pela lei, precisa pagar em dobro se ainda não foram tiradas.' : 'Prazo pra conceder até '+fimConcessivo.toLocaleDateString('pt-BR')+' ('+diasAteVencer+' dias restantes).'}</div>
+   </div>`;
+ }
+}
+
+/* ===== Recesso Remunerado — Day (estágio, 30 dias/ano, proporcional se < 1 ano) ===== */
+function getHistoricoRecesso(){
+ try{ return JSON.parse(localStorage.getItem('biobel_adm_historico_recesso_day')||'[]'); }catch(e){ return []; }
+}
+function salvarHistoricoRecesso(lista){
+ localStorage.setItem('biobel_adm_historico_recesso_day', JSON.stringify(lista));
+}
+function registrarRecesso(){
+ const inicio = document.getElementById('recessoInicioInput').value;
+ const fim = document.getElementById('recessoFimInput').value;
+ if(!inicio || !fim){ mostrarToast('⚠️ Preencha as duas datas.'); return; }
+ if(fim<inicio){ mostrarToast('⚠️ A data de volta não pode ser antes da data de início.'); return; }
+ const lista = getHistoricoRecesso();
+ lista.push({ id: Date.now(), inicio, fim });
+ salvarHistoricoRecesso(lista);
+ document.getElementById('recessoInicioInput').value='';
+ document.getElementById('recessoFimInput').value='';
+ mostrarToast('✅ Recesso registrado!');
+ registrarAlteracao('Recesso da Day registrado: '+new Date(inicio+'T00:00:00').toLocaleDateString('pt-BR')+' a '+new Date(fim+'T00:00:00').toLocaleDateString('pt-BR'));
+ renderLogAlteracoes();
+ renderRecessoDay();
+}
+function removerRecesso(id){
+ confirmarBiobel('Remover esse registro de recesso?', ()=>{
+  const lista = getHistoricoRecesso().filter(r=>r.id!==id);
+  salvarHistoricoRecesso(lista);
+  renderRecessoDay();
+  mostrarToast('🗑️ Removido.');
+ });
+}
+function renderRecessoDay(){
+ const elStatus = document.getElementById('statusRecessoDay');
+ const elHist = document.getElementById('historicoRecessoDay');
+ if(!elStatus || !elHist) return;
+
+ const historico = [...getHistoricoRecesso()].sort((a,b)=>b.inicio.localeCompare(a.inicio));
+ elHist.innerHTML = historico.length===0
+  ? '<p style="color:#93a3ba;font-size:12px;">Nenhum recesso registrado ainda.</p>'
+  : historico.map(r=>`
+     <div style="display:flex;justify-content:space-between;align-items:center;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;">
+      <span style="font-size:12.5px;color:#dce5f2;">${new Date(r.inicio+'T00:00:00').toLocaleDateString('pt-BR')} a ${new Date(r.fim+'T00:00:00').toLocaleDateString('pt-BR')}</span>
+      <button onclick="removerRecesso(${r.id})" aria-label="Remover" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:13px;">🗑️</button>
+     </div>`).join('');
+
+ const inicioEstagio = getDataInicioEstagio();
+ if(!inicioEstagio){ elStatus.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Defina a data de início do estágio no card acima primeiro.</p>'; return; }
+
+ const inicio = new Date(inicioEstagio+'T00:00:00');
+ const hoje = obterAgoraBrasilia();
+ const hojeData = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+ const diasEstagio = Math.floor((hojeData.getTime()-inicio.getTime())/86400000);
+ const completouUmAno = diasEstagio>=365;
+
+ // Direito proporcional: ~2,5 dias por mês trabalhado, até o teto de 30 dias/ano (aproximação comum).
+ const mesesTrabalhados = Math.floor(diasEstagio/30.44);
+ const diasDireito = completouUmAno ? 30 : Math.max(0, Math.min(30, Math.round(mesesTrabalhados*2.5)));
+
+ const diasUsados = historico.reduce((s,r)=>{
+  const ini = new Date(r.inicio+'T00:00:00');
+  const f = new Date(r.fim+'T00:00:00');
+  return s + Math.round((f.getTime()-ini.getTime())/86400000)+1;
+ },0);
+ const saldo = Math.max(0, diasDireito-diasUsados);
+
+ elStatus.innerHTML = `<div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
+   <div style="font-size:11px;color:#93a3ba;">${completouUmAno?'✅ Já completou 1 ano de estágio — direito ao recesso completo':'⏳ Ainda não completou 1 ano — direito proporcional'}</div>
+   <div style="font-size:14px;font-weight:800;color:#dce5f2;margin-top:4px;">${diasDireito} dias de direito, ${diasUsados} já usado${diasUsados===1?'':'s'} → <span style="color:${saldo>0?'#27d7a0':'#93a3ba'};">saldo de ${saldo} dias</span></div>
+  </div>`;
+}
+
+/* ===== Aniversários (Gabriela e Day) — pra gerente lembrar ===== */
+function getDataNascimento(pessoa){
+ return localStorage.getItem('biobel_adm_nascimento_'+pessoa) || '';
+}
+function salvarNascimento(pessoa){
+ const input = document.getElementById(pessoa==='gabriela' ? 'dataNascimentoGabrielaInput' : 'dataNascimentoDayInput');
+ const data = input ? input.value : '';
+ if(!data){ mostrarToast('⚠️ Escolha uma data de nascimento.'); return; }
+ localStorage.setItem('biobel_adm_nascimento_'+pessoa, data);
+ mostrarToast('✅ Data de nascimento salva!');
+ registrarAlteracao('Data de nascimento de '+(pessoa==='gabriela'?'Gabriela':'Day')+' salva');
+ renderLogAlteracoes();
+ renderNascimento(pessoa);
+}
+function diasAteProximoAniversario(dataNascimento, hojeData){
+ const nasc = new Date(dataNascimento+'T00:00:00');
+ let proximo = new Date(hojeData.getFullYear(), nasc.getMonth(), nasc.getDate());
+ if(proximo.getTime() < hojeData.getTime()){
+  proximo = new Date(hojeData.getFullYear()+1, nasc.getMonth(), nasc.getDate());
+ }
+ return { dias: Math.round((proximo.getTime()-hojeData.getTime())/86400000), dataProxima: proximo };
+}
+function renderNascimento(pessoa){
+ const input = document.getElementById(pessoa==='gabriela' ? 'dataNascimentoGabrielaInput' : 'dataNascimentoDayInput');
+ const el = document.getElementById(pessoa==='gabriela' ? 'resumoNascimentoGabriela' : 'resumoNascimentoDay');
+ const dataNascimento = getDataNascimento(pessoa);
+ if(input) input.value = dataNascimento;
+ if(!el) return;
+ if(!dataNascimento){ el.innerHTML = ''; return; }
+ const hoje = obterAgoraBrasilia();
+ const hojeData = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+ const { dias, dataProxima } = diasAteProximoAniversario(dataNascimento, hojeData);
+ const cor = dias<=7 ? '#fbbf24' : '#93a3ba';
+ el.innerHTML = `<div style="font-size:12px;color:${cor};font-weight:${dias<=7?'800':'400'};">
+   🎂 ${dias===0?'É hoje! 🎉':'Próximo aniversário: '+dataProxima.toLocaleDateString('pt-BR')+' (em '+dias+' dia'+(dias===1?'':'s')+')'}
+  </div>`;
+}
+
+/* ===== Contrato de Estágio — Day (início e prazo de renovação) ===== */
+/* ===== Promoção de Day: Estágio -> CLT ===== */
+function getPromocaoCltDay(){
+ return localStorage.getItem('biobel_promocao_clt_day') || '';
+}
+function ehDayClt(){
+ return !!getPromocaoCltDay();
+}
+function promoverDayParaClt(){
+ const data = document.getElementById('dataPromocaoCltDayInput').value;
+ if(!data){ mostrarToast('⚠️ Escolha a data da promoção.'); return; }
+ const inicioEstagio = getDataInicioEstagio();
+ if(inicioEstagio && data<inicioEstagio){ mostrarToast('⚠️ A data de promoção não pode ser antes do início do estágio.'); return; }
+ confirmarBiobel('Confirma a promoção da Day pra CLT a partir de '+new Date(data+'T00:00:00').toLocaleDateString('pt-BR')+'? O tempo de estágio fica guardado como histórico.', ()=>{
+  localStorage.setItem('biobel_promocao_clt_day', data);
+  mostrarToast('🎉 Day promovida pra CLT!');
+  registrarAlteracao('Day promovida de Estágio pra CLT em '+new Date(data+'T00:00:00').toLocaleDateString('pt-BR'));
+  renderLogAlteracoes();
+  renderPromocaoDay();
+ });
+}
+function renderPromocaoDay(){
+ const input = document.getElementById('dataPromocaoCltDayInput');
+ const el = document.getElementById('resumoPromocaoDay');
+ const bloco = document.getElementById('blocoPromoverDayEstagio');
+ const titulo = document.getElementById('tituloCardDadosDay');
+ const dataPromocao = getPromocaoCltDay();
+ if(input) input.value = dataPromocao;
+ if(bloco) bloco.style.display = dataPromocao ? 'none' : 'block';
+ if(titulo) titulo.textContent = dataPromocao ? '📋 Dados de Day (CLT)' : '📋 Dados de Day (Estágio)';
+ if(!el) return;
+ if(!dataPromocao){ el.innerHTML = ''; return; }
+ const inicioEstagio = getDataInicioEstagio();
+ const tempoEstagio = inicioEstagio ? calcularTempoEntreDatas(inicioEstagio, dataPromocao) : null;
+ el.innerHTML = `<div style="background:rgba(39,215,160,.08);border:1px solid rgba(39,215,160,.3);border-radius:10px;padding:12px 14px;">
+   <div style="font-size:12.5px;color:#27d7a0;font-weight:800;">🎉 Promovida pra CLT em ${new Date(dataPromocao+'T00:00:00').toLocaleDateString('pt-BR')}</div>
+   ${tempoEstagio ? `<div style="font-size:11.5px;color:#93a3ba;margin-top:4px;">Foi estagiária por ${tempoEstagio.texto} antes da promoção.</div>` : ''}
+  </div>`;
+}
+
+function getDataInicioEstagio(){
+ return localStorage.getItem('biobel_adm_inicio_estagio_day') || '';
+}
+function salvarInicioEstagio(){
+ const data = document.getElementById('dataInicioEstagioInput').value;
+ if(!data){ mostrarToast('⚠️ Escolha a data de início do estágio.'); return; }
+ localStorage.setItem('biobel_adm_inicio_estagio_day', data);
+ mostrarToast('✅ Data de início do estágio salva!');
+ registrarAlteracao('Data de início do estágio da Day definida em '+new Date(data+'T00:00:00').toLocaleDateString('pt-BR'));
+ renderLogAlteracoes();
+ renderEstagioDay();
+}
+function getRenovacaoEstagioMeses(){
+ const v = parseInt(localStorage.getItem('biobel_adm_renovacao_estagio_meses')||'6', 10);
+ return isNaN(v) || v<=0 ? 6 : v;
+}
+function salvarRenovacaoEstagio(){
+ const meses = parseInt(document.getElementById('renovacaoEstagioMesesInput').value, 10);
+ if(isNaN(meses) || meses<=0){ mostrarToast('⚠️ Digite um número de meses válido.'); return; }
+ localStorage.setItem('biobel_adm_renovacao_estagio_meses', String(meses));
+ mostrarToast('✅ Período de renovação salvo!');
+ registrarAlteracao('Período de renovação do estágio definido em '+meses+' meses');
+ renderLogAlteracoes();
+ renderEstagioDay();
+}
+function renderEstagioDay(){
+ const inputInicio = document.getElementById('dataInicioEstagioInput');
+ const inputRenovacao = document.getElementById('renovacaoEstagioMesesInput');
+ const el = document.getElementById('resumoEstagioDay');
+ const dataInicio = getDataInicioEstagio();
+ const renovacaoMeses = getRenovacaoEstagioMeses();
+ if(inputInicio) inputInicio.value = dataInicio;
+ if(inputRenovacao) inputRenovacao.value = renovacaoMeses;
+ if(!el) return;
+ if(!dataInicio){ el.innerHTML = ''; return; }
+
+ const inicio = new Date(dataInicio+'T00:00:00');
+ const hoje = obterAgoraBrasilia();
+ const hojeData = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+
+ // Tempo de estágio
+ const mesesTotais = Math.floor((hojeData.getTime()-inicio.getTime())/(86400000*30.44));
+ const diasTotais = Math.floor((hojeData.getTime()-inicio.getTime())/86400000);
+
+ // Próxima renovação: soma o período de renovação a partir do início, repetidamente, até passar de hoje
+ let proximaRenovacao = new Date(inicio);
+ while(proximaRenovacao.getTime() <= hojeData.getTime()){
+  proximaRenovacao.setMonth(proximaRenovacao.getMonth() + renovacaoMeses);
+ }
+ const diasAteRenovacao = Math.round((proximaRenovacao.getTime()-hojeData.getTime())/86400000);
+
+ // Limite legal: 2 anos (24 meses) no total, pela Lei 11.788/2008
+ const limiteLegal = new Date(inicio);
+ limiteLegal.setMonth(limiteLegal.getMonth() + 24);
+ const diasAteLimiteLegal = Math.round((limiteLegal.getTime()-hojeData.getTime())/86400000);
+ const pertoDoLimite = diasAteLimiteLegal<=60;
+ const passouDoLimite = diasAteLimiteLegal<0;
+
+ el.innerHTML = `
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;">
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 12px;">
+    <div style="font-size:10px;color:#93a3ba;">⏳ Tempo de estágio</div>
+    <div style="font-size:15px;font-weight:800;color:#dce5f2;margin-top:2px;">${diasTotais} dias</div>
+   </div>
+   <div style="background:#0b1728;border:1px solid ${diasAteRenovacao<=15?'rgba(251,191,36,.4)':'#1e2c42'};border-radius:10px;padding:10px 12px;">
+    <div style="font-size:10px;color:#93a3ba;">🔄 Próxima renovação</div>
+    <div style="font-size:13px;font-weight:800;color:${diasAteRenovacao<=15?'#fbbf24':'#dce5f2'};margin-top:2px;">${proximaRenovacao.toLocaleDateString('pt-BR')} (${diasAteRenovacao}d)</div>
+   </div>
+  </div>
+  ${(pertoDoLimite||passouDoLimite) ? `
+   <div style="margin-top:10px;background:rgba(251,113,133,.08);border:1px solid rgba(251,113,133,.35);border-radius:10px;padding:10px 12px;">
+    <div style="font-size:11.5px;font-weight:800;color:#fb7185;">${passouDoLimite ? '🔴 Já passou do limite legal de 2 anos!' : '🟡 Perto do limite legal de 2 anos ('+diasAteLimiteLegal+' dias restantes)'}</div>
+    <div style="font-size:10.5px;color:#93a3ba;margin-top:4px;">O contrato de estágio não pode passar de 2 anos com a mesma empresa (Lei 11.788/2008), exceto pra pessoas com deficiência. Vale confirmar a situação com a contadora.</div>
+   </div>` : `<div style="font-size:10.5px;color:#93a3ba;margin-top:8px;">Limite legal de 2 anos vence em ${limiteLegal.toLocaleDateString('pt-BR')}.</div>`}
+ `;
+}
+
+/* ============================================================
+   BIOBEL — ZONA: ADMINISTRAÇÃO / CUSTOS, ESTOQUE E CAPITAL
+   ============================================================ */
+/* ===== Impostos (DAS/MEI/Simples Nacional) — valor manual, sem inventar número ===== */
+function getValorImpostoMensal(){
+ const v = parseFloat(localStorage.getItem('biobel_adm_valor_imposto_mensal')||'0');
+ return isNaN(v) ? 0 : v;
+}
+function salvarImposto(){
+ const tipo = document.getElementById('tipoImpostoSelect').value;
+ const valor = parseValorSimples(document.getElementById('valorImpostoMensalInput').value);
+ if(isNaN(valor) || valor<0){ mostrarToast('⚠️ Digite um valor válido.'); return; }
+ localStorage.setItem('biobel_adm_tipo_imposto', tipo);
+ localStorage.setItem('biobel_adm_valor_imposto_mensal', String(valor));
+ mostrarToast('✅ Imposto salvo!');
+ registrarAlteracao('Imposto ('+tipo+') definido em '+money(valor)+'/mês');
+ renderLogAlteracoes();
+ atualizarTotaisAdm();
+}
+function initImpostoUI(){
+ const select = document.getElementById('tipoImpostoSelect');
+ const input = document.getElementById('valorImpostoMensalInput');
+ const tipo = localStorage.getItem('biobel_adm_tipo_imposto');
+ if(select && tipo) select.value = tipo;
+ const valor = getValorImpostoMensal();
+ if(input) input.value = valor>0 ? String(valor).replace('.',',') : '';
+}
+
+/* ===== Taxa da Máquina de Cartão (débito/crédito) ===== */
+function getTaxaDebito(){
+ const v = parseFloat(localStorage.getItem('biobel_adm_taxa_debito')||'0');
+ return isNaN(v) ? 0 : v;
+}
+function getTaxaCredito(){
+ const v = parseFloat(localStorage.getItem('biobel_adm_taxa_credito')||'0');
+ return isNaN(v) ? 0 : v;
+}
+function salvarTaxasCartao(){
+ const taxaDebito = parseFloat(document.getElementById('taxaDebitoInput').value.replace(',','.'));
+ const taxaCredito = parseFloat(document.getElementById('taxaCreditoInput').value.replace(',','.'));
+ if(isNaN(taxaDebito) || taxaDebito<0 || isNaN(taxaCredito) || taxaCredito<0){ mostrarToast('⚠️ Digite valores válidos nas duas taxas.'); return; }
+ localStorage.setItem('biobel_adm_taxa_debito', String(taxaDebito));
+ localStorage.setItem('biobel_adm_taxa_credito', String(taxaCredito));
+ mostrarToast('✅ Taxas salvas!');
+ registrarAlteracao('Taxas de cartão definidas: débito '+taxaDebito+'%, crédito '+taxaCredito+'%');
+ renderLogAlteracoes();
+ renderTaxasCartao();
+ atualizarTotaisAdm();
+}
+function calcularTotalTaxasCartao(){
+ const totalDebito = daysData.reduce((s,d)=>s+(Number(d.debito)||0),0);
+ const totalCredito = daysData.reduce((s,d)=>s+(Number(d.credito)||0),0);
+ return (totalDebito*getTaxaDebito()/100) + (totalCredito*getTaxaCredito()/100);
+}
+function renderTaxasCartao(){
+ const inputDebito = document.getElementById('taxaDebitoInput');
+ const inputCredito = document.getElementById('taxaCreditoInput');
+ const el = document.getElementById('resumoTaxasCartao');
+ const taxaDebito = getTaxaDebito();
+ const taxaCredito = getTaxaCredito();
+ if(inputDebito) inputDebito.value = taxaDebito>0 ? String(taxaDebito).replace('.',',') : '';
+ if(inputCredito) inputCredito.value = taxaCredito>0 ? String(taxaCredito).replace('.',',') : '';
+ if(!el) return;
+ if(taxaDebito<=0 && taxaCredito<=0){ el.innerHTML=''; return; }
+ const totalTaxas = calcularTotalTaxasCartao();
+ const totalDebito = daysData.reduce((s,d)=>s+(Number(d.debito)||0),0);
+ const totalCredito = daysData.reduce((s,d)=>s+(Number(d.credito)||0),0);
+ el.innerHTML = `<div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
+   <div style="font-size:11px;color:#93a3ba;">💳 Débito: ${money(totalDebito)} (taxa ${taxaDebito}%) · Crédito: ${money(totalCredito)} (taxa ${taxaCredito}%)</div>
+   <div style="font-size:14px;font-weight:800;color:#fb7185;margin-top:4px;">Total perdido em taxas: ${money(totalTaxas)}</div>
+  </div>`;
+}
+
+/* ===== Valor do Estoque Parado (manual, sem coluna de custo na planilha) ===== */
+function getValorEstoque(){
+ const v = parseFloat(localStorage.getItem('biobel_adm_valor_estoque')||'0');
+ return isNaN(v) ? 0 : v;
+}
+function salvarValorEstoque(){
+ const valor = parseValorSimples(document.getElementById('valorEstoqueInput').value);
+ if(isNaN(valor) || valor<0){ mostrarToast('⚠️ Digite um valor válido.'); return; }
+ localStorage.setItem('biobel_adm_valor_estoque', String(valor));
+ localStorage.setItem('biobel_adm_valor_estoque_data', new Date().toISOString());
+ mostrarToast('✅ Valor do estoque salvo!');
+ registrarAlteracao('Valor do estoque atualizado para '+money(valor));
+ renderLogAlteracoes();
+ renderUltimaAtualizacaoEstoque();
+}
+function renderUltimaAtualizacaoEstoque(){
+ const input = document.getElementById('valorEstoqueInput');
+ const el = document.getElementById('ultimaAtualizacaoEstoque');
+ const valor = getValorEstoque();
+ if(input) input.value = valor>0 ? String(valor).replace('.',',') : '';
+ if(!el) return;
+ const dataStr = localStorage.getItem('biobel_adm_valor_estoque_data');
+ if(!dataStr){ el.textContent = ''; return; }
+ const dias = Math.floor((Date.now()-new Date(dataStr).getTime())/86400000);
+ el.innerHTML = `Última atualização: ${new Date(dataStr).toLocaleDateString('pt-BR')}${dias>60?' <span style="color:#fbbf24;">(faz '+dias+' dias — vale conferir se ainda está certo)</span>':''}`;
+}
+
+/* ===== Reserva de Emergência / Capital de Giro (manual) ===== */
+function getValorReserva(){
+ const v = parseFloat(localStorage.getItem('biobel_adm_valor_reserva')||'0');
+ return isNaN(v) ? 0 : v;
+}
+function salvarValorReserva(){
+ const valor = parseValorSimples(document.getElementById('valorReservaInput').value);
+ if(isNaN(valor) || valor<0){ mostrarToast('⚠️ Digite um valor válido.'); return; }
+ localStorage.setItem('biobel_adm_valor_reserva', String(valor));
+ localStorage.setItem('biobel_adm_valor_reserva_data', new Date().toISOString());
+ mostrarToast('✅ Reserva atualizada!');
+ registrarAlteracao('Reserva de emergência atualizada para '+money(valor));
+ renderLogAlteracoes();
+ renderUltimaAtualizacaoReserva();
+ atualizarTotaisAdm();
+}
+function renderUltimaAtualizacaoReserva(){
+ const input = document.getElementById('valorReservaInput');
+ const el = document.getElementById('ultimaAtualizacaoReserva');
+ const valor = getValorReserva();
+ if(input) input.value = valor>0 ? String(valor).replace('.',',') : '';
+ if(!el) return;
+ const dataStr = localStorage.getItem('biobel_adm_valor_reserva_data');
+ el.textContent = dataStr ? 'Última atualização: '+new Date(dataStr).toLocaleDateString('pt-BR') : '';
+}
+
+function renderHoraExtra(){
+ const el = document.getElementById('resumoHoraExtra');
+ const input = document.getElementById('valorHoraExtraInput');
+ const valorHora = getValorHoraExtra();
+ if(input) input.value = valorHora>0 ? String(valorHora).replace('.',',') : '';
+ if(!el) return;
+ if(valorHora>0){
+  const semanal = valorHora*2;
+  const semanasPorMes = 52/12;
+  const horasMensal = 2*semanasPorMes;
+  const mensalAprox = calcularCustoMensalHoraExtra();
+  el.innerHTML = `<div style="margin-top:10px;font-size:12.5px;color:#93a3ba;">2h/semana × ${money(valorHora)}/h = <strong style="color:#dce5f2;">${money(semanal)}/semana</strong><br>~${horasMensal.toFixed(2)}h/mês (52÷12 semanas) × ${money(valorHora)} = <strong style="color:#27d7a0;">${money(mensalAprox)}/mês</strong></div>`;
+ } else {
+  el.innerHTML = '';
+ }
+}
+
+/* ===== Participação no Lucro (opcional, separada da comissão por metas) ===== */
+function getPctParticipacaoLucro(){
+ const v = parseFloat(localStorage.getItem('biobel_adm_pct_participacao_lucro')||'0');
+ return isNaN(v) ? 0 : v;
+}
+function salvarParticipacaoLucro(){
+ const pct = parseFloat(document.getElementById('pctParticipacaoLucroInput').value.replace(',','.'));
+ if(isNaN(pct) || pct<0){ mostrarToast('⚠️ Digite uma porcentagem válida.'); return; }
+ localStorage.setItem('biobel_adm_pct_participacao_lucro', String(pct));
+ mostrarToast('✅ Participação no lucro salva!');
+ registrarAlteracao('Participação no lucro definida em '+pct+'%');
+ renderLogAlteracoes();
+ renderParticipacaoLucro();
+}
+function renderParticipacaoLucro(){
+ const el = document.getElementById('resumoParticipacaoLucro');
+ const input = document.getElementById('pctParticipacaoLucroInput');
+ const pct = getPctParticipacaoLucro();
+ if(input) input.value = pct>0 ? String(pct).replace('.',',') : '';
+ if(!el) return;
+ if(pct<=0){ el.innerHTML = ''; return; }
+ const lucroBase = window._ultimoLucroEstimado || 0;
+ if(lucroBase<=0){
+  el.innerHTML = '<p style="font-size:11.5px;color:#93a3ba;">Sem lucro estimado positivo ainda pra calcular a participação.</p>';
+  return;
+ }
+ const totalParticipacao = lucroBase * (pct/100);
+ const porPessoa = totalParticipacao/2;
+ el.innerHTML = `<div style="font-size:12.5px;color:#93a3ba;">${pct}% de ${money(lucroBase)} (lucro estimado) = <strong style="color:#dce5f2;">${money(totalParticipacao)}</strong> no total — <strong style="color:#27d7a0;">${money(porPessoa)}</strong> pra cada uma.</div>`;
+}
+
+function atualizarTotaisAdm(){
+ const gastosFixos = getGastosFixos().reduce((s,g)=>s+(Number(g.valor)||0),0);
+ const boletos = getBoletos().reduce((s,b)=>s+(Number(b.valor)||0),0);
+ const elFixos = document.getElementById('admTotalGastosFixos');
+ const elVar = document.getElementById('admTotalGastosVariaveis');
+ const elGeral = document.getElementById('admTotalGastosGeral');
+ if(elFixos) elFixos.textContent = money(gastosFixos);
+ if(elVar) elVar.textContent = money(boletos);
+ if(elGeral) elGeral.textContent = money(gastosFixos+boletos);
+
+ // Lucro líquido estimado: faturamento do período carregado, menos gastos (fixos + variáveis) e comissões.
+ const faturamento = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+
+ // Destaque de cor nos KPIs de gastos, conforme o quanto representam do faturamento —
+ // dá pra perceber de cara se os gastos estão "pesados" sem precisar fazer conta de cabeça.
+ const kpiFixosEl = document.getElementById('admKpiGastosFixos');
+ const kpiTotalEl = document.getElementById('admKpiTotalGastos');
+ const elGeralSub = document.getElementById('admTotalGastosGeralSub');
+ if(faturamento>0){
+  const pctTotal = ((gastosFixos+boletos)/faturamento)*100;
+  if(kpiTotalEl){
+   kpiTotalEl.classList.remove('red','gold','green');
+   kpiTotalEl.classList.add(pctTotal>=60 ? 'red' : pctTotal>=35 ? 'gold' : 'green');
+  }
+  if(elGeralSub) elGeralSub.textContent = pctTotal.toFixed(0)+'% do faturamento do período';
+ } else if(elGeralSub){
+  elGeralSub.textContent = 'fixos + variáveis';
+ }
+
+ const comissoes = getComissoes();
+ const totaisVend = {};
+ daysData.forEach(d=>{
+  Object.entries(d.vendedoras||{}).forEach(([nome,valor])=>{
+   totaisVend[nome] = (totaisVend[nome]||0) + (Number(valor)||0);
+  });
+ });
+ const totalComissoes = Object.entries(totaisVend).reduce((s,[nome,valor])=>{
+  const pct = comissoes[nome];
+  return s + (pct!==undefined && !isNaN(pct) ? valor*(pct/100) : 0);
+ }, 0);
+
+ // Comissão por níveis de meta (Gabriela + Day, cada uma) — usa o nível mais alto já atingido.
+ const custoComissaoNiveis = custoTotalComissaoAtual();
+ // Hora extra fixa (2h/semana), aproximada pro mês.
+ const custoHoraExtra = calcularCustoMensalHoraExtra();
+ // Imposto mensal (se já foi preenchido — fica 0 até você definir o valor real).
+ const custoImposto = getValorImpostoMensal();
+ // Taxa da máquina de cartão sobre débito/crédito do período.
+ const custoTaxasCartao = calcularTotalTaxasCartao();
+
+ const totalComissoesEBonus = totalComissoes + custoComissaoNiveis + custoHoraExtra;
+ const lucroEstimado = faturamento - gastosFixos - boletos - totalComissoesEBonus - custoImposto - custoTaxasCartao;
+ window._ultimoLucroEstimado = lucroEstimado;
+ const elLucro = document.getElementById('admLucroEstimado');
+ const elLucroSub = document.getElementById('admLucroEstimadoSub');
+ if(elLucro){
+  elLucro.textContent = money(lucroEstimado);
+  elLucro.style.color = lucroEstimado>=0 ? '#27d7a0' : '#fb7185';
+ }
+ if(elLucroSub){
+  elLucroSub.textContent = `${money(faturamento)} (faturamento) − ${money(gastosFixos+boletos)} (gastos) − ${money(totalComissoesEBonus+custoImposto+custoTaxasCartao)} (comissões/bônus/impostos/taxas)`;
+ }
+ renderParticipacaoLucro();
+ renderGraficoPizzaAdm(faturamento, gastosFixos, boletos, totalComissoesEBonus+custoImposto+custoTaxasCartao, lucroEstimado);
+ renderPontoEquilibrio(gastosFixos, boletos, faturamento);
+ renderResumoAtencaoAdm();
+ renderTaxasCartao();
+ renderDRE(faturamento, gastosFixos, boletos, totalComissoesEBonus, custoImposto, custoTaxasCartao, lucroEstimado);
+ renderAlertaFluxoCaixa();
+ renderProjecao3Meses();
+ const elUltimoSalvo = document.getElementById('admUltimoSalvo');
+ if(elUltimoSalvo) elUltimoSalvo.textContent = '💾 Atualizado às '+obterAgoraBrasilia().getHours().toString().padStart(2,'0')+':'+obterAgoraBrasilia().getMinutes().toString().padStart(2,'0');
+}
+
+/* ============================================================
+   BIOBEL — ZONA: ADMINISTRAÇÃO / FLUXO DE CAIXA E DRE
+   ============================================================ */
+/* ===== Alerta de Fluxo de Caixa (avisa se as contas a vencer não vão caber no saldo disponível) ===== */
+function calcularContasAVencerProximosDias(diasJanela){
+ let total = 0;
+ getGastosFixos().forEach(g=>{
+  if((!g.dia && !g.diaUtil) || g.valor===null) return;
+  const diasAte = diasAteProximoVencimentoMensal(g.dia, g.diaUtil);
+  if(diasAte<=diasJanela) total += g.valor;
+ });
+ const hoje = obterAgoraBrasilia();
+ const hojeData = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+ getBoletos().forEach(b=>{
+  if(b.pago || !b.vencimento) return;
+  const dataVenc = new Date(b.vencimento+'T00:00:00');
+  if(isNaN(dataVenc.getTime())) return;
+  const dias = Math.round((dataVenc.getTime()-hojeData.getTime())/86400000);
+  if(dias>=0 && dias<=diasJanela) total += (Number(b.valor)||0);
+ });
+ return total;
+}
+function getSaldoGavetaAtual(){
+ if(daysData.length===0) return 0;
+ const ordenadoPorData = [...daysData].sort((a,b)=>{
+  const [da,ma] = String(a.dia).split('.').map(Number);
+  const [db,mb] = String(b.dia).split('.').map(Number);
+  return (mb*100+db) - (ma*100+da);
+ });
+ return Number(ordenadoPorData[0].closing)||0;
+}
+/* ===== Projeção de Fluxo de Caixa — 3 meses (item 14) ===== */
+function renderProjecao3Meses(){
+ const el = document.getElementById('conteudoProjecao3Meses');
+ if(!el) return;
+ if(daysData.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Sem dados carregados ainda.</p>'; return; }
+
+ const totalSales = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const mediaDiaria = totalSales/daysData.length;
+ const gastosFixosTotal = getGastosFixos().reduce((s,g)=>s+(Number(g.valor)||0),0);
+ const mesAtualNum = Number(String(daysData[0].dia).split('.')[1]);
+ const nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+ let html = '';
+ for(let i=1; i<=3; i++){
+  let mesProjetado = mesAtualNum+i;
+  let anoProjetado = 2026;
+  if(mesProjetado>12){ mesProjetado -= 12; anoProjetado++; }
+  const diasDoMes = new Date(anoProjetado, mesProjetado, 0).getDate();
+  const receitaEstimada = mediaDiaria*diasDoMes;
+  const saldoEstimado = receitaEstimada-gastosFixosTotal;
+  html += `<div style="background:#0b1728;border:1px solid ${saldoEstimado>=0?'#1e2c42':'rgba(251,113,133,.35)'};border-radius:10px;padding:12px 14px;margin-bottom:8px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+     <span style="font-size:12.5px;color:#dce5f2;font-weight:700;">${nomesMeses[mesProjetado-1]} de ${anoProjetado}</span>
+     <span style="font-size:14px;font-weight:900;color:${saldoEstimado>=0?'#27d7a0':'#fb7185'};">${money(saldoEstimado)}</span>
+    </div>
+    <div style="font-size:10.5px;color:#93a3ba;margin-top:4px;">Receita estimada: ${money(receitaEstimada)} · Gastos fixos: ${money(gastosFixosTotal)}</div>
+   </div>`;
+ }
+ html += `<p style="font-size:10px;color:#93a3ba;margin-top:8px;">💡 A receita é uma simples extrapolação da média diária de ${money(mediaDiaria)} — não considera sazonalidade (ex: dezembro tende a vender mais) nem boletos variáveis futuros.</p>`;
+ el.innerHTML = html;
+}
+
+function renderAlertaFluxoCaixa(){
+ const el = document.getElementById('admAlertaFluxoCaixa');
+ if(!el) return;
+ const diasJanela = 15;
+ const contasAVencer = calcularContasAVencerProximosDias(diasJanela);
+ if(contasAVencer<=0){ el.style.display='none'; return; }
+
+ const saldoGaveta = getSaldoGavetaAtual();
+ const reserva = getValorReserva();
+ const saldoDisponivel = saldoGaveta + reserva;
+ const diferenca = saldoDisponivel - contasAVencer;
+
+ el.style.display = 'block';
+ if(diferenca<0){
+  el.innerHTML = `<div style="background:rgba(251,113,133,.08);border:1px solid rgba(251,113,133,.35);border-radius:14px;padding:14px 16px;">
+    <div style="font-size:12px;font-weight:900;color:#fb7185;">🔴 Cuidado — pode faltar dinheiro nos próximos ${diasJanela} dias</div>
+    <div style="font-size:12px;color:#93a3ba;margin-top:6px;">Contas a vencer: <strong style="color:#dce5f2;">${money(contasAVencer)}</strong> · Disponível (gaveta + reserva): <strong style="color:#dce5f2;">${money(saldoDisponivel)}</strong> · Falta: <strong style="color:#fb7185;">${money(Math.abs(diferenca))}</strong></div>
+   </div>`;
+ } else {
+  el.innerHTML = `<div style="background:rgba(39,215,160,.08);border:1px solid rgba(39,215,160,.3);border-radius:14px;padding:14px 16px;">
+    <div style="font-size:12px;font-weight:800;color:#27d7a0;">✅ Fluxo de caixa tranquilo nos próximos ${diasJanela} dias</div>
+    <div style="font-size:12px;color:#93a3ba;margin-top:6px;">Contas a vencer: ${money(contasAVencer)} · Disponível: ${money(saldoDisponivel)} · Sobra: ${money(diferenca)}</div>
+   </div>`;
+ }
+}
+
+/* ===== DRE Simplificado (resumo formal do período) ===== */
+function renderDRE(faturamento, gastosFixos, boletos, comissoesEBonus, imposto, taxasCartao, resultado){
+ const el = document.getElementById('conteudoDRE');
+ if(!el) return;
+ if(daysData.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Sem dados carregados ainda.</p>';
+  return;
+ }
+ function linha(label, valor, destaque, cor){
+  return `<div style="display:flex;justify-content:space-between;padding:8px 0;${destaque?'border-top:1px solid #1e2c42;margin-top:6px;':''}">
+    <span style="font-size:${destaque?'13':'12.5'}px;color:${destaque?'#dce5f2':'#93a3ba'};font-weight:${destaque?'800':'400'};">${label}</span>
+    <span style="font-size:${destaque?'14':'12.5'}px;color:${cor||(destaque?'#dce5f2':'#93a3ba')};font-weight:${destaque?'900':'700'};">${valor}</span>
+   </div>`;
+ }
+ el.innerHTML = `
+  <div>
+   ${linha('Receita Bruta (Faturamento)', money(faturamento))}
+   ${linha('(−) Gastos Fixos', '−'+money(gastosFixos))}
+   ${linha('(−) Gastos Variáveis (Boletos)', '−'+money(boletos))}
+   ${linha('(−) Comissões e Bônus', '−'+money(comissoesEBonus))}
+   ${linha('(−) Impostos', '−'+money(imposto))}
+   ${taxasCartao>0 ? linha('(−) Taxa da Máquina de Cartão', '−'+money(taxasCartao)) : ''}
+   ${linha('= Resultado do Período', money(resultado), true, resultado>=0?'#27d7a0':'#fb7185')}
+  </div>
+  <p style="font-size:10px;color:#93a3ba;margin-top:10px;">💡 Resultado simplificado — não substitui o DRE oficial da contabilidade, mas dá uma visão rápida e organizada do período.</p>
+ `;
+}
+
+let chartPizzaAdm = null;
+function renderGraficoPizzaAdm(faturamento, gastosFixos, boletos, comissoesEBonus, lucro){
+ const canvas = document.getElementById('graficoPizzaAdm');
+ if(!canvas || typeof Chart==='undefined') return;
+ if(faturamento<=0){
+  if(chartPizzaAdm){ chartPizzaAdm.destroy(); chartPizzaAdm=null; }
+  return;
+ }
+ const lucroPositivo = Math.max(0, lucro);
+ const dados = [gastosFixos, boletos, comissoesEBonus, lucroPositivo];
+ const labels = ['Gastos Fixos','Gastos Variáveis','Comissões/Bônus','Lucro'];
+ const cores = ['#fb7185','#4f9cff','#fbbf24','#27d7a0'];
+ if(chartPizzaAdm) chartPizzaAdm.destroy();
+ chartPizzaAdm = new Chart(canvas, {
+  type: 'pie',
+  data: { labels, datasets: [{ data: dados, backgroundColor: cores, borderColor:'#0b1728', borderWidth:2 }] },
+  options: {
+   plugins: {
+    legend: { position:'bottom', labels:{ color:'#93a3ba', font:{size:10}, boxWidth:10 } },
+    tooltip: { callbacks: { label: c=>{
+     const total = dados.reduce((a,b)=>a+b,0);
+     const pct = total>0 ? ((c.raw/total)*100).toFixed(1) : '0.0';
+     return `${c.label}: ${money(c.raw)} (${pct}%)`;
+    }}}
+   }
+  }
+ });
+}
+
+function renderPontoEquilibrio(gastosFixos, boletos, faturamento){
+ const el = document.getElementById('resumoPontoEquilibrio');
+ if(!el) return;
+ // Estimativa simples: quanto a loja precisa faturar pra cobrir os gastos já conhecidos
+ // (fixos + variáveis atuais), ANTES de considerar a comissão por metas (que só liga em faixas específicas).
+ const pontoEquilibrio = gastosFixos + boletos;
+ const falta = Math.max(0, pontoEquilibrio - faturamento);
+ const jaCobriu = faturamento >= pontoEquilibrio && pontoEquilibrio>0;
+ el.innerHTML = `
+  <div style="font-size:26px;font-weight:900;color:#dce5f2;">${money(pontoEquilibrio)}</div>
+  <div style="font-size:11.5px;color:#93a3ba;margin-top:4px;">soma dos gastos fixos + boletos atuais</div>
+  ${faturamento>0 ? `
+   <div style="margin-top:12px;padding-top:12px;border-top:1px solid #1e2c42;">
+    ${jaCobriu
+     ? `<div style="color:#27d7a0;font-weight:800;font-size:13px;">✅ Já cobriu o ponto de equilíbrio! O que vender a mais já é lucro (antes de comissões).</div>`
+     : `<div style="color:#93a3ba;font-size:13px;">Faltam <strong style="color:#dce5f2;">${money(falta)}</strong> em vendas pra cobrir todos os gastos conhecidos.</div>`}
+   </div>` : ''}
+  <p style="font-size:10px;color:#93a3ba;margin-top:10px;">💡 Não inclui a comissão por metas (ela só entra quando um nível é atingido, e o cálculo exato depende de qual nível).</p>
+ `;
+}
+
+/* ===== Comissões e participação no lucro por vendedora ===== */
+function getComissoes(){
+ try{ return JSON.parse(localStorage.getItem('biobel_adm_comissoes')||'{}'); }catch(e){ return {}; }
+}
+function salvarComissaoVendedora(nome){
+ const input = document.getElementById('comissaoInput_'+nome.replace(/\s+/g,'_'));
+ if(!input) return;
+ const pct = parseFloat(input.value.replace(',','.'));
+ if(isNaN(pct) || pct<0){ mostrarToast('⚠️ Digite uma porcentagem válida.'); return; }
+ const comissoes = getComissoes();
+ comissoes[nome] = pct;
+ localStorage.setItem('biobel_adm_comissoes', JSON.stringify(comissoes));
+ mostrarToast('✅ Comissão de '+nome+' salva!');
+ registrarAlteracao('Comissão de '+nome+' definida em '+pct+'%');
+ renderLogAlteracoes();
+ renderComissoes();
+}
+function renderComissoes(){
+ const el = document.getElementById('listaComissoes');
+ if(!el) return;
+ const totaisVend = {};
+ daysData.forEach(d=>{
+  Object.entries(d.vendedoras||{}).forEach(([nome,valor])=>{
+   totaisVend[nome] = (totaisVend[nome]||0) + (Number(valor)||0);
+  });
+ });
+ const nomes = Object.keys(totaisVend).sort((a,b)=>totaisVend[b]-totaisVend[a]);
+ if(nomes.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhuma vendedora encontrada nos dados carregados ainda.</p>';
+  return;
+ }
+ const comissoes = getComissoes();
+ el.innerHTML = nomes.map(nome=>{
+  const totalVendido = totaisVend[nome];
+  const pctSalvo = comissoes[nome];
+  const pctExibir = (pctSalvo!==undefined) ? pctSalvo : '';
+  const valorComissao = (pctSalvo!==undefined && !isNaN(pctSalvo)) ? totalVendido*(pctSalvo/100) : null;
+  const idSeguro = nome.replace(/\s+/g,'_');
+  return `
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+     <div>
+      <div style="color:#dce5f2;font-weight:800;font-size:14px;">${nome}</div>
+      <div style="color:#93a3ba;font-size:11.5px;margin-top:2px;">Vendeu no período: ${money(totalVendido)}</div>
+     </div>
+     <div style="display:flex;align-items:center;gap:8px;">
+      <input id="comissaoInput_${idSeguro}" type="text" inputmode="decimal" value="${pctExibir}" placeholder="0" style="width:70px;background:#0f172a;border:1px solid #1e2c42;border-radius:8px;padding:7px 10px;color:#dce5f2;font-size:13px;text-align:center;">
+      <span style="color:#93a3ba;font-size:13px;">%</span>
+      <button onclick="salvarComissaoVendedora('${nome}')" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-2 rounded-lg font-semibold text-xs whitespace-nowrap">Salvar</button>
+     </div>
+    </div>
+    ${valorComissao!==null ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid #1e2c42;font-size:13px;color:#27d7a0;font-weight:800;">💰 Comissão a receber: ${money(valorComissao)}</div>` : ''}
+   </div>`;
+ }).join('') + `
+  <button onclick="registrarComissoesNoHistorico()" class="w-full bg-blue-600 hover:bg-blue-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="margin-top:6px;">💾 Registrar comissões deste período no histórico</button>
+  <div id="historicoComissoesWrap" style="margin-top:16px;padding-top:16px;border-top:1px solid #1e2c42;"></div>
+ `;
+ renderHistoricoComissoes();
+}
+
+/* ===== Histórico de comissões já registradas (fica salvo mesmo depois que o mês virar) ===== */
+function getHistoricoComissoes(){
+ try{ return JSON.parse(localStorage.getItem('biobel_adm_historico_comissoes')||'[]'); }catch(e){ return []; }
+}
+function registrarComissoesNoHistorico(){
+ const totaisVend = {};
+ daysData.forEach(d=>{
+  Object.entries(d.vendedoras||{}).forEach(([nome,valor])=>{
+   totaisVend[nome] = (totaisVend[nome]||0) + (Number(valor)||0);
+  });
+ });
+ const comissoes = getComissoes();
+ const nomes = Object.keys(totaisVend).filter(n=>comissoes[n]!==undefined && !isNaN(comissoes[n]));
+ if(nomes.length===0){
+  mostrarToast('⚠️ Defina a % de comissão de pelo menos 1 vendedora antes de registrar.');
+  return;
+ }
+ confirmarBiobel('Registrar as comissões atuais no histórico? Isso guarda um retrato de hoje — útil pra manter registro de quanto foi pago em cada período.', ()=>{
+  const registro = {
+   id: Date.now(),
+   dataRegistro: new Date().toISOString(),
+   itens: nomes.map(nome=>({
+    nome,
+    totalVendido: totaisVend[nome],
+    pct: comissoes[nome],
+    valorComissao: totaisVend[nome]*(comissoes[nome]/100)
+   }))
+  };
+  const historico = getHistoricoComissoes();
+  historico.unshift(registro);
+  localStorage.setItem('biobel_adm_historico_comissoes', JSON.stringify(historico));
+  mostrarToast('✅ Comissões registradas no histórico!');
+  registrarAlteracao('Comissões registradas no histórico ('+nomes.length+' vendedora'+(nomes.length===1?'':'s')+')');
+  renderLogAlteracoes();
+  renderHistoricoComissoes();
+ });
+}
+function removerRegistroHistoricoComissao(id){
+ confirmarBiobel('Remover esse registro do histórico de comissões?', ()=>{
+  const historico = getHistoricoComissoes().filter(r=>r.id!==id);
+  localStorage.setItem('biobel_adm_historico_comissoes', JSON.stringify(historico));
+  renderHistoricoComissoes();
+  mostrarToast('🗑️ Removido.');
+ });
+}
+function renderHistoricoComissoes(){
+ const el = document.getElementById('historicoComissoesWrap');
+ if(!el) return;
+ const historico = getHistoricoComissoes();
+ if(historico.length===0){
+  el.innerHTML = '<div style="font-size:11px;color:#93a3ba;font-weight:800;text-transform:uppercase;margin-bottom:8px;">📜 Histórico de comissões</div><p style="color:#93a3ba;font-size:12px;">Nenhum registro ainda — use o botão acima quando quiser guardar um retrato do período atual.</p>';
+  return;
+ }
+ el.innerHTML = '<div style="font-size:11px;color:#93a3ba;font-weight:800;text-transform:uppercase;margin-bottom:10px;">📜 Histórico de comissões registradas</div>' +
+  historico.map(r=>{
+   const data = new Date(r.dataRegistro);
+   const dataTexto = data.toLocaleDateString('pt-BR')+' às '+data.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+   const totalRegistro = r.itens.reduce((s,i)=>s+i.valorComissao,0);
+   return `
+    <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;margin-bottom:8px;">
+     <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:11.5px;color:#93a3ba;">📅 ${dataTexto}</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+       <span style="font-size:13px;color:#27d7a0;font-weight:800;">${money(totalRegistro)}</span>
+       <button onclick="removerRegistroHistoricoComissao(${r.id})" aria-label="Remover registro" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:13px;">🗑️</button>
+      </div>
+     </div>
+     <div style="margin-top:8px;font-size:11.5px;color:#dce5f2;">
+      ${r.itens.map(i=>`${i.nome}: ${money(i.valorComissao)} (${i.pct}% de ${money(i.totalVendido)})`).join('<br>')}
+     </div>
+    </div>`;
+  }).join('');
+}
+
+/* ============================================================
+   BIOBEL — ZONA: DADOS / BACKUP E METAS
+   ============================================================ */
+/* ===== Backup automático (roda sozinho 1x por semana, guardado dentro do próprio navegador) ===== */
+function verificarBackupAutomatico(){
+ const ultimoBackupAuto = localStorage.getItem('biobel_ultimo_backup_automatico');
+ const agora = Date.now();
+ if(ultimoBackupAuto && (agora-Number(ultimoBackupAuto)) < 7*24*60*60*1000) return;
+
+ try{
+  const snapshot = {};
+  for(let i=0; i<localStorage.length; i++){
+   const chave = localStorage.key(i);
+   if(chave && chave.startsWith('biobel_') && chave!=='biobel_snapshot_automatico' && chave!=='biobel_ultimo_backup_automatico'){
+    snapshot[chave] = localStorage.getItem(chave);
+   }
+  }
+  localStorage.setItem('biobel_snapshot_automatico', JSON.stringify({ data: new Date().toISOString(), dados: snapshot }));
+  localStorage.setItem('biobel_ultimo_backup_automatico', String(agora));
+ }catch(e){
+  // Se o navegador estiver com pouco espaço de armazenamento, só ignora — o backup manual
+  // continua funcionando normalmente, essa é só uma camada extra de segurança.
+  console.error('Não foi possível criar o backup automático:', e);
+ }
+}
+function renderStatusBackupAutomatico(){
+ const el = document.getElementById('statusBackupAutomatico');
+ if(!el) return;
+ const snapshotStr = localStorage.getItem('biobel_snapshot_automatico');
+ if(!snapshotStr){ el.textContent = 'Ainda não foi feito nenhum backup automático nesse navegador.'; return; }
+ try{
+  const snapshot = JSON.parse(snapshotStr);
+  el.innerHTML = 'Último backup automático: <strong style="color:#dce5f2;">'+new Date(snapshot.data).toLocaleString('pt-BR')+'</strong>';
+ }catch(e){ el.textContent = ''; }
+}
+function restaurarBackupAutomatico(){
+ const snapshotStr = localStorage.getItem('biobel_snapshot_automatico');
+ if(!snapshotStr){ mostrarToast('⚠️ Ainda não existe nenhum backup automático guardado.'); return; }
+ confirmarBiobel('Isso vai substituir as configurações atuais pelas do último backup automático. Tem certeza?', ()=>{
+  try{
+   const snapshot = JSON.parse(snapshotStr);
+   Object.entries(snapshot.dados).forEach(([chave, valor])=>{
+    localStorage.setItem(chave, valor);
+   });
+   mostrarToast('✅ Restaurado! Recarregando a página...');
+   setTimeout(()=>location.reload(), 1200);
+  }catch(e){
+   mostrarToast('⚠️ Não foi possível restaurar o backup.');
+  }
+ });
+}
+
+function baixarBackupCompleto(){
+ const backup = {
+  geradoEm: new Date().toISOString(),
+  sistema: 'Biobel — Fechamento de Caixa',
+  dados: {}
+ };
+ for(let i=0; i<localStorage.length; i++){
+  const chave = localStorage.key(i);
+  if(chave && chave.startsWith('biobel_')){
+   backup.dados[chave] = localStorage.getItem(chave);
+  }
+ }
+ const blob = new Blob([JSON.stringify(backup, null, 2)], {type:'application/json;charset=utf-8'});
+ const url = URL.createObjectURL(blob);
+ const a = document.createElement('a');
+ a.href = url;
+ a.download = 'biobel-backup-'+new Date().toISOString().slice(0,10)+'.json';
+ document.body.appendChild(a);
+ a.click();
+ document.body.removeChild(a);
+ URL.revokeObjectURL(url);
+ mostrarToast('✅ Backup baixado com sucesso!');
+}
+
+/* ===== Item 7: Validação de CPF e CNPJ — confere os dígitos verificadores de verdade, não só
+   se tem a quantidade certa de números. Não bloqueia salvar, só avisa visualmente. ===== */
+function validarCPF(cpf){
+ cpf = String(cpf).replace(/\D/g,'');
+ if(cpf.length!==11 || /^(\d)\1{10}$/.test(cpf)) return false;
+ let soma=0;
+ for(let i=0;i<9;i++) soma += parseInt(cpf[i])*(10-i);
+ let resto = (soma*10)%11; if(resto===10||resto===11) resto=0;
+ if(resto!==parseInt(cpf[9])) return false;
+ soma=0;
+ for(let i=0;i<10;i++) soma += parseInt(cpf[i])*(11-i);
+ resto = (soma*10)%11; if(resto===10||resto===11) resto=0;
+ return resto===parseInt(cpf[10]);
+}
+function validarCNPJ(cnpj){
+ cnpj = String(cnpj).replace(/\D/g,'');
+ if(cnpj.length!==14 || /^(\d)\1{13}$/.test(cnpj)) return false;
+ let tamanho = cnpj.length-2;
+ let numeros = cnpj.substring(0,tamanho);
+ const digitos = cnpj.substring(tamanho);
+ let soma=0, pos=tamanho-7;
+ for(let i=tamanho;i>=1;i--){ soma += numeros.charAt(tamanho-i)*pos--; if(pos<2) pos=9; }
+ let resultado = soma%11<2 ? 0 : 11-soma%11;
+ if(resultado!==parseInt(digitos.charAt(0))) return false;
+ tamanho++; numeros = cnpj.substring(0,tamanho); soma=0; pos=tamanho-7;
+ for(let i=tamanho;i>=1;i--){ soma += numeros.charAt(tamanho-i)*pos--; if(pos<2) pos=9; }
+ resultado = soma%11<2 ? 0 : 11-soma%11;
+ return resultado===parseInt(digitos.charAt(1));
+}
+function checarFormatoDocumento(inputId, tipo){
+ const input = document.getElementById(inputId);
+ if(!input) return;
+ const valor = input.value.trim();
+ if(!valor){ input.style.borderColor=''; input.title=''; return; }
+ const valido = tipo==='cpf' ? validarCPF(valor) : validarCNPJ(valor);
+ input.style.borderColor = valido ? 'rgba(39,215,160,.5)' : 'rgba(251,113,133,.6)';
+ input.title = valido ? '' : (tipo==='cpf' ? '⚠️ Esse CPF não parece válido — confira os números' : '⚠️ Esse CNPJ não parece válido — confira os números');
+}
+
+function importarBackupCompleto(arquivo){
+ if(!arquivo) return;
+ const leitor = new FileReader();
+ leitor.onload = function(e){
+  let backup;
+  try{ backup = JSON.parse(e.target.result); }
+  catch(err){ mostrarToast('⚠️ Esse arquivo não parece um backup válido.'); return; }
+  if(!backup.dados || typeof backup.dados!=='object'){ mostrarToast('⚠️ Esse arquivo não parece um backup válido do sistema.'); return; }
+  const qtdChaves = Object.keys(backup.dados).length;
+  const dataBackup = backup.geradoEm ? new Date(backup.geradoEm).toLocaleString('pt-BR') : 'data desconhecida';
+  confirmarBiobel('🚨 ATENÇÃO — Restaurar backup\n\nEsse backup foi feito em '+dataBackup+' e tem '+qtdChaves+' itens salvos.\n\nIsso vai SUBSTITUIR os dados atuais deste aparelho pelos dados do backup. O que estiver salvo agora e não estiver no backup será perdido.\n\nTem certeza que quer restaurar?', ()=>{
+   Object.entries(backup.dados).forEach(([chave,valor])=>{
+    localStorage.setItem(chave, valor);
+   });
+   mostrarToast('✅ Backup restaurado! A página vai recarregar agora.');
+   setTimeout(()=>location.reload(), 1800);
+  });
+ };
+ leitor.readAsText(arquivo);
+}
+
+function saveSalesGoal(){
+ const val = parseMoneyInput(document.getElementById('salesGoalInput').value);
+ const statusEl = document.getElementById('goalStatus');
+ if(isNaN(val) || val <= 0){
+  statusEl.innerHTML = '<span class="text-rose-400">Digite um valor de meta válido.</span>';
+  return;
+ }
+ localStorage.setItem('biobel_sales_goal', String(val));
+ statusEl.innerHTML = '<span class="text-emerald-400">Meta salva: ' + money(val) + '</span>';
+ mostrarToast('✅ Meta mensal salva com sucesso!');
+ atualizarInfoMetaDiariaAutomatica(); // a meta diária automática depende da meta mensal
+ registrarAlteracao('Meta mensal alterada para '+money(val));
+ renderLogAlteracoes();
+}
+
+function diasUteisDoMes(ano, mesIndex){
+ // Conta os dias do mês que não são domingo (a loja funciona de segunda a sábado).
+ const totalDias = new Date(ano, mesIndex+1, 0).getDate();
+ let uteis = 0;
+ for(let d=1; d<=totalDias; d++){
+  const diaSemana = new Date(ano, mesIndex, d).getDay(); // 0 = domingo
+  if(diaSemana !== 0) uteis++;
+ }
+ return uteis;
+}
+function diasUteisRestantesNoMes(){
+ // Conta quantos dias úteis (seg-sáb) ainda restam no mês, CONTANDO com hoje —
+ // o dia de hoje ainda está em andamento (a loja pode vender até o fim do expediente),
+ // então ele conta como um dia "restante" também, não só os dias futuros.
+ // MAS: se já passou do horário de fechamento de hoje (configurado em Horários),
+ // a loja já encerrou o expediente e não tem mais como vender hoje — nesse caso,
+ // hoje sai da conta e passa a contar só a partir de amanhã.
+ const hoje = obterAgoraBrasilia();
+ const ano = hoje.getFullYear(), mes = hoje.getMonth();
+ const ultimoDia = new Date(ano, mes+1, 0).getDate();
+ const horario = getHorarioFuncionamento();
+ const diaSemanaHoje = hoje.getDay();
+ const fechamentoHojeStr = diaSemanaHoje===6 ? horario.fechamentoSabado : horario.fechamentoSemana;
+ const horaFechamento = horaParaNumero(fechamentoHojeStr);
+ const lojaJaFechouHoje = (horaFechamento!==null) && (hoje.getHours() >= horaFechamento);
+ const diaInicial = lojaJaFechouHoje ? hoje.getDate()+1 : hoje.getDate();
+ let restantes = 0;
+ for(let d=diaInicial; d<=ultimoDia; d++){
+  const diaSemana = new Date(ano, mes, d).getDay();
+  if(diaSemana !== 0) restantes++;
+ }
+ return restantes;
+}
+function calcularMetaDiariaAutomatica(){
+ const hoje = obterAgoraBrasilia();
+ const uteis = diasUteisDoMes(hoje.getFullYear(), hoje.getMonth());
+ const metaMensal = getSalesGoal();
+ return uteis>0 ? metaMensal/uteis : 0;
+}
+function getDailyGoal(){
+ const manual = localStorage.getItem('biobel_daily_goal_manual') === 'yes';
+ if(manual){
+  const saved = localStorage.getItem('biobel_daily_sales_goal');
+  if(saved) return parseFloat(saved);
+ }
+ return calcularMetaDiariaAutomatica();
+}
+function getEmailContadora(){
+ return localStorage.getItem('biobel_email_contadora') || '';
+}
+function getProvedorEmail(){
+ return localStorage.getItem('biobel_provedor_email') || 'gmail';
+}
+function salvarProvedorEmail(provedor){
+ localStorage.setItem('biobel_provedor_email', provedor);
+ const btnGmail = document.getElementById('btnProvedorGmail');
+ const btnPadrao = document.getElementById('btnProvedorPadrao');
+ if(btnGmail){ btnGmail.style.background = provedor==='gmail' ? '#27d7a0' : 'transparent'; btnGmail.style.color = provedor==='gmail' ? '#04241a' : '#93a3ba'; }
+ if(btnPadrao){ btnPadrao.style.background = provedor==='padrao' ? '#27d7a0' : 'transparent'; btnPadrao.style.color = provedor==='padrao' ? '#04241a' : '#93a3ba'; }
+ mostrarToast('✅ Preferência salva!');
+}
+function initProvedorEmailUI(){
+ const provedor = getProvedorEmail();
+ const btnGmail = document.getElementById('btnProvedorGmail');
+ const btnPadrao = document.getElementById('btnProvedorPadrao');
+ if(btnGmail){ btnGmail.style.background = provedor==='gmail' ? '#27d7a0' : 'transparent'; btnGmail.style.color = provedor==='gmail' ? '#04241a' : '#93a3ba'; }
+ if(btnPadrao){ btnPadrao.style.background = provedor==='padrao' ? '#27d7a0' : 'transparent'; btnPadrao.style.color = provedor==='padrao' ? '#04241a' : '#93a3ba'; }
+}
+function abrirEmailPronto(email, assunto, corpo){
+ // Monta o link certo conforme a preferência: Gmail abre direto numa aba nova (sem pedir pra
+ // escolher um app), o "padrão" usa mailto (abre o app de e-mail do computador, que pede o app
+ // na primeira vez se o Windows não tiver um definido).
+ if(getProvedorEmail()==='gmail'){
+  const urlGmail = 'https://mail.google.com/mail/?view=cm&fs=1&to='+encodeURIComponent(email)+'&su='+encodeURIComponent(assunto)+'&body='+encodeURIComponent(corpo);
+  window.open(urlGmail, '_blank');
+ } else {
+  const link = 'mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent(assunto)+'&body='+encodeURIComponent(corpo);
+  const a = document.createElement('a');
+  a.href = link;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+ }
+}
+function saveEmailContadora(){
+ const val = document.getElementById('emailContadora').value.trim();
+ const statusEl = document.getElementById('emailContadoraStatus');
+ if(!val || !val.includes('@')){
+  statusEl.innerHTML = '<span class="text-rose-400">Digite um e-mail válido.</span>';
+  return;
+ }
+ localStorage.setItem('biobel_email_contadora', val);
+ statusEl.innerHTML = '<span class="text-emerald-400">E-mail salvo! O painel vai avisar automaticamente quando o mês virar.</span>';
+ mostrarToast('✅ E-mail da contadora salvo com sucesso!');
+}
+function getMesesEmailEnviados(){
+ try{ return JSON.parse(localStorage.getItem('biobel_meses_email_enviados')||'[]'); }
+ catch(e){ return []; }
+}
+function marcarMesEmailPreparado(mes){
+ const lista = getMesesEmailEnviados();
+ if(!lista.includes(mes)) lista.push(mes);
+ localStorage.setItem('biobel_meses_email_enviados', JSON.stringify(lista));
+}
+function construirResumoEmailMes(diasDoMes, nomeMesTxt){
+ const totalSales = diasDoMes.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const dinheiro = diasDoMes.reduce((s,d)=>s+(Number(d.dinheiro)||0),0);
+ const debito = diasDoMes.reduce((s,d)=>s+(Number(d.debito)||0),0);
+ const credito = diasDoMes.reduce((s,d)=>s+(Number(d.credito)||0),0);
+ const pix = diasDoMes.reduce((s,d)=>s+(Number(d.pix)||0),0);
+ const withdrawals = diasDoMes.reduce((s,d)=>s+(Number(d.withdrawals)||0),0);
+
+ const totaisVend = {};
+ diasDoMes.forEach(d=>{
+  Object.entries(d.vendedoras||{}).forEach(([nome,valor])=>{
+   totaisVend[nome] = (totaisVend[nome]||0) + (Number(valor)||0);
+  });
+ });
+ const rankingVend = Object.entries(totaisVend).sort((a,b)=>b[1]-a[1]);
+
+ let txt = `Olá! Segue o resumo do fechamento de caixa da Biobel — ${nomeMesTxt}.\n\n`;
+ txt += `Dias lançados no mês: ${diasDoMes.length}\n`;
+ txt += `Faturamento total: ${money(totalSales)}\n\n`;
+ txt += `FORMAS DE PAGAMENTO\n`;
+ txt += `Dinheiro: ${money(dinheiro)}\n`;
+ txt += `Débito: ${money(debito)}\n`;
+ txt += `Crédito: ${money(credito)}\n`;
+ txt += `Pix: ${money(pix)}\n\n`;
+ txt += `Retiradas/despesas do mês: ${money(withdrawals)}\n`;
+ if(rankingVend.length){
+  txt += `\nVENDAS POR VENDEDORA\n`;
+  rankingVend.forEach(([nome,valor],i)=>{
+   txt += `${i+1}º ${nome}: ${money(valor)}\n`;
+  });
+ }
+ txt += `\n— Mensagem gerada automaticamente pelo painel financeiro da Biobel.`;
+ return txt;
+}
+function renderBannerEnviarContadora(){
+ const email = getEmailContadora();
+ const hoje = obterAgoraBrasilia();
+ const diaHoje = hoje.getDate();
+ const nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+ const nomeMesAtual = nomesMeses[hoje.getMonth()]+' de 2026';
+
+ // Prioridade: se tem um mês PASSADO que ainda não foi enviado (o mês virou e ninguém mandou
+ // ainda), mostra o botão pra esse primeiro — não abre o e-mail sozinho, só fica esperando o clique.
+ const mesPendente = window._mesPendenteEnvioContadora;
+
+ const mostrarBotaoMesAtual = diaHoje >= 28;
+ const alvos = [document.getElementById('bannerEnviarContadora'), document.getElementById('bannerEnviarContadoraCompleto')];
+ alvos.forEach(el=>{
+  if(!el) return;
+  if(mesPendente){
+   const dias = mesPendente.diasAtraso || 0;
+   const corAtraso = dias>=15 ? '#fb7185' : dias>=7 ? '#fbbf24' : '#27d7a0';
+   const textoAtraso = dias===0 ? 'venceu hoje' : dias===1 ? 'atrasado há 1 dia' : dias>=15 ? '🔴 MUITO atrasado — já são '+dias+' dias!' : 'atrasado há '+dias+' dias';
+   el.style.display = 'block';
+   el.innerHTML = `<div style="margin-bottom:16px;">
+     <div style="font-size:11.5px;font-weight:800;color:${corAtraso};margin-bottom:6px;">⚠️ ${textoAtraso}</div>
+     <button onclick="enviarEmailMesPendenteContadora()" style="display:block;width:100%;background:linear-gradient(90deg,#0ea97a,#27d7a0);color:#04241a;border:none;border-radius:14px;padding:16px;font-weight:900;font-size:15px;cursor:pointer;box-shadow:0 6px 18px rgba(39,215,160,.25);">
+      📧 Enviar Fechamento de ${mesPendente.nomeMesTxt} pra Contadora
+     </button>
+    </div>`;
+   return;
+  }
+  if(!mostrarBotaoMesAtual){
+   el.style.display = 'none';
+   el.innerHTML = '';
+   return;
+  }
+  el.style.display = 'block';
+  if(!email){
+   el.innerHTML = `<div style="background:#3a2a0b;border:1px solid #5c4310;border-radius:14px;padding:14px 16px;margin-bottom:16px;font-size:12.5px;color:#f5c542;">
+     📅 Já estamos perto do fim do mês! Configure o e-mail da contadora em <a href="#" onclick="showTab('config');return false;" style="color:#f5c542;text-decoration:underline;font-weight:700;">⚙️ Configuração</a> pra liberar o envio rápido do relatório completo.
+    </div>`;
+  } else {
+   el.innerHTML = `<button onclick="enviarRelatorioContadoraAgora()" style="display:block;width:100%;background:linear-gradient(90deg,#0ea97a,#27d7a0);color:#04241a;border:none;border-radius:14px;padding:16px;font-weight:900;font-size:15px;cursor:pointer;margin-bottom:16px;box-shadow:0 6px 18px rgba(39,215,160,.25);">
+     📧 Enviar Relatório Completo de ${nomeMesAtual} para a Contadora
+    </button>`;
+  }
+ });
+}
+function enviarEmailMesPendenteContadora(){
+ const dados = window._mesPendenteEnvioContadora;
+ if(!dados) return;
+ abrirEmailPronto(dados.email, dados.assunto, dados.corpo);
+ if(dados.mesNum) marcarMesEmailPreparado(dados.mesNum);
+ mostrarToast('📧 E-mail preparado — confirme e clique em Enviar.');
+ window._mesPendenteEnvioContadora = null;
+ renderBannerEnviarContadora();
+}
+function enviarRelatorioContadoraAgora(){
+ const email = getEmailContadora();
+ if(!email || daysData.length===0) return;
+ const hoje = obterAgoraBrasilia();
+ const nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+ const nomeMesTxt = nomesMeses[hoje.getMonth()]+' de 2026';
+ const corpoEmail = construirResumoEmailMes(daysData, nomeMesTxt+' (até o dia '+hoje.getDate()+')');
+ const assunto = 'Fechamento de Caixa Biobel — '+nomeMesTxt;
+
+ abrirEmailPronto(email, assunto, corpoEmail);
+ mostrarToast('📧 Relatório preparado pra '+email+' — confirme e clique em Enviar.');
+}
+
+function verificarEnvioEmailMensal(){
+ const email = getEmailContadora();
+ if(!email) return;
+ if(daysData.length===0) return;
+
+ const hoje = obterAgoraBrasilia();
+ const mesRealAtual = String(hoje.getMonth()+1).padStart(2,'0');
+ const nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+ const enviados = getMesesEmailEnviados();
+
+ const mesesNosDados = [...new Set(daysData.map(d=>String(d.dia).split('.')[1]).filter(Boolean))];
+
+ mesesNosDados.forEach(mesNum=>{
+  if(mesNum === mesRealAtual) return; // mês ainda em andamento, não fechado ainda
+  if(enviados.includes(mesNum)) return; // já preparamos esse antes
+
+  let arquivo = {};
+  try{ arquivo = JSON.parse(localStorage.getItem('biobel_arquivo_meses')||'{}'); }catch(e){}
+  const diasDoMes = (arquivo[mesNum] && arquivo[mesNum].length) ? arquivo[mesNum] : daysData.filter(d=>String(d.dia).split('.')[1]===mesNum);
+  if(!diasDoMes || diasDoMes.length===0) return;
+
+  const nomeMesTxt = (nomesMeses[Number(mesNum)-1]||mesNum)+' de 2026';
+  const corpoEmail = construirResumoEmailMes(diasDoMes, nomeMesTxt);
+  const assunto = 'Fechamento de Caixa Biobel — '+nomeMesTxt;
+
+  // Calcula há quantos dias esse mês já devia ter sido enviado (contando desde o dia em que o
+  // mês virou) — fica bem claro o quão atrasado está, em vez de só dizer "pendente".
+  const mesNumInt = Number(mesNum);
+  let mesSeguinte = mesNumInt+1, anoSeguinte = 2026;
+  if(mesSeguinte>12){ mesSeguinte=1; anoSeguinte++; }
+  const dataVirouMes = new Date(anoSeguinte, mesSeguinte-1, 1);
+  const hojeData = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+  const diasAtraso = Math.max(0, Math.round((hojeData.getTime()-dataVirouMes.getTime())/86400000));
+
+  // Importante: NÃO abre o e-mail sozinho (isso disparava a tela do Windows perguntando qual
+  // app usar, sem a pessoa ter clicado em nada). Em vez disso, guarda os dados prontos e mostra
+  // um botão — só abre de verdade (e só marca como enviado) quando alguém clicar. Se tiver mais
+  // de um mês pendente, prioriza o mais atrasado (o que precisa de atenção com mais urgência).
+  const jaTinhaPendente = window._mesPendenteEnvioContadora;
+  if(!jaTinhaPendente || diasAtraso > jaTinhaPendente.diasAtraso){
+   window._mesPendenteEnvioContadora = { email, assunto, corpo: corpoEmail, nomeMesTxt, diasAtraso, mesNum };
+  }
+  renderBannerEnviarContadora();
+ });
+}
+
+function saveDailyGoal(){
+ const val = parseMoneyInput(document.getElementById('dailyGoalInput').value);
+ const statusEl = document.getElementById('dailyGoalStatus');
+ if(isNaN(val) || val <= 0){
+  statusEl.innerHTML = '<span class="text-rose-400">Digite um valor de meta válido.</span>';
+  return;
+ }
+ localStorage.setItem('biobel_daily_sales_goal', String(val));
+ localStorage.setItem('biobel_daily_goal_manual', 'yes');
+ statusEl.innerHTML = '<span class="text-emerald-400">Meta diária manual salva: ' + money(val) + '</span>';
+ mostrarToast('✅ Meta diária salva com sucesso!');
+}
+
+/* ===== Meta individual por vendedora (opcional) ===== */
+function getMetasVendedoras(){
+ try{ return JSON.parse(localStorage.getItem('biobel_metas_vendedoras')||'{}'); }
+ catch(e){ return {}; }
+}
+function salvarMetasVendedoras(metas){
+ localStorage.setItem('biobel_metas_vendedoras', JSON.stringify(metas));
+}
+function adicionarMetaVendedora(){
+ const nomeInput = document.getElementById('novaMetaVendedoraNome');
+ const valorInput = document.getElementById('novaMetaVendedoraValor');
+ const statusEl = document.getElementById('metaVendedoraStatus');
+ const nome = nomeInput.value.trim();
+ const valor = parseMoneyInput(valorInput.value);
+ if(!nome){
+  statusEl.innerHTML = '<span class="text-rose-400">Digite o nome da vendedora.</span>';
+  return;
+ }
+ if(isNaN(valor) || valor<=0){
+  statusEl.innerHTML = '<span class="text-rose-400">Digite um valor de meta válido.</span>';
+  return;
+ }
+ const metas = getMetasVendedoras();
+ metas[normalizarNome(nome)] = valor;
+ salvarMetasVendedoras(metas);
+ nomeInput.value = '';
+ valorInput.value = '';
+ statusEl.innerHTML = '<span class="text-emerald-400">Meta de '+nome+' salva!</span>';
+ mostrarToast('✅ Meta de '+nome+' salva com sucesso!');
+ renderListaMetasVendedoras();
+}
+function removerMetaVendedora(nome){
+ confirmarBiobel('Remover a meta individual de "'+nome+'"?', ()=>{
+  const metas = getMetasVendedoras();
+  delete metas[nome];
+  salvarMetasVendedoras(metas);
+  renderListaMetasVendedoras();
+  mostrarToast('🗑️ Meta removida.');
+ });
+}
+function renderListaMetasVendedoras(){
+ const el = document.getElementById('listaMetasVendedoras');
+ if(!el) return;
+ const metas = getMetasVendedoras();
+ const nomes = Object.keys(metas);
+ if(nomes.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhuma meta individual cadastrada ainda.</p>';
+  return;
+ }
+ el.innerHTML = nomes.map(nome=>`
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 14px;">
+   <span style="color:#dce5f2;font-size:13px;font-weight:700;">${nome}</span>
+   <div style="display:flex;align-items:center;gap:10px;">
+    <span style="color:#27d7a0;font-size:13px;font-weight:800;">${money(metas[nome])}</span>
+    <button onclick="removerMetaVendedora('${nome}')" aria-label="Remover meta de ${nome}" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;">🗑️</button>
+   </div>
+  </div>
+ `).join('');
+}
+
+/* ===== Fração do dia de hoje que ainda resta, baseada no horário de funcionamento real =====
+   No começo do expediente, hoje conta quase inteiro; no fim da tarde, quase nada — dá uma
+   contagem de "dias restantes" bem mais precisa do que só contar dias inteiros. */
+function calcularFracaoHojeRestante(){
+ const agora = obterAgoraBrasilia();
+ const dow = agora.getDay();
+ if(dow===0) return 0; // domingo, loja fechada — hoje não vale nada pra meta
+ const horarios = getHorarioFuncionamento();
+ const abertura = horarios.abertura;
+ const fechamento = dow===6 ? horarios.fechamentoSabado : horarios.fechamentoSemana;
+ const [hA,mA] = String(abertura).split(':').map(Number);
+ const [hF,mF] = String(fechamento).split(':').map(Number);
+ if(isNaN(hA) || isNaN(hF)) return 0.5; // sem horário configurado — usa meio-dia como estimativa neutra
+ const minutosAbertura = hA*60+(mA||0);
+ const minutosFechamento = hF*60+(mF||0);
+ const minutosAgora = agora.getHours()*60+agora.getMinutes();
+ if(minutosAgora<=minutosAbertura) return 1; // ainda não abriu — dia conta inteiro
+ if(minutosAgora>=minutosFechamento) return 0; // já fechou — dia já era
+ const totalMinutos = minutosFechamento-minutosAbertura;
+ const decorridos = minutosAgora-minutosAbertura;
+ return Math.max(0, Math.min(1, (totalMinutos-decorridos)/totalMinutos));
+}
+
+function getHorarioFuncionamento(){
+ return {
+  abertura: localStorage.getItem('biobel_horario_abertura') || '09:00',
+  fechamentoSemana: localStorage.getItem('biobel_horario_fechamento_semana') || '18:00',
+  fechamentoSabado: localStorage.getItem('biobel_horario_fechamento_sabado') || '16:00'
+ };
+}
+function horaParaNumero(hhmm){
+ const partes = String(hhmm||'').split(':');
+ const h = Number(partes[0]);
+ return isNaN(h) ? null : h;
+}
+/* ===== Dados da Empresa (CNPJ, razão social) ===== */
+function getDadosEmpresa(){
+ try{ return JSON.parse(localStorage.getItem('biobel_dados_empresa')||'{}'); }catch(e){ return {}; }
+}
+function saveDadosEmpresa(){
+ const dados = {
+  razaoSocial: document.getElementById('empresaRazaoSocialInput').value.trim(),
+  nomeFantasia: document.getElementById('empresaNomeFantasiaInput').value.trim(),
+  cnpj: document.getElementById('empresaCnpjInput').value.trim(),
+  endereco: document.getElementById('empresaEnderecoInput').value.trim(),
+ };
+ localStorage.setItem('biobel_dados_empresa', JSON.stringify(dados));
+ const statusEl = document.getElementById('empresaDadosStatus');
+ if(statusEl) statusEl.innerHTML = '<span class="text-emerald-400">✅ Dados salvos!</span>';
+ mostrarToast('✅ Dados da empresa salvos!');
+ registrarAlteracao('Dados da empresa atualizados');
+ renderLogAlteracoes();
+}
+function initDadosEmpresaUI(){
+ const dados = getDadosEmpresa();
+ const campos = { empresaRazaoSocialInput:'razaoSocial', empresaNomeFantasiaInput:'nomeFantasia', empresaCnpjInput:'cnpj', empresaEnderecoInput:'endereco' };
+ Object.entries(campos).forEach(([id, chave])=>{
+  const el = document.getElementById(id);
+  if(el && dados[chave]) el.value = dados[chave];
+ });
+}
+
+function saveHorarioFuncionamento(){
+ const abertura = document.getElementById('horarioAbertura').value;
+ const fechamentoSemana = document.getElementById('horarioFechamentoSemana').value;
+ const fechamentoSabado = document.getElementById('horarioFechamentoSabado').value;
+ const statusEl = document.getElementById('horarioFuncionamentoStatus');
+ if(!abertura || !fechamentoSemana || !fechamentoSabado){
+  statusEl.innerHTML = '<span class="text-rose-400">Preencha os três horários.</span>';
+  return;
+ }
+ localStorage.setItem('biobel_horario_abertura', abertura);
+ localStorage.setItem('biobel_horario_fechamento_semana', fechamentoSemana);
+ localStorage.setItem('biobel_horario_fechamento_sabado', fechamentoSabado);
+ statusEl.innerHTML = '<span class="text-emerald-400">Horário de funcionamento salvo!</span>';
+ mostrarToast('✅ Horário de funcionamento salvo com sucesso!');
+ renderHorariosPico();
+}
+function initHorarioFuncionamentoUI(){
+ const h = getHorarioFuncionamento();
+ const elA = document.getElementById('horarioAbertura');
+ const elFS = document.getElementById('horarioFechamentoSemana');
+ const elFSab = document.getElementById('horarioFechamentoSabado');
+ if(elA) elA.value = h.abertura;
+ if(elFS) elFS.value = h.fechamentoSemana;
+ if(elFSab) elFSab.value = h.fechamentoSabado;
+}
+
+function toggleDailyGoalManual(){
+ const checked = document.getElementById('dailyGoalManualToggle').checked;
+ document.getElementById('dailyGoalManualWrap').style.display = checked ? 'block' : 'none';
+ if(!checked){
+  localStorage.removeItem('biobel_daily_goal_manual');
+  mostrarToast('✅ Voltou a usar o cálculo automático pelos dias úteis.');
+ }
+ atualizarInfoMetaDiariaAutomatica();
+}
+function atualizarInfoMetaDiariaAutomatica(){
+ const hoje = obterAgoraBrasilia();
+ const uteis = diasUteisDoMes(hoje.getFullYear(), hoje.getMonth());
+ const metaMensal = getSalesGoal();
+ const valorAuto = uteis>0 ? metaMensal/uteis : 0;
+ const nomesMesesPt = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+ const nomeMes = nomesMesesPt[hoje.getMonth()]+' de '+hoje.getFullYear();
+ const valEl = document.getElementById('dailyGoalAutoValue');
+ const formulaEl = document.getElementById('dailyGoalAutoFormula');
+ if(valEl) valEl.textContent = money(valorAuto) + ' / dia';
+ if(formulaEl) formulaEl.textContent = `${money(metaMensal)} (meta de ${nomeMes}) ÷ ${uteis} dias úteis (seg-sáb) = ${money(valorAuto)}`;
+}
+function initDailyGoalUI(){
+ const manual = localStorage.getItem('biobel_daily_goal_manual') === 'yes';
+ const toggle = document.getElementById('dailyGoalManualToggle');
+ const wrap = document.getElementById('dailyGoalManualWrap');
+ if(toggle) toggle.checked = manual;
+ if(wrap) wrap.style.display = manual ? 'block' : 'none';
+ const dailyGoalInput = document.getElementById('dailyGoalInput');
+ if(dailyGoalInput && manual){
+  const saved = localStorage.getItem('biobel_daily_sales_goal');
+  dailyGoalInput.value = saved ? money(parseFloat(saved)) : '';
+ }
+ atualizarInfoMetaDiariaAutomatica();
+}
+function updateGoalBanner(bannerId, sales){
+ const el = document.getElementById(bannerId);
+ if(!el) return;
+ const goal = getDailyGoal();
+ if(sales >= goal && goal > 0){
+  el.style.display = 'block';
+  el.innerHTML = `🎉 <strong>Parabéns! Meta do dia batida!</strong><br><span style="font-weight:600;font-size:12px;">Vendeu ${money(sales)} de uma meta de ${money(goal)} 🎯</span>`;
+  dispararNotificacaoMetaBatida(sales, goal);
+ } else {
+  el.style.display = 'none';
+ }
+}
+
+/* ===== E-mail quando bater a meta do mês (item 10) ===== */
+function verificarMetaMensalBatidaEmail(totalSales, metaGoal){
+ const el = document.getElementById('bannerEmailMetaBatida');
+ if(!el) return;
+ if(metaGoal<=0 || totalSales<metaGoal || daysData.length===0){ el.style.display='none'; return; }
+
+ const mesRef = String(daysData[0].dia).split('.')[1];
+ const chaveMes = String(anoReferenciaPlanilha())+'-'+mesRef;
+ if(localStorage.getItem('biobel_email_meta_enviado_mes')===chaveMes){ el.style.display='none'; return; }
+
+ const email = getEmailContadora();
+ if(!email){ el.style.display='none'; return; }
+
+ el.style.display = 'block';
+ el.innerHTML = `<button onclick="enviarEmailMetaBatida(${totalSales},${metaGoal},'${chaveMes}')" style="background:#0ea97a;color:#04241a;border:none;border-radius:10px;padding:10px 16px;font-size:12.5px;font-weight:800;cursor:pointer;width:100%;">🎉 Avisar por e-mail que bateu a meta do mês!</button>`;
+}
+/* ===== Resumo semanal automático por e-mail (item 11) — só segunda-feira, uma vez por semana ===== */
+function verificarResumoSemanalEmail(){
+ const el = document.getElementById('bannerResumoSemanalEmail');
+ if(!el) return;
+ const hoje = obterAgoraBrasilia();
+ if(hoje.getDay()!==1){ el.style.display='none'; return; } // só mostra na segunda-feira
+
+ const domingoPassado = new Date(hoje); domingoPassado.setDate(hoje.getDate()-1);
+ const segundaPassada = new Date(domingoPassado); segundaPassada.setDate(domingoPassado.getDate()-6);
+ const chaveSemanaISO = segundaPassada.toISOString().slice(0,10);
+ const chaveFimSemanaISO = domingoPassado.toISOString().slice(0,10);
+
+ if(localStorage.getItem('biobel_email_semanal_enviado')===chaveSemanaISO){ el.style.display='none'; return; }
+
+ const email = getEmailContadora();
+ if(!email){ el.style.display='none'; return; }
+
+ const diasDaSemana = daysData.filter(d=>{
+  const iso = dataDoDiaParaISO(d.dia);
+  return iso>=chaveSemanaISO && iso<=chaveFimSemanaISO;
+ });
+ if(diasDaSemana.length===0){ el.style.display='none'; return; }
+
+ el.style.display = 'block';
+ el.innerHTML = `<button onclick="enviarResumoSemanalEmail('${chaveSemanaISO}','${chaveFimSemanaISO}')" style="background:#4f9cff;color:#04182e;border:none;border-radius:10px;padding:10px 16px;font-size:12.5px;font-weight:800;cursor:pointer;width:100%;">📧 Enviar resumo da semana passada por e-mail</button>`;
+}
+function enviarResumoSemanalEmail(chaveSemanaISO, chaveFimSemanaISO){
+ const email = getEmailContadora();
+ if(!email) return;
+ const diasDaSemana = daysData.filter(d=>{
+  const iso = dataDoDiaParaISO(d.dia);
+  return iso>=chaveSemanaISO && iso<=chaveFimSemanaISO;
+ });
+ const total = diasDaSemana.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const media = diasDaSemana.length>0 ? total/diasDaSemana.length : 0;
+ const assunto = '📊 Resumo da semana ('+new Date(chaveSemanaISO+'T00:00:00').toLocaleDateString('pt-BR')+' a '+new Date(chaveFimSemanaISO+'T00:00:00').toLocaleDateString('pt-BR')+')';
+ let corpo = 'Resumo da semana passada:\n\n';
+ diasDaSemana.forEach(d=>{ corpo += d.dia+': '+money(Number(d.sales)||0)+'\n'; });
+ corpo += '\nTotal da semana: '+money(total)+'\nMédia diária: '+money(media);
+ abrirEmailPronto(email, assunto, corpo);
+ localStorage.setItem('biobel_email_semanal_enviado', chaveSemanaISO);
+ const el = document.getElementById('bannerResumoSemanalEmail');
+ if(el) el.style.display='none';
+ mostrarToast('✅ Resumo semanal preparado — confirme e clique em Enviar.');
+}
+
+function enviarEmailMetaBatida(totalSales, metaGoal, chaveMes){
+ const email = getEmailContadora();
+ if(!email) return;
+ const hoje = obterAgoraBrasilia();
+ const nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+ const nomeMes = nomesMeses[hoje.getMonth()]+' de 2026';
+ const assunto = '🎉 Meta batida — '+nomeMes;
+ const corpo = 'Boa notícia! A meta de '+money(metaGoal)+' foi batida em '+nomeMes+'.\n\nFaturamento até agora: '+money(totalSales)+'.';
+ abrirEmailPronto(email, assunto, corpo);
+ localStorage.setItem('biobel_email_meta_enviado_mes', chaveMes);
+ const el = document.getElementById('bannerEmailMetaBatida');
+ if(el) el.style.display = 'none';
+ mostrarToast('✅ E-mail preparado — confirme e clique em Enviar.');
+}
+
+function dispararNotificacaoMetaBatida(sales, goal){
+ const ativado = localStorage.getItem('biobel_notificacoes_ativas') === 'yes';
+ if(!ativado) return;
+ if(typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+ const hoje = obterAgoraBrasilia().paraChaveISO();
+ const jaAvisouHoje = localStorage.getItem('biobel_notif_meta_dia') === hoje;
+ if(jaAvisouHoje) return;
+ localStorage.setItem('biobel_notif_meta_dia', hoje);
+ try{
+  new Notification('🎉 Meta do dia batida!', {
+   body: 'Vendeu '+money(sales)+' de uma meta de '+money(goal)+'.',
+   icon: '/logo_biobel_gravatai.png'
+  });
+ }catch(e){}
+}
+
+function dispararNotificacaoVencimentos(){
+ // Avisa (uma vez por dia) quando algum gasto fixo ou boleto estiver perto de vencer.
+ const ativado = localStorage.getItem('biobel_notificacoes_ativas') === 'yes';
+ if(!ativado) return;
+ if(typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+ const hoje = obterAgoraBrasilia().paraChaveISO();
+ const jaAvisouHoje = localStorage.getItem('biobel_notif_vencimentos_dia') === hoje;
+ if(jaAvisouHoje) return;
+
+ const hojeObj = obterAgoraBrasilia();
+ const hojeMs = new Date(hojeObj.getFullYear(), hojeObj.getMonth(), hojeObj.getDate()).getTime();
+ const proximos = [];
+
+ getGastosFixos().forEach(g=>{
+  if(!g.dia && !g.diaUtil) return;
+  const dias = diasAteProximoVencimentoMensal(g.dia, g.diaUtil);
+  if(dias<=3) proximos.push(g.nome+' (em '+dias+' dia'+(dias===1?'':'s')+')');
+ });
+ getBoletos().forEach(b=>{
+  if(!b.vencimento || b.pago) return;
+  const dataVenc = new Date(b.vencimento+'T00:00:00');
+  if(isNaN(dataVenc.getTime())) return;
+  const dias = Math.round((dataVenc.getTime()-hojeMs)/86400000);
+  if(dias>=0 && dias<=3) proximos.push(b.fornecedor+' (em '+dias+' dia'+(dias===1?'':'s')+')');
+ });
+
+ if(proximos.length===0) return;
+ localStorage.setItem('biobel_notif_vencimentos_dia', hoje);
+ try{
+  new Notification('💰 Vencimentos próximos', {
+   body: proximos.slice(0,4).join(' · ')+(proximos.length>4?' e mais '+(proximos.length-4):''),
+   icon: '/logo_biobel_gravatai.png'
+  });
+ }catch(e){}
+}
+
+function ativarNotificacoes(){
+ const statusEl = document.getElementById('notificacoesStatus');
+ const toggle = document.getElementById('notificacoesToggle');
+ if(typeof Notification === 'undefined'){
+  if(statusEl) statusEl.innerHTML = '<span class="text-rose-400">Esse navegador não suporta notificações.</span>';
+  if(toggle) toggle.checked = false;
+  return;
+ }
+ if(!toggle.checked){
+  localStorage.setItem('biobel_notificacoes_ativas', 'no');
+  if(statusEl) statusEl.textContent = 'Notificações desativadas.';
+  return;
+ }
+ Notification.requestPermission().then(permissao=>{
+  if(permissao==='granted'){
+   localStorage.setItem('biobel_notificacoes_ativas', 'yes');
+   if(statusEl) statusEl.innerHTML = '<span class="text-emerald-400">✅ Ativado! Você vai receber um aviso quando a meta do dia for batida.</span>';
+   mostrarToast('✅ Notificações ativadas!');
+  } else {
+   localStorage.setItem('biobel_notificacoes_ativas', 'no');
+   toggle.checked = false;
+   if(statusEl) statusEl.innerHTML = '<span class="text-rose-400">Permissão negada. Pra ativar, permita notificações desse site nas configurações do navegador.</span>';
+  }
+ });
+}
+function initNotificacoesUI(){
+ const toggle = document.getElementById('notificacoesToggle');
+ if(!toggle) return;
+ toggle.checked = localStorage.getItem('biobel_notificacoes_ativas') === 'yes';
+}
+
+function mostrarSecaoInfo(secao){
+ const secoes = ['Financeiro','Vendedoras','Dias','Avancado','Comparar','PorDiaSemana'];
+ secoes.forEach(s=>{
+  const el = document.getElementById('infoSecao'+s);
+  const chip = document.getElementById('chipInfo'+s);
+  const ativo = s===secao;
+  if(el) el.style.display = ativo ? 'block' : 'none';
+  if(chip){
+   chip.classList.toggle('active', ativo);
+   chip.setAttribute('aria-selected', ativo ? 'true' : 'false');
+  }
+ });
+ try{ localStorage.setItem('biobel_info_secao_ativa', secao); }catch(e){}
+ if(secao==='PorDiaSemana') initPorDiaSemanaView();
+ if(secao==='Dias'){
+  try{ renderAcimaAbaixoMedia(); }catch(e){ console.error('Erro em renderAcimaAbaixoMedia:', e); }
+  try{ renderSemanasDoMes(); }catch(e){ console.error('Erro em renderSemanasDoMes:', e); }
+  try{ renderListaCampanhas(); }catch(e){ console.error('Erro em renderListaCampanhas:', e); }
+  try{ renderCorrelacaoClima(); }catch(e){ console.error('Erro em renderCorrelacaoClima:', e); }
+  try{ renderCorrelacaoClimaSabados(); }catch(e){ console.error('Erro em renderCorrelacaoClimaSabados:', e); }
+  try{ renderTirinhaPrevisaoClima(); }catch(e){ console.error('Erro em renderTirinhaPrevisaoClima:', e); }
+ }
+}
+
+/* ============================================================
+   BIOBEL — ZONA: ANÁLISES / COMPARATIVOS E INDICADORES
+   ============================================================ */
+/* ===== Tela "Por Dia da Semana" — compara todas as ocorrências do mesmo dia da semana ===== */
+let diaSemanaViewAtual = null;
+
+function diaParaNumeroSemana(diaStr){
+ const partes = String(diaStr||'').split('.').map(Number);
+ if(partes.length<2) return null;
+ const [dia, mes] = partes;
+ return new Date(anoReferenciaPlanilha(), mes-1, dia).getDay();
+}
+
+function initPorDiaSemanaView(){
+ renderListaDiasAtipicos();
+ // Abre automaticamente no dia da semana de HOJE (horário real de Brasília) — assim, amanhã
+ // a pessoa já vê direto os cards de quarta, sem precisar clicar em nada.
+ const hoje = obterAgoraBrasilia();
+ const dowHoje = hoje.getDay();
+ // Se hoje for domingo (loja fechada, sem dado), cai pro dia útil mais recente (sábado).
+ const dowAlvo = dowHoje===0 ? 6 : dowHoje;
+ selecionarDiaSemanaView(dowAlvo);
+}
+
+function selecionarDiaSemanaView(dow){
+ diaSemanaViewAtual = dow;
+ document.querySelectorAll('#infoSecaoPorDiaSemana .config-chip[data-dow]').forEach(btn=>{
+  btn.classList.toggle('active', Number(btn.dataset.dow)===dow);
+ });
+ renderPorDiaSemanaView(dow);
+}
+
+function renderPorDiaSemanaView(dow){
+ const nomesDiasSemana = {1:'Segunda',2:'Terça',3:'Quarta',4:'Quinta',5:'Sexta',6:'Sábado'};
+ const nomeDia = nomesDiasSemana[dow] || '';
+ const diasAtipicos = getDiasAtipicos().map(d=>d.dia);
+ const ocorrencias = daysData.filter(d=>diaParaNumeroSemana(d.dia)===dow && !diasAtipicos.includes(String(d.dia)));
+
+ const elHall = document.getElementById('hallDaFamaDiaSemana');
+ const elCards = document.getElementById('cardsDiaSemanaWrap');
+ if(!elHall || !elCards) return;
+
+ if(ocorrencias.length===0){
+  elHall.innerHTML = '';
+  elCards.innerHTML = `<p style="color:#93a3ba;font-size:13px;">Ainda não há nenhuma ${nomeDia.toLowerCase()} lançada nesse período.</p>`;
+  return;
+ }
+
+ // ===== Hall da fama: melhor vendedora geral, melhor da manhã e melhor da tarde, somando todas as ocorrências desse dia da semana =====
+ const totaisGeral = {}, totaisManha = {}, totaisTarde = {};
+ ocorrencias.forEach(d=>{
+  Object.entries(d.vendedoras||{}).forEach(([nome,valor])=>{
+   totaisGeral[nome] = (totaisGeral[nome]||0) + (Number(valor)||0);
+  });
+  const manhaVend = (d.porTurnoVend||{})['manhã']||{};
+  Object.entries(manhaVend).forEach(([nome,info])=>{
+   if(!totaisManha[nome]) totaisManha[nome] = {valor:0,qtd:0};
+   totaisManha[nome].valor += Number(info.valor)||0;
+   totaisManha[nome].qtd += Number(info.qtd)||0;
+  });
+  const tardeVend = (d.porTurnoVend||{})['tarde']||{};
+  Object.entries(tardeVend).forEach(([nome,info])=>{
+   if(!totaisTarde[nome]) totaisTarde[nome] = {valor:0,qtd:0};
+   totaisTarde[nome].valor += Number(info.valor)||0;
+   totaisTarde[nome].qtd += Number(info.qtd)||0;
+  });
+ });
+ const rainhaGeral = Object.entries(totaisGeral).sort((a,b)=>b[1]-a[1])[0];
+ const estrelaManha = Object.entries(totaisManha).sort((a,b)=>b[1].valor-a[1].valor)[0];
+ const estrelaTarde = Object.entries(totaisTarde).sort((a,b)=>b[1].valor-a[1].valor)[0];
+
+ let hallHtml = '';
+ if(rainhaGeral){
+  hallHtml += `<div class="hall-fama-item">
+    <div class="emoji">👑</div>
+    <div class="titulo">Rainha das ${nomeDia}s</div>
+    <div class="nome">${rainhaGeral[0]}</div>
+    <div class="valor">Total: ${money(rainhaGeral[1])} (${ocorrencias.length} ${nomeDia.toLowerCase()}${ocorrencias.length===1?'':'s'})</div>
+   </div>`;
+ }
+ if(estrelaManha){
+  hallHtml += `<div class="hall-fama-item">
+    <div class="emoji">☀️</div>
+    <div class="titulo">Estrela da Manhã</div>
+    <div class="nome">${estrelaManha[0]}</div>
+    <div class="valor">Manhã: ${money(estrelaManha[1].valor)} (${estrelaManha[1].qtd} v)</div>
+   </div>`;
+ }
+ if(estrelaTarde){
+  hallHtml += `<div class="hall-fama-item">
+    <div class="emoji">🌙</div>
+    <div class="titulo">Estrela da Tarde</div>
+    <div class="nome">${estrelaTarde[0]}</div>
+    <div class="valor">Tarde: ${money(estrelaTarde[1].valor)} (${estrelaTarde[1].qtd} v)</div>
+   </div>`;
+ }
+ elHall.innerHTML = hallHtml;
+
+ // ===== Cards, um por ocorrência (mais recente primeiro) =====
+ const ordenadas = [...ocorrencias].sort((a,b)=>b.dia.localeCompare(a.dia));
+ const mediaGeralTodosOsDias = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0) / (daysData.length||1);
+ const maiorValor = Math.max(...ordenadas.map(d=>Number(d.sales)||0)) || 1;
+ const nomesMesesPt3 = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+
+ elCards.innerHTML = ordenadas.map((d,i)=>{
+  const valor = Number(d.sales)||0;
+  const pctDoPico = (valor/maiorValor)*100;
+  const ehMelhor = i===ordenadas.indexOf(ordenadas.reduce((a,b)=>(Number(a.sales)||0)>=(Number(b.sales)||0)?a:b));
+  const posicao = ordenadas
+   .map((x,idx)=>({dia:x.dia, sales:Number(x.sales)||0, idx}))
+   .sort((a,b)=>b.sales-a.sales)
+   .findIndex(x=>x.idx===i) + 1;
+  const clima = climaDoDia(valor, mediaGeralTodosOsDias);
+
+  const partes = String(d.dia).split('.').map(Number);
+  const dataObj = new Date(anoReferenciaPlanilha(), partes[1]-1, partes[0]);
+  const dataFormatada = String(partes[0]).padStart(2,'0')+'/'+nomesMesesPt3[partes[1]-1]+'/2026';
+
+  const manha = (d.porTurno||{})['manhã'] || {qtd:0,valor:0};
+  const tarde = (d.porTurno||{})['tarde'] || {qtd:0,valor:0};
+  const manhaVendTop = Object.entries((d.porTurnoVend||{})['manhã']||{}).sort((a,b)=>b[1].valor-a[1].valor)[0];
+  const tardeVendTop = Object.entries((d.porTurnoVend||{})['tarde']||{}).sort((a,b)=>b[1].valor-a[1].valor)[0];
+
+  // Intervalos sem vendas: maior gap de tempo entre uma venda e a próxima, naquele dia.
+  const horariosDoDia = d.horariosVendas || [];
+  let maiorIntervaloTxt = '';
+  if(horariosDoDia.length>=2){
+   let maiorGapMin = 0, gapInicio=null, gapFim=null;
+   for(let k=1;k<horariosDoDia.length;k++){
+    const gapMin = (horariosDoDia[k]-horariosDoDia[k-1])*24*60;
+    if(gapMin>maiorGapMin){ maiorGapMin=gapMin; gapInicio=horariosDoDia[k-1]; gapFim=horariosDoDia[k]; }
+   }
+   if(maiorGapMin>=25){
+    const h = Math.floor(maiorGapMin/60), m = Math.round(maiorGapMin%60);
+    maiorIntervaloTxt = `${formatarHoraFracao(gapInicio)} – ${formatarHoraFracao(gapFim)} (${h>0?h+'h':''}${m}min)`;
+   }
+  }
+
+  return `
+   <div class="card-dia-semana${ehMelhor?' melhor-do-grupo':''}">
+    <span class="badge-posicao">${posicao}º lugar</span>
+    ${ehMelhor?'<div style="color:#fbbf24;font-size:10px;font-weight:800;margin-bottom:4px;">🏆 MELHOR</div>':''}
+    <div style="font-size:10px;color:#93a3ba;">${dataFormatada}</div>
+    <div style="font-size:22px;font-weight:900;color:#f6f9fd;margin-top:4px;">${money(valor)}</div>
+    <div style="background:#0b1728;border-radius:999px;height:6px;overflow:hidden;margin-top:8px;">
+     <div style="height:100%;width:${Math.max(pctDoPico,4).toFixed(1)}%;background:linear-gradient(90deg,#fbbf24,#f59e0b);"></div>
+    </div>
+    <div style="font-size:10px;color:#93a3ba;margin-top:4px;">${pctDoPico.toFixed(0)}% do pico ${clima}</div>
+    <div style="font-size:11px;color:#93a3ba;margin-top:10px;">${d.qtdVendas||0} venda${(d.qtdVendas||0)===1?'':'s'}</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;border-top:1px solid #1e2c42;padding-top:10px;">
+     <div>
+      <div style="font-size:9.5px;color:#93a3ba;">☀️ Manhã</div>
+      <div style="font-size:13px;font-weight:800;color:#dce5f2;">${money(manha.valor)}</div>
+      <div style="font-size:9.5px;color:#93a3ba;">${manha.qtd} v</div>
+     </div>
+     <div>
+      <div style="font-size:9.5px;color:#93a3ba;">🌙 Tarde</div>
+      <div style="font-size:13px;font-weight:800;color:#dce5f2;">${money(tarde.valor)}</div>
+      <div style="font-size:9.5px;color:#93a3ba;">${tarde.qtd} v</div>
+     </div>
+    </div>
+
+    ${(manhaVendTop||tardeVendTop) ? `
+    <div style="margin-top:10px;background:#0b1728;border-radius:10px;padding:8px 10px;">
+     <div style="font-size:9.5px;color:#93a3ba;font-weight:800;">⭐ Destaque</div>
+     ${manhaVendTop?`<div style="font-size:11px;color:#dce5f2;margin-top:3px;">${manhaVendTop[0]} <span style="color:#93a3ba;">— M: ${money(manhaVendTop[1].valor)}</span></div>`:''}
+     ${tardeVendTop?`<div style="font-size:11px;color:#dce5f2;margin-top:2px;">${tardeVendTop[0]} <span style="color:#93a3ba;">— T: ${money(tardeVendTop[1].valor)}</span></div>`:''}
+    </div>` : ''}
+
+    ${maiorIntervaloTxt ? `
+    <div style="margin-top:10px;font-size:10px;color:#93a3ba;">
+     ⏱️ Maior intervalo sem venda<br><span style="color:#dce5f2;">${maiorIntervaloTxt}</span>
+    </div>` : ''}
+   </div>`;
+ }).join('');
+}
+
+function renderResumoRapido(totalSales, pct){
+ const elFat = document.getElementById('resumoFaturamento');
+ const elPct = document.getElementById('resumoPctMeta');
+ const elFalta = document.getElementById('resumoFaltaMeta');
+ const elMedia = document.getElementById('resumoMediaNecessaria');
+ const elDiverg = document.getElementById('resumoCaixaDivergencia');
+
+ if(elFat) elFat.textContent = money(totalSales);
+ if(elPct) elPct.textContent = pct.toFixed(1)+'%';
+
+ const goal = getSalesGoal();
+ const falta = Math.max(0, goal-totalSales);
+ if(elFalta) elFalta.textContent = money(falta);
+
+ if(elMedia){
+  const diasUteisFaltando = diasUteisRestantesNoMes();
+  const mediaNecessaria = diasUteisFaltando>0 ? falta/diasUteisFaltando : falta;
+  elMedia.textContent = money(mediaNecessaria);
+ }
+
+ if(elDiverg){
+  const LIMITE = 20;
+  const diasComDivergencia = daysData.filter(d=>{
+   const esperado = (Number(d.initial)||0) + (Number(d.dinheiro)||0) - (Number(d.withdrawals)||0);
+   return Math.abs((Number(d.closing)||0) - esperado) >= LIMITE;
+  }).length;
+  if(diasComDivergencia>0){
+   elDiverg.textContent = diasComDivergencia+' dia'+(diasComDivergencia===1?'':'s');
+   elDiverg.style.color = '#fb7185';
+  } else {
+   elDiverg.textContent = 'Nenhuma';
+   elDiverg.style.color = '#27d7a0';
+  }
+ }
+}
+
+function renderCaixaFisico(){
+ const elDesp = document.getElementById('infoDespesasMes');
+ const elDespSub = document.getElementById('infoDespesasMesSub');
+ const elSaldo = document.getElementById('infoSaldoGaveta');
+ const elSaldoSub = document.getElementById('infoSaldoGavetaSub');
+ if(!elDesp || !elSaldo) return;
+
+ const despesas = daysData.reduce((s,d)=>s+(Number(d.withdrawals)||0),0);
+ elDesp.textContent = money(despesas);
+ if(elDespSub) elDespSub.textContent = daysData.length+' dia'+(daysData.length===1?'':'s')+' lançado'+(daysData.length===1?'':'s')+' no período';
+
+ if(daysData.length===0){
+  elSaldo.textContent = 'R$ 0,00';
+  if(elSaldoSub) elSaldoSub.textContent = 'sem dados lançados ainda';
+  return;
+ }
+ const ordenadoPorData = [...daysData].sort((a,b)=>{
+  const [da,ma] = String(a.dia).split('.').map(Number);
+  const [db,mb] = String(b.dia).split('.').map(Number);
+  return (mb*100+db) - (ma*100+da);
+ });
+ const ultimo = ordenadoPorData[0];
+ elSaldo.textContent = money(ultimo.closing||0);
+ if(elSaldoSub) elSaldoSub.textContent = 'referente ao dia '+diaComAno(ultimo.dia)+' (último lançado)';
+}
+
+/* ===== Meta de quantidade de vendas (opcional) ===== */
+function getMetaQtdVendas(){
+ const v = parseInt(localStorage.getItem('biobel_meta_qtd_vendas')||'0', 10);
+ return isNaN(v) ? 0 : v;
+}
+function saveMetaQtdVendas(){
+ const val = parseInt(document.getElementById('metaQtdVendasInput').value||'0', 10);
+ const statusEl = document.getElementById('metaQtdVendasStatus');
+ if(isNaN(val) || val<0){
+  statusEl.innerHTML = '<span class="text-rose-400">Digite um número válido.</span>';
+  return;
+ }
+ localStorage.setItem('biobel_meta_qtd_vendas', String(val));
+ statusEl.innerHTML = val>0
+  ? '<span class="text-emerald-400">Meta de '+val+' vendas salva!</span>'
+  : '<span class="text-slate-400">Meta de quantidade desativada.</span>';
+ mostrarToast(val>0 ? '✅ Meta de quantidade salva!' : '✅ Meta de quantidade removida.');
+ registrarAlteracao(val>0 ? 'Meta de quantidade de vendas alterada para '+val : 'Meta de quantidade de vendas removida');
+ renderLogAlteracoes();
+}
+
+/* ===== Metas trimestral e anual (opcional) ===== */
+function getMetaTrimestral(){
+ const v = parseFloat(localStorage.getItem('biobel_meta_trimestral')||'0');
+ return isNaN(v) ? 0 : v;
+}
+function getMetaAnual(){
+ const v = parseFloat(localStorage.getItem('biobel_meta_anual')||'0');
+ return isNaN(v) ? 0 : v;
+}
+function saveMetasLongoPrazo(){
+ const valTri = parseMoneyInput(document.getElementById('metaTrimestralInput').value);
+ const valAno = parseMoneyInput(document.getElementById('metaAnualInput').value);
+ const statusEl = document.getElementById('metasLongoPrazoStatus');
+ const triFinal = isNaN(valTri) ? 0 : valTri;
+ const anoFinal = isNaN(valAno) ? 0 : valAno;
+ localStorage.setItem('biobel_meta_trimestral', String(triFinal));
+ localStorage.setItem('biobel_meta_anual', String(anoFinal));
+ statusEl.innerHTML = '<span class="text-emerald-400">Metas salvas!</span>';
+ mostrarToast('✅ Metas de médio/longo prazo salvas!');
+ registrarAlteracao('Metas trimestral/anual alteradas');
+ renderLogAlteracoes();
+}
+function initMetasLongoPrazoUI(){
+ const triInput = document.getElementById('metaTrimestralInput');
+ const anoInput = document.getElementById('metaAnualInput');
+ if(triInput){ const v=getMetaTrimestral(); triInput.value = v>0 ? money(v) : ''; }
+ if(anoInput){ const v=getMetaAnual(); anoInput.value = v>0 ? money(v) : ''; }
+}
+function renderMetasLongoPrazo(){
+ const el = document.getElementById('infoMetasLongoPrazo');
+ if(!el) return;
+ const metaTri = getMetaTrimestral();
+ const metaAno = getMetaAnual();
+ if(metaTri<=0 && metaAno<=0){ el.style.display='none'; return; }
+ if(daysData.length===0){ el.style.display='none'; return; }
+
+ let historico = {};
+ try{ historico = JSON.parse(localStorage.getItem('biobel_historico_meses')||'{}'); }catch(e){}
+ const mesAtualNum = Number(daysData[0]?.dia?.split('.')[1]) || (new Date().getMonth()+1);
+ const totalMesAtual = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const trimestreAtual = Math.ceil(mesAtualNum/3); // 1,2,3,4
+ const mesesDoTrimestre = [1,2,3].map(i=>(trimestreAtual-1)*3+i);
+
+ let somaTrimestre = 0, somaAno = 0;
+ for(let m=1; m<=12; m++){
+  const key = String(m).padStart(2,'0');
+  const valor = (m===mesAtualNum) ? totalMesAtual : (Number(historico[key])||0);
+  somaAno += valor;
+  if(mesesDoTrimestre.includes(m)) somaTrimestre += valor;
+ }
+
+ function cardHtml(label, atual, meta){
+  if(meta<=0) return '';
+  const pct = Math.min(100, (atual/meta)*100);
+  const bateu = atual>=meta;
+  return `
+   <div class="adv-kpi ${bateu?'green':'blue'}" style="flex:1;min-width:200px;">
+    <div class="label">${label}</div>
+    <div class="value">${money(atual)} <span style="font-size:12px;color:#93a3ba;font-weight:700;">/ ${money(meta)}</span></div>
+    <div class="sub">${pct.toFixed(0)}%${bateu?' ✅':''}</div>
+    <div style="background:#0b1728;border-radius:999px;height:8px;overflow:hidden;margin-top:8px;">
+     <div style="height:100%;width:${pct.toFixed(1)}%;background:linear-gradient(90deg,#27d7a0,#0ea97a);"></div>
+    </div>
+   </div>`;
+ }
+
+ const nomesTrimestre = {1:'1º',2:'2º',3:'3º',4:'4º'};
+ el.style.display = 'block';
+ el.innerHTML = `<div class="adv-card">
+   <div class="adv-card-title">
+    <h3>📆 Metas de médio/longo prazo</h3>
+    <span>${nomesTrimestre[trimestreAtual]} trimestre e ano de 2026 — soma dos meses já arquivados + mês atual</span>
+   </div>
+   <div style="display:flex;gap:14px;flex-wrap:wrap;">
+    ${cardHtml('Meta do trimestre', somaTrimestre, metaTri)}
+    ${cardHtml('Meta do ano', somaAno, metaAno)}
+   </div>
+  </div>`;
+}
+
+/* ===== Alerta de venda fora do padrão (possível erro de digitação) ===== */
+/* ===== Alerta: dias abaixo da meta diária ===== */
+function renderAlertaDiaAbaixoMeta(){
+ const el = document.getElementById('infoAlertaDiaAbaixoMeta');
+ if(!el || daysData.length===0){ if(el) el.style.display='none'; return; }
+ const meta = getDailyGoal();
+ if(meta<=0){ el.style.display='none'; return; }
+ const abaixoDaMeta = daysData.filter(d=>(Number(d.sales)||0) < meta);
+ if(abaixoDaMeta.length===0){ el.style.display='none'; return; }
+ el.style.display='block';
+ const mostrarAte = 4;
+ const ordenados = [...abaixoDaMeta].sort((a,b)=>a.dia.localeCompare(b.dia));
+ const listaTexto = ordenados.slice(0,mostrarAte).map(d=>diaComAno(d.dia)+': '+money(d.sales)).join(' · ');
+ el.innerHTML = `<div style="background:rgba(79,156,255,.08);border:1px solid rgba(79,156,255,.3);border-radius:14px;padding:12px 16px;margin-bottom:14px;font-size:12.5px;color:#93a3ba;">
+   📉 <strong style="color:#dce5f2;">${abaixoDaMeta.length} de ${daysData.length} dia${daysData.length===1?'':'s'} ficaram abaixo da meta diária</strong> de ${money(meta)}: ${listaTexto}${abaixoDaMeta.length>mostrarAte?' e mais '+(abaixoDaMeta.length-mostrarAte):''}.
+  </div>`;
+}
+
+function renderAlertaVendasForaPadrao(){
+ const el = document.getElementById('infoAlertaVendasForaPadrao');
+ if(!el) return;
+ const todasVendas = [];
+ daysData.forEach(d=>{
+  (d.vendasIndividuais||[]).forEach(v=>todasVendas.push({valor:v, dia:d.dia}));
+ });
+ if(todasVendas.length<5){ el.style.display='none'; return; }
+
+ const media = todasVendas.reduce((s,v)=>s+v.valor,0)/todasVendas.length;
+ const limite = media*5; // venda 5x maior que a média do período — provável erro de digitação
+ const suspeitas = todasVendas.filter(v=>v.valor>limite && v.valor>100);
+
+ if(suspeitas.length===0){ el.style.display='none'; return; }
+ el.style.display='block';
+ const mostrarAte = 4;
+ const listaTexto = suspeitas.slice(0,mostrarAte).map(v=>diaComAno(v.dia)+': '+money(v.valor)).join(' · ');
+ el.innerHTML = `<div style="background:rgba(251,113,133,.1);border:1px solid rgba(251,113,133,.35);border-radius:14px;padding:12px 16px;margin-bottom:14px;font-size:12.5px;color:#fb7185;">
+   🔎 <strong>${suspeitas.length} venda${suspeitas.length===1?'':'s'} bem acima do normal</strong> (ticket médio do período: ${money(media)}): ${listaTexto}${suspeitas.length>mostrarAte?' e mais '+(suspeitas.length-mostrarAte):''}. Pode ser só uma venda grande mesmo, mas vale conferir se não foi erro de digitação na planilha.
+  </div>`;
+}
+
+/* ===== Recorde do mês (comparado ao histórico de meses arquivados) ===== */
+function renderRecordeDoMes(){
+ const el = document.getElementById('infoRecordeMes');
+ if(!el) return;
+ let historico = {};
+ try{ historico = JSON.parse(localStorage.getItem('biobel_historico_meses')||'{}'); }catch(e){}
+ const totalAtual = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ // Importante: o "histórico de meses" também guarda o total do mês ATUAL (usado noutra tela pra comparação
+ // mês a mês) — se não excluirmos a chave do mês atual daqui, o sistema compara o mês com ele mesmo e
+ // sempre mostra "novo recorde", mesmo sem nenhum mês anterior de verdade já arquivado.
+ const mesAtualKey = daysData[0]?.dia?.split('.')[1];
+ const valoresAnteriores = Object.entries(historico)
+  .filter(([chave])=>chave!==mesAtualKey)
+  .map(([,v])=>Number(v))
+  .filter(v=>v>0);
+ if(valoresAnteriores.length===0){ el.style.display='none'; return; }
+ const recorde = Math.max(...valoresAnteriores);
+ el.style.display='block';
+ if(totalAtual>=recorde){
+  el.innerHTML = '<div style="background:rgba(39,215,160,.1);border:1px solid rgba(39,215,160,.35);border-radius:14px;padding:12px 16px;font-size:12.5px;color:#27d7a0;font-weight:700;">🏆 Novo recorde! Esse mês já superou o melhor mês anterior ('+money(recorde)+').</div>';
+ } else {
+  const falta = recorde-totalAtual;
+  el.innerHTML = '<div style="background:rgba(79,156,255,.08);border:1px solid rgba(79,156,255,.3);border-radius:14px;padding:12px 16px;font-size:12.5px;color:#93a3ba;">🏆 Faltam <strong style="color:#dce5f2;">'+money(falta)+'</strong> pra bater o recorde de faturamento mensal (melhor mês até agora: '+money(recorde)+').</div>';
+ }
+}
+
+/* ===== Alerta de diferença grande entre o caixa esperado (só dinheiro físico) e o fechamento contado ===== */
+/* ===== Central de Alertas & Decisões — reúne todos os pontos de atenção do sistema num só lugar ===== */
+function renderCentralDeAlertas(){
+ const elResumo = document.getElementById('resumoAlertasTopo');
+ const elLista = document.getElementById('listaAlertasCentral');
+ const elVazio = document.getElementById('alertasEmDiaCard');
+ const elBadge = document.getElementById('badgeContadorAlertas');
+ if(!elLista) return;
+
+ if(daysData.length===0){
+  elResumo.innerHTML = '';
+  elLista.innerHTML = '';
+  elVazio.style.display = 'block';
+  elVazio.querySelector('div:last-child').textContent = 'Ainda não há dados carregados pra analisar.';
+  if(elBadge) elBadge.style.display = 'none';
+  return;
+ }
+
+ const alertas = [];
+
+ // 1) Divergência de caixa real (crítico) — só dinheiro físico, não o total de vendas com cartão/Pix.
+ const LIMITE_DIFERENCA = 20;
+ const diferencasCaixa = daysData.map(d=>{
+  const esperado = (Number(d.initial)||0) + (Number(d.dinheiro)||0) - (Number(d.withdrawals)||0);
+  return {dia:d.dia, diff:(Number(d.closing)||0)-esperado};
+ }).filter(x=>Math.abs(x.diff)>=LIMITE_DIFERENCA);
+ if(diferencasCaixa.length>0){
+  const piorDia = [...diferencasCaixa].sort((a,b)=>a.diff-b.diff)[0];
+  alertas.push({
+   severidade:'critico', emoji:'💰', titulo:'Divergência de caixa real',
+   descricao:`${diferencasCaixa.length} dia${diferencasCaixa.length===1?'':'s'} com diferença acima de ${money(LIMITE_DIFERENCA)} entre o dinheiro físico esperado e o fechamento contado. Pior caso: dia ${diaComAno(piorDia.dia)} (${money(piorDia.diff)}).`,
+   aba:'info', secao:'Financeiro'
+  });
+ }
+
+ // 2) Dia(s) abaixo da meta diária (atenção)
+ const metaDiaria = getDailyGoal();
+ if(metaDiaria>0){
+  const abaixoDaMeta = daysData.filter(d=>(Number(d.sales)||0) < metaDiaria);
+  if(abaixoDaMeta.length>0){
+   alertas.push({
+    severidade:'atencao', emoji:'📉', titulo:'Dias abaixo da meta diária',
+    descricao:`${abaixoDaMeta.length} de ${daysData.length} dia${daysData.length===1?'':'s'} ficaram abaixo da meta de ${money(metaDiaria)}/dia.`,
+    aba:'info', secao:'Financeiro'
+   });
+  }
+ }
+
+ // 3) Vendas fora do padrão (atenção) — possível erro de digitação
+ const todasVendas = [];
+ daysData.forEach(d=>{ (d.vendasIndividuais||[]).forEach(v=>todasVendas.push({valor:v, dia:d.dia})); });
+ if(todasVendas.length>=5){
+  const mediaVendas = todasVendas.reduce((s,v)=>s+v.valor,0)/todasVendas.length;
+  const limiteVenda = mediaVendas*5;
+  const suspeitas = todasVendas.filter(v=>v.valor>limiteVenda && v.valor>100);
+  if(suspeitas.length>0){
+   alertas.push({
+    severidade:'atencao', emoji:'🔎', titulo:'Vendas fora do padrão',
+    descricao:`${suspeitas.length} venda${suspeitas.length===1?'':'s'} bem acima da média (${money(mediaVendas)}) — pode ser erro de digitação na planilha, vale conferir.`,
+    aba:'info', secao:'Financeiro'
+   });
+  }
+ }
+
+ // 4) Dias sem lançamento (atenção) — "campo não preenchido"
+ if(daysData.length>=2){
+  const diasNumeros = daysData.map(d=>{
+   const [dia,mes] = String(d.dia).split('.').map(Number);
+   return {dia, mes, chave:d.dia};
+  }).filter(d=>d.dia && d.mes).sort((a,b)=>a.dia-b.dia);
+  if(diasNumeros.length>=2){
+   const mesRef = diasNumeros[0].mes;
+   const diasComDado = new Set(diasNumeros.map(d=>d.dia));
+   const faltando = [];
+   for(let d=diasNumeros[0].dia; d<=diasNumeros[diasNumeros.length-1].dia; d++){
+    if(diasComDado.has(d)) continue;
+    if(new Date(anoReferenciaPlanilha(), mesRef-1, d).getDay()===0) continue; // domingo, loja fechada
+    faltando.push(d);
+   }
+   if(faltando.length>0){
+    alertas.push({
+     severidade:'atencao', emoji:'📅', titulo:'Dias sem lançamento na planilha',
+     descricao:`${faltando.length} dia${faltando.length===1?'':'s'} útil${faltando.length===1?'':'eis'} sem nenhum dado lançado, dentro do período já em andamento.`,
+     aba:'info', secao:'Financeiro'
+    });
+   }
+  }
+ }
+
+ // 5) Dados de turno incompletos (informativo)
+ const totalComTurnoGeral = daysData.reduce((s,d)=>s+(Number(d.totalComTurno)||0),0);
+ const totalVendasGeral = daysData.reduce((s,d)=>s+(Number(d.qtdVendas)||0),0);
+ if(totalVendasGeral>0 && totalComTurnoGeral<totalVendasGeral){
+  const pctPreenchido = (totalComTurnoGeral/totalVendasGeral*100).toFixed(0);
+  alertas.push({
+   severidade:'informativo', emoji:'📋', titulo:'Campo "turno" não preenchido em todas as vendas',
+   descricao:`Só ${totalComTurnoGeral} de ${totalVendasGeral} vendas (${pctPreenchido}%) têm o turno de atendimento preenchido — o restante não entra nas análises por turno.`,
+   aba:'info', secao:'Avancado'
+  });
+ }
+
+ // 6) Categoria de produto genérica/guarda-chuva (informativo)
+ const totaisProdutos = {};
+ daysData.forEach(d=>{
+  Object.entries(d.produtos||{}).forEach(([nome,info])=>{
+   if(!totaisProdutos[nome]) totaisProdutos[nome] = {qtd:0};
+   totaisProdutos[nome].qtd += Number(info.qtd)||0;
+  });
+ });
+ const totalQtdProdutos = Object.values(totaisProdutos).reduce((s,i)=>s+i.qtd,0);
+ const categoriaGenericaEncontrada = Object.entries(totaisProdutos).find(([nome,info])=>{
+  const pct = totalQtdProdutos>0 ? info.qtd/totalQtdProdutos : 0;
+  const generico = nome.length>25 || nome.includes('/') || (nome.match(/ e /gi)||[]).length>=2;
+  return pct>0.20 && generico;
+ });
+ if(categoriaGenericaEncontrada){
+  alertas.push({
+   severidade:'informativo', emoji:'🏷️', titulo:'Categoria de produto muito genérica',
+   descricao:`"${categoriaGenericaEncontrada[0]}" junta vários itens numa coisa só (${categoriaGenericaEncontrada[1].qtd} unidades). Separar em produtos específicos ajudaria na reposição de estoque.`,
+   aba:'info', secao:'Avancado'
+  });
+ }
+
+ // Queda grande (20%+) comparando o mesmo período do mês atual com o mês passado.
+ let quedaComparacao = null;
+ try{ quedaComparacao = calcularQuedaMesmoPeriodo(); }catch(e){ console.error('Erro em calcularQuedaMesmoPeriodo:', e); }
+ if(quedaComparacao){
+  alertas.push({
+   severidade:'atencao', emoji:'📉', titulo:'Queda forte comparado ao mês passado',
+   descricao:`Faturamento caiu ${Math.abs(quedaComparacao.percentual).toFixed(1)}% em ${quedaComparacao.nomeMesAtual} comparado ao mesmo período de ${quedaComparacao.nomeMesAnterior}. Vale investigar o que mudou.`,
+   aba:'info', secao:'Comparar'
+  });
+ }
+
+ // Folha de ponto sem preenchimento há muitos dias — pra ninguém esquecer de lançar.
+ try{
+  const registrosPonto = getRegistrosPonto();
+  if(registrosPonto.length>0){
+   const ultimaData = registrosPonto.map(p=>p.data).sort().reverse()[0];
+   const hojeChave = obterAgoraBrasilia().paraChaveISO();
+   const diasSemLancar = Math.round((new Date(hojeChave+'T00:00:00').getTime()-new Date(ultimaData+'T00:00:00').getTime())/86400000);
+   if(diasSemLancar>=7){
+    alertas.push({
+     severidade:'atencao', emoji:'📋', titulo:'Folha de ponto sem lançamento',
+     descricao:`Faz ${diasSemLancar} dias que ninguém registra a folha de ponto. Último lançamento: ${new Date(ultimaData+'T00:00:00').toLocaleDateString('pt-BR')}.`,
+     aba:'equipe', secao:''
+    });
+   }
+  }
+ }catch(e){ console.error('Erro ao verificar folha de ponto:', e); }
+
+ // Valores estranhos na planilha (negativo, ou muito acima do normal) — pode ser erro de digitação.
+ try{
+  if(daysData.length>=3){
+   const valoresOrdenados = [...daysData].map(d=>Number(d.sales)||0).sort((a,b)=>a-b);
+   const mediana = valoresOrdenados[Math.floor(valoresOrdenados.length/2)];
+   daysData.forEach(d=>{
+    const valor = Number(d.sales)||0;
+    if(valor<0){
+     alertas.push({
+      severidade:'critico', emoji:'⚠️', titulo:'Valor negativo na planilha',
+      descricao:`O dia ${d.dia} está com faturamento negativo (${money(valor)}) — provavelmente um erro de digitação na planilha.`,
+      aba:'dashboard', secao:''
+     });
+    } else if(mediana>0 && valor > mediana*5){
+     alertas.push({
+      severidade:'atencao', emoji:'🔍', titulo:'Valor muito acima do normal',
+      descricao:`O dia ${d.dia} está com ${money(valor)}, bem acima da mediana do mês (${money(mediana)}) — vale conferir se não é erro de digitação (ex: um zero a mais).`,
+      aba:'dashboard', secao:''
+     });
+    }
+   });
+  }
+ }catch(e){ console.error('Erro ao validar valores da planilha:', e); }
+
+ // Fornecedor sem nenhum boleto novo há muito tempo (90+ dias) — pra lembrar de manter contato.
+ try{
+  const boletos = getBoletos();
+  const porFornecedor = {};
+  boletos.forEach(b=>{
+   const chave = String(b.fornecedor||'').trim();
+   if(!chave) return;
+   if(!porFornecedor[chave] || (b.criadoEm||'')>(porFornecedor[chave]||'')) porFornecedor[chave] = b.criadoEm || '';
+  });
+  const hojeMs = obterAgoraBrasilia().getTime();
+  Object.entries(porFornecedor).forEach(([fornecedor, ultimaData])=>{
+   if(!ultimaData) return;
+   const diasSemContato = Math.round((hojeMs-new Date(ultimaData).getTime())/86400000);
+   if(diasSemContato>=90){
+    alertas.push({
+     severidade:'informativo', emoji:'🤝', titulo:'Fornecedor sem contato há tempo',
+     descricao:`Faz ${diasSemContato} dias que não tem nenhum boleto novo de "${fornecedor}". Vale conferir se ainda é fornecedor ativo.`,
+     aba:'adm', secao:''
+    });
+   }
+  });
+ }catch(e){ console.error('Erro ao verificar fornecedores sem contato:', e); }
+
+ // Ordena por severidade: crítico primeiro, depois atenção, depois informativo.
+ const ordemSeveridade = {critico:0, atencao:1, informativo:2};
+ alertas.sort((a,b)=>ordemSeveridade[a.severidade]-ordemSeveridade[b.severidade]);
+
+ // Contador no topo da aba (badge vermelho ao lado do nome "Alertas")
+ if(elBadge){
+  if(alertas.length>0){ elBadge.style.display='inline-block'; elBadge.textContent=String(alertas.length); }
+  else { elBadge.style.display='none'; }
+ }
+
+ // Resumo por severidade
+ const qtdCritico = alertas.filter(a=>a.severidade==='critico').length;
+ const qtdAtencao = alertas.filter(a=>a.severidade==='atencao').length;
+ const qtdInformativo = alertas.filter(a=>a.severidade==='informativo').length;
+ elResumo.innerHTML = `
+  <div style="background:rgba(251,113,133,.08);border:1px solid rgba(251,113,133,.3);border-radius:12px;padding:12px;text-align:center;">
+   <div style="font-size:22px;font-weight:900;color:#fb7185;">${qtdCritico}</div>
+   <div style="font-size:10px;color:#93a3ba;font-weight:800;text-transform:uppercase;">🔴 Crítico</div>
+  </div>
+  <div style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:12px;padding:12px;text-align:center;">
+   <div style="font-size:22px;font-weight:900;color:#fbbf24;">${qtdAtencao}</div>
+   <div style="font-size:10px;color:#93a3ba;font-weight:800;text-transform:uppercase;">🟡 Atenção</div>
+  </div>
+  <div style="background:rgba(79,156,255,.08);border:1px solid rgba(79,156,255,.3);border-radius:12px;padding:12px;text-align:center;">
+   <div style="font-size:22px;font-weight:900;color:#4f9cff;">${qtdInformativo}</div>
+   <div style="font-size:10px;color:#93a3ba;font-weight:800;text-transform:uppercase;">🔵 Informativo</div>
+  </div>
+ `;
+
+ if(alertas.length===0){
+  elLista.innerHTML = '';
+  elVazio.style.display = 'block';
+  elVazio.querySelector('div:last-child').textContent = 'Não encontrei nenhum ponto de atenção com os dados carregados agora.';
+  return;
+ }
+ elVazio.style.display = 'none';
+
+ const coresSeveridade = {
+  critico: {borda:'rgba(251,113,133,.4)', fundo:'rgba(251,113,133,.06)', texto:'#fb7185', label:'🔴 CRÍTICO'},
+  atencao: {borda:'rgba(251,191,36,.4)', fundo:'rgba(251,191,36,.06)', texto:'#fbbf24', label:'🟡 ATENÇÃO'},
+  informativo: {borda:'rgba(79,156,255,.4)', fundo:'rgba(79,156,255,.06)', texto:'#4f9cff', label:'🔵 INFORMATIVO'}
+ };
+
+ elLista.innerHTML = alertas.map(a=>{
+  const cor = coresSeveridade[a.severidade];
+  return `
+   <div class="adv-card" style="border-color:${cor.borda};background:${cor.fundo};">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+     <div style="flex:1;min-width:220px;">
+      <div style="font-size:10px;font-weight:900;color:${cor.texto};letter-spacing:.05em;">${cor.label}</div>
+      <div style="font-size:15px;font-weight:800;color:#f6f9fd;margin-top:4px;">${a.emoji} ${a.titulo}</div>
+      <div style="font-size:12.5px;color:#93a3ba;margin-top:6px;">${a.descricao}</div>
+     </div>
+     <button onclick="irParaAlertaDetalhe('${a.aba}','${a.secao}')" style="background:${cor.texto};color:#0a1120;border:none;border-radius:10px;padding:8px 16px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;">Ver detalhes →</button>
+    </div>
+   </div>`;
+ }).join('');
+}
+function irParaAlertaDetalhe(aba, secao){
+ showTab(aba);
+ if(secao) setTimeout(()=>mostrarSecaoInfo(secao), 50);
+}
+
+function renderAlertaDiferencaFechamento(){
+ const el = document.getElementById('infoAlertaDiferencaFechamento');
+ if(!el || daysData.length===0){ if(el) el.style.display='none'; return; }
+ const LIMITE_DIFERENCA = 20; // reais — acima disso, vale a pena conferir a contagem física
+ const diferencas = daysData.map(d=>{
+  // Importante: só o DINHEIRO físico fica na gaveta. Débito/crédito/Pix vão direto pro banco,
+  // então não entram nessa conta — comparar com o total de vendas (d.sales) dava uma diferença falsa e enorme.
+  const esperado = (Number(d.initial)||0) + (Number(d.dinheiro)||0) - (Number(d.withdrawals)||0);
+  const diff = (Number(d.closing)||0) - esperado;
+  return {dia:d.dia, diff};
+ }).filter(x=>Math.abs(x.diff)>=LIMITE_DIFERENCA);
+
+ if(diferencas.length===0){ el.style.display='none'; return; }
+ el.style.display='block';
+ const mostrarAte = 4;
+ const listaTexto = diferencas.slice(0,mostrarAte).map(x=>diaComAno(x.dia)+': '+(x.diff>0?'+':'')+money(x.diff)).join(' · ');
+ el.innerHTML = `<div style="background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.35);border-radius:14px;padding:12px 16px;margin-bottom:14px;font-size:12.5px;color:#fbbf24;">
+   ⚖️ <strong>${diferencas.length} dia${diferencas.length===1?'':'s'} com diferença de caixa acima de ${money(LIMITE_DIFERENCA)}</strong> (entre o dinheiro físico esperado e o fechamento contado): ${listaTexto}${diferencas.length>mostrarAte?' e mais '+(diferencas.length-mostrarAte):''}. Pode valer a pena reconferir a contagem física desses dias.
+  </div>`;
+}
+
+/* ===== Emoji de "clima do dia" nas vendas (comparado à média do período) ===== */
+function climaDoDia(valorDia, mediaGeral){
+ if(mediaGeral<=0) return '';
+ const razao = valorDia/mediaGeral;
+ if(razao>=1.2) return '🔥';
+ if(razao>=0.8) return '😐';
+ return '🥶';
+}
+
+/* ===== Contador de dias sem erro de conexão ===== */
+function registrarErroConexao(){
+ localStorage.setItem('biobel_ultimo_erro_conexao', new Date().toISOString());
+}
+function diasSemErroConexao(){
+ const ultimoErro = localStorage.getItem('biobel_ultimo_erro_conexao');
+ if(!ultimoErro) return null;
+ const dias = Math.floor((Date.now() - new Date(ultimoErro).getTime()) / 86400000);
+ return dias;
+}
+
+function renderAlertaDiasFaltando(){
+ const el = document.getElementById('infoAlertaDiasFaltando');
+ if(!el) return;
+ if(daysData.length<2){ el.style.display='none'; return; }
+
+ const diasNumeros = daysData
+  .map(d=>{
+   const [dia,mes] = String(d.dia).split('.').map(Number);
+   return {dia, mes, chave:d.dia};
+  })
+  .filter(d=>d.dia && d.mes)
+  .sort((a,b)=>a.dia-b.dia);
+
+ const mesRef = diasNumeros[0].mes;
+ const primeiroDia = diasNumeros[0].dia;
+ const ultimoDia = diasNumeros[diasNumeros.length-1].dia;
+ const diasComDado = new Set(diasNumeros.map(d=>d.dia));
+
+ const faltando = [];
+ for(let d=primeiroDia; d<=ultimoDia; d++){
+  if(diasComDado.has(d)) continue;
+  const dataObj = new Date(anoReferenciaPlanilha(), mesRef-1, d);
+  if(dataObj.getDay()===0) continue; // domingo — loja fechada, não conta como falta
+  faltando.push(String(d).padStart(2,'0')+'.'+String(mesRef).padStart(2,'0'));
+ }
+
+ if(faltando.length===0){
+  el.style.display='none';
+  return;
+ }
+ el.style.display='block';
+ const mostrarAte = 6;
+ const listaTexto = faltando.slice(0,mostrarAte).join(', ') + (faltando.length>mostrarAte ? ' e mais '+(faltando.length-mostrarAte) : '');
+ el.innerHTML = `<div style="background:#3a2a0b;border:1px solid #5c4310;border-radius:14px;padding:12px 16px;margin-bottom:14px;font-size:12.5px;color:#f5c542;">
+   ⚠️ <strong>${faltando.length} dia${faltando.length===1?'':'s'} sem lançamento</strong> entre ${diaComAno(diasNumeros[0].chave)} e ${diaComAno(diasNumeros[diasNumeros.length-1].chave)}: ${listaTexto}. Confira se esqueceu de preencher algum dia na planilha.
+  </div>`;
+}
+
+function renderInfoTab(){
+ // Se a sub-aba "Por Dia da Semana" estiver aberta quando os dados mudarem sozinhos (troca de
+ // planilha, atualização automática), reatualiza ela também — antes disso, essa tela ficava
+ // "congelada" mostrando os dados de antes da troca até a pessoa clicar em algo manualmente.
+ const secaoPorDiaSemana = document.getElementById('infoSecaoPorDiaSemana');
+ if(secaoPorDiaSemana && secaoPorDiaSemana.style.display==='block' && diaSemanaViewAtual!==null){
+  renderPorDiaSemanaView(diaSemanaViewAtual);
+ }
+ // Os cards de "Acima/Abaixo da Média" e "Semanas do Mês" (sub-aba Dias) são sempre atualizados
+ // aqui, mesmo se essa sub-aba não estiver visível no momento — assim, quando a pessoa clicar
+ // nela depois, os dados já estão prontos, em vez de depender só do clique pra existir.
+ try{ renderAcimaAbaixoMedia(); }catch(e){ console.error('Erro em renderAcimaAbaixoMedia:', e); }
+ try{ renderSemanasDoMes(); }catch(e){ console.error('Erro em renderSemanasDoMes:', e); }
+ try{ renderListaCampanhas(); }catch(e){ console.error('Erro em renderListaCampanhas:', e); }
+ try{ renderCorrelacaoClima(); }catch(e){ console.error('Erro em renderCorrelacaoClima:', e); }
+
+ const totalSales = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const goal = getSalesGoal();
+ const pct = goal>0 ? Math.min(100, (totalSales/goal)*100) : 0;
+ const remaining = Math.max(0, goal-totalSales);
+
+ document.getElementById('infoTotalSales').textContent = money(totalSales);
+ document.getElementById('infoGoalValue').textContent = money(goal);
+ document.getElementById('infoGoalBar').style.width = pct.toFixed(1)+'%';
+ document.getElementById('infoGoalPct').textContent = pct.toFixed(1)+'% da meta';
+ document.getElementById('infoGoalRemaining').textContent = money(remaining);
+
+ const wrapDetalhe = document.getElementById('infoGoalDetalheWrap');
+ if(wrapDetalhe){
+  if(remaining>0){
+   const diasRestantes = diasUteisRestantesNoMes();
+   const mediaNecessaria = diasRestantes>0 ? remaining/diasRestantes : remaining;
+   document.getElementById('infoDiasRestantesMeta').textContent = diasRestantes+' dia'+(diasRestantes===1?'':'s');
+   document.getElementById('infoMediaNecessariaMeta').innerHTML = money(mediaNecessaria)+' <span style="font-size:11px;color:#93a3ba;font-weight:700;">/dia</span>';
+   wrapDetalhe.style.display = 'grid';
+  } else {
+   wrapDetalhe.style.display = 'none';
+  }
+ }
+ renderRitmoAtual(totalSales, goal, remaining);
+
+ const dinheiro = daysData.reduce((s,d)=>s+(Number(d.dinheiro)||0),0);
+ const debito = daysData.reduce((s,d)=>s+(Number(d.debito)||0),0);
+ const credito = daysData.reduce((s,d)=>s+(Number(d.credito)||0),0);
+ const pix = daysData.reduce((s,d)=>s+(Number(d.pix)||0),0);
+ const totalPagamentos = dinheiro+debito+credito+pix;
+ const pctOf = v => totalPagamentos>0 ? ((v/totalPagamentos)*100).toFixed(1)+'% do total' : '0% do total';
+
+ document.getElementById('infoDinheiro').textContent = money(dinheiro);
+ document.getElementById('infoDinheiroPct').textContent = pctOf(dinheiro);
+ document.getElementById('infoDebito').textContent = money(debito);
+ document.getElementById('infoDebitoPct').textContent = pctOf(debito);
+ document.getElementById('infoCredito').textContent = money(credito);
+ document.getElementById('infoCreditoPct').textContent = pctOf(credito);
+ document.getElementById('infoPix').textContent = money(pix);
+ document.getElementById('infoPixPct').textContent = pctOf(pix);
+
+ renderSellerRanking();
+ renderTopDays();
+ renderNovasMetricas();
+ renderMaisNumerosDoMes();
+ renderCaixaFisico();
+ renderTipoVenda();
+ renderProdutosRanking();
+ renderHorariosPico();
+ renderVendasPorPeriodo();
+ renderTempoEntreAtendimentos();
+ renderTurnos();
+ renderGenero();
+ renderRecordesVendasIndividuais();
+ renderResumoRapido(totalSales, pct);
+ renderAlertaDiferencaFechamento();
+ renderAlertaDiaAbaixoMeta();
+ renderAlertaVendasForaPadrao();
+ renderAlertaDiasFaltando();
+ renderRecordeDoMes();
+ renderMetasLongoPrazo();
+}
+
+function montarSeletorMeses(){
+ const sel = document.getElementById('seletorMes');
+ if(!sel) return;
+ let arquivo = {};
+ try{ arquivo = JSON.parse(localStorage.getItem('biobel_arquivo_meses')||'{}'); }catch(e){}
+ const nomesMeses = {'01':'Janeiro','02':'Fevereiro','03':'Março','04':'Abril','05':'Maio','06':'Junho','07':'Julho','08':'Agosto','09':'Setembro','10':'Outubro','11':'Novembro','12':'Dezembro'};
+ const valorAtual = sel.value;
+ const mesesArquivados = Object.keys(arquivo).sort();
+ sel.innerHTML = '<option value="">Mês atual (ao vivo)</option>' +
+  mesesArquivados.map(m=>`<option value="${m}">${nomesMeses[m]||m} 2026 (arquivado)</option>`).join('');
+ sel.value = valorAtual;
+}
+
+/* ===== Comparar meses arquivados lado a lado ===== */
+/* ===== Comparar Mesmo Período — este mês (em andamento) x mês passado (arquivado) ===== */
+/* ===== Acima/Abaixo da Média, e Melhor/Pior Semana do Mês (aba Dias) ===== */
+/* ============================================================
+   BIOBEL — ZONA: CAMPANHAS / MARKETING E SEM MOVIMENTO
+   ============================================================ */
+/* ===== Campanhas de Marketing (item 2) — compara o período da campanha com o resto do mês ===== */
+function anoReferenciaPlanilha(){ return obterAgoraBrasilia().getFullYear(); }
+function dataDoDiaParaISO(diaStr){
+ const [dia, mes] = String(diaStr).split('.');
+ return String(anoReferenciaPlanilha())+'-'+String(mes).padStart(2,'0')+'-'+String(dia).padStart(2,'0');
+}
+function getCampanhas(){
+ try{ return JSON.parse(localStorage.getItem('biobel_campanhas')||'[]'); }catch(e){ return []; }
+}
+function salvarCampanhas(lista){ localStorage.setItem('biobel_campanhas', JSON.stringify(lista)); }
+function adicionarCampanha(){
+ const nome = document.getElementById('campanhaNomeInput').value.trim();
+ const inicio = document.getElementById('campanhaInicioInput').value;
+ const fim = document.getElementById('campanhaFimInput').value;
+ if(!nome || !inicio || !fim){ mostrarToast('⚠️ Preencha nome, início e fim.'); return; }
+ if(fim<inicio){ mostrarToast('⚠️ O fim não pode ser antes do início.'); return; }
+ const lista = getCampanhas();
+ lista.push({ id: Date.now(), nome, inicio, fim });
+ salvarCampanhas(lista);
+ document.getElementById('campanhaNomeInput').value='';
+ document.getElementById('campanhaInicioInput').value='';
+ document.getElementById('campanhaFimInput').value='';
+ renderListaCampanhas();
+ mostrarToast('✅ Campanha marcada!');
+}
+function removerCampanha(id){
+ confirmarBiobel('Remover essa campanha?', ()=>{
+  salvarCampanhas(getCampanhas().filter(c=>c.id!==id));
+  renderListaCampanhas();
+  mostrarToast('🗑️ Removida.');
+ });
+}
+function renderListaCampanhas(){
+ const el = document.getElementById('listaCampanhas');
+ if(!el) return;
+ const lista = getCampanhas();
+ if(lista.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12px;">Nenhuma campanha marcada ainda.</p>'; return; }
+
+ el.innerHTML = lista.map(c=>{
+  const diasCampanha = daysData.filter(d=>{ const iso=dataDoDiaParaISO(d.dia); return iso>=c.inicio && iso<=c.fim; });
+  const diasFora = daysData.filter(d=>{ const iso=dataDoDiaParaISO(d.dia); return !(iso>=c.inicio && iso<=c.fim); });
+  const mediaCampanha = diasCampanha.length>0 ? diasCampanha.reduce((s,d)=>s+(Number(d.sales)||0),0)/diasCampanha.length : 0;
+  const mediaFora = diasFora.length>0 ? diasFora.reduce((s,d)=>s+(Number(d.sales)||0),0)/diasFora.length : 0;
+  const diferenca = mediaFora>0 ? ((mediaCampanha-mediaFora)/mediaFora*100) : null;
+  return `<div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;margin-bottom:8px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+     <span style="font-size:13px;color:#dce5f2;font-weight:700;">${c.nome}</span>
+     <button onclick="removerCampanha(${c.id})" aria-label="Remover" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:13px;">🗑️</button>
+    </div>
+    <div style="font-size:11px;color:#93a3ba;margin-top:4px;">${new Date(c.inicio+'T00:00:00').toLocaleDateString('pt-BR')} a ${new Date(c.fim+'T00:00:00').toLocaleDateString('pt-BR')}</div>
+    ${diasCampanha.length>0 ? `<div style="font-size:12px;margin-top:8px;color:#93a3ba;">Média durante: <strong style="color:#dce5f2;">${money(mediaCampanha)}</strong>/dia ${diferenca!==null ? `<span style="color:${diferenca>=0?'#27d7a0':'#fb7185'};">(${diferenca>=0?'+':''}${diferenca.toFixed(1)}% vs resto do mês)</span>` : ''}</div>` : '<div style="font-size:11px;color:#93a3ba;margin-top:8px;">Sem dados carregados nesse período ainda.</div>'}
+   </div>`;
+ }).join('');
+}
+
+/* ============================================================
+   BIOBEL — ZONA: CLIMA / CORRELAÇÃO E PREVISÕES
+   ATENÇÃO: manter esta zona isolada ao fazer refatorações.
+   ============================================================ */
+/* ===== Correlação com Clima (item 12) — marcação manual, sem depender de API externa ===== */
+function getClimaDias(){
+ try{ return JSON.parse(localStorage.getItem('biobel_clima_dias')||'{}'); }catch(e){ return {}; }
+}
+function salvarClimaDias(obj){ localStorage.setItem('biobel_clima_dias', JSON.stringify(obj)); }
+/* ===== Busca automática do clima de hoje — API gratuita Open-Meteo, sem precisar de chave ===== */
+function mapearCodigoClimaParaCategoria(codigoWMO, temperatura){
+ // Códigos WMO (padrão usado pela Open-Meteo): 0=céu limpo, 1-3=nublado/parcialmente nublado,
+ // 45/48=neblina, 51-67=chuva fraca/garoa, 80-82=pancadas de chuva, 95-99=tempestade.
+ const codigosDeChuva = [51,53,55,56,57,61,63,65,66,67,80,81,82,95,96,99];
+ if(codigosDeChuva.includes(codigoWMO)) return 'Chuva';
+ if(temperatura!==null && temperatura<15) return 'Frio';
+ if(codigoWMO===0 || codigoWMO===1) return 'Sol';
+ return 'Nublado';
+}
+/* ===== Previsão futura do clima — busca uma vez por dia e guarda em cache, reaproveitada por
+   várias telas (previsão dos próximos dias, alerta de fim de semana, calendário comercial) ===== */
+let previsaoClimaCache = null;
+async function getPrevisaoClimaFutura(){
+ const hoje = obterAgoraBrasilia();
+ const hojeStr = hoje.paraChaveISO();
+ if(previsaoClimaCache && previsaoClimaCache.buscadoEm===hojeStr) return previsaoClimaCache.dias;
+ try{
+  const salvo = localStorage.getItem('biobel_previsao_clima_cache');
+  if(salvo){
+   const obj = JSON.parse(salvo);
+   if(obj.buscadoEm===hojeStr){ previsaoClimaCache = obj; return obj.dias; }
+  }
+ }catch(e){}
+ try{
+  const resposta = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-29.94&longitude=-50.99&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=America%2FSao_Paulo&forecast_days=16');
+  if(!resposta.ok) return [];
+  const dados = await resposta.json();
+  if(!dados?.daily?.time) return [];
+  const dias = dados.daily.time.map((data,i)=>({
+   data,
+   weathercode: dados.daily.weathercode[i],
+   tempMax: dados.daily.temperature_2m_max[i],
+   tempMin: dados.daily.temperature_2m_min[i],
+   categoria: mapearCodigoClimaParaCategoria(dados.daily.weathercode[i], dados.daily.temperature_2m_min[i])
+  }));
+  previsaoClimaCache = { buscadoEm: hojeStr, dias };
+  localStorage.setItem('biobel_previsao_clima_cache', JSON.stringify(previsaoClimaCache));
+  return dias;
+ }catch(e){
+  console.error('Não foi possível buscar a previsão futura:', e);
+  return [];
+ }
+}
+
+async function buscarClimaAutomaticoHoje(){
+ const hoje = obterAgoraBrasilia();
+ const chaveDia = String(hoje.getDate()).padStart(2,'0')+'.'+String(hoje.getMonth()+1).padStart(2,'0');
+ // Se já tem alguma marcação pra hoje (manual ou automática de uma checagem anterior), não mexe —
+ // a escolha da pessoa sempre tem prioridade sobre a busca automática.
+ if(getClimaDias()[chaveDia]) return;
+ // Coordenadas fixas de Gravataí/RS, onde fica a loja — evita precisar pedir permissão de
+ // localização do aparelho, já que o endereço da loja não muda.
+ try{
+  const resposta = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-29.94&longitude=-50.99&current_weather=true&timezone=America%2FSao_Paulo');
+  if(!resposta.ok) return;
+  const dados = await resposta.json();
+  const clima = dados?.current_weather;
+  if(!clima) return;
+  const categoria = mapearCodigoClimaParaCategoria(clima.weathercode, clima.temperature);
+  const obj = getClimaDias();
+  obj[chaveDia] = categoria;
+  salvarClimaDias(obj);
+  renderClimaHojeStatus();
+  try{ renderCorrelacaoClima(); }catch(e){}
+ }catch(e){
+  // Sem internet ou a API fora do ar — sem problema, a pessoa sempre pode marcar manualmente
+  // com os botões de sempre. Não trava nem avisa nada, pra não incomodar.
+  console.error('Não foi possível buscar o clima automaticamente:', e);
+ }
+}
+
+function marcarClimaHojeRapido(tipo){
+ const hoje = obterAgoraBrasilia();
+ const chaveDia = String(hoje.getDate()).padStart(2,'0')+'.'+String(hoje.getMonth()+1).padStart(2,'0');
+ const obj = getClimaDias();
+ obj[chaveDia] = tipo;
+ salvarClimaDias(obj);
+ mostrarToast('✅ Clima de hoje marcado: '+tipo);
+ renderClimaHojeStatus();
+ try{ renderCorrelacaoClima(); }catch(e){}
+}
+function renderClimaHojeStatus(){
+ const el = document.getElementById('climaHojeMarcadoTexto');
+ const bannerChuva = document.getElementById('bannerClimaChuva');
+ const bannerSol = document.getElementById('bannerClimaSol');
+ if(!el && !bannerChuva) return;
+ const hoje = obterAgoraBrasilia();
+ const chaveDia = String(hoje.getDate()).padStart(2,'0')+'.'+String(hoje.getMonth()+1).padStart(2,'0');
+ const climaHoje = getClimaDias()[chaveDia];
+ const emojis = { Sol:'☀️', Nublado:'☁️', Chuva:'🌧️', Frio:'🥶' };
+ if(el) el.textContent = climaHoje ? 'Marcado: '+(emojis[climaHoje]||'')+' '+climaHoje : '';
+ try{ renderChecklistChuvaDashboard(); }catch(e){}
+
+ if(bannerChuva){
+  if(climaHoje==='Chuva'){
+   bannerChuva.style.cssText = 'display:block;background:rgba(79,156,255,.1);border:1px solid rgba(79,156,255,.4);border-radius:12px;padding:12px 16px;margin-bottom:6px;';
+   bannerChuva.innerHTML = `
+     <div style="font-size:13px;color:#4f9cff;font-weight:800;margin-bottom:6px;">🌧️ Hoje é dia de chuva — foco nas vendas online! Movimento na loja física costuma cair em dias assim, vale reforçar redes sociais e WhatsApp.</div>
+     <div style="font-size:11.5px;color:#93a3ba;margin-bottom:8px;">💧 Dia de chuva também é bom pra destacar hidratantes e produtos pra pele ressecada — combina com o clima.</div>
+     <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button onclick="abrirChecklistSemMovimento()" class="no-print" style="background:#4f9cff;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:11.5px;font-weight:700;cursor:pointer;">✅ Abrir checklist de ações</button>
+      <button onclick="showTab('campanhas'); setTimeout(()=>mostrarAbaCampanha('promo'),150);" class="no-print" style="background:transparent;color:#4f9cff;border:1px solid rgba(79,156,255,.5);border-radius:8px;padding:7px 14px;font-size:11.5px;font-weight:700;cursor:pointer;">🏷️ Ver promoções prontas</button>
+     </div>`;
+  } else {
+   bannerChuva.style.display = 'none';
+  }
+ }
+ if(bannerSol){
+  if(climaHoje==='Sol'){
+   bannerSol.style.cssText = 'display:block;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.4);border-radius:12px;padding:12px 16px;margin-bottom:6px;';
+   bannerSol.innerHTML = `
+     <div style="font-size:13px;color:#fbbf24;font-weight:800;margin-bottom:6px;">☀️ Dia de sol firme — costuma ser um bom dia de movimento! Aproveita pra reforçar as redes sociais também, tanto pra quem vem na loja quanto pra quem compra online.</div>
+     <div style="font-size:11.5px;color:#93a3ba;">🧴 Dia de sol é ótimo pra destacar protetor solar e produtos pra depois do sol.</div>`;
+  } else {
+   bannerSol.style.display = 'none';
+  }
+ } else if(climaHoje==='Frio'){
+  // Sem banner próprio pro frio (pra não poluir a tela com banners demais) — mas deixa registrado
+  // como sugestão de produto no console de log de alteracoes, se algum dia quiser reaproveitar.
+ }
+}
+async function renderPrevisaoProximosDias(){
+ const el = document.getElementById('previsaoProximosDiasFaixa');
+ if(!el) return;
+ const dias = await getPrevisaoClimaFutura();
+ if(dias.length===0) return;
+ const emojis = { Sol:'☀️', Nublado:'☁️', Chuva:'🌧️', Frio:'🥶' };
+ const proximosDias = dias.slice(1,6); // pula hoje (índice 0), mostra os 5 dias seguintes
+ if(proximosDias.length===0) return;
+ el.style.display = 'block';
+ el.innerHTML = `<div style="display:flex;gap:8px;overflow-x:auto;background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:10px 14px;">
+   <span style="font-size:11px;color:#93a3ba;font-weight:700;white-space:nowrap;align-self:center;">📅 Próximos dias:</span>
+   ${proximosDias.map(d=>{
+    const dataObj = new Date(d.data+'T00:00:00');
+    const diaSemana = dataObj.toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','');
+    return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;min-width:52px;">
+      <span style="font-size:10px;color:#93a3ba;text-transform:capitalize;">${diaSemana}</span>
+      <span style="font-size:18px;">${emojis[d.categoria]||'☁️'}</span>
+      <span style="font-size:9.5px;color:#93a3ba;">${Math.round(d.tempMax)}°</span>
+     </div>`;
+   }).join('')}
+  </div>`;
+}
+async function verificarFimDeSemanaChuvoso(){
+ const el = document.getElementById('avisoFimDeSemanaChuvoso');
+ if(!el) return;
+ const dias = await getPrevisaoClimaFutura();
+ if(dias.length===0) return;
+ // Acha o próximo sábado e domingo dentro da previsão (até 16 dias à frente)
+ const fimDeSemana = dias.filter(d=>{
+  const diaSemana = new Date(d.data+'T00:00:00').getDay();
+  return diaSemana===0 || diaSemana===6; // domingo ou sábado
+ }).slice(0,2);
+ const algumComChuva = fimDeSemana.filter(d=>d.categoria==='Chuva');
+ if(algumComChuva.length===0){ el.style.display='none'; return; }
+ const nomes = algumComChuva.map(d=>{
+  const dataObj = new Date(d.data+'T00:00:00');
+  return dataObj.toLocaleDateString('pt-BR',{weekday:'long'})+' ('+dataObj.toLocaleDateString('pt-BR')+')';
+ });
+ el.style.cssText = 'display:block;background:rgba(79,156,255,.08);border:1px solid rgba(79,156,255,.3);border-radius:12px;padding:10px 16px;margin-bottom:6px;';
+ el.innerHTML = '<div style="font-size:12.5px;color:#4f9cff;font-weight:700;">🌧️📅 Previsão de chuva pro fim de semana: '+nomes.join(' e ')+'. Já pode ir se planejando pra reforçar as vendas online nesses dias.</div>';
+}
+
+async function renderIndicadorClimaTopo(){
+ const el = document.getElementById('indicadorClimaTopo');
+ if(!el) return;
+ const hoje = obterAgoraBrasilia();
+ const chaveDia = String(hoje.getDate()).padStart(2,'0')+'.'+String(hoje.getMonth()+1).padStart(2,'0');
+ const climaHoje = getClimaDias()[chaveDia];
+ if(!climaHoje){ el.style.display='none'; return; }
+ const emojis = { Sol:'☀️', Nublado:'☁️', Chuva:'🌧️', Frio:'🥶' };
+ // Cor de destaque diferente por tipo — chuva chama mais atenção (é o que mais pede ação, tipo
+ // focar no online), enquanto sol/nublado ficam num tom mais neutro.
+ const cores = { Sol:'#fbbf24', Nublado:'#93a3ba', Chuva:'#4f9cff', Frio:'#60a5fa' };
+ const cor = cores[climaHoje] || '#93a3ba';
+ el.style.display = 'flex';
+ el.innerHTML = `<span style="background:${cor}15;border:1px solid ${cor}55;border-radius:999px;padding:4px 12px;font-size:12px;color:${cor};font-weight:700;">${emojis[climaHoje]||''} ${climaHoje} hoje</span>`;
+
+ // Busca a previsão de amanhã também, se já tiver em cache — não faz outra chamada de rede,
+ // só reaproveita o que a previsão de 16 dias já buscou.
+ try{
+  const previsao = await getPrevisaoClimaFutura();
+  const amanha = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate()+1);
+  const chaveAmanha = amanha.toISOString().slice(0,10);
+  const diaAmanha = previsao.find(d=>d.data===chaveAmanha);
+  if(diaAmanha){
+   const corAmanha = cores[diaAmanha.categoria] || '#93a3ba';
+   el.innerHTML += ` <span style="background:${corAmanha}10;border:1px dashed ${corAmanha}40;border-radius:999px;padding:4px 12px;font-size:11px;color:${corAmanha};font-weight:700;">Amanhã (previsão): ${emojis[diaAmanha.categoria]||''} ${diaAmanha.categoria}</span>`;
+  }
+ }catch(e){}
+}
+
+async function preencherClimaHistoricoAutomatico(){
+ if(daysData.length===0){ mostrarToast('⚠️ Não tem dias carregados nesse mês ainda.'); return; }
+ const climaDias = getClimaDias();
+ const diasFaltando = daysData.filter(d=>!climaDias[String(d.dia)]);
+ if(diasFaltando.length===0){ mostrarToast('✅ Todos os dias desse mês já têm o clima marcado!'); return; }
+
+ const datasISO = diasFaltando.map(d=>dataDoDiaParaISO(d.dia)).sort();
+ const dataInicio = datasISO[0];
+ const dataFim = datasISO[datasISO.length-1];
+ // Não busca datas futuras (a API de histórico só tem dados de dias que já passaram).
+ const hojeISO = obterAgoraBrasilia().paraChaveISO();
+ if(dataInicio>hojeISO){ mostrarToast('⚠️ Esses dias ainda não aconteceram, não dá pra buscar o clima deles ainda.'); return; }
+ const dataFimAjustada = dataFim>hojeISO ? hojeISO : dataFim;
+
+ mostrarToast('🔄 Buscando o clima de '+diasFaltando.length+' dia(s)...');
+ try{
+  const resposta = await fetch('https://archive-api.open-meteo.com/v1/archive?latitude=-29.94&longitude=-50.99&start_date='+dataInicio+'&end_date='+dataFimAjustada+'&daily=weathercode,temperature_2m_min&timezone=America%2FSao_Paulo');
+  if(!resposta.ok){ mostrarToast('⚠️ Não consegui buscar o histórico agora — tenta de novo daqui a pouco.'); return; }
+  const dados = await resposta.json();
+  if(!dados?.daily?.time){ mostrarToast('⚠️ Não veio nenhum dado do histórico.'); return; }
+
+  const mapaClimaPorData = {};
+  dados.daily.time.forEach((data,i)=>{
+   mapaClimaPorData[data] = mapearCodigoClimaParaCategoria(dados.daily.weathercode[i], dados.daily.temperature_2m_min[i]);
+  });
+
+  let preenchidos = 0;
+  diasFaltando.forEach(d=>{
+   const iso = dataDoDiaParaISO(d.dia);
+   if(mapaClimaPorData[iso]){
+    climaDias[String(d.dia)] = mapaClimaPorData[iso];
+    preenchidos++;
+   }
+  });
+  salvarClimaDias(climaDias);
+  mostrarToast('✅ '+preenchidos+' dia(s) preenchido(s) automaticamente!');
+  registrarAlteracao('Clima preenchido automaticamente pra '+preenchidos+' dia(s) do mês');
+  renderLogAlteracoes();
+  renderCorrelacaoClima();
+ }catch(e){
+  console.error(e);
+  mostrarToast('⚠️ Não foi possível buscar o histórico agora.');
+ }
+}
+
+function adicionarClimaDia(){
+ const dataInput = document.getElementById('climaDataInput').value;
+ const tipo = document.getElementById('climaTipoSelect').value;
+ if(!dataInput){ mostrarToast('⚠️ Escolha a data.'); return; }
+ const [ano, mes, dia] = dataInput.split('-');
+ const chaveDia = dia+'.'+mes;
+ const obj = getClimaDias();
+ obj[chaveDia] = tipo;
+ salvarClimaDias(obj);
+ document.getElementById('climaDataInput').value='';
+ renderCorrelacaoClima();
+ mostrarToast('✅ Clima marcado!');
+}
+async function renderTirinhaPrevisaoClima(){
+ const el = document.getElementById('tirinhaPrevisaoClima');
+ if(!el) return;
+ const previsao = await getPrevisaoClimaFutura();
+ if(previsao.length===0){ el.innerHTML=''; return; }
+ const emojis = { Sol:'☀️', Nublado:'☁️', Chuva:'🌧️', Frio:'🥶' };
+ const nomesDiaSemana = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+ // Mostra só os próximos 7 dias (uma semana) — já dá uma boa visão sem virar bagunça visual.
+ const proximosSete = previsao.slice(0,7);
+ el.innerHTML = `
+  <div style="font-size:10.5px;color:#93a3ba;font-weight:700;margin-bottom:8px;">📅 Previsão dos próximos dias</div>
+  <div style="display:flex;gap:6px;overflow-x:auto;">
+   ${proximosSete.map((d,i)=>{
+    const dataObj = new Date(d.data+'T00:00:00');
+    const rotulo = i===0 ? 'Hoje' : nomesDiaSemana[dataObj.getDay()];
+    return `<div style="flex-shrink:0;width:64px;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:8px 6px;text-align:center;">
+      <div style="font-size:10px;color:#93a3ba;font-weight:700;">${rotulo}</div>
+      <div style="font-size:20px;margin:4px 0;">${emojis[d.categoria]||'❔'}</div>
+      <div style="font-size:9.5px;color:#dce5f2;">${Math.round(d.tempMax)}°/${Math.round(d.tempMin)}°</div>
+     </div>`;
+   }).join('')}
+  </div>`;
+}
+
+function renderCorrelacaoClima(){
+ const el = document.getElementById('conteudoCorrelacaoClima');
+ if(!el) return;
+ const climaDias = getClimaDias();
+ const porTipo = {};
+ daysData.forEach(d=>{
+  const tipo = climaDias[String(d.dia)];
+  if(!tipo) return;
+  if(!porTipo[tipo]) porTipo[tipo] = { soma:0, qtd:0 };
+  porTipo[tipo].soma += Number(d.sales)||0;
+  porTipo[tipo].qtd += 1;
+ });
+ const tipos = Object.entries(porTipo);
+ if(tipos.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12px;">Marque o clima de alguns dias pra começar a ver a correlação.</p>'; return; }
+
+ // Insight em texto simples, comparando Sol com Chuva (as duas pontas mais opostas) — só aparece
+ // se tiver pelo menos 1 dia de cada marcado, pra dar uma comparação minimamente confiável.
+ let insightHtml = '';
+ if(porTipo['Sol'] && porTipo['Chuva']){
+  const mediaSol = porTipo['Sol'].soma/porTipo['Sol'].qtd;
+  const mediaChuva = porTipo['Chuva'].soma/porTipo['Chuva'].qtd;
+  if(mediaChuva>0){
+   const diffPct = ((mediaSol-mediaChuva)/mediaChuva)*100;
+   if(Math.abs(diffPct)>=1){
+    const maisOuMenos = diffPct>0 ? 'mais' : 'menos';
+    insightHtml = `<div style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:10px;padding:10px 14px;margin-bottom:10px;font-size:12.5px;color:#fbbf24;font-weight:700;">
+      💡 Seus dias de ☀️ Sol vendem ${Math.abs(diffPct).toFixed(0)}% ${maisOuMenos} que os dias de 🌧️ Chuva, em média.
+     </div>`;
+   }
+  }
+ }
+
+ const cores = { Sol:'#fbbf24', Nublado:'#93a3ba', Chuva:'#4f9cff', Frio:'#60a5fa' };
+ const maiorMedia = Math.max(...tipos.map(([,d])=>d.soma/d.qtd), 1);
+ el.innerHTML = insightHtml + tipos.sort((a,b)=>(b[1].soma/b[1].qtd)-(a[1].soma/a[1].qtd)).map(([tipo, dados])=>{
+  const media = dados.soma/dados.qtd;
+  const pct = maiorMedia>0 ? (media/maiorMedia)*100 : 0;
+  const emojis = { Sol:'☀️', Nublado:'☁️', Chuva:'🌧️', Frio:'🥶' };
+  return `<div style="margin-bottom:10px;">
+    <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px;">
+     <span style="color:#dce5f2;">${emojis[tipo]||''} ${tipo} <span style="color:#93a3ba;font-size:11px;">(${dados.qtd} dia${dados.qtd===1?'':'s'})</span></span>
+     <strong style="color:#f6f9fd;">${money(media)}</strong>
+    </div>
+    <div style="background:#0b1728;border-radius:999px;height:10px;overflow:hidden;">
+     <div style="height:100%;width:${pct.toFixed(1)}%;background:${cores[tipo]||'#93a3ba'};"></div>
+    </div>
+   </div>`;
+ }).join('');
+}
+function renderCorrelacaoClimaSabados(){
+ const el = document.getElementById('conteudoCorrelacaoClimaSabados');
+ if(!el) return;
+ const climaDias = getClimaDias();
+ const porTipo = {};
+ daysData.forEach(d=>{
+  const tipo = climaDias[String(d.dia)];
+  if(!tipo) return;
+  const dataISO = dataDoDiaParaISO(d.dia);
+  const diaSemana = new Date(dataISO+'T00:00:00').getDay();
+  if(diaSemana!==6) return; // só sábado
+  if(!porTipo[tipo]) porTipo[tipo] = { soma:0, qtd:0 };
+  porTipo[tipo].soma += Number(d.sales)||0;
+  porTipo[tipo].qtd += 1;
+ });
+ const tipos = Object.entries(porTipo);
+ if(tipos.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12px;">Ainda não tem sábados com o clima marcado pra comparar.</p>'; return; }
+ const cores = { Sol:'#fbbf24', Nublado:'#93a3ba', Chuva:'#4f9cff', Frio:'#60a5fa' };
+ const emojis = { Sol:'☀️', Nublado:'☁️', Chuva:'🌧️', Frio:'🥶' };
+ const maiorMedia = Math.max(...tipos.map(([,d])=>d.soma/d.qtd), 1);
+ el.innerHTML = tipos.sort((a,b)=>(b[1].soma/b[1].qtd)-(a[1].soma/a[1].qtd)).map(([tipo, dados])=>{
+  const media = dados.soma/dados.qtd;
+  const pct = maiorMedia>0 ? (media/maiorMedia)*100 : 0;
+  return `<div style="margin-bottom:10px;">
+    <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px;">
+     <span style="color:#dce5f2;">${emojis[tipo]||''} ${tipo} <span style="color:#93a3ba;font-size:11px;">(${dados.qtd} sábado${dados.qtd===1?'':'s'})</span></span>
+     <strong style="color:#f6f9fd;">${money(media)}</strong>
+    </div>
+    <div style="background:#0b1728;border-radius:999px;height:10px;overflow:hidden;">
+     <div style="height:100%;width:${pct.toFixed(1)}%;background:${cores[tipo]||'#93a3ba'};"></div>
+    </div>
+   </div>`;
+ }).join('');
+}
+async function exportarRelatorioClimaPDF(){
+ const climaDias = getClimaDias();
+ const porTipo = {};
+ const porTipoSabado = {};
+ daysData.forEach(d=>{
+  const tipo = climaDias[String(d.dia)];
+  if(!tipo) return;
+  if(!porTipo[tipo]) porTipo[tipo] = { soma:0, qtd:0 };
+  porTipo[tipo].soma += Number(d.sales)||0;
+  porTipo[tipo].qtd += 1;
+  const dataISO = dataDoDiaParaISO(d.dia);
+  if(new Date(dataISO+'T00:00:00').getDay()===6){
+   if(!porTipoSabado[tipo]) porTipoSabado[tipo] = { soma:0, qtd:0 };
+   porTipoSabado[tipo].soma += Number(d.sales)||0;
+   porTipoSabado[tipo].qtd += 1;
+  }
+ });
+ if(Object.keys(porTipo).length===0){ mostrarToast('⚠️ Marque o clima de alguns dias antes de exportar.'); return; }
+ try{
+  await carregarJsPDFSobDemanda();
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({unit:'mm', format:'a4'});
+  const margem = 15;
+  let y = await desenharCabecalhoPDF(doc, 'Relatório Clima x Vendas', 'Média de vendas por tipo de clima, comparando todos os dias e só os sábados');
+
+  function desenharTabela(titulo, dados){
+   if(y>260){ doc.addPage(); y=20; }
+   doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(20,20,20);
+   doc.text(titulo, margem, y);
+   y += 7;
+   doc.setFontSize(10);
+   const tipos = Object.entries(dados).sort((a,b)=>(b[1].soma/b[1].qtd)-(a[1].soma/a[1].qtd));
+   tipos.forEach(([tipo,info])=>{
+    const media = info.soma/info.qtd;
+    doc.setFont('helvetica','normal');
+    doc.text(tipo+' ('+info.qtd+' dia'+(info.qtd===1?'':'s')+')', margem, y);
+    doc.text('Média: '+money(media), margem+90, y);
+    y += 6;
+   });
+   y += 6;
+  }
+
+  desenharTabela('📊 Todos os dias', porTipo);
+  if(Object.keys(porTipoSabado).length>0) desenharTabela('🔶 Só sábados', porTipoSabado);
+
+  doc.save('relatorio-clima-vendas-'+obterAgoraBrasilia().paraChaveISO()+'.pdf');
+  mostrarToast('✅ PDF exportado!');
+ }catch(e){
+  console.error(e);
+  mostrarToast('⚠️ Não foi possível gerar o PDF.');
+ }
+}
+function renderAcimaAbaixoMedia(){
+ const el = document.getElementById('conteudoAcimaAbaixoMedia');
+ if(!el) return;
+ if(daysData.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Sem dados carregados ainda.</p>'; return; }
+
+ // Dias marcados como atípicos (ex: feriado com venda isolada) ficam de fora da média e não
+ // entram em nenhuma das colunas — eles aparecem separados, sem contar como "dia fraco".
+ const diasAtipicos = getDiasAtipicos().map(d=>d.dia);
+ const diasNormais = daysData.filter(d=>!diasAtipicos.includes(String(d.dia)));
+ const diasAtipicosDoMes = daysData.filter(d=>diasAtipicos.includes(String(d.dia)));
+
+ if(diasNormais.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Todos os dias desse mês estão marcados como atípicos — nada sobrou pra comparar.</p>'; return; }
+
+ const totalSales = diasNormais.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const media = totalSales/diasNormais.length;
+ const metaDiariaFixa = getDailyGoal();
+ const acima = diasNormais.filter(d=>(Number(d.sales)||0)>=media).sort((a,b)=>(Number(b.sales)||0)-(Number(a.sales)||0));
+ // Abaixo da média divide em duas faixas: "perto da média" (até 30% abaixo) e "muito abaixo"
+ // (mais de 30% abaixo) — separar isso ajuda a ver quais dias precisam de mais atenção de verdade.
+ const limitePertoDaMedia = media*0.7;
+ const pertoDaMedia = diasNormais.filter(d=>{ const v=Number(d.sales)||0; return v<media && v>=limitePertoDaMedia; }).sort((a,b)=>(Number(b.sales)||0)-(Number(a.sales)||0));
+ const muitoAbaixo = diasNormais.filter(d=>(Number(d.sales)||0)<limitePertoDaMedia).sort((a,b)=>(Number(a.sales)||0)-(Number(b.sales)||0));
+
+ // Importante: se um dia bateu a META fixa (o valor que você configurou) mas ainda assim aparece
+ // "abaixo da média", isso NÃO é erro — são duas contas diferentes. A média é calculada com os
+ // dias DESSE mês (muda toda vez que entra um dia novo); a meta é o número fixo que você define.
+ // Um mês com muitos dias ótimos pode ter uma média mais alta que a sua meta.
+ function linha(d){
+  const valor = Number(d.sales)||0;
+  const bateuMeta = metaDiariaFixa>0 && valor>=metaDiariaFixa;
+  return `<div style="display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px solid #1e2c42;">
+    <span style="color:#dce5f2;">${d.dia}${bateuMeta?' <span style="color:#27d7a0;font-size:10px;" title="Bateu a meta diária fixa">🎯</span>':''}</span>
+    <span style="color:#93a3ba;">${money(valor)}</span>
+   </div>`;
+ }
+
+ el.innerHTML = `
+  <div style="text-align:center;margin-bottom:6px;">
+   <span style="font-size:11px;color:#93a3ba;">Média DESTE MÊS (recalculada com os dias já lançados): </span><strong style="color:#dce5f2;">${money(media)}</strong>
+  </div>
+  ${metaDiariaFixa>0 ? `<div style="text-align:center;margin-bottom:10px;"><span style="font-size:10.5px;color:#93a3ba;">Sua meta diária fixa (configurada em Metas): <strong style="color:#dce5f2;">${money(metaDiariaFixa)}</strong> — 🎯 marca quem bateu ela, mesmo que apareça "abaixo da média"</span></div>` : ''}
+  ${diasAtipicosDoMes.length>0 ? `<div style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:10px;padding:10px 14px;margin-bottom:14px;">
+    <div style="font-size:10.5px;font-weight:800;color:#fbbf24;text-transform:uppercase;margin-bottom:6px;">⚠️ Dias Atípicos (fora da média)</div>
+    ${diasAtipicosDoMes.map(linha).join('')}
+   </div>` : ''}
+  <div class="grid-3-colunas-dias" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+   <div>
+    <div style="font-size:10px;font-weight:800;color:#27d7a0;text-transform:uppercase;margin-bottom:8px;">📈 Acima (${acima.length})</div>
+    <div style="max-height:280px;overflow-y:auto;">${acima.map(linha).join('') || '<p style="color:#93a3ba;font-size:11px;">Nenhum dia.</p>'}</div>
+   </div>
+   <div>
+    <div style="font-size:10px;font-weight:800;color:#fbbf24;text-transform:uppercase;margin-bottom:8px;">➖ Perto da média (${pertoDaMedia.length})</div>
+    <div style="max-height:280px;overflow-y:auto;">${pertoDaMedia.map(linha).join('') || '<p style="color:#93a3ba;font-size:11px;">Nenhum dia.</p>'}</div>
+   </div>
+   <div>
+    <div style="font-size:10px;font-weight:800;color:#fb7185;text-transform:uppercase;margin-bottom:8px;">📉 Muito abaixo (${muitoAbaixo.length})</div>
+    <div style="max-height:280px;overflow-y:auto;">${muitoAbaixo.map(linha).join('') || '<p style="color:#93a3ba;font-size:11px;">Nenhum dia.</p>'}</div>
+   </div>
+  </div>
+ `;
+}
+function renderSemanasDoMes(){
+ const el=document.getElementById('conteudoSemanasDoMes'); if(!el)return;
+ if(!daysData.length){el.innerHTML='<p style="color:#93a3ba;font-size:12.5px;">Sem dados carregados ainda.</p>';return;}
+ const semanas={};
+ daysData.forEach(d=>{
+  const p=String(d.dia||'').split('.').map(Number); if(p.length<2||!p[0]||!p[1])return;
+  const dt=new Date(anoReferenciaPlanilha(),p[1]-1,p[0]),deslocamento=(dt.getDay()+6)%7;
+  const inicio=new Date(dt); inicio.setDate(dt.getDate()-deslocamento);
+  const fim=new Date(inicio); fim.setDate(inicio.getDate()+6);
+  const chave=inicio.getFullYear()+'-'+String(inicio.getMonth()+1).padStart(2,'0')+'-'+String(inicio.getDate()).padStart(2,'0');
+  if(!semanas[chave])semanas[chave]={total:0,qtd:0,dias:[],inicio,fim};
+  semanas[chave].total+=Number(d.sales)||0; semanas[chave].qtd++; semanas[chave].dias.push(d.dia);
+ });
+ const lista=Object.values(semanas).sort((a,b)=>a.inicio-b.inicio); if(!lista.length){el.innerHTML='';return;}
+ const melhor=[...lista].sort((a,b)=>b.total-a.total)[0], pior=[...lista].sort((a,b)=>a.total-b.total)[0];
+ const fmt=d=>d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+ el.innerHTML=lista.map((x,i)=>{
+  const ehMelhor=x===melhor,ehPior=x===pior&&lista.length>1&&!ehMelhor;
+  const ds=[...x.dias].sort((a,b)=>{const[da,ma]=a.split('.').map(Number),[db,mb]=b.split('.').map(Number);return ma*100+da-(mb*100+db);});
+  return `<div style="background:#0b1728;border:1px solid ${ehMelhor?'rgba(39,215,160,.4)':ehPior?'rgba(251,113,133,.4)':'#1e2c42'};border-radius:10px;padding:12px 14px;margin-bottom:8px;">
+   <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+    <span style="font-size:12.5px;color:#dce5f2;font-weight:700;">Semana ${i+1} · ${fmt(x.inicio)} a ${fmt(x.fim)}${ehMelhor?' 🏆':''}${ehPior?' ⚠️':''}</span>
+    <span style="font-size:14px;font-weight:900;color:${ehMelhor?'#27d7a0':ehPior?'#fb7185':'#dce5f2'};">${money(x.total)}</span>
+   </div>
+   <div style="font-size:10.5px;color:#93a3ba;margin-top:4px;">${x.qtd} dia${x.qtd===1?'':'s'} lançado${x.qtd===1?'':'s'} · média de ${money(x.total/x.qtd)}/dia · dias: ${ds.join(', ')}</div>
+  </div>`;
+ }).join('');
+}
+
+function calcularQuedaMesmoPeriodo(){
+ // Versão independente (sem depender de nenhuma tela estar aberta) — usada tanto pela Central
+ // de Alertas quanto pela tela de comparação, pra sempre calcular a mesma coisa do mesmo jeito.
+ if(daysData.length===0) return null;
+ const mesAtualNum = Number(String(daysData[0].dia).split('.')[1]);
+ let mesAnteriorNum = mesAtualNum - 1;
+ if(mesAnteriorNum<1) mesAnteriorNum = 12;
+ const mesAnteriorStr = String(mesAnteriorNum).padStart(2,'0');
+ let arquivo = {};
+ try{ arquivo = JSON.parse(localStorage.getItem('biobel_arquivo_meses')||'{}'); }catch(e){}
+ const diasMesAnterior = arquivo[mesAnteriorStr] || [];
+ if(diasMesAnterior.length===0) return null;
+ const diasOrdenadosAnterior = [...diasMesAnterior].sort((a,b)=>Number(String(a.dia).split('.')[0])-Number(String(b.dia).split('.')[0]));
+ const primeirosDiasAnterior = diasOrdenadosAnterior.slice(0, daysData.length);
+ const faturamentoAtual = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const faturamentoAnterior = primeirosDiasAnterior.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ if(faturamentoAnterior<=0) return null;
+ const percentual = ((faturamentoAtual-faturamentoAnterior)/faturamentoAnterior)*100;
+ if(percentual>-20) return null;
+ const nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+ return { percentual, nomeMesAtual: nomesMeses[mesAtualNum-1], nomeMesAnterior: nomesMeses[mesAnteriorNum-1] };
+}
+
+/* ===== Recordes batidos (item 10) — guarda uma linha do tempo de conquistas ===== */
+function getRecordesComparacao(){
+ try{ return JSON.parse(localStorage.getItem('biobel_recordes_comparacao')||'[]'); }catch(e){ return []; }
+}
+function verificarRecordesComparacao(faturamentoAtual, diasConsiderados){
+ if(diasConsiderados<=0) return;
+ const mediaAtual = faturamentoAtual/diasConsiderados;
+ const recordes = getRecordesComparacao();
+ const melhorMediaAnterior = recordes.filter(r=>r.tipo==='media_diaria').sort((a,b)=>b.valor-a.valor)[0];
+ if(!melhorMediaAnterior || mediaAtual>melhorMediaAnterior.valor){
+  const hoje = obterAgoraBrasilia().paraChaveISO();
+  const jaRegistrouHoje = recordes.some(r=>r.tipo==='media_diaria' && r.data===hoje);
+  if(!jaRegistrouHoje){
+   recordes.unshift({ tipo:'media_diaria', valor:mediaAtual, data:hoje, descricao:'Nova melhor média diária: '+money(mediaAtual) });
+   localStorage.setItem('biobel_recordes_comparacao', JSON.stringify(recordes.slice(0,50)));
+  }
+ }
+}
+function renderRecordesComparacao(){
+ const el = document.getElementById('conteudoRecordesComparacao');
+ if(!el) return;
+ const recordes = getRecordesComparacao();
+ if(recordes.length===0){ el.innerHTML=''; return; }
+ el.innerHTML = `<div style="border-top:1px solid #1e2c42;padding-top:14px;">
+   <div style="font-size:10.5px;color:#93a3ba;font-weight:800;text-transform:uppercase;margin-bottom:8px;">🏅 Recordes Batidos</div>
+   <div style="max-height:200px;overflow-y:auto;">
+   ${recordes.slice(0,10).map(r=>`<div style="font-size:11.5px;color:#dce5f2;padding:5px 0;border-bottom:1px solid #1e2c42;">🏅 ${new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR')} — ${r.descricao}</div>`).join('')}
+   </div>
+  </div>`;
+}
+
+/* ===== Exportar a comparação em PDF (item 6) ===== */
+async function exportarComparacaoPeriodoPDF(){
+ const btn = document.getElementById('btnExportarComparacaoPdf');
+ const textoOriginal = btn ? btn.textContent : '';
+ if(btn){ btn.disabled=true; btn.textContent='⏳ Gerando...'; }
+ try{
+  await carregarJsPDFSobDemanda();
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({unit:'mm', format:'a4'});
+  const largura = doc.internal.pageSize.getWidth();
+  const margem = 15;
+  let y = await desenharCabecalhoPDF(doc, 'Comparação — Mesmo Período', 'Gerado em '+new Date().toLocaleString('pt-BR'));
+
+  const texto = document.getElementById('conteudoComparacaoMesmoPeriodo').innerText;
+  doc.setFontSize(10); doc.setTextColor(20,20,20);
+  const linhas = doc.splitTextToSize(texto, largura-margem*2);
+  linhas.forEach(linha=>{
+   if(y>280){ doc.addPage(); y=20; }
+   doc.text(linha, margem, y);
+   y += 5.5;
+  });
+
+  doc.save('biobel-comparacao-periodo-'+new Date().toISOString().slice(0,10)+'.pdf');
+  mostrarToast('✅ PDF exportado!');
+ }catch(e){
+  console.error(e);
+  mostrarToast('⚠️ Não foi possível gerar o PDF.');
+ }finally{
+  if(btn){ btn.disabled=false; btn.textContent=textoOriginal; }
+ }
+}
+
+function alternarDiaAtipicoRapido(diaStr, marcado){
+ const lista = getDiasAtipicos();
+ if(marcado){
+  if(!lista.some(d=>d.dia===diaStr)) lista.push({ dia: diaStr, motivo: 'Marcado na comparação de período' });
+ } else {
+  const idx = lista.findIndex(d=>d.dia===diaStr);
+  if(idx>=0) lista.splice(idx,1);
+ }
+ salvarDiasAtipicos(lista);
+ mostrarToast(marcado ? '✅ Dia marcado como atípico.' : '✅ Dia voltou a contar normalmente.');
+ renderComparacaoMesmoPeriodo();
+}
+
+function renderComparacaoMesmoPeriodo(){
+ const el = document.getElementById('conteudoComparacaoMesmoPeriodo');
+ if(!el) return;
+
+ if(daysData.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Sem dados carregados no mês atual ainda.</p>';
+  return;
+ }
+
+ // Dias marcados como atípicos (ex: feriado com venda isolada) saem da conta dos dois períodos,
+ // pra dar uma visão real de como a loja está indo, sem esses dias distorcendo a comparação.
+ const diasAtipicos = getDiasAtipicos().map(d=>d.dia);
+ const diasEsteMesTodos = daysData;
+ const diasEsteMesFiltrados = daysData.filter(d=>!diasAtipicos.includes(String(d.dia)));
+ const diasEsteMes = diasEsteMesFiltrados.length;
+
+ if(diasEsteMes===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Todos os dias desse mês estão marcados como atípicos — nada sobrou pra comparar.</p>';
+  return;
+ }
+
+ // Acha o mês anterior arquivado (o mês anterior ao mês do próprio daysData atual, não
+ // necessariamente "hoje" — assim funciona mesmo revisando um mês antigo).
+ const mesAtualNum = Number(String(daysData[0].dia).split('.')[1]);
+ let mesAnteriorNum = mesAtualNum - 1;
+ if(mesAnteriorNum<1) mesAnteriorNum = 12;
+ const mesAnteriorStr = String(mesAnteriorNum).padStart(2,'0');
+
+ let arquivo = {};
+ try{ arquivo = JSON.parse(localStorage.getItem('biobel_arquivo_meses')||'{}'); }catch(e){}
+ const diasMesAnteriorTodos = (arquivo[mesAnteriorStr] || []).filter(d=>!diasAtipicos.includes(String(d.dia)));
+
+ if(diasMesAnteriorTodos.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Ainda não há dados arquivados do mês anterior pra comparar. Isso é guardado automaticamente quando você troca de planilha.</p>';
+  return;
+ }
+
+ // Pega só os primeiros N dias do mês anterior (N = quantos dias já foram lançados nesse mês,
+ // já sem contar os atípicos).
+ const diasOrdenadosAnterior = [...diasMesAnteriorTodos].sort((a,b)=>Number(String(a.dia).split('.')[0])-Number(String(b.dia).split('.')[0]));
+ const primeirosDiasAnterior = diasOrdenadosAnterior.slice(0, diasEsteMes);
+ const daysData_original = daysData; // guarda a referência original só pra clareza
+ const daysDataFiltrado = diasEsteMesFiltrados; // usado no lugar de "daysData" daqui pra baixo
+
+ const nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+ const nomeMesAtual = nomesMeses[mesAtualNum-1];
+ const nomeMesAnterior = nomesMeses[mesAnteriorNum-1];
+
+ const faturamentoAtual = daysDataFiltrado.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const faturamentoAnterior = primeirosDiasAnterior.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const diferenca = faturamentoAtual - faturamentoAnterior;
+ const percentual = faturamentoAnterior>0 ? (diferenca/faturamentoAnterior*100) : null;
+ const subiu = diferenca>=0;
+
+ // Item 8: alerta automático se a queda for grande (20%+), reaproveitando o sistema de alertas.
+ window._quedaGrandeComparacaoPeriodo = calcularQuedaMesmoPeriodo();
+
+ // Item 10: verifica e registra novos recordes batidos nessa comparação (ticket médio, etc.)
+ verificarRecordesComparacao(faturamentoAtual, diasEsteMes);
+
+ // Item 1: quantidade de itens vendidos (não só R$) em cada período.
+ function somarItensVendidos(dias){
+  return dias.reduce((s,d)=>s+(d.registrosVendas||[]).reduce((s2,r)=>s2+(r.qtdItens||0),0),0);
+ }
+ const itensAtual = somarItensVendidos(daysDataFiltrado);
+ const itensAnterior = somarItensVendidos(primeirosDiasAnterior);
+
+ // Item 2: horário de pico de cada período (soma o valor de cada hora, entre todos os dias).
+ function acharHorarioPico(dias){
+  const porHora = {};
+  dias.forEach(d=>{
+   Object.entries(d.horarios||{}).forEach(([hora,info])=>{
+    porHora[hora] = (porHora[hora]||0) + (info.valor||0);
+   });
+  });
+  const entradas = Object.entries(porHora);
+  if(entradas.length===0) return null;
+  const [horaPico, valorPico] = entradas.sort((a,b)=>b[1]-a[1])[0];
+  return { hora: Number(horaPico), valor: valorPico };
+ }
+ const picoAtual = acharHorarioPico(daysDataFiltrado);
+ const picoAnterior = acharHorarioPico(primeirosDiasAnterior);
+
+ function somarPorVendedora(dias){
+  const totais = {};
+  dias.forEach(d=>{
+   Object.entries(d.vendedorasDetalhe||{}).forEach(([nome,det])=>{
+    totais[nome] = (totais[nome]||0) + (det.total||0);
+   });
+  });
+  return totais;
+ }
+ const totaisAtualPorNome = somarPorVendedora(daysDataFiltrado);
+ const totaisAnteriorPorNome = somarPorVendedora(primeirosDiasAnterior);
+ const rankingAtual = Object.entries(totaisAtualPorNome).sort((a,b)=>b[1]-a[1]);
+ const rankingAnterior = Object.entries(totaisAnteriorPorNome).sort((a,b)=>b[1]-a[1]);
+ // Comparação individual por vendedora: mesma pessoa, este mês vs mês passado, com a posição
+ // no ranking de cada período — pra ver quem subiu, quem caiu, e se a "melhor vendedora" mudou.
+ const todosOsNomes = [...new Set([...Object.keys(totaisAtualPorNome), ...Object.keys(totaisAnteriorPorNome)])];
+ const posicaoAtual = {}; rankingAtual.forEach(([nome], i)=>{ posicaoAtual[nome] = i+1; });
+ const posicaoAnterior = {}; rankingAnterior.forEach(([nome], i)=>{ posicaoAnterior[nome] = i+1; });
+ const comparacaoPorVendedora = todosOsNomes.map(nome=>{
+  const atual = totaisAtualPorNome[nome]||0;
+  const anterior = totaisAnteriorPorNome[nome]||0;
+  const diferencaVend = atual-anterior;
+  const percentualVend = anterior>0 ? (diferencaVend/anterior*100) : null;
+  const posAtual = posicaoAtual[nome] || null;
+  const posAnterior = posicaoAnterior[nome] || null;
+  let mudancaPosicao = null;
+  if(posAtual!==null && posAnterior!==null) mudancaPosicao = posAnterior - posAtual; // positivo = subiu
+  return { nome, atual, anterior, diferencaVend, percentualVend, posAtual, posAnterior, mudancaPosicao };
+ }).sort((a,b)=>b.atual-a.atual);
+
+ // Ticket médio: faturamento total ÷ quantidade de vendas, em cada período.
+ const qtdVendasAtual = daysDataFiltrado.reduce((s,d)=>s+(Number(d.qtdVendas)||0),0);
+ const qtdVendasAnterior = primeirosDiasAnterior.reduce((s,d)=>s+(Number(d.qtdVendas)||0),0);
+ const ticketAtual = qtdVendasAtual>0 ? faturamentoAtual/qtdVendasAtual : 0;
+ const ticketAnterior = qtdVendasAnterior>0 ? faturamentoAnterior/qtdVendasAnterior : 0;
+
+ // Formas de pagamento: soma de dinheiro/débito/crédito/pix em cada período.
+ function somarFormasPagamento(dias){
+  return {
+   dinheiro: dias.reduce((s,d)=>s+(Number(d.dinheiro)||0),0),
+   debito: dias.reduce((s,d)=>s+(Number(d.debito)||0),0),
+   credito: dias.reduce((s,d)=>s+(Number(d.credito)||0),0),
+   pix: dias.reduce((s,d)=>s+(Number(d.pix)||0),0),
+  };
+ }
+ const pagAtual = somarFormasPagamento(daysDataFiltrado);
+ const pagAnterior = somarFormasPagamento(primeirosDiasAnterior);
+
+ // Dias da semana: agrupa o faturamento por dia da semana em cada período.
+ const nomesDiasSemanaComp = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+ function somarPorDiaSemana(dias, mesNum){
+  const totais = [0,0,0,0,0,0,0];
+  dias.forEach(d=>{
+   const diaNum = Number(String(d.dia).split('.')[0]);
+   const dow = new Date(anoReferenciaPlanilha(), mesNum-1, diaNum).getDay();
+   totais[dow] += Number(d.sales)||0;
+  });
+  return totais;
+ }
+ const semanaAtual = somarPorDiaSemana(daysDataFiltrado, mesAtualNum);
+ const semanaAnterior = somarPorDiaSemana(primeirosDiasAnterior, mesAnteriorNum);
+
+ function listaRanking(ranking){
+  if(ranking.length===0) return '<p style="color:#93a3ba;font-size:11.5px;">Sem dados de vendedoras.</p>';
+  const medalhas = ['🥇','🥈','🥉'];
+  return ranking.slice(0,5).map(([nome,total],i)=>`
+    <div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;">
+     <span style="color:#dce5f2;">${medalhas[i]||(i+1)+'º'} ${nome}</span>
+     <span style="color:#27d7a0;font-weight:700;">${money(total)}</span>
+    </div>`).join('');
+ }
+ function linhaComparacao(label, valorAtual, valorAnterior, emoji){
+  return `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #1e2c42;">
+    <span style="font-size:12px;color:#93a3ba;">${emoji} ${label}</span>
+    <span style="font-size:12.5px;color:#dce5f2;"><strong>${money(valorAtual)}</strong> <span style="color:#93a3ba;">vs</span> ${money(valorAnterior)}</span>
+   </div>`;
+ }
+ function linhaDiaSemana(nomeDia, i){
+  return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:11.5px;">
+    <span style="color:#93a3ba;">${nomeDia}</span>
+    <span style="color:#dce5f2;"><strong>${money(semanaAtual[i])}</strong> <span style="color:#93a3ba;">vs</span> ${money(semanaAnterior[i])}</span>
+   </div>`;
+ }
+
+ function linhaComparacaoVendedora(c){
+  const cor = c.percentualVend===null ? '#93a3ba' : c.diferencaVend>=0 ? '#27d7a0' : '#fb7185';
+  const seta = c.percentualVend===null ? '' : c.diferencaVend>=0 ? '📈' : '📉';
+  const medalha = c.posAtual===1 ? '🥇' : c.posAtual===2 ? '🥈' : c.posAtual===3 ? '🥉' : '';
+  let indicadorPosicao = '';
+  if(c.mudancaPosicao===null){
+   indicadorPosicao = c.posAtual ? `<span style="color:#93a3ba;">(${c.posAtual}º lugar — não vendeu em ${nomeMesAnterior})</span>` : '';
+  } else if(c.mudancaPosicao>0){
+   indicadorPosicao = `<span style="color:#27d7a0;">⬆️ Subiu do ${c.posAnterior}º pro ${c.posAtual}º lugar</span>`;
+  } else if(c.mudancaPosicao<0){
+   indicadorPosicao = `<span style="color:#fb7185;">⬇️ Caiu do ${c.posAnterior}º pro ${c.posAtual}º lugar</span>`;
+  } else {
+   indicadorPosicao = `<span style="color:#93a3ba;">➡️ Manteve o ${c.posAtual}º lugar</span>`;
+  }
+  return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #1e2c42;">
+    <div>
+     <span style="font-size:12.5px;color:#dce5f2;font-weight:600;">${medalha} ${c.nome}</span>
+     <div style="font-size:10px;margin-top:2px;">${indicadorPosicao}</div>
+    </div>
+    <div style="text-align:right;">
+     <div style="font-size:12.5px;color:#dce5f2;"><strong>${money(c.atual)}</strong> <span style="color:#93a3ba;">vs</span> ${money(c.anterior)}</div>
+     <div style="font-size:10.5px;color:${cor};">${seta} ${c.percentualVend!==null ? (c.diferencaVend>=0?'+':'')+c.percentualVend.toFixed(1)+'%' : 'novo'}</div>
+    </div>
+   </div>`;
+ }
+ function linhaCheckboxDiaAtipico(d){
+  const marcado = diasAtipicos.includes(String(d.dia));
+  return `<label style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:11.5px;color:#dce5f2;cursor:pointer;">
+    <input type="checkbox" ${marcado?'checked':''} onchange="alternarDiaAtipicoRapido('${d.dia}', this.checked)">
+    ${d.dia} — ${money(Number(d.sales)||0)}${marcado?' <span style="color:#fbbf24;">(feriado/atípico)</span>':''}
+   </label>`;
+ }
+
+ el.innerHTML = `
+  <details style="margin-bottom:14px;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 14px;">
+   <summary style="cursor:pointer;font-size:12px;color:#93a3ba;font-weight:700;">📋 Foi feriado em algum desses dias? (clique pra marcar)</summary>
+   <div style="margin-top:8px;">${diasEsteMesTodos.map(linhaCheckboxDiaAtipico).join('')}</div>
+  </details>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:14px;">
+    <div style="font-size:10.5px;color:#93a3ba;font-weight:800;text-transform:uppercase;">📆 ${nomeMesAtual} (${diasEsteMes} dia${diasEsteMes===1?'':'s'})</div>
+    <div style="font-size:19px;font-weight:900;color:#dce5f2;margin-top:6px;">${money(faturamentoAtual)}</div>
+   </div>
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:14px;">
+    <div style="font-size:10.5px;color:#93a3ba;font-weight:800;text-transform:uppercase;">📆 ${nomeMesAnterior} (primeiros ${primeirosDiasAnterior.length} dia${primeirosDiasAnterior.length===1?'':'s'})</div>
+    <div style="font-size:19px;font-weight:900;color:#dce5f2;margin-top:6px;">${money(faturamentoAnterior)}</div>
+   </div>
+  </div>
+  <div style="background:${subiu?'rgba(39,215,160,.08)':'rgba(251,113,133,.08)'};border:1px solid ${subiu?'rgba(39,215,160,.3)':'rgba(251,113,133,.3)'};border-radius:12px;padding:12px 16px;margin-bottom:16px;">
+   <div style="font-size:13px;font-weight:800;color:${subiu?'#27d7a0':'#fb7185'};">${subiu?'📈':'📉'} ${subiu?'Subiu':'Caiu'} ${money(Math.abs(diferenca))}${percentual!==null?' ('+(subiu?'+':'')+percentual.toFixed(1)+'%)':''} em relação ao mesmo período do mês passado</div>
+   ${window._quedaGrandeComparacaoPeriodo ? `<div style="font-size:11.5px;color:#fb7185;margin-top:6px;">🔴 Essa é uma queda grande (20%+) — vale investigar o que mudou.</div>` : ''}
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+   <div>
+    <div style="font-size:10.5px;color:#93a3ba;font-weight:800;text-transform:uppercase;margin-bottom:6px;">👥 Quem vendeu mais — ${nomeMesAtual}</div>
+    ${listaRanking(rankingAtual)}
+   </div>
+   <div>
+    <div style="font-size:10.5px;color:#93a3ba;font-weight:800;text-transform:uppercase;margin-bottom:6px;">👥 Quem vendeu mais — ${nomeMesAnterior}</div>
+    ${listaRanking(rankingAnterior)}
+   </div>
+  </div>
+
+  <div style="border-top:1px solid #1e2c42;padding-top:14px;margin-bottom:16px;">
+   <div style="font-size:10.5px;color:#93a3ba;font-weight:800;text-transform:uppercase;margin-bottom:8px;">🆚 Cada Vendedora: Este Mês x Mês Passado</div>
+   ${comparacaoPorVendedora.map(linhaComparacaoVendedora).join('') || '<p style="color:#93a3ba;font-size:11.5px;">Sem dados suficientes.</p>'}
+  </div>
+
+  <div style="border-top:1px solid #1e2c42;padding-top:14px;margin-bottom:16px;">
+   <div style="font-size:10.5px;color:#93a3ba;font-weight:800;text-transform:uppercase;margin-bottom:8px;">🧺 Itens Vendidos (${nomeMesAtual} vs ${nomeMesAnterior})</div>
+   <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;">
+    <span style="font-size:12px;color:#93a3ba;">🧺 Quantidade de itens</span>
+    <span style="font-size:12.5px;color:#dce5f2;"><strong>${itensAtual}</strong> <span style="color:#93a3ba;">vs</span> ${itensAnterior}</span>
+   </div>
+  </div>
+
+  <div style="border-top:1px solid #1e2c42;padding-top:14px;margin-bottom:16px;">
+   <div style="font-size:10.5px;color:#93a3ba;font-weight:800;text-transform:uppercase;margin-bottom:8px;">🔥 Horário de Pico (${nomeMesAtual} vs ${nomeMesAnterior})</div>
+   <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;">
+    <span style="font-size:12px;color:#93a3ba;">🔥 Melhor horário</span>
+    <span style="font-size:12.5px;color:#dce5f2;">
+     <strong>${picoAtual ? picoAtual.hora+'h ('+money(picoAtual.valor)+')' : '—'}</strong>
+     <span style="color:#93a3ba;"> vs </span>
+     ${picoAnterior ? picoAnterior.hora+'h ('+money(picoAnterior.valor)+')' : '—'}
+    </span>
+   </div>
+   ${(picoAtual && picoAnterior && picoAtual.hora!==picoAnterior.hora) ? `<div style="font-size:11px;color:#fbbf24;margin-top:4px;">⚠️ O horário mais forte mudou de ${picoAnterior.hora}h pra ${picoAtual.hora}h.</div>` : ''}
+  </div>
+
+  <div style="border-top:1px solid #1e2c42;padding-top:14px;margin-bottom:16px;">
+   <div style="font-size:10.5px;color:#93a3ba;font-weight:800;text-transform:uppercase;margin-bottom:8px;">🎫 Ticket Médio (${nomeMesAtual} vs ${nomeMesAnterior})</div>
+   ${linhaComparacao('Valor médio por venda', ticketAtual, ticketAnterior, '🎫')}
+  </div>
+
+  <div style="border-top:1px solid #1e2c42;padding-top:14px;margin-bottom:16px;">
+   <div style="font-size:10.5px;color:#93a3ba;font-weight:800;text-transform:uppercase;margin-bottom:8px;">💳 Formas de Pagamento (${nomeMesAtual} vs ${nomeMesAnterior})</div>
+   ${linhaComparacao('Dinheiro', pagAtual.dinheiro, pagAnterior.dinheiro, '💵')}
+   ${linhaComparacao('Débito', pagAtual.debito, pagAnterior.debito, '💳')}
+   ${linhaComparacao('Crédito', pagAtual.credito, pagAnterior.credito, '💳')}
+   ${linhaComparacao('Pix', pagAtual.pix, pagAnterior.pix, '📲')}
+  </div>
+
+  <div style="border-top:1px solid #1e2c42;padding-top:14px;margin-bottom:16px;">
+   <div style="font-size:10.5px;color:#93a3ba;font-weight:800;text-transform:uppercase;margin-bottom:8px;">📆 Dias da Semana (${nomeMesAtual} vs ${nomeMesAnterior})</div>
+   ${nomesDiasSemanaComp.map((nome,i)=>linhaDiaSemana(nome,i)).join('')}
+  </div>
+
+  <button id="btnExportarComparacaoPdf" onclick="exportarComparacaoPeriodoPDF()" class="w-full bg-purple-600 hover:bg-purple-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="background:#8b5cf6;margin-top:8px;">📑 Exportar essa comparação em PDF</button>
+  <div id="conteudoRecordesComparacao" style="margin-top:16px;"></div>
+ `;
+ renderRecordesComparacao();
+}
+
+/* ===== Top 30 Melhores Dias — junta o mês atual com TODOS os meses arquivados, sem separar ===== */
+function renderTop30Dias(){
+ const el = document.getElementById('conteudoTop30Dias');
+ if(!el) return;
+
+ const nomesMeses = {'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'};
+
+ // Junta o mês atual (ao vivo) com todos os meses já arquivados — usa um Map pra nunca contar
+ // o mesmo dia duas vezes, mesmo que ele apareça tanto ao vivo quanto arquivado.
+ let arquivo = {};
+ try{ arquivo = JSON.parse(localStorage.getItem('biobel_arquivo_meses')||'{}'); }catch(e){}
+
+ const todosOsDias = new Map();
+ daysData.forEach(d=>{
+  const [dia, mes] = String(d.dia).split('.');
+  todosOsDias.set(dia+'.'+mes, { dia, mes, sales: Number(d.sales)||0 });
+ });
+ Object.entries(arquivo).forEach(([mesKey, dias])=>{
+  (dias||[]).forEach(d=>{
+   const [dia] = String(d.dia).split('.');
+   const chave = dia+'.'+mesKey;
+   if(!todosOsDias.has(chave)){
+    todosOsDias.set(chave, { dia, mes: mesKey, sales: Number(d.sales)||0 });
+   }
+  });
+ });
+
+ const listaCompleta = Array.from(todosOsDias.values()).filter(d=>d.sales>0);
+ if(listaCompleta.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Sem dados suficientes ainda pra montar esse ranking.</p>';
+  return;
+ }
+
+ const top30 = [...listaCompleta].sort((a,b)=>b.sales-a.sales).slice(0,30);
+ const medalhas = ['🥇','🥈','🥉'];
+
+ el.innerHTML = `<div style="max-height:420px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;">` +
+  top30.map((d,i)=>`
+   <div style="display:flex;justify-content:space-between;align-items:center;background:#0b1728;border:1px solid ${i<3?'rgba(39,215,160,.3)':'#1e2c42'};border-radius:8px;padding:8px 12px;">
+    <span style="font-size:12.5px;color:#dce5f2;">${medalhas[i]||'#'+(i+1)} ${d.dia}/${nomesMeses[d.mes]||d.mes}</span>
+    <span style="font-size:13px;font-weight:800;color:${i<3?'#27d7a0':'#dce5f2'};">${money(d.sales)}</span>
+   </div>`).join('') +
+  `</div>
+  <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">📊 Baseado em ${listaCompleta.length} dia${listaCompleta.length===1?'':'s'} guardado${listaCompleta.length===1?'':'s'} no total (mês atual + arquivados).</p>`;
+}
+
+function renderListaMesesComparar(){
+ const el = document.getElementById('listaMesesComparar');
+ if(!el) return;
+ let arquivo = {};
+ try{ arquivo = JSON.parse(localStorage.getItem('biobel_arquivo_meses')||'{}'); }catch(e){}
+ const nomesMeses = {'01':'Janeiro','02':'Fevereiro','03':'Março','04':'Abril','05':'Maio','06':'Junho','07':'Julho','08':'Agosto','09':'Setembro','10':'Outubro','11':'Novembro','12':'Dezembro'};
+ const mesesArquivados = Object.keys(arquivo).sort();
+ if(mesesArquivados.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Ainda não há meses arquivados pra comparar. Isso acontece automaticamente conforme os meses forem virando.</p>';
+  return;
+ }
+ el.innerHTML = mesesArquivados.map(m=>`
+  <label style="display:flex;align-items:center;gap:8px;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;cursor:pointer;font-size:13px;color:#dce5f2;">
+   <input type="checkbox" class="checkMesComparar" value="${m}" style="width:15px;height:15px;accent-color:#27d7a0;">
+   ${nomesMeses[m]||m} de 2026
+  </label>
+ `).join('');
+}
+
+function renderComparacaoMeses(){
+ const el = document.getElementById('resultadoComparacaoMeses');
+ if(!el) return;
+ const checks = Array.from(document.querySelectorAll('.checkMesComparar:checked')).map(c=>c.value);
+ if(checks.length<2){
+  el.innerHTML = '<p style="color:#fbbf24;font-size:12.5px;">Escolha pelo menos 2 meses pra comparar.</p>';
+  return;
+ }
+ if(checks.length>3){
+  el.innerHTML = '<p style="color:#fbbf24;font-size:12.5px;">Escolha no máximo 3 meses de cada vez, pra ficar fácil de comparar.</p>';
+  return;
+ }
+ let arquivo = {};
+ try{ arquivo = JSON.parse(localStorage.getItem('biobel_arquivo_meses')||'{}'); }catch(e){}
+ const nomesMeses = {'01':'Janeiro','02':'Fevereiro','03':'Março','04':'Abril','05':'Maio','06':'Junho','07':'Julho','08':'Agosto','09':'Setembro','10':'Outubro','11':'Novembro','12':'Dezembro'};
+
+ const dadosMeses = checks.sort().map(mesKey=>{
+  const dias = arquivo[mesKey] || [];
+  const totalSales = dias.reduce((s,d)=>s+(Number(d.sales)||0),0);
+  const totalDespesas = dias.reduce((s,d)=>s+(Number(d.withdrawals)||0),0);
+  const totalDias = dias.length;
+  const media = totalDias>0 ? totalSales/totalDias : 0;
+  return { mesKey, nome:nomesMeses[mesKey]||mesKey, totalSales, totalDespesas, totalDias, media };
+ });
+
+ const linhas = [
+  {label:'Faturamento total', key:'totalSales', formatar:money},
+  {label:'Despesas do mês', key:'totalDespesas', formatar:money},
+  {label:'Dias lançados', key:'totalDias', formatar:v=>String(v)},
+  {label:'Média diária', key:'media', formatar:money},
+ ];
+
+ let html = '<table style="width:100%;border-collapse:collapse;font-size:12.5px;min-width:400px;">';
+ html += '<tr><td style="padding:8px;color:#93a3ba;"></td>' + dadosMeses.map(m=>`<td style="padding:8px;text-align:center;font-weight:900;color:#f6f9fd;">${m.nome}</td>`).join('') + '</tr>';
+ linhas.forEach(linha=>{
+  const valores = dadosMeses.map(m=>m[linha.key]);
+  const maior = Math.max(...valores);
+  html += '<tr style="border-top:1px solid #1e2c42;">';
+  html += `<td style="padding:8px;color:#93a3ba;white-space:nowrap;">${linha.label}</td>`;
+  dadosMeses.forEach(m=>{
+   const destaque = m[linha.key]===maior && maior>0;
+   html += `<td style="padding:8px;text-align:center;font-weight:700;color:${destaque?'#27d7a0':'#dce5f2'};">${linha.formatar(m[linha.key])}</td>`;
+  });
+  html += '</tr>';
+ });
+ html += '</table>';
+ el.innerHTML = html;
+}
+
+function visualizarMes(mesKey){
+ const aviso = document.getElementById('avisoMesPassado');
+ const btnVoltar = document.getElementById('btnVoltarMesAtual');
+ const sel = document.getElementById('seletorMes');
+ if(!mesKey){
+  if(daysDataOriginal){ daysData = daysDataOriginal; daysDataOriginal = null; }
+  mesVisualizadoPassado = null;
+  if(aviso){ aviso.style.display = 'none'; aviso.innerHTML = ''; }
+  if(btnVoltar) btnVoltar.style.display = 'none';
+  if(sel) sel.value = '';
+  renderAdvancedDashboard();
+  try{ renderInfoTab(); }catch(e){ console.error('Erro em renderInfoTab:', e); }
+  return;
+ }
+ let arquivo = {};
+ try{ arquivo = JSON.parse(localStorage.getItem('biobel_arquivo_meses')||'{}'); }catch(e){}
+ const dadosDoMes = arquivo[mesKey];
+ if(!dadosDoMes || !dadosDoMes.length){
+  mostrarToast('⚠️ Não há dados arquivados pra esse mês ainda.');
+  if(sel) sel.value = '';
+  return;
+ }
+ if(!daysDataOriginal) daysDataOriginal = daysData;
+ daysData = dadosDoMes;
+ mesVisualizadoPassado = mesKey;
+ const nomesMeses = {'01':'Janeiro','02':'Fevereiro','03':'Março','04':'Abril','05':'Maio','06':'Junho','07':'Julho','08':'Agosto','09':'Setembro','10':'Outubro','11':'Novembro','12':'Dezembro'};
+ if(aviso){
+  aviso.style.display = 'block';
+  aviso.innerHTML = '<div style="background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.35);border-radius:12px;padding:10px 14px;margin-top:10px;font-size:12.5px;color:#fbbf24;font-weight:700;">⚠️ Mostrando o mês arquivado de <strong>'+(nomesMeses[mesKey]||mesKey)+' de 2026</strong> — esses dados não atualizam sozinhos. Pra ver o mês atual de novo, use o botão "📍 Mês atual" ao lado.</div>';
+ }
+ if(btnVoltar) btnVoltar.style.display = 'inline-flex';
+ renderAdvancedDashboard();
+ try{ renderInfoTab(); }catch(e){ console.error('Erro em renderInfoTab:', e); }
+}
+
+function renderNovasMetricas(){
+ if(daysData.length===0) return;
+
+ // 1) Ticket Medio por Venda + Quantidade Total de Vendas
+ const totalSales = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const totalQtdVendas = daysData.reduce((s,d)=>s+(Number(d.qtdVendas)||0),0);
+ const ticketMedio = totalQtdVendas>0 ? totalSales/totalQtdVendas : 0;
+ const elTicket=document.getElementById('infoTicketMedio');
+ if(elTicket) elTicket.textContent = money(ticketMedio);
+ const elQtd=document.getElementById('infoQtdVendas');
+ if(elQtd) elQtd.textContent = String(totalQtdVendas);
+ const elQtdSub=document.getElementById('infoQtdVendasSub');
+ const metaQtd = getMetaQtdVendas();
+ if(elQtdSub){
+  if(metaQtd>0){
+   const pctQtd = Math.min(100, (totalQtdVendas/metaQtd)*100);
+   const bateu = totalQtdVendas>=metaQtd;
+   elQtdSub.innerHTML = (bateu?'✅ ':'')+'meta: '+metaQtd+' vendas ('+pctQtd.toFixed(0)+'%)';
+  } else {
+   elQtdSub.textContent = 'no mês, somando todos os dias lançados';
+  }
+ }
+ const elTicketSub=document.getElementById('infoTicketMedioSub');
+ if(elTicketSub) elTicketSub.textContent = totalQtdVendas>0 ? totalQtdVendas+' venda(s) contada(s) no mês' : 'ainda sem dados de quantidade (recarregue a planilha)';
+
+ // Total de itens vendidos no mês (soma da coluna "qt de produtos", não é o mesmo que "quantidade de vendas" —
+ // uma venda pode ter vários itens juntos, ex: 3 produtos numa venda só).
+ const totalItensVendidos = daysData.reduce((s,d)=>{
+  return s + (d.registrosVendas||[]).reduce((s2,r)=>s2+(r.qtdItens||0),0);
+ }, 0);
+ const elItens = document.getElementById('infoTotalItensVendidos');
+ if(elItens) elItens.textContent = String(totalItensVendidos);
+ const elItensSub = document.getElementById('infoTotalItensVendidosSub');
+ if(elItensSub){
+  const mediaItensPorVenda = totalQtdVendas>0 ? (totalItensVendidos/totalQtdVendas).toFixed(1) : '0';
+  elItensSub.textContent = 'média de '+mediaItensPorVenda+' itens por venda';
+ }
+
+ // 2) Projeção de Faturamento até o Fim do Mês
+ // Corrigido: usa os dias ÚTEIS que realmente faltam (sem domingo), não todos os dias do calendário —
+ // multiplicar pela quantidade total de dias inflava a projeção contando até domingos, quando a loja nem abre.
+ const mesAtual = daysData[0]?.dia?.split('.')[1];
+ const elProj=document.getElementById('infoProjecao');
+ const elProjSub=document.getElementById('infoProjecaoSub');
+ if(mesVisualizadoPassado){
+  // Mês arquivado: já acabou, não tem "resto do mês" pra projetar — mostra o total real mesmo.
+  if(elProj) elProj.textContent = money(totalSales);
+  if(elProjSub) elProjSub.textContent = 'mês já encerrado — este é o total final, sem projeção';
+ } else {
+  const diasComDados = daysData.length;
+  const mediaDiaria = diasComDados>0 ? totalSales/diasComDados : 0;
+  const diasUteisFaltando = diasUteisRestantesNoMes();
+  const projecao = totalSales + (mediaDiaria * diasUteisFaltando);
+  if(elProj) elProj.textContent = money(projecao);
+  if(elProjSub) elProjSub.textContent = `já vendeu ${money(totalSales)} + média de ${money(mediaDiaria)}/dia × ${diasUteisFaltando} dia${diasUteisFaltando===1?'':'s'} útil${diasUteisFaltando===1?'':'eis'} que ainda faltam`;
+ }
+
+ // 3) Comparativo com o Mes Anterior (guarda o total de cada mes no localStorage pra comparar futuramente)
+ if(mesAtual){
+  let historico = {};
+  try{ historico = JSON.parse(localStorage.getItem('biobel_historico_meses')||'{}'); }catch(e){}
+  historico[mesAtual] = totalSales;
+  localStorage.setItem('biobel_historico_meses', JSON.stringify(historico));
+
+  // arquiva o mes completo (todos os dias), separado do historico de totais acima, pra poder ver o mes passado inteiro depois
+  if(!mesVisualizadoPassado){
+   try{
+    let arquivo = JSON.parse(localStorage.getItem('biobel_arquivo_meses')||'{}');
+    arquivo[mesAtual] = JSON.parse(JSON.stringify(daysData));
+    localStorage.setItem('biobel_arquivo_meses', JSON.stringify(arquivo));
+    montarSeletorMeses();
+   }catch(e){}
+  }
+
+  const mesAnteriorNum = String(Number(mesAtual)-1).padStart(2,'0');
+  const totalMesAnterior = historico[mesAnteriorNum];
+  const elComp=document.getElementById('infoComparativoMes');
+  const elCompSub=document.getElementById('infoComparativoMesSub');
+  if(totalMesAnterior!==undefined && totalMesAnterior>0){
+   const variacao = ((totalSales-totalMesAnterior)/totalMesAnterior)*100;
+   const sinal = variacao>=0?'+':'';
+   if(elComp) elComp.textContent = sinal+variacao.toFixed(1)+'%';
+   if(elComp) elComp.style.color = variacao>=0 ? 'var(--green)' : 'var(--red)';
+   if(elCompSub) elCompSub.textContent = `${money(totalSales)} este mês vs ${money(totalMesAnterior)} no mês ${mesAnteriorNum}`;
+  } else {
+   if(elComp) elComp.textContent = '—';
+   if(elComp) elComp.style.color = 'var(--muted)';
+   if(elCompSub) elCompSub.textContent = 'ainda sem dados do mês anterior salvos';
+  }
+ }
+}
+
+/* ===== Dias Atípicos — excluídos das médias por dia da semana, sem sumir do faturamento total ===== */
+/* ===== Contagem de dias úteis restantes — pula domingo (loja fechada) e feriados marcados ===== */
+function contarDiasUteisRestantes(mesRef, diaAtual, ultimoDiaDoMes){
+ const diasAtipicos = getDiasAtipicos().map(d=>d.dia);
+ let contador = 0;
+ for(let dia=diaAtual+1; dia<=ultimoDiaDoMes; dia++){
+  const dow = new Date(anoReferenciaPlanilha(), mesRef-1, dia).getDay();
+  if(dow===0) continue; // domingo — loja fechada, não conta como dia útil
+  const diaStr = String(dia).padStart(2,'0')+'.'+String(mesRef).padStart(2,'0');
+  if(diasAtipicos.includes(diaStr)) continue; // feriado marcado — também não conta
+  contador++;
+ }
+ return contador;
+}
+
+function getDiasAtipicos(){
+ try{ return JSON.parse(localStorage.getItem('biobel_dias_atipicos')||'[]'); }catch(e){ return []; }
+}
+function salvarDiasAtipicos(lista){
+ localStorage.setItem('biobel_dias_atipicos', JSON.stringify(lista));
+}
+function adicionarDiaAtipico(){
+ const dataInput = document.getElementById('diaAtipicoDataInput').value;
+ const motivo = document.getElementById('diaAtipicoMotivoInput').value.trim() || null;
+ if(!dataInput){ mostrarToast('⚠️ Escolha a data.'); return; }
+ const [ano, mes, dia] = dataInput.split('-');
+ const chaveDia = dia+'.'+mes;
+ const lista = getDiasAtipicos();
+ if(lista.some(d=>d.dia===chaveDia)){ mostrarToast('⚠️ Esse dia já está marcado como atípico.'); return; }
+ lista.push({ dia: chaveDia, motivo });
+ salvarDiasAtipicos(lista);
+ document.getElementById('diaAtipicoDataInput').value='';
+ document.getElementById('diaAtipicoMotivoInput').value='';
+ renderListaDiasAtipicos();
+ renderInfoTab();
+ mostrarToast('✅ Dia marcado como atípico — excluído das médias por dia da semana.');
+}
+function removerDiaAtipico(chaveDia){
+ const lista = getDiasAtipicos().filter(d=>d.dia!==chaveDia);
+ salvarDiasAtipicos(lista);
+ renderListaDiasAtipicos();
+ renderInfoTab();
+ mostrarToast('✅ Dia voltou a contar normalmente.');
+}
+function renderListaDiasAtipicos(){
+ const el = document.getElementById('listaDiasAtipicos');
+ if(!el) return;
+ const lista = getDiasAtipicos();
+ if(lista.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12px;">Nenhum dia marcado como atípico ainda.</p>';
+  return;
+ }
+ el.innerHTML = lista.map(d=>`
+   <div style="display:flex;justify-content:space-between;align-items:center;background:#0b1728;border:1px solid #1e2c42;border-radius:8px;padding:8px 12px;margin-bottom:6px;">
+    <span style="font-size:12.5px;color:#dce5f2;">📅 ${d.dia}${d.motivo?' — '+d.motivo:''}</span>
+    <button onclick="removerDiaAtipico('${d.dia}')" aria-label="Remover" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:13px;">🗑️</button>
+   </div>`).join('');
+}
+
+function calcularMediaPorDiaSemana(){
+ const diasAtipicos = getDiasAtipicos().map(d=>d.dia);
+ const porDiaSemana = {};
+ daysData.forEach(d=>{
+  const partes = String(d.dia||'').split('.');
+  if(partes.length<2) return;
+  if(diasAtipicos.includes(String(d.dia))) return; // dia marcado como atípico — não entra na média
+  const dia = Number(partes[0]), mes = Number(partes[1]);
+  if(!dia||!mes) return;
+  const dt = new Date(anoReferenciaPlanilha(), mes-1, dia);
+  const dow = dt.getDay();
+  if(!porDiaSemana[dow]) porDiaSemana[dow] = {soma:0,qtd:0};
+  porDiaSemana[dow].soma += Number(d.sales)||0;
+  porDiaSemana[dow].qtd += 1;
+ });
+ return porDiaSemana;
+}
+
+function renderMelhoresPioresDiasSemana(porDiaSemana){
+ const elMelhores = document.getElementById('infoMelhoresDiasSemana');
+ const elPiores = document.getElementById('infoPioresDiasSemana');
+ if(!elMelhores || !elPiores) return;
+
+ const nomesDias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+ const lista = Object.keys(porDiaSemana).map(dow=>({
+  dow: Number(dow),
+  nome: nomesDias[Number(dow)],
+  soma: porDiaSemana[dow].soma,
+  qtd: porDiaSemana[dow].qtd
+ }));
+
+ if(lista.length===0){
+  elMelhores.innerHTML = '<p style="color:#93a3ba;font-size:13px;">Sem dados suficientes ainda.</p>';
+  elPiores.innerHTML = '';
+  return;
+ }
+
+ lista.sort((a,b)=>b.soma-a.soma);
+ const melhores = lista.slice(0,3);
+ const piores = lista.slice(-3).reverse();
+ const maiorSoma = melhores[0]?.soma || 1;
+
+ function linhaHtml(item, cor){
+  const pct = maiorSoma>0 ? (item.soma/maiorSoma)*100 : 0;
+  return `
+   <div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+     <span style="color:#dce5f2;">${item.nome} <span style="color:#93a3ba;font-size:11px;">(${item.qtd} dia${item.qtd===1?'':'s'} somados)</span></span>
+     <strong style="color:#f6f9fd;">${money(item.soma)}</strong>
+    </div>
+    <div style="background:#0b1728;border-radius:999px;height:10px;overflow:hidden;">
+     <div style="height:100%;width:${Math.max(pct,3).toFixed(1)}%;background:${cor};"></div>
+    </div>
+   </div>`;
+ }
+
+ elMelhores.innerHTML = melhores.map(item=>linhaHtml(item,'linear-gradient(90deg,#27d7a0,#0ea97a)')).join('');
+ // Nunca repete um dia que já apareceu nos "melhores" — mesmo com 4, 5 ou 6 dias distintos,
+ // o "top 3" e o "bottom 3" podem se cruzar (matemática: com só 4 dias, é impossível não cruzar).
+ const piorosSemRepetir = piores.filter(p=>!melhores.some(m=>m.dow===p.dow));
+ elPiores.innerHTML = piorosSemRepetir.length
+  ? piorosSemRepetir.map(item=>linhaHtml(item,'linear-gradient(90deg,#fb7185,#e11d48)')).join('')
+  : '<p style="color:#93a3ba;font-size:13px;">Ainda não há dias suficientes pra separar os piores dos melhores.</p>';
+
+ const canvasRadar = document.getElementById('graficoRadarDiasSemana');
+ if(canvasRadar && typeof Chart!=='undefined'){
+  // Segunda a sábado, na ordem certa da semana (loja não abre domingo).
+  const ordemSemana = [1,2,3,4,5,6];
+  const labelsSemana = ['Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+  const valoresSemana = ordemSemana.map(dow => (porDiaSemana[dow]?.soma) || 0);
+  if(chartRadarDiasSemana) chartRadarDiasSemana.destroy();
+  chartRadarDiasSemana = new Chart(canvasRadar, {
+   type: 'radar',
+   data: {
+    labels: labelsSemana,
+    datasets: [{
+     label: 'Total vendido',
+     data: valoresSemana,
+     backgroundColor: 'rgba(39,215,160,.18)',
+     borderColor: '#27d7a0',
+     pointBackgroundColor: '#27d7a0',
+     borderWidth: 2
+    }]
+   },
+   options: {
+    plugins: { legend: { display:false } },
+    scales: {
+     r: {
+      angleLines: { color:'#1e2c42' },
+      grid: { color:'#1e2c42' },
+      pointLabels: { color:'#93a3ba', font:{size:11} },
+      ticks: { display:false, backdropColor:'transparent' }
+     }
+    }
+   }
+  });
+ }
+}
+function renderMenosMovimentoPorTurno(){
+ const el = document.getElementById('menosMovimentoPorTurno');
+ if(!el) return;
+ // Usa o "porTurno" que o sistema já extrai automaticamente da coluna de turno da planilha
+ // (coluna K), pra cada dia — não depende de nada digitado manualmente, é o mês inteiro real.
+ const nomesDias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+ const porDiaManha = {};
+ const porDiaTarde = {};
+ const diasAtipicos = getDiasAtipicos().map(d=>d.dia);
+ daysData.forEach(d=>{
+  if(diasAtipicos.includes(String(d.dia))) return; // dia atípico não entra na média, igual ao resto do sistema
+  if(!d.porTurno) return;
+  const dataISO = dataDoDiaParaISO(d.dia);
+  const dow = new Date(dataISO+'T00:00:00').getDay();
+  const qtdManha = d.porTurno['manhã']?.qtd;
+  const qtdTarde = d.porTurno['tarde']?.qtd;
+  if(qtdManha!==undefined){
+   if(!porDiaManha[dow]) porDiaManha[dow] = { soma:0, qtd:0 };
+   porDiaManha[dow].soma += qtdManha;
+   porDiaManha[dow].qtd += 1;
+  }
+  if(qtdTarde!==undefined){
+   if(!porDiaTarde[dow]) porDiaTarde[dow] = { soma:0, qtd:0 };
+   porDiaTarde[dow].soma += qtdTarde;
+   porDiaTarde[dow].qtd += 1;
+  }
+ });
+
+ function montarRanking(porDia, emoji, titulo){
+  const linhas = Object.entries(porDia).map(([dow,info])=>({
+   nome: nomesDias[dow], media: info.soma/info.qtd, qtdDias: info.qtd
+  }));
+  if(linhas.length===0) return `<div><div style="font-size:11px;color:#93a3ba;font-weight:800;margin-bottom:8px;">${emoji} ${titulo}</div><p style="font-size:11.5px;color:#93a3ba;">Sem dados de turno nessa planilha ainda.</p></div>`;
+  const piores = linhas.sort((a,b)=>a.media-b.media).slice(0,3);
+  return `<div>
+    <div style="font-size:11px;color:#93a3ba;font-weight:800;margin-bottom:8px;">${emoji} ${titulo}</div>
+    ${piores.map((l,i)=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid #1e2c42;">
+      <span style="color:#dce5f2;">${i+1}º ${l.nome}</span>
+      <span style="color:#fb7185;font-weight:700;">${l.media.toFixed(1)} atend. <span style="color:#93a3ba;font-weight:400;font-size:10px;">(${l.qtdDias}x)</span></span>
+     </div>`).join('')}
+   </div>`;
+ }
+
+ el.innerHTML = montarRanking(porDiaManha, '☀️', 'Manhãs com menos movimento') + montarRanking(porDiaTarde, '🌇', 'Tardes com menos movimento');
+}
+
+function renderComparativoTurnos(){
+ const el = document.getElementById('comparativoTurnos');
+ if(!el) return;
+ const diasAtipicos = getDiasAtipicos().map(d=>d.dia);
+ let somaManha=0, qtdManha=0, somaMeioDia=0, qtdMeioDia=0, somaTarde=0, qtdTarde=0;
+ daysData.forEach(d=>{
+  if(diasAtipicos.includes(String(d.dia))) return;
+  if(!d.porTurno) return;
+  const qm = d.porTurno['manhã']?.qtd;
+  const qmd = d.porTurno['meio-dia']?.qtd;
+  const qt = d.porTurno['tarde']?.qtd;
+  if(qm!==undefined){ somaManha+=qm; qtdManha++; }
+  if(qmd!==undefined){ somaMeioDia+=qmd; qtdMeioDia++; }
+  if(qt!==undefined){ somaTarde+=qt; qtdTarde++; }
+ });
+ if(qtdManha===0 && qtdMeioDia===0 && qtdTarde===0){
+  el.innerHTML = '<p style="font-size:12px;color:#93a3ba;">Sem dados de turno nessa planilha ainda.</p>';
+  return;
+ }
+ const mediaManha = qtdManha>0 ? somaManha/qtdManha : 0;
+ const mediaMeioDia = qtdMeioDia>0 ? somaMeioDia/qtdMeioDia : 0;
+ const mediaTarde = qtdTarde>0 ? somaTarde/qtdTarde : 0;
+ const maior = Math.max(mediaManha, mediaMeioDia, mediaTarde, 1);
+
+ const turnos = [
+  { nome:'Manhã', emoji:'☀️', media:mediaManha, qtd:qtdManha, cor:'#fbbf24' },
+  { nome:'Meio-dia', emoji:'🕛', media:mediaMeioDia, qtd:qtdMeioDia, cor:'#a78bfa' },
+  { nome:'Tarde', emoji:'🌇', media:mediaTarde, qtd:qtdTarde, cor:'#4f9cff' },
+ ];
+ const comDados = turnos.filter(t=>t.qtd>0);
+ const maisMovimento = comDados.reduce((a,b)=>b.media>a.media?b:a, comDados[0]);
+ const menosMovimento = comDados.reduce((a,b)=>b.media<a.media?b:a, comDados[0]);
+ const mensagem = maisMovimento.nome===menosMovimento.nome
+  ? '⚖️ Os turnos estão parecidos, na média.'
+  : `${maisMovimento.emoji} ${maisMovimento.nome} tem mais movimento, e ${menosMovimento.emoji} ${menosMovimento.nome.toLowerCase()} tem menos, na média.`;
+
+ el.innerHTML = `
+  <div style="background:rgba(79,156,255,.08);border:1px solid rgba(79,156,255,.3);border-radius:10px;padding:8px 14px;text-align:center;font-size:12px;font-weight:700;color:#dce5f2;margin-bottom:14px;">${mensagem}</div>
+  <div style="display:flex;flex-direction:column;gap:10px;">
+   ${turnos.map(t=>`
+   <div>
+    <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px;">
+     <span style="color:#dce5f2;">${t.emoji} ${t.nome} <span style="color:#93a3ba;font-size:11px;">(${t.qtd} dia${t.qtd===1?'':'s'})</span></span>
+     <strong style="color:#f6f9fd;">${t.media.toFixed(1)} atend./dia</strong>
+    </div>
+    <div style="background:#0b1728;border-radius:999px;height:10px;overflow:hidden;">
+     <div style="height:100%;width:${(t.media/maior*100).toFixed(1)}%;background:${t.cor};"></div>
+    </div>
+   </div>`).join('')}
+  </div>`;
+}
+
+function renderTodosDiasSemana(porDiaSemana){
+ const el = document.getElementById('infoTodosDiasSemana');
+ if(!el) return;
+ const nomesDias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+ // Mostra na ordem natural da semana (segunda a domingo), não por valor — assim fica fácil
+ // comparar visualmente sem precisar caçar cada dia numa lista ordenada por valor.
+ const ordem = [1,2,3,4,5,6,0];
+ const linhas = ordem.map(dow=>{
+  const info = porDiaSemana[dow];
+  const soma = info ? info.soma : 0;
+  const qtd = info ? info.qtd : 0;
+  const media = qtd>0 ? soma/qtd : 0;
+  return { dow, nome: nomesDias[dow], soma, qtd, media };
+ });
+ const maiorSoma = Math.max(...linhas.map(l=>l.soma), 1);
+ el.innerHTML = linhas.map(l=>{
+  const pct = maiorSoma>0 ? (l.soma/maiorSoma)*100 : 0;
+  return `
+   <div style="display:grid;grid-template-columns:90px 1fr auto;gap:10px;align-items:center;">
+    <span style="font-size:12.5px;color:#dce5f2;font-weight:700;">${l.nome}</span>
+    <div style="background:#0b1728;border-radius:999px;height:10px;overflow:hidden;">
+     <div style="height:100%;width:${Math.max(pct,l.qtd>0?3:0).toFixed(1)}%;background:linear-gradient(90deg,#4f9cff,#2f78e0);"></div>
+    </div>
+    <div style="text-align:right;min-width:100px;">
+     <strong style="color:#f6f9fd;font-size:13px;">${money(l.soma)}</strong>
+     ${l.qtd>0?`<div style="font-size:10px;color:#93a3ba;">média ${money(l.media)} (${l.qtd}x)</div>`:'<div style="font-size:10px;color:#93a3ba;">sem dados</div>'}
+    </div>
+   </div>`;
+ }).join('');
+}
+
+function renderRitmoAtual(totalSales, goal, remaining){
+ const el = document.getElementById('infoRitmoAtualWrap');
+ if(!el) return;
+ if(daysData.length===0){ el.innerHTML=''; return; }
+ if(remaining<=0){
+  el.innerHTML = '<div style="font-size:12.5px;color:#27d7a0;font-weight:800;">🚀 No ritmo atual, a meta já foi batida! Parabéns!</div>';
+  return;
+ }
+ const mediaReal = totalSales/daysData.length;
+ if(mediaReal<=0){
+  el.innerHTML = '<div style="font-size:12.5px;color:#93a3ba;">Ainda sem vendas suficientes pra calcular o ritmo do mês.</div>';
+  return;
+ }
+ const diasNecessarios = Math.ceil(remaining/mediaReal);
+
+ const mesAtual = Number(daysData[0]?.dia?.split('.')[1]) || (new Date().getMonth()+1);
+ const ultimoDiaLancado = Math.max(...daysData.map(d=>Number(String(d.dia).split('.')[0])||0));
+ const cursor = new Date(anoReferenciaPlanilha(), mesAtual-1, ultimoDiaLancado);
+ let contador = 0;
+ // Limite de segurança pra nunca travar num loop infinito (ex: media absurdamente baixa).
+ let tentativas = 0;
+ while(contador < diasNecessarios && tentativas < 400){
+  cursor.setDate(cursor.getDate()+1);
+  if(cursor.getDay()!==0) contador++; // pula domingo (loja fechada)
+  tentativas++;
+ }
+ const diaFinal = String(cursor.getDate()).padStart(2,'0')+'.'+String(cursor.getMonth()+1).padStart(2,'0');
+ const estourouMes = (cursor.getMonth()+1) !== mesAtual;
+
+ el.innerHTML = `<div style="font-size:12.5px;color:#93a3ba;">
+   🏁 No ritmo médio de <strong style="color:#dce5f2;">${money(mediaReal)}/dia</strong>, a meta deve ser batida por volta do dia <strong style="color:#27d7a0;">${diaFinal}</strong>${estourouMes?' <span style="color:#fbbf24;font-weight:700;">(passando pro mês seguinte, nesse ritmo)</span>':''}.
+  </div>`;
+}
+
+function renderMaisNumerosDoMes(){
+ if(daysData.length===0) return;
+ const totalSales = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+
+ // Média de vendas por dia
+ const media = totalSales/daysData.length;
+ const elMedia=document.getElementById('infoMediaDiaria');
+ if(elMedia) elMedia.textContent = money(media);
+
+ // Média de atendimentos (quantidade de vendas, não valor em R$) por dia
+ const totalAtendimentos = daysData.reduce((s,d)=>s+(Number(d.qtdVendas)||0),0);
+ const mediaAtendimentos = totalAtendimentos/daysData.length;
+ const elMediaAtend = document.getElementById('infoMediaAtendimentos');
+ const elMediaAtendSub = document.getElementById('infoMediaAtendimentosSub');
+ if(elMediaAtend) elMediaAtend.textContent = mediaAtendimentos.toFixed(1);
+ if(elMediaAtendSub) elMediaAtendSub.textContent = totalAtendimentos+' atendimento'+(totalAtendimentos===1?'':'s')+' no total, em '+daysData.length+' dia'+(daysData.length===1?'':'s');
+
+ // Dias restantes do mês — mesma conta usada no Dashboard, explicada com todos os detalhes
+ // aqui também, pra não ter dúvida se o dia de hoje entra ou não na contagem.
+ const elDiasRestantesValor = document.getElementById('infoDiasRestantesValor');
+ const elDiasRestantesSub = document.getElementById('infoDiasRestantesSub');
+ if(elDiasRestantesValor && daysData.length>0){
+  const mesRefDR = Number(String(daysData[0].dia).split('.')[1]);
+  const ultimoDiaDoMesDR = new Date(anoReferenciaPlanilha(), mesRefDR, 0).getDate();
+  const hojeDR = obterAgoraBrasilia();
+  const diaAtualDR = hojeDR.getMonth()+1===mesRefDR ? hojeDR.getDate() : ultimoDiaDoMesDR;
+  const diasRestantesDR = contarDiasUteisRestantes(mesRefDR, diaAtualDR, ultimoDiaDoMesDR);
+  elDiasRestantesValor.textContent = diasRestantesDR;
+  elDiasRestantesSub.textContent = 'Hoje é dia '+diaAtualDR+' de '+ultimoDiaDoMesDR+' — conta só os dias úteis restantes (sem domingo, sem feriado marcado, e sem contar hoje).';
+ }
+
+ // Maior e menor venda do mês
+ const ordenado = [...daysData].sort((a,b)=>(Number(a.sales)||0)-(Number(b.sales)||0));
+ const menor = ordenado[0];
+ const maior = ordenado[ordenado.length-1];
+ const elMaior=document.getElementById('infoMaiorVenda');
+ const elMaiorSub=document.getElementById('infoMaiorVendaSub');
+ if(elMaior) elMaior.textContent = money(maior.sales);
+ if(elMaiorSub) elMaiorSub.textContent = 'dia '+maior.dia;
+ const elMenor=document.getElementById('infoMenorVenda');
+ const elMenorSub=document.getElementById('infoMenorVendaSub');
+ if(elMenor) elMenor.textContent = money(menor.sales);
+ if(elMenorSub) elMenorSub.textContent = 'dia '+menor.dia;
+
+ // Dias que bateram a meta diária
+ const meta = getDailyGoal();
+ const bateram = daysData.filter(d=>(Number(d.sales)||0) >= meta).length;
+ const elDiasMeta=document.getElementById('infoDiasMetaBatida');
+ const elDiasMetaSub=document.getElementById('infoDiasMetaBatidaSub');
+ if(elDiasMeta) elDiasMeta.textContent = bateram+' de '+daysData.length;
+ if(elDiasMetaSub) elDiasMetaSub.textContent = 'meta diária de '+money(meta)+' considerada';
+
+ // Melhor dia da semana (soma total, mesma lógica do card detalhado abaixo)
+ const nomesDias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+ const porDiaSemana = calcularMediaPorDiaSemana();
+ let melhorDow = null, melhorSoma = -1;
+ Object.keys(porDiaSemana).forEach(dow=>{
+  const s = porDiaSemana[dow].soma;
+  if(s>melhorSoma){melhorSoma=s; melhorDow=Number(dow);}
+ });
+ const elDow=document.getElementById('infoMelhorDiaSemana');
+ const elDowSub=document.getElementById('infoMelhorDiaSemanaSub');
+ if(melhorDow!==null){
+  const qtdMelhorDow = porDiaSemana[melhorDow].qtd;
+  if(elDow) elDow.textContent = nomesDias[melhorDow];
+  if(elDowSub) elDowSub.textContent = money(melhorSoma)+' somando '+qtdMelhorDow+' dia'+(qtdMelhorDow===1?'':'s');
+ }
+ renderMelhoresPioresDiasSemana(porDiaSemana);
+ renderTodosDiasSemana(porDiaSemana);
+ renderMenosMovimentoPorTurno();
+ renderComparativoTurnos();
+
+ // Comparativo "até o mesmo dia" do mês passado (mais justo que comparar mês fechado com mês em andamento)
+ const mesAtual = daysData[0]?.dia?.split('.')[1];
+ const elComp=document.getElementById('infoComparativoMesmoDia');
+ const elCompSub=document.getElementById('infoComparativoMesmoDiaSub');
+ if(mesAtual && elComp){
+  const maiorDiaAtual = Math.max(...daysData.map(d=>Number(String(d.dia).split('.')[0])||0));
+  const mesAnteriorNum = String(Number(mesAtual)-1).padStart(2,'0');
+  let arquivo = {};
+  try{ arquivo = JSON.parse(localStorage.getItem('biobel_arquivo_meses')||'{}'); }catch(e){}
+  const dadosMesAnterior = arquivo[mesAnteriorNum];
+  if(dadosMesAnterior && dadosMesAnterior.length){
+   const totalMesAnteriorAteODia = dadosMesAnterior
+    .filter(d=>Number(String(d.dia).split('.')[0])<=maiorDiaAtual)
+    .reduce((s,d)=>s+(Number(d.sales)||0),0);
+   if(totalMesAnteriorAteODia>0){
+    const variacao = ((totalSales-totalMesAnteriorAteODia)/totalMesAnteriorAteODia)*100;
+    const sinal = variacao>=0?'+':'';
+    elComp.textContent = sinal+variacao.toFixed(1)+'%';
+    elComp.style.color = variacao>=0 ? 'var(--green)' : 'var(--red)';
+    if(elCompSub) elCompSub.textContent = `${money(totalSales)} até o dia ${maiorDiaAtual} vs ${money(totalMesAnteriorAteODia)} até o mesmo dia no mês ${mesAnteriorNum}`;
+   } else {
+    elComp.textContent = '—';
+    if(elCompSub) elCompSub.textContent = 'sem dados suficientes no mês anterior até esse dia';
+   }
+  } else {
+   elComp.textContent = '—';
+   if(elCompSub) elCompSub.textContent = 'ainda sem o mês anterior arquivado pra comparar';
+  }
+ }
+}
+
+function renderTipoVenda(){
+ const el = document.getElementById('infoTipoVenda');
+ if(!el) return;
+ let presencial=0, online=0;
+ daysData.forEach(d=>{
+  presencial += Number(d.tipoVenda?.presencial)||0;
+  online += Number(d.tipoVenda?.online)||0;
+ });
+ const total = presencial+online;
+ if(total===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:13px;">Nenhum dado de tipo de atendimento encontrado ainda.</p>';
+  return;
+ }
+ const pctPresencial = (presencial/total)*100;
+ const pctOnline = (online/total)*100;
+ el.innerHTML = `
+  <div>
+   <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+    <span style="color:#dce5f2;">🏪 Presencial</span>
+    <strong style="color:#f6f9fd;">${presencial} atendimento${presencial===1?'':'s'} (${pctPresencial.toFixed(0)}%)</strong>
+   </div>
+   <div style="background:#0b1728;border-radius:999px;height:12px;overflow:hidden;">
+    <div style="height:100%;width:${pctPresencial.toFixed(1)}%;background:linear-gradient(90deg,#27d7a0,#0ea97a);"></div>
+   </div>
+  </div>
+  <div>
+   <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+    <span style="color:#dce5f2;">💻 Online</span>
+    <strong style="color:#f6f9fd;">${online} atendimento${online===1?'':'s'} (${pctOnline.toFixed(0)}%)</strong>
+   </div>
+   <div style="background:#0b1728;border-radius:999px;height:12px;overflow:hidden;">
+    <div style="height:100%;width:${pctOnline.toFixed(1)}%;background:linear-gradient(90deg,#4f9cff,#2f78e0);"></div>
+   </div>
+  </div>
+  <div style="font-size:11px;color:#93a3ba;margin-top:4px;">Total de ${total} atendimento${total===1?'':'s'} com esse dado registrado no mês.</div>
+ `;
+}
+
+function renderProdutosRanking(){
+ const el = document.getElementById('infoProdutosRanking');
+ if(!el) return;
+ const totais = {};
+ daysData.forEach(d=>{
+  Object.entries(d.produtos||{}).forEach(([nome,info])=>{
+   if(!totais[nome]) totais[nome] = {qtd:0, valor:0};
+   totais[nome].qtd += Number(info.qtd)||0;
+   totais[nome].valor += Number(info.valor)||0;
+  });
+ });
+ const ranked = Object.entries(totais).sort((a,b)=>b[1].qtd-a[1].qtd);
+ const canvasPizza = document.getElementById('graficoProdutosPizza');
+ if(ranked.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:13px;">Nenhum dado de produto encontrado ainda.</p>';
+  if(chartProdutosPizza){ chartProdutosPizza.destroy(); chartProdutosPizza=null; }
+  return;
+ }
+ const maxQtd = ranked[0][1].qtd || 1;
+ const totalQtdGeral = ranked.reduce((s,[,info])=>s+info.qtd,0);
+ const medalhas = ['🥇','🥈','🥉'];
+ let avisoCategoriaGenerica = '';
+ const categoriaGrande = ranked.find(([nome,info])=>{
+  const pctDoTotal = totalQtdGeral>0 ? info.qtd/totalQtdGeral : 0;
+  const nomeParecGenerico = nome.length>25 || nome.includes('/') || (nome.match(/ e /gi)||[]).length>=2;
+  return pctDoTotal>0.20 && nomeParecGenerico;
+ });
+ if(categoriaGrande){
+  const [nome, info] = categoriaGrande;
+  avisoCategoriaGenerica = `<p style="font-size:11px;color:#fbbf24;margin-bottom:12px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:10px;padding:8px 12px;">⚠️ "${nome}" representa ${info.qtd} unidades — parece ser uma categoria "guarda-chuva" (nome longo/genérico) juntando vários produtos diferentes numa coisa só. Vale considerar separar em itens específicos na planilha, pra ajudar de verdade na reposição de estoque.</p>`;
+ }
+ el.innerHTML = avisoCategoriaGenerica + ranked.map(([nome,info],i)=>{
+  const pct = maxQtd>0 ? (info.qtd/maxQtd)*100 : 0;
+  const posicao = medalhas[i] || (i+1)+'º';
+  return `
+   <div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+     <span style="color:#dce5f2;"><span style="display:inline-block;min-width:26px;color:#93a3ba;font-weight:800;">${posicao}</span> ${nome}</span>
+     <span style="text-align:right;">
+      <strong style="color:#f6f9fd;">${info.qtd} un.</strong>
+      <span style="color:#93a3ba;font-size:11px;display:block;">${money(info.valor)}</span>
+     </span>
+    </div>
+    <div style="background:#0b1728;border-radius:999px;height:10px;overflow:hidden;">
+     <div style="height:100%;width:${Math.max(pct,3).toFixed(1)}%;background:linear-gradient(90deg,#fbbf24,#f59e0b);"></div>
+    </div>
+   </div>`;
+ }).join('');
+
+ if(canvasPizza && typeof Chart!=='undefined'){
+  const top8 = ranked.slice(0,8);
+  const outros = ranked.slice(8).reduce((s,[,info])=>s+info.qtd,0);
+  const labels = top8.map(([nome])=>nome).concat(outros>0?['Outros']:[]);
+  const valores = top8.map(([,info])=>info.qtd).concat(outros>0?[outros]:[]);
+  const cores = ['#fbbf24','#4f9cff','#27d7a0','#fb7185','#c9b6ff','#f59e0b','#2f78e0','#0ea97a','#93a3ba'];
+  if(chartProdutosPizza) chartProdutosPizza.destroy();
+  chartProdutosPizza = new Chart(canvasPizza, {
+   type: 'pie',
+   data: { labels, datasets: [{ data: valores, backgroundColor: cores, borderColor:'#0b1728', borderWidth:2 }] },
+   options: {
+    plugins: { legend: { position:'bottom', labels:{ color:'#93a3ba', font:{size:10}, boxWidth:10 } } }
+   }
+  });
+ }
+}
+
+function calcularVendasPorPeriodoDia(d){
+ const t={manha:0,meioDia:0,tarde:0};
+ Object.entries(d?.horarios||{}).forEach(([h,info])=>{
+  const n=Number(h);
+  const v=Number(typeof info==='number' ? 0 : info?.valor)||0;
+  if(!Number.isFinite(n)||v<=0) return;
+  if(n<12) t.manha+=v;
+  else if(n<14) t.meioDia+=v;
+  else t.tarde+=v;
+ });
+ if(t.manha+t.meioDia+t.tarde===0&&d?.porTurno){
+  t.manha=Number(d.porTurno['manhã']?.valor)||0;
+  t.meioDia=Number(d.porTurno['meio-dia']?.valor)||0;
+  t.tarde=Number(d.porTurno['tarde']?.valor)||0;
+ }
+ return t;
+}
+function renderVendasPorPeriodo(){
+ const canvas=document.getElementById('graficoVendasPorPeriodo');
+ const resumo=document.getElementById('resumoVendasPorPeriodo');
+ if(!canvas||typeof Chart==='undefined') return;
+ const dias=serieDiasInteligencia();
+ if(!dias.length){
+  if(chartVendasPorPeriodo){chartVendasPorPeriodo.destroy();chartVendasPorPeriodo=null;}
+  if(resumo) resumo.innerHTML='<div class="biobel-inteligencia-vazio">Nenhuma venda carregada ainda.</div>';
+  return;
+ }
+ const dados=dias.map(d=>Object.assign({dia:d.dia},calcularVendasPorPeriodoDia(d)));
+ if(chartVendasPorPeriodo) chartVendasPorPeriodo.destroy();
+ chartVendasPorPeriodo=new Chart(canvas,{
+  type:'bar',
+  data:{
+   labels:dados.map(d=>d.dia),
+   datasets:[
+    {label:'Manhã',data:dados.map(d=>d.manha),backgroundColor:'rgba(251,191,36,.72)',borderRadius:3,stack:'periodos'},
+    {label:'Meio-dia',data:dados.map(d=>d.meioDia),backgroundColor:'rgba(79,156,255,.68)',borderRadius:3,stack:'periodos'},
+    {label:'Tarde',data:dados.map(d=>d.tarde),backgroundColor:'rgba(39,215,160,.72)',borderRadius:3,stack:'periodos'}
+   ]
+  },
+  options:{
+   responsive:true,
+   maintainAspectRatio:false,
+   interaction:{mode:'index',intersect:false},
+   plugins:{
+    legend:{display:true,labels:{color:'#93a3ba',boxWidth:12,font:{size:10}}},
+    tooltip:{callbacks:{label:function(ctx){return ' '+ctx.dataset.label+': '+money(ctx.raw);}}}
+   },
+   scales:{
+    x:{stacked:true,ticks:{color:'#93a3ba',font:{size:9},maxRotation:45,minRotation:0},grid:{color:'rgba(145,161,184,.06)'}},
+    y:{stacked:true,beginAtZero:true,ticks:{color:'#93a3ba',callback:function(v){return money(v);}},grid:{color:'rgba(145,163,184,.08)'}}
+   }
+  }
+ });
+ const totais=dados.reduce(function(acc,d){
+  acc.manha+=d.manha; acc.meioDia+=d.meioDia; acc.tarde+=d.tarde;
+  return acc;
+ },{manha:0,meioDia:0,tarde:0});
+ if(resumo){
+  resumo.innerHTML=[
+   ['🌅 Manhã',totais.manha],
+   ['🌤️ Meio-dia',totais.meioDia],
+   ['🌇 Tarde',totais.tarde]
+  ].map(function(x){
+   return '<div class="item"><div class="lbl">'+x[0]+'</div><div class="val">'+money(x[1])+'</div></div>';
+  }).join('');
+ }
+}
+function minutosParaTexto(min){
+ const m=Math.max(0,Math.round(min));
+ const h=Math.floor(m/60),mm=m%60;
+ return h>0?h+'h '+String(mm).padStart(2,'0')+'min':m+'min';
+}
+function formatarHoraMinutos(min){
+ const h=Math.floor(min/60),m=min%60;
+ return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+}
+function analisarIntervalosEntreVendas(){
+ const out=[];
+ serieDiasInteligencia().forEach(function(d){
+  const hs=(d.horariosVendas||[]).map(Number).filter(Number.isFinite).sort(function(a,b){return a-b;});
+  for(let i=1;i<hs.length;i++){
+   const mins=Math.round((hs[i]-hs[i-1])*1440);
+   if(mins>0) out.push({dia:d.dia,inicio:hs[i-1]*1440,fim:hs[i]*1440,minutos:mins});
+  }
+ });
+ return out;
+}
+function renderTempoEntreAtendimentos(){
+ const resumo=document.getElementById('resumoTempoEntreAtendimentos');
+ const lista=document.getElementById('listaTempoEntreAtendimentos');
+ if(!resumo||!lista) return;
+ const ints=analisarIntervalosEntreVendas();
+ if(!ints.length){
+  resumo.innerHTML='<div class="biobel-gap-kpi"><div class="lbl">Intervalos</div><div class="val">0</div></div>';
+  lista.innerHTML='<div class="biobel-inteligencia-vazio">Ainda não há horários suficientes para calcular o tempo entre vendas.</div>';
+  return;
+ }
+ const media=ints.reduce(function(sum,x){return sum+x.minutos;},0)/ints.length;
+ const longos=ints.filter(function(x){return x.minutos>=30;}).sort(function(a,b){return b.minutos-a.minutos;});
+ const janela=ints.filter(function(x){return Math.max(x.inicio,900)<Math.min(x.fim,945);});
+ const maior=longos[0]||[...ints].sort(function(a,b){return b.minutos-a.minutos;})[0];
+ const diasJanela=[...new Set(janela.map(function(x){return x.dia;}))];
+ resumo.innerHTML=[
+  ['⏱️ Intervalos',ints.length],
+  ['📊 Média entre vendas',minutosParaTexto(media)],
+  ['🚨 Intervalos ≥ 30 min',longos.length]
+ ].map(function(x){
+  return '<div class="biobel-gap-kpi"><div class="lbl">'+x[0]+'</div><div class="val">'+x[1]+'</div></div>';
+ }).join('');
+ let html='<div class="biobel-gap-row"><span>🔎 Maior intervalo: <strong>'+escInteligencia(maior.dia)+'</strong>, '+formatarHoraMinutos(Math.round(maior.inicio))+' → '+formatarHoraMinutos(Math.round(maior.fim))+'</span><strong>'+minutosParaTexto(maior.minutos)+'</strong></div>';
+ if(diasJanela.length){
+  html+='<div class="biobel-gap-row"><span>🕒 A janela <strong>15h–15h45</strong> apareceu dentro de um intervalo sem venda registrada em</span><strong>'+diasJanela.length+' dia'+(diasJanela.length===1?'':'s')+'</strong></div>';
+ }else{
+  html+='<div class="biobel-gap-row"><span>🕒 Janela 15h–15h45</span><strong>não identificada nos gaps atuais</strong></div>';
+ }
+ html+=longos.slice(0,8).map(function(x){
+  return '<div class="biobel-gap-row"><span>📅 '+escInteligencia(x.dia)+' · '+formatarHoraMinutos(Math.round(x.inicio))+' → '+formatarHoraMinutos(Math.round(x.fim))+'</span><strong>'+minutosParaTexto(x.minutos)+'</strong></div>';
+ }).join('');
+ lista.innerHTML=html;
+}
+function renderHorariosPico(){
+ const elPico = document.getElementById('infoHorarioPico');
+ const elPicoSub = document.getElementById('infoHorarioPicoSub');
+ const elFraco = document.getElementById('infoHorarioFraco');
+ const elFracoSub = document.getElementById('infoHorarioFracoSub');
+ const elLista = document.getElementById('infoHorariosLista');
+ const elForaExpediente = document.getElementById('infoHorariosForaExpediente');
+ if(!elLista) return;
+
+ const horarioFunc = getHorarioFuncionamento();
+ const horaAbertura = horaParaNumero(horarioFunc.abertura);
+ // Usa o fechamento mais tardio entre semana/sábado como limite superior geral,
+ // já que aqui somamos todos os dias juntos (não dá pra saber, só pela hora, se era sábado ou dia de semana).
+ const horaFechamento = Math.max(horaParaNumero(horarioFunc.fechamentoSemana), horaParaNumero(horarioFunc.fechamentoSabado));
+
+ const totalPorHora = {};
+ const foraDoExpedienteLista = []; // guarda {dia, hora, qtd, valor, dinheiro} de cada ocorrência fora do horário, pra mostrar separado
+ daysData.forEach(d=>{
+  Object.entries(d.horarios||{}).forEach(([hora,info])=>{
+   // Compatibilidade: dados antigos podiam guardar só um número (quantidade). Dados novos guardam {qtd,valor,dinheiro}.
+   const dados = (typeof info==='number') ? {qtd:info, valor:0, dinheiro:0} : (info||{qtd:0,valor:0,dinheiro:0});
+   const h = Number(hora);
+   if(horaAbertura!==null && horaFechamento!==null && (h<horaAbertura || h>=horaFechamento)){
+    foraDoExpedienteLista.push({dia:d.dia, hora:h, qtd:Number(dados.qtd)||0, valor:Number(dados.valor)||0, dinheiro:Number(dados.dinheiro)||0});
+    return; // não entra na conta de horário de pico — fica só na seção separada abaixo
+   }
+   if(!totalPorHora[hora]) totalPorHora[hora] = {qtd:0, valor:0, dinheiro:0};
+   totalPorHora[hora].qtd += Number(dados.qtd)||0;
+   totalPorHora[hora].valor += Number(dados.valor)||0;
+   totalPorHora[hora].dinheiro += Number(dados.dinheiro)||0;
+  });
+ });
+
+ if(elForaExpediente){
+  if(foraDoExpedienteLista.length>0){
+   foraDoExpedienteLista.sort((a,b)=> a.dia.localeCompare(b.dia) || a.hora-b.hora);
+   const totalQtdFora = foraDoExpedienteLista.reduce((s,item)=>s+item.qtd,0);
+   elForaExpediente.style.display = 'block';
+   elForaExpediente.innerHTML = `
+    <div style="font-size:12px;font-weight:800;color:#f5c542;margin-bottom:8px;">
+     🕐 Vendas fora do horário normal da loja (${totalQtdFora} no total) — separadas, não entram nos números de pico acima:
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px;">
+     ${foraDoExpedienteLista.map(item=>`
+      <div style="font-size:12px;color:#dce5f2;display:flex;justify-content:space-between;background:#0b1728;border-radius:6px;padding:5px 10px;">
+       <span>📅 Dia ${diaComAno(item.dia)} — às ${String(item.hora).padStart(2,'0')}h</span>
+       <span style="text-align:right;">
+        <strong>${item.qtd} venda${item.qtd===1?'':'s'}</strong>
+        <span style="color:#93a3ba;font-size:10.5px;display:block;">${money(item.valor)}${item.dinheiro>0?' ('+money(item.dinheiro)+' em dinheiro)':''}</span>
+       </span>
+      </div>`).join('')}
+    </div>
+    <div style="font-size:11px;color:#93a3ba;margin-top:8px;">💡 Pode ser hora extra de verdade, ou erro de digitação da hora na planilha — vale conferir.</div>
+   `;
+  } else {
+   elForaExpediente.style.display = 'none';
+  }
+ }
+
+ const horas = Object.keys(totalPorHora);
+ if(horas.length===0){
+  if(elPico) elPico.textContent = '—';
+  if(elFraco) elFraco.textContent = '—';
+  elLista.innerHTML = '<p style="color:#93a3ba;font-size:13px;">Nenhum dado de horário encontrado ainda (coluna de horário da planilha vazia ou não lida).</p>';
+  return;
+ }
+
+ const listaOrdenada = horas
+  .map(h=>({hora:Number(h), qtd:totalPorHora[h].qtd, valor:totalPorHora[h].valor, dinheiro:totalPorHora[h].dinheiro}))
+  .sort((a,b)=>a.hora-b.hora);
+
+ const maisMovimento = [...listaOrdenada].sort((a,b)=>b.qtd-a.qtd)[0];
+ const menosMovimento = [...listaOrdenada].sort((a,b)=>a.qtd-b.qtd)[0];
+
+ if(elPico){
+  elPico.textContent = String(maisMovimento.hora).padStart(2,'0')+'h às '+String(maisMovimento.hora+1).padStart(2,'0')+'h';
+  if(elPicoSub) elPicoSub.textContent = maisMovimento.qtd+' venda'+(maisMovimento.qtd===1?'':'s')+' — '+money(maisMovimento.valor)+' nesse horário';
+ }
+ if(elFraco){
+  elFraco.textContent = String(menosMovimento.hora).padStart(2,'0')+'h às '+String(menosMovimento.hora+1).padStart(2,'0')+'h';
+  if(elFracoSub) elFracoSub.textContent = menosMovimento.qtd+' venda'+(menosMovimento.qtd===1?'':'s')+' — '+money(menosMovimento.valor)+' nesse horário';
+ }
+
+ const elRecomendacao = document.getElementById('infoRecomendacaoHorarioPico');
+ if(elRecomendacao){
+  const faixaPico = String(maisMovimento.hora).padStart(2,'0')+'h–'+String(maisMovimento.hora+1).padStart(2,'0')+'h';
+  elRecomendacao.style.display = 'block';
+  elRecomendacao.innerHTML = `<div style="background:rgba(79,156,255,.08);border:1px solid rgba(79,156,255,.3);border-radius:12px;padding:12px 16px;margin-top:14px;font-size:12.5px;color:#93a3ba;">
+    💡 <strong style="color:#dce5f2;">Recomendação operacional:</strong> o horário de <strong style="color:#4f9cff;">${faixaPico}</strong> concentra o maior movimento (${maisMovimento.qtd} vendas, ${money(maisMovimento.valor)}). Vale reforçar a equipe, garantir reposição de produtos e concentrar campanhas/promoções nesse horário.
+   </div>`;
+ }
+
+ const maxQtd = maisMovimento.qtd || 1;
+ elLista.innerHTML = listaOrdenada.map(item=>{
+  const pct = (item.qtd/maxQtd)*100;
+  const faixa = String(item.hora).padStart(2,'0')+'h-'+String(item.hora+1).padStart(2,'0')+'h';
+  return `
+   <div>
+    <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:3px;">
+     <span style="color:#dce5f2;">${faixa}</span>
+     <span style="text-align:right;">
+      <strong style="color:#f6f9fd;">${item.qtd} venda${item.qtd===1?'':'s'}</strong>
+      <span style="color:#93a3ba;font-size:11px;display:block;">${money(item.valor)}${item.dinheiro>0?' · '+money(item.dinheiro)+' em dinheiro':''}</span>
+     </span>
+    </div>
+    <div style="background:#0b1728;border-radius:999px;height:8px;overflow:hidden;">
+     <div style="height:100%;width:${Math.max(pct,3).toFixed(1)}%;background:linear-gradient(90deg,#4f9cff,#2f78e0);"></div>
+    </div>
+   </div>`;
+ }).join('');
+}
+
+function renderTurnos(){
+ const elResumo = document.getElementById('infoTurnosResumo');
+ const elCruzamento = document.getElementById('infoTurnosCruzamento');
+ if(!elResumo || !elCruzamento) return;
+
+ const nomesTurnos = {'manhã':'🌅 Manhã','meio-dia':'🌤️ Meio-dia','tarde':'🌇 Tarde'};
+ const ordemTurnos = ['manhã','meio-dia','tarde'];
+ const totalPorTurno = {};
+ const totalPorTurnoVend = {};
+
+ daysData.forEach(d=>{
+  Object.entries(d.porTurno||{}).forEach(([turno,info])=>{
+   if(!totalPorTurno[turno]) totalPorTurno[turno] = {qtd:0, valor:0};
+   totalPorTurno[turno].qtd += Number(info.qtd)||0;
+   totalPorTurno[turno].valor += Number(info.valor)||0;
+  });
+  Object.entries(d.porTurnoVend||{}).forEach(([turno,vends])=>{
+   if(!totalPorTurnoVend[turno]) totalPorTurnoVend[turno] = {};
+   Object.entries(vends).forEach(([nome,info])=>{
+    if(!totalPorTurnoVend[turno][nome]) totalPorTurnoVend[turno][nome] = {qtd:0, valor:0};
+    totalPorTurnoVend[turno][nome].qtd += Number(info.qtd)||0;
+    totalPorTurnoVend[turno][nome].valor += Number(info.valor)||0;
+   });
+  });
+ });
+
+ const turnosComDados = ordemTurnos.filter(t=>totalPorTurno[t]);
+ if(turnosComDados.length===0){
+  elResumo.innerHTML = '<p style="color:#93a3ba;font-size:13px;">Nenhum dado de turno encontrado ainda (coluna "turno de atendimento" da planilha vazia ou não lida).</p>';
+  elCruzamento.innerHTML = '';
+  return;
+ }
+
+ // Indicador de confiança: quantas vendas têm turno preenchido, comparado ao total geral de vendas do período.
+ const totalComTurnoGeral = daysData.reduce((s,d)=>s+(Number(d.totalComTurno)||0),0);
+ const totalVendasGeral = daysData.reduce((s,d)=>s+(Number(d.qtdVendas)||0),0);
+ let avisoCompletude = '';
+ if(totalVendasGeral>0 && totalComTurnoGeral<totalVendasGeral){
+  avisoCompletude = `<p style="font-size:11px;color:#93a3ba;margin-bottom:12px;">📋 Dados de turno preenchidos em <strong style="color:#dce5f2;">${totalComTurnoGeral} de ${totalVendasGeral}</strong> vendas — o restante não tinha o campo "turno de atendimento" preenchido na planilha.</p>`;
+ }
+
+ const maxValor = Math.max(...turnosComDados.map(t=>totalPorTurno[t].valor)) || 1;
+ elResumo.innerHTML = avisoCompletude + turnosComDados.map(t=>{
+  const info = totalPorTurno[t];
+  const pct = (info.valor/maxValor)*100;
+  return `
+   <div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+     <span style="color:#dce5f2;font-weight:700;">${nomesTurnos[t]||t}</span>
+     <span style="text-align:right;">
+      <strong style="color:#f6f9fd;">${money(info.valor)}</strong>
+      <span style="color:#93a3ba;font-size:11px;display:block;">${info.qtd} venda${info.qtd===1?'':'s'}</span>
+     </span>
+    </div>
+    <div style="background:#0b1728;border-radius:999px;height:10px;overflow:hidden;">
+     <div style="height:100%;width:${Math.max(pct,3).toFixed(1)}%;background:linear-gradient(90deg,#fbbf24,#f59e0b);"></div>
+    </div>
+   </div>`;
+ }).join('');
+
+ elCruzamento.innerHTML = turnosComDados.map(t=>{
+  const vends = totalPorTurnoVend[t] || {};
+  const ranked = Object.entries(vends).sort((a,b)=>b[1].valor-a[1].valor);
+  if(ranked.length===0) return '';
+  const maxV = ranked[0][1].valor || 1;
+  const medalhas = ['🥇','🥈','🥉'];
+  return `
+   <div>
+    <div style="font-size:11px;font-weight:800;color:#93a3ba;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">${nomesTurnos[t]||t} — quem mais vendeu</div>
+    <div style="display:flex;flex-direction:column;gap:6px;">
+     ${ranked.map(([nome,info],i)=>{
+      const pct = (info.valor/maxV)*100;
+      const posicao = medalhas[i] || (i+1)+'º';
+      return `
+       <div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px;">
+         <span style="color:#dce5f2;">${posicao} ${nome}</span>
+         <strong style="color:#f6f9fd;">${money(info.valor)} <span style="color:#93a3ba;font-weight:600;">(${info.qtd})</span></strong>
+        </div>
+        <div style="background:#0b1728;border-radius:999px;height:6px;overflow:hidden;">
+         <div style="height:100%;width:${Math.max(pct,3).toFixed(1)}%;background:linear-gradient(90deg,#4f9cff,#2f78e0);"></div>
+        </div>
+       </div>`;
+     }).join('')}
+    </div>
+   </div>`;
+ }).join('');
+}
+
+/* ===== Recordes de Vendas Individuais (Top 5 melhores/piores) ===== */
+let recordeVendasModo = 'melhores';
+function alternarRecordeVendas(modo){
+ recordeVendasModo = modo;
+ const btnM = document.getElementById('btnRecordeMelhores');
+ const btnP = document.getElementById('btnRecordePiores');
+ const btnI = document.getElementById('btnRecordeItens');
+ if(btnM){ btnM.style.background = modo==='melhores' ? '#27d7a0' : 'transparent'; btnM.style.color = modo==='melhores' ? '#04241a' : '#93a3ba'; }
+ if(btnP){ btnP.style.background = modo==='piores' ? '#fb7185' : 'transparent'; btnP.style.color = modo==='piores' ? '#3a0f16' : '#93a3ba'; }
+ if(btnI){ btnI.style.background = modo==='itens' ? '#4f9cff' : 'transparent'; btnI.style.color = modo==='itens' ? '#04182e' : '#93a3ba'; }
+ renderRecordesVendasIndividuais();
+}
+function popularFiltroRecordeVendedoras(){
+ const sel = document.getElementById('filtroRecordeVendedora');
+ if(!sel) return;
+ const nomes = new Set();
+ daysData.forEach(d=>(d.registrosVendas||[]).forEach(r=>{ if(r.vendedora) nomes.add(r.vendedora); }));
+ const valorAtual = sel.value;
+ sel.innerHTML = '<option value="">Todas as vendedoras</option>' + Array.from(nomes).sort().map(n=>`<option value="${n}">${n}</option>`).join('');
+ sel.value = valorAtual;
+}
+function renderRecordesVendasIndividuais(){
+ const el = document.getElementById('listaRecordeVendas');
+ const elMedia = document.getElementById('mediaRecordeVendas');
+ if(!el) return;
+ popularFiltroRecordeVendedoras();
+ const filtroVend = document.getElementById('filtroRecordeVendedora')?.value || '';
+
+ const nomesDiasSemana = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+ const nomesTurnos = {'manhã':'☀️ Manhã','meio-dia':'🌤️ Meio-dia','tarde':'🌙 Tarde'};
+
+ let todosRegistros = [];
+ daysData.forEach(d=>{
+  (d.registrosVendas||[]).forEach(r=>{
+   if(filtroVend && r.vendedora!==filtroVend) return;
+   todosRegistros.push({...r, dia:d.dia});
+  });
+ });
+
+ if(todosRegistros.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:13px;">Nenhuma venda individual encontrada pra esse filtro.</p>';
+  if(elMedia) elMedia.textContent = 'Média: R$ 0,00';
+  return;
+ }
+
+ const media = todosRegistros.reduce((s,r)=>s+r.valor,0) / todosRegistros.length;
+ if(elMedia) elMedia.textContent = 'Média: '+money(media);
+
+ const ordenados = recordeVendasModo==='itens'
+  ? [...todosRegistros].filter(r=>r.qtdItens).sort((a,b)=>b.qtdItens-a.qtdItens)
+  : [...todosRegistros].sort((a,b)=> recordeVendasModo==='melhores' ? b.valor-a.valor : a.valor-b.valor);
+ const top5 = ordenados.slice(0,5);
+ const medalhas = ['🥇','🥈','🥉','4º','5º'];
+ const nomesTitulos = recordeVendasModo==='itens'
+  ? ['MAIS ITENS 🧺','2º LUGAR','3º LUGAR','4º LUGAR','5º LUGAR']
+  : ['CAMPEÃ 🏅','VICE-CAMPEÃ 🥈','3º LUGAR 🥉','4º LUGAR','5º LUGAR'];
+ const coresPos = ['#fbbf24','#93a3ba','#b45309','#4f9cff','#27d7a0'];
+
+ if(ordenados.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:13px;">Nenhuma venda com quantidade de itens registrada pra esse filtro.</p>';
+  return;
+ }
+
+ el.innerHTML = top5.map((r,i)=>{
+  const partes = String(r.dia).split('.').map(Number);
+  const dow = new Date(anoReferenciaPlanilha(), partes[1]-1, partes[0]).getDay();
+  const semanaDoMes = Math.ceil(partes[0]/7);
+  return `
+   <div style="background:#0b1728;border:1px solid ${i===0?coresPos[0]:'#1e2c42'};border-radius:14px;padding:14px;position:relative;">
+    <span style="position:absolute;top:10px;right:10px;background:${coresPos[i]};color:#04241a;font-size:10px;font-weight:900;padding:3px 8px;border-radius:999px;">#${i+1}</span>
+    <div style="font-size:10px;color:${coresPos[i]};font-weight:800;">${nomesTitulos[i]}</div>
+    ${recordeVendasModo==='itens'
+     ? `<div style="font-size:20px;font-weight:900;color:#f6f9fd;margin-top:6px;">${r.qtdItens} itens</div><div style="font-size:12px;color:#93a3ba;margin-top:2px;">${money(r.valor)}</div>`
+     : `<div style="font-size:20px;font-weight:900;color:#f6f9fd;margin-top:6px;">${money(r.valor)}</div>`}
+    <div style="margin-top:10px;font-size:10px;color:#93a3ba;">📅 Dia do evento</div>
+    <div style="font-size:12px;color:#dce5f2;font-weight:700;">${nomesDiasSemana[dow]}<br><span style="color:#93a3ba;font-weight:400;">${diaComAno(r.dia)}</span></div>
+    ${r.turno ? `<div style="margin-top:8px;font-size:10px;color:#93a3ba;">🎫 Turno do dia</div><div style="font-size:12px;color:#dce5f2;font-weight:700;">${nomesTurnos[r.turno]||r.turno}</div>` : ''}
+    <div style="margin-top:8px;font-size:10px;color:#93a3ba;">📆 Semana do mês</div>
+    <div style="font-size:12px;color:#dce5f2;font-weight:700;">${semanaDoMes}ª semana</div>
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid #1e2c42;font-size:11px;">
+     ${r.vendedora ? `<div style="color:#93a3ba;">Vend: <span style="color:#dce5f2;font-weight:700;">${r.vendedora}</span></div>` : ''}
+     ${r.qtdItens ? `<div style="color:#93a3ba;margin-top:2px;">Itens: <span style="color:#dce5f2;font-weight:700;">${r.qtdItens} un.</span></div>` : ''}
+    </div>
+   </div>`;
+ }).join('');
+}
+
+function renderGenero(){
+ const el = document.getElementById('infoGeneroResumo');
+ if(!el) return;
+
+ let mulherQtd=0, mulherValor=0, homemQtd=0, homemValor=0;
+ daysData.forEach(d=>{
+  mulherQtd += Number(d.genero?.mulher?.qtd)||0;
+  mulherValor += Number(d.genero?.mulher?.valor)||0;
+  homemQtd += Number(d.genero?.homem?.qtd)||0;
+  homemValor += Number(d.genero?.homem?.valor)||0;
+ });
+
+ const totalQtd = mulherQtd + homemQtd;
+ if(totalQtd===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:13px;">Nenhum dado de gênero encontrado ainda (coluna "genero" da planilha vazia ou não lida).</p>';
+  return;
+ }
+
+ const pctMulher = (mulherQtd/totalQtd)*100;
+ const pctHomem = (homemQtd/totalQtd)*100;
+
+ el.innerHTML = `
+  <div>
+   <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+    <span style="color:#dce5f2;">👩 Mulheres</span>
+    <span style="text-align:right;">
+     <strong style="color:#f6f9fd;">${mulherQtd} venda${mulherQtd===1?'':'s'} (${pctMulher.toFixed(0)}%)</strong>
+     <span style="color:#93a3ba;font-size:11px;display:block;">${money(mulherValor)}</span>
+    </span>
+   </div>
+   <div style="background:#0b1728;border-radius:999px;height:12px;overflow:hidden;">
+    <div style="height:100%;width:${pctMulher.toFixed(1)}%;background:linear-gradient(90deg,#ec4899,#db2777);"></div>
+   </div>
+  </div>
+  <div>
+   <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+    <span style="color:#dce5f2;">👨 Homens</span>
+    <span style="text-align:right;">
+     <strong style="color:#f6f9fd;">${homemQtd} venda${homemQtd===1?'':'s'} (${pctHomem.toFixed(0)}%)</strong>
+     <span style="color:#93a3ba;font-size:11px;display:block;">${money(homemValor)}</span>
+    </span>
+   </div>
+   <div style="background:#0b1728;border-radius:999px;height:12px;overflow:hidden;">
+    <div style="height:100%;width:${Math.max(pctHomem,pctHomem>0?3:0).toFixed(1)}%;background:linear-gradient(90deg,#4f9cff,#2f78e0);"></div>
+   </div>
+  </div>
+ `;
+}
+
+function buscarPosicaoDia(){
+ const input = document.getElementById('buscaDiaInput');
+ const resultado = document.getElementById('resultadoBuscaDia');
+ if(!input || !resultado) return;
+ const termo = input.value.trim();
+ if(!termo){ resultado.style.display='none'; return; }
+
+ const ranked = [...daysData].sort((a,b)=>(Number(b.sales)||0)-(Number(a.sales)||0));
+ const idx = ranked.findIndex(d=>d.dia===termo || d.dia===termo.replace('/','.'));
+
+ resultado.style.display='block';
+ if(idx===-1){
+  resultado.innerHTML = `❌ O dia <b>${termo}</b> ainda não foi lançado no painel.`;
+  return;
+ }
+ const dia = ranked[idx];
+ const posicao = idx+1;
+ const totalDias = ranked.length;
+ const diaSemana = nomeDiaSemanaAbrev(dia.dia);
+ resultado.innerHTML = `📍 O dia <b>${diaComAno(dia.dia)}${diaSemana?` (${diaSemana})`:''}</b> ficou na posição <b>${posicao}ª de ${totalDias}</b>, com <b>${money(dia.sales)}</b> em vendas.`;
+}
+
+function renderSellerRanking(){
+ const el = document.getElementById('infoSellerRanking');
+ if(!el) return;
+ const totals = {};
+ const qtds = {};
+ daysData.forEach(d=>{
+  const vendedoras = d.vendedoras || {};
+  Object.entries(vendedoras).forEach(([nome,valor])=>{
+   totals[nome] = (totals[nome]||0) + (Number(valor)||0);
+  });
+  const detalhe = d.vendedorasDetalhe || {};
+  Object.entries(detalhe).forEach(([nome,info])=>{
+   qtds[nome] = (qtds[nome]||0) + (Number(info.qtd)||0);
+  });
+ });
+ const ranked = Object.entries(totals).sort((a,b)=>b[1]-a[1]);
+ if(ranked.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:13px;">Nenhum dado de vendedora encontrado ainda.</p>';
+  return;
+ }
+ const max = ranked[0][1];
+ const medalhas = ['🥇','🥈','🥉'];
+ const metasIndividuais = getMetasVendedoras();
+ el.innerHTML = ranked.map(([nome,valor],i)=>{
+  const pct = max>0 ? (valor/max)*100 : 0;
+  const posicao = medalhas[i] || (i+1)+'º';
+  const qtd = qtds[nome]||0;
+  const metaInd = metasIndividuais[nome];
+  let linhaMeta = '';
+  if(metaInd){
+   const pctMeta = Math.min(100, (valor/metaInd)*100);
+   const bateu = valor>=metaInd;
+   linhaMeta = `
+    <div style="display:flex;justify-content:space-between;font-size:10.5px;color:#93a3ba;margin-top:4px;">
+     <span>🎯 Meta individual: ${money(metaInd)}</span>
+     <span style="color:${bateu?'#27d7a0':'#93a3ba'};font-weight:800;">${bateu?'✅ ':''}${pctMeta.toFixed(0)}%</span>
+    </div>
+    <div style="background:#0b1728;border-radius:999px;height:5px;overflow:hidden;margin-top:3px;">
+     <div style="height:100%;width:${pctMeta.toFixed(1)}%;background:${bateu?'linear-gradient(90deg,#fbbf24,#f59e0b)':'#3a4a63'};"></div>
+    </div>`;
+  }
+  return `
+   <div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+     <span style="color:#dce5f2;"><span style="display:inline-block;min-width:26px;color:#93a3ba;font-weight:800;">${posicao}</span> ${nome}</span>
+     <span style="text-align:right;">
+      <strong style="color:#f6f9fd;">${money(valor)}</strong>
+      <span style="color:#93a3ba;font-size:11px;display:block;">${qtd} venda${qtd===1?'':'s'}</span>
+     </span>
+    </div>
+    <div style="background:#0b1728;border-radius:999px;height:10px;overflow:hidden;">
+     <div style="height:100%;width:${pct.toFixed(1)}%;background:linear-gradient(90deg,#27d7a0,#0ea97a);"></div>
+    </div>
+    ${linhaMeta}
+   </div>`;
+ }).join('');
+ renderSellerCruzamento();
+ popularSelectsCompararVendedoras(ranked.map(r=>r[0]));
+
+ // Insight automático: quando quem mais fatura não é quem mais vende, isso costuma indicar
+ // ticket médio bem diferente entre elas — vale destacar, é uma leitura útil sobre o time.
+ const elInsight = document.getElementById('infoInsightVendedoras');
+ if(elInsight){
+  const liderFaturamento = ranked[0];
+  const liderQtd = Object.entries(qtds).sort((a,b)=>b[1]-a[1])[0];
+  if(liderFaturamento && liderQtd && liderFaturamento[0]!==liderQtd[0] && qtds[liderFaturamento[0]]>0){
+   const ticketLiderFat = totals[liderFaturamento[0]] / qtds[liderFaturamento[0]];
+   const ticketLiderQtd = totals[liderQtd[0]] / liderQtd[1];
+   elInsight.style.display = 'block';
+   elInsight.innerHTML = `<div style="background:rgba(39,215,160,.08);border:1px solid rgba(39,215,160,.3);border-radius:12px;padding:12px 16px;margin-top:14px;font-size:12.5px;color:#93a3ba;">
+     💡 <strong style="color:#dce5f2;">${liderFaturamento[0]}</strong> lidera em faturamento (${money(liderFaturamento[1])}), mas <strong style="color:#dce5f2;">${liderQtd[0]}</strong> tem mais vendas (${liderQtd[1]}). ${liderFaturamento[0]} vende menos vezes, porém com ticket médio maior (${money(ticketLiderFat)} contra ${money(ticketLiderQtd)}).
+    </div>`;
+  } else {
+   elInsight.style.display = 'none';
+  }
+ }
+}
+
+function popularSelectsCompararVendedoras(nomes){
+ const sel1 = document.getElementById('compararVend1');
+ const sel2 = document.getElementById('compararVend2');
+ if(!sel1 || !sel2) return;
+ const valorAtual1 = sel1.value, valorAtual2 = sel2.value;
+ const opcoes = '<option value="">— Escolher —</option>' + nomes.map(n=>`<option value="${n}">${n}</option>`).join('');
+ sel1.innerHTML = opcoes;
+ sel2.innerHTML = opcoes;
+ sel1.value = valorAtual1;
+ sel2.value = valorAtual2;
+}
+
+function renderCompararVendedoras(){
+ const el = document.getElementById('resultadoCompararVendedoras');
+ if(!el) return;
+ const nome1 = document.getElementById('compararVend1')?.value;
+ const nome2 = document.getElementById('compararVend2')?.value;
+ if(!nome1 || !nome2){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Escolha as duas vendedoras acima pra ver a comparação.</p>';
+  return;
+ }
+ if(nome1===nome2){
+  el.innerHTML = '<p style="color:#fbbf24;font-size:12.5px;">Escolha duas vendedoras diferentes pra comparar.</p>';
+  return;
+ }
+
+ function coletar(nome){
+  let total=0, qtd=0, dinheiro=0, debito=0, credito=0, pix=0;
+  daysData.forEach(d=>{
+   const detalhe = (d.vendedorasDetalhe||{})[nome];
+   if(detalhe){
+    total += Number(detalhe.total)||0;
+    qtd += Number(detalhe.qtd)||0;
+    dinheiro += Number(detalhe.dinheiro)||0;
+    debito += Number(detalhe.debito)||0;
+    credito += Number(detalhe.credito)||0;
+    pix += Number(detalhe.pix)||0;
+   }
+  });
+  const formas = {dinheiro,debito,credito,pix};
+  const preferida = Object.entries(formas).sort((a,b)=>b[1]-a[1])[0];
+  const nomesForma = {dinheiro:'💵 Dinheiro',debito:'💳 Débito',credito:'💳 Crédito',pix:'📲 Pix'};
+  return {
+   total, qtd,
+   ticketMedio: qtd>0 ? total/qtd : 0,
+   formaPreferida: preferida[1]>0 ? nomesForma[preferida[0]] : '—'
+  };
+ }
+
+ const a = coletar(nome1);
+ const b = coletar(nome2);
+
+ function linha(label, valA, valB, formatador){
+  const fmt = formatador || (v=>v);
+  const aMaior = typeof valA==='number' && typeof valB==='number' && valA>valB;
+  const bMaior = typeof valA==='number' && typeof valB==='number' && valB>valA;
+  return `
+   <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #1a2740;">
+    <div style="text-align:right;font-weight:800;font-size:13px;color:${aMaior?'#27d7a0':'#dce5f2'};">${fmt(valA)}</div>
+    <div style="font-size:10.5px;color:#93a3ba;text-align:center;white-space:nowrap;">${label}</div>
+    <div style="text-align:left;font-weight:800;font-size:13px;color:${bMaior?'#27d7a0':'#dce5f2'};">${fmt(valB)}</div>
+   </div>`;
+ }
+
+ el.innerHTML = `
+  <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;margin-bottom:8px;">
+   <div style="text-align:right;font-weight:900;font-size:13px;color:#f6f9fd;">${nome1}</div>
+   <div></div>
+   <div style="text-align:left;font-weight:900;font-size:13px;color:#f6f9fd;">${nome2}</div>
+  </div>
+  ${linha('Total vendido', a.total, b.total, money)}
+  ${linha('Quantidade de vendas', a.qtd, b.qtd)}
+  ${linha('Ticket médio', a.ticketMedio, b.ticketMedio, money)}
+  ${linha('Forma preferida', a.formaPreferida, b.formaPreferida)}
+ `;
+}
+
+function renderSellerCruzamento(){
+ const el = document.getElementById('infoSellerCruzamento');
+ if(!el) return;
+
+ const agregado = {};
+ daysData.forEach(d=>{
+  const detalhe = d.vendedorasDetalhe || {};
+  Object.entries(detalhe).forEach(([nome,info])=>{
+   if(!agregado[nome]) agregado[nome]={total:0,qtd:0,dinheiro:0,debito:0,credito:0,pix:0};
+   agregado[nome].total += info.total||0;
+   agregado[nome].qtd += info.qtd||0;
+   agregado[nome].dinheiro += info.dinheiro||0;
+   agregado[nome].debito += info.debito||0;
+   agregado[nome].credito += info.credito||0;
+   agregado[nome].pix += info.pix||0;
+  });
+ });
+
+ const nomes = Object.keys(agregado);
+ if(nomes.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12px;">Ainda sem dados suficientes — recarregue a planilha para calcular.</p>';
+  return;
+ }
+
+ const rotuloForma = {dinheiro:'💵 Dinheiro',debito:'💳 Débito',credito:'💳 Crédito',pix:'📲 Pix'};
+ el.innerHTML = nomes.sort((a,b)=>agregado[b].total-agregado[a].total).map(nome=>{
+  const info = agregado[nome];
+  const ticketMedio = info.qtd>0 ? info.total/info.qtd : 0;
+  let formaPreferida = 'dinheiro', maiorQtd = -1;
+  ['dinheiro','debito','credito','pix'].forEach(f=>{
+   if(info[f]>maiorQtd){maiorQtd=info[f]; formaPreferida=f;}
+  });
+  const temDados = maiorQtd>0;
+  return `
+   <div style="background:#0b1728;border-radius:10px;padding:10px 12px;">
+    <div style="font-size:13px;font-weight:800;color:#dce5f2;margin-bottom:6px;">${nome}</div>
+    <div style="display:flex;justify-content:space-between;font-size:12px;color:#93a3ba;">
+     <span>🎯 Ticket médio: <b style="color:#f6f9fd;">${money(ticketMedio)}</b></span>
+     <span>${temDados?rotuloForma[formaPreferida]+' preferida':'sem dados de forma'}</span>
+    </div>
+   </div>`;
+ }).join('');
+}
+
+function nomeDiaSemanaAbrev(diaStr){
+ const partes = String(diaStr||'').split('.');
+ if(partes.length<2) return '';
+ const dia = Number(partes[0]), mes = Number(partes[1]);
+ if(!dia||!mes) return '';
+ const nomes = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+ const dt = new Date(anoReferenciaPlanilha(), mes-1, dia);
+ return nomes[dt.getDay()] || '';
+}
+
+function renderTopDays(){
+ const el = document.getElementById('infoTopDays');
+ if(!el) return;
+ if(daysData.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:13px;">Nenhum dia lançado ainda.</p>';
+  return;
+ }
+ const ranked = [...daysData].sort((a,b)=>(Number(b.sales)||0)-(Number(a.sales)||0));
+ const max = Number(ranked[0].sales)||0;
+ const mediaGeral = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0)/daysData.length;
+ const medalhas = ['🥇','🥈','🥉'];
+ el.innerHTML = ranked.map((d,i)=>{
+  const pct = max>0 ? ((Number(d.sales)||0)/max)*100 : 0;
+  const posicao = medalhas[i] || (i+1)+'º';
+  const diaSemana = nomeDiaSemanaAbrev(d.dia);
+  const clima = climaDoDia(Number(d.sales)||0, mediaGeral);
+  return `
+   <div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+     <span style="color:#dce5f2;"><span style="display:inline-block;min-width:26px;color:#93a3ba;font-weight:800;">${posicao}</span> ${clima?clima+' ':''}Dia ${diaComAno(d.dia)}${diaSemana?` <span style="color:#93a3ba;">(${diaSemana})</span>`:''}</span>
+     <strong style="color:#f6f9fd;">${money(d.sales)}</strong>
+    </div>
+    <div style="background:#0b1728;border-radius:999px;height:10px;overflow:hidden;">
+     <div style="height:100%;width:${pct.toFixed(1)}%;background:linear-gradient(90deg,#4f9cff,#2f78e0);"></div>
+    </div>
+   </div>`;
+ }).join('');
+}
+
+function montarMensagemResumoDia(tipo){
+ const selectId = tipo==='completo' ? 'completeDaySelect' : 'simpleDaySelect';
+ const select = document.getElementById(selectId);
+ const diaSelecionado = select ? select.value : null;
+ const d = daysData.find(x=>x.dia===diaSelecionado) || daysData[daysData.length-1];
+ if(!d) return null;
+ const dow = nomeDiaSemanaAbrev(d.dia);
+ const meta = getDailyGoal();
+ const bateuMeta = (Number(d.sales)||0) >= meta && meta>0;
+
+ let msg = '📊 Fechamento de Caixa — '+diaComAno(d.dia)+(dow?' ('+dow+')':'')+'\n\n';
+ msg += '💰 Vendas: '+money(d.sales)+(bateuMeta?' 🎉 Meta batida!':'')+'\n';
+ msg += '🔒 Fechamento: '+money(d.closing)+'\n';
+ if(tipo==='completo'){
+  msg += '\n💵 Dinheiro: '+money(d.dinheiro)+'\n';
+  msg += '💳 Débito: '+money(d.debito)+'\n';
+  msg += '💳 Crédito: '+money(d.credito)+'\n';
+  msg += '📲 Pix: '+money(d.pix)+'\n';
+ }
+ msg += '\nGerado pelo painel Biobel';
+ return msg;
+}
+function compartilharDiaWhatsApp(tipo){
+ const msg = montarMensagemResumoDia(tipo);
+ if(!msg){ mostrarToast('⚠️ Não há dados carregados pra compartilhar ainda.'); return; }
+ // O WhatsApp usa *asteriscos* pra negrito — aplica só nas duas linhas mais importantes.
+ const msgFormatadaWhatsApp = msg
+  .replace(/^(📊 Fechamento de Caixa.*)$/m, '*$1*')
+  .replace(/^(💰 Vendas:.*)$/m, m=>m.replace(/💰 Vendas: (.*?)(🎉.*)?$/, '💰 Vendas: *$1*$2'));
+ const url = 'https://wa.me/?text='+encodeURIComponent(msgFormatadaWhatsApp);
+ window.open(url, '_blank');
+}
+async function compartilharDiaNativo(tipo){
+ const msg = montarMensagemResumoDia(tipo);
+ if(!msg){ mostrarToast('⚠️ Não há dados carregados pra compartilhar ainda.'); return; }
+ if(navigator.share){
+  try{
+   await navigator.share({ title:'Fechamento de Caixa — Biobel', text: msg });
+  }catch(e){
+   // a pessoa cancelou o compartilhamento — não faz nada, sem mostrar erro
+  }
+ } else {
+  mostrarToast('⚠️ Esse navegador não suporta o menu de compartilhar nativo. Use o botão do WhatsApp.');
+ }
+}
+function inicializarBotoesCompartilharNativo(){
+ // Só mostra o botão de compartilhar nativo em navegadores/aparelhos que realmente suportam —
+ // em vez de mostrar um botão que não vai funcionar.
+ if(!navigator.share) return;
+ document.querySelectorAll('.btn-compartilhar-nativo').forEach(btn=>{ btn.style.display='inline-flex'; });
+}
+
+function exportarDiaComoTxt(tipo){
+ const selectId = tipo==='completo' ? 'completeDaySelect' : 'simpleDaySelect';
+ const select = document.getElementById(selectId);
+ const diaSelecionado = select ? select.value : null;
+ const d = daysData.find(x=>x.dia===diaSelecionado) || daysData[daysData.length-1];
+ if(!d){
+  mostrarToast('⚠️ Não há dados carregados pra exportar ainda.');
+  return;
+ }
+
+ const dow = nomeDiaSemanaAbrev(d.dia);
+ let txt = '===== FECHAMENTO DE CAIXA — BIOBEL =====\n';
+ txt += 'Dia: '+diaComAno(d.dia)+(dow?' ('+dow+')':'')+'\n';
+ txt += 'Gerado em: '+new Date().toLocaleString('pt-BR')+'\n\n';
+ txt += 'Saldo inicial (caixa): '+money(d.initial)+'\n';
+ txt += 'Vendas do dia: '+money(d.sales)+'\n';
+ if(tipo==='completo'){
+  txt += '  Dinheiro: '+money(d.dinheiro)+'\n';
+  txt += '  Débito: '+money(d.debito)+'\n';
+  txt += '  Crédito: '+money(d.credito)+'\n';
+  txt += '  Pix: '+money(d.pix)+'\n';
+ }
+ txt += 'Retiradas/despesas do dia: '+money(d.withdrawals)+'\n';
+ txt += 'Fechamento do caixa: '+money(d.closing)+'\n';
+ txt += '\n========================================\n';
+
+ const copiarPromise = (navigator.clipboard && navigator.clipboard.writeText)
+  ? navigator.clipboard.writeText(txt)
+  : Promise.reject(new Error('clipboard indisponível'));
+
+ copiarPromise
+  .then(()=>{ mostrarToast('✅ Copiado! Agora é só colar na sua outra IA.'); })
+  .catch(()=>{ mostrarToast('📄 Não deu pra copiar automaticamente — baixando o arquivo TXT.'); });
+
+ const blob = new Blob([txt], {type:'text/plain;charset=utf-8'});
+ const url = URL.createObjectURL(blob);
+ const a = document.createElement('a');
+ a.href = url;
+ a.download = 'biobel-dia-'+d.dia.replace(/\./g,'-')+'.txt';
+ document.body.appendChild(a);
+ a.click();
+ document.body.removeChild(a);
+ URL.revokeObjectURL(url);
+}
+
+function exportarInfoComoTxt(){
+ if(daysData.length===0){
+  mostrarToast('⚠️ Não há dados carregados pra exportar ainda.');
+  return;
+ }
+
+ const totalSales = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const metaMensal = getSalesGoal();
+ const pct = metaMensal>0 ? (totalSales/metaMensal)*100 : 0;
+
+ const dinheiro = daysData.reduce((s,d)=>s+(Number(d.dinheiro)||0),0);
+ const debito = daysData.reduce((s,d)=>s+(Number(d.debito)||0),0);
+ const credito = daysData.reduce((s,d)=>s+(Number(d.credito)||0),0);
+ const pix = daysData.reduce((s,d)=>s+(Number(d.pix)||0),0);
+
+ const totaisVend = {}, qtdsVend = {};
+ daysData.forEach(d=>{
+  Object.entries(d.vendedoras||{}).forEach(([nome,valor])=>{ totaisVend[nome]=(totaisVend[nome]||0)+(Number(valor)||0); });
+  Object.entries(d.vendedorasDetalhe||{}).forEach(([nome,info])=>{ qtdsVend[nome]=(qtdsVend[nome]||0)+(Number(info.qtd)||0); });
+ });
+ const rankingVend = Object.entries(totaisVend).sort((a,b)=>b[1]-a[1]);
+
+ const rankingDias = [...daysData].sort((a,b)=>(Number(b.sales)||0)-(Number(a.sales)||0));
+
+ const media = totalSales/daysData.length;
+ const ordenadoSales = [...daysData].sort((a,b)=>(Number(a.sales)||0)-(Number(b.sales)||0));
+ const menorDia = ordenadoSales[0], maiorDia = ordenadoSales[ordenadoSales.length-1];
+ const metaDiaria = getDailyGoal();
+ const bateram = daysData.filter(d=>(Number(d.sales)||0)>=metaDiaria).length;
+
+ const porDiaSemana = calcularMediaPorDiaSemana();
+ const nomesDiasSemana = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+ const listaDiasSemana = Object.keys(porDiaSemana)
+  .map(dow=>({nome:nomesDiasSemana[Number(dow)], soma:porDiaSemana[dow].soma, qtd:porDiaSemana[dow].qtd}))
+  .sort((a,b)=>b.soma-a.soma);
+
+ let txt = '';
+ txt += '===== RESUMO FINANCEIRO — BIOBEL =====\n';
+ txt += 'Gerado em: '+new Date().toLocaleString('pt-BR')+'\n\n';
+
+ txt += '--- META DO MÊS ---\n';
+ txt += 'Total vendido até agora: '+money(totalSales)+'\n';
+ txt += 'Meta do mês: '+money(metaMensal)+'\n';
+ txt += 'Percentual atingido: '+pct.toFixed(1)+'%\n\n';
+
+ txt += '--- FORMAS DE PAGAMENTO (acumulado no mês) ---\n';
+ txt += 'Dinheiro: '+money(dinheiro)+'\n';
+ txt += 'Débito: '+money(debito)+'\n';
+ txt += 'Crédito: '+money(credito)+'\n';
+ txt += 'Pix: '+money(pix)+'\n\n';
+
+ txt += '--- RANKING DE VENDEDORAS ---\n';
+ if(rankingVend.length===0){
+  txt += '(sem dados de vendedora no período)\n';
+ } else {
+  rankingVend.forEach(([nome,valor],i)=>{
+   const qtd = qtdsVend[nome]||0;
+   txt += (i+1)+'º '+nome+': '+money(valor)+' ('+qtd+' venda'+(qtd===1?'':'s')+')\n';
+  });
+ }
+ txt += '\n';
+
+ txt += '--- DIAS QUE MAIS VENDERAM ---\n';
+ rankingDias.forEach((d,i)=>{
+  const dow = nomeDiaSemanaAbrev(d.dia);
+  txt += (i+1)+'º Dia '+diaComAno(d.dia)+(dow?' ('+dow+')':'')+': '+money(d.sales)+'\n';
+ });
+ txt += '\n';
+
+ txt += '--- MAIS NÚMEROS DO MÊS ---\n';
+ txt += 'Média de vendas por dia: '+money(media)+'\n';
+ txt += 'Maior venda do mês: '+money(maiorDia.sales)+' (dia '+diaComAno(maiorDia.dia)+')\n';
+ txt += 'Menor venda do mês: '+money(menorDia.sales)+' (dia '+diaComAno(menorDia.dia)+')\n';
+ txt += 'Dias que bateram a meta diária de '+money(metaDiaria)+': '+bateram+' de '+daysData.length+'\n\n';
+
+ txt += '--- MELHORES E PIORES DIAS DA SEMANA (soma total) ---\n';
+ listaDiasSemana.forEach(item=>{
+  txt += item.nome+': '+money(item.soma)+' ('+item.qtd+' dia'+(item.qtd===1?'':'s')+' somados)\n';
+ });
+ txt += '\n';
+
+ let totalPresencial=0, totalOnline=0;
+ daysData.forEach(d=>{
+  totalPresencial += Number(d.tipoVenda?.presencial)||0;
+  totalOnline += Number(d.tipoVenda?.online)||0;
+ });
+ txt += '--- PRESENCIAL x ONLINE ---\n';
+ txt += 'Presencial: '+totalPresencial+' atendimento(s)\n';
+ txt += 'Online: '+totalOnline+' atendimento(s)\n\n';
+
+ const totaisProdutos = {};
+ daysData.forEach(d=>{
+  Object.entries(d.produtos||{}).forEach(([nome,info])=>{
+   if(!totaisProdutos[nome]) totaisProdutos[nome] = {qtd:0, valor:0};
+   totaisProdutos[nome].qtd += Number(info.qtd)||0;
+   totaisProdutos[nome].valor += Number(info.valor)||0;
+  });
+ });
+ const rankingProdutos = Object.entries(totaisProdutos).sort((a,b)=>b[1].qtd-a[1].qtd);
+ txt += '--- PRODUTOS MAIS VENDIDOS ---\n';
+ if(rankingProdutos.length===0){
+  txt += '(sem dados de produto no período)\n';
+ } else {
+  rankingProdutos.forEach(([nome,info],i)=>{
+   txt += (i+1)+'º '+nome+': '+info.qtd+' un. — '+money(info.valor)+'\n';
+  });
+ }
+ txt += '\n';
+
+ const totalPorHoraTxt = {};
+ daysData.forEach(d=>{
+  Object.entries(d.horarios||{}).forEach(([hora,qtd])=>{
+   totalPorHoraTxt[hora] = (totalPorHoraTxt[hora]||0) + (Number(qtd)||0);
+  });
+ });
+ const horasTxt = Object.keys(totalPorHoraTxt).map(h=>({hora:Number(h),qtd:totalPorHoraTxt[h]})).sort((a,b)=>a.hora-b.hora);
+ txt += '--- HORÁRIOS DE PICO ---\n';
+ if(horasTxt.length===0){
+  txt += '(sem dados de horário no período)\n';
+ } else {
+  horasTxt.forEach(item=>{
+   txt += String(item.hora).padStart(2,'0')+'h-'+String(item.hora+1).padStart(2,'0')+'h: '+item.qtd+' venda'+(item.qtd===1?'':'s')+'\n';
+  });
+ }
+ txt += '\n========================================\n';
+
+ const nomeArquivo = 'biobel-resumo-'+new Date().toISOString().slice(0,10)+'.txt';
+
+ const copiarPromise = (navigator.clipboard && navigator.clipboard.writeText)
+  ? navigator.clipboard.writeText(txt)
+  : Promise.reject(new Error('clipboard indisponível'));
+
+ copiarPromise
+  .then(()=>{ mostrarToast('✅ Copiado! Agora é só colar na sua outra IA.'); })
+  .catch(()=>{ mostrarToast('📄 Não deu pra copiar automaticamente — baixando o arquivo TXT.'); });
+
+ const blob = new Blob([txt], {type:'text/plain;charset=utf-8'});
+ const url = URL.createObjectURL(blob);
+ const a = document.createElement('a');
+ a.href = url;
+ a.download = nomeArquivo;
+ document.body.appendChild(a);
+ a.click();
+ document.body.removeChild(a);
+ URL.revokeObjectURL(url);
+}
+
+function buildReceipt(type, day){
+ const el=document.getElementById('printReceipt');
+ const now=new Date().toLocaleString('pt-BR');
+ if(type==='daily-simple'){
+  const d=daysData.find(x=>x.dia===day);
+  if(!d) return false;
+  const metaBatida = (Number(d.sales)||0) >= getDailyGoal();
+  el.innerHTML=`<div class="receipt-center"><strong style="font-size:17px">BIOBEL</strong><br>FECHAMENTO DE CAIXA<br>${d.dia}/08/2026</div>
+  <div class="receipt-line"></div>
+  <div class="receipt-row"><span>Saldo inicial (abertura)</span><strong>${money(d.initial)}</strong></div>
+  <div class="receipt-row"><span>Vendas do dia</span><strong>${money(d.sales)}</strong></div>
+  <div class="receipt-row"><span>Retiradas do dia</span><strong>${money(d.withdrawals)}</strong></div>
+  <div class="receipt-row"><span>Fechamento da gaveta</span><strong>${money(d.closing)}</strong></div>
+  <div class="receipt-line"></div>
+  <div class="receipt-center receipt-total">FECHAMENTO: ${money(d.closing)}</div>
+  ${metaBatida ? '<div class="receipt-line"></div><div class="receipt-center" style="font-weight:900;">*** PARABENS! META DO DIA BATIDA! ***</div>' : ''}
+  <div class="receipt-line"></div>
+  <div class="receipt-center receipt-small">Impresso em ${now}</div>`;
+ } else if(type==='daily-complete' || type==='daily'){
+  const d=daysData.find(x=>x.dia===day);
+  if(!d) return false;
+  const metaBatida = (Number(d.sales)||0) >= getDailyGoal();
+  el.innerHTML=`<div class="receipt-center"><strong style="font-size:17px">BIOBEL</strong><br>FECHAMENTO DE CAIXA<br>${d.dia}/08/2026</div>
+  <div class="receipt-line"></div>
+  <div class="receipt-row"><span>Saldo inicial (abertura)</span><strong>${money(d.initial)}</strong></div>
+  <div class="receipt-row"><span>Faturamento do dia (total)</span><strong>${money(d.sales)}</strong></div>
+  <div class="receipt-row"><span>Dinheiro</span><strong>${money(d.dinheiro)}</strong></div>
+  <div class="receipt-row"><span>Débito</span><strong>${money(d.debito)}</strong></div>
+  <div class="receipt-row"><span>Crédito</span><strong>${money(d.credito)}</strong></div>
+  <div class="receipt-row"><span>Pix</span><strong>${money(d.pix)}</strong></div>
+  <div class="receipt-row"><span>Retiradas do dia</span><strong>${money(d.withdrawals)}</strong></div>
+  <div class="receipt-row"><span>Fechamento da gaveta</span><strong>${money(d.closing)}</strong></div>
+  <div class="receipt-line"></div>
+  <div class="receipt-center receipt-total">FECHAMENTO: ${money(d.closing)}</div>
+  ${metaBatida ? '<div class="receipt-line"></div><div class="receipt-center" style="font-weight:900;">*** PARABENS! META DO DIA BATIDA! ***</div>' : ''}
+  <div class="receipt-line"></div>
+  <div class="receipt-center receipt-small">Impresso em ${now}</div>`;
+ } else {
+  const totalSales=daysData.reduce((a,d)=>a+(Number(d.sales)||0),0);
+  const totalClosing=daysData.reduce((a,d)=>a+(Number(d.closing)||0),0);
+  const totalInitial=daysData.reduce((a,d)=>a+(Number(d.initial)||0),0);
+  const totalDinheiro=daysData.reduce((a,d)=>a+(Number(d.dinheiro)||0),0);
+  const totalDebito=daysData.reduce((a,d)=>a+(Number(d.debito)||0),0);
+  const totalCredito=daysData.reduce((a,d)=>a+(Number(d.credito)||0),0);
+  const totalPix=daysData.reduce((a,d)=>a+(Number(d.pix)||0),0);
+  el.innerHTML=`<div class="receipt-center"><strong style="font-size:17px">BIOBEL</strong><br>RELATÓRIO FINANCEIRO<br>AGOSTO/2026</div>
+  <div class="receipt-line"></div>
+  <div class="receipt-row"><span>Dias registrados</span><strong>${daysData.length}</strong></div>
+  <div class="receipt-row"><span>Faturamento total</span><strong>${money(totalSales)}</strong></div>
+  <div class="receipt-row"><span>Total dos fechamentos</span><strong>${money(totalClosing)}</strong></div>
+  <div class="receipt-row"><span>Total dos saldos iniciais</span><strong>${money(totalInitial)}</strong></div>
+  <div class="receipt-line"></div>
+  <strong>POR FORMA DE PAGAMENTO</strong><br>
+  <div class="receipt-row"><span>Dinheiro</span><strong>${money(totalDinheiro)}</strong></div>
+  <div class="receipt-row"><span>Débito</span><strong>${money(totalDebito)}</strong></div>
+  <div class="receipt-row"><span>Crédito</span><strong>${money(totalCredito)}</strong></div>
+  <div class="receipt-row"><span>Pix</span><strong>${money(totalPix)}</strong></div>
+  <div class="receipt-line"></div>
+  <strong>FECHAMENTO POR DIA</strong><br>
+  ${daysData.map(d=>`<div class="receipt-row"><span>${d.dia}</span><span>${money(d.closing)}</span></div>`).join('')}
+  <div class="receipt-line"></div>
+  <div class="receipt-center receipt-total">FATURAMENTO: ${money(totalSales)}</div>
+  <div class="receipt-line"></div>
+  <div class="receipt-center receipt-small">Impresso em ${now}</div>`;
+ }
+ return true;
+}
+/* ===== Registro automático do horário de impressão do fechamento =====
+   A impressão não depende da gravação terminar. O horário fica salvo localmente e é enviado
+   pela ponte do Google Apps Script. JSONP é usado como caminho principal porque funciona
+   mesmo quando o navegador bloqueia CORS da resposta do Apps Script. */
+function finalizarRegistroHorarioFechamento(registro){
+ localStorage.removeItem('biobel_pendente_horario_fechamento');
+ localStorage.setItem('biobel_ultimo_horario_fechamento_registrado',JSON.stringify(registro));
+ const status=document.getElementById('appsScriptUrlStatus');
+ if(status) status.innerHTML='<span class="text-emerald-400">✅ Último fechamento enviado para a nuvem: '+registro.value+'</span>';
+ try{ mostrarToast('✅ Horário do fechamento registrado na nuvem: '+registro.value); }catch(e){}
+}
+
+function parametrosHorarioFechamento(registro){
+ const params=new URLSearchParams();
+ params.set('action','writeCell');
+ params.set('operacao','registrarFechamento');
+ params.set('evento','impressao_fechamento');
+ params.set('id',registro.spreadsheetId);
+ params.set('spreadsheetId',registro.spreadsheetId);
+ params.set('sheet',registro.sheetName);
+ params.set('sheetName',registro.sheetName);
+ params.set('range',registro.cell);
+ params.set('cell',registro.cell);
+ params.set('value',registro.value);
+ params.set('horario',registro.value);
+ params.set('_t',String(Date.now()));
+ return params;
+}
+
+function enviarHorarioFechamentoJSONP(proxyUrl,registro){
+ return new Promise((resolve,reject)=>{
+  const nomeCallback='__biobelO26_'+Date.now()+'_'+Math.random().toString(36).slice(2);
+  const script=document.createElement('script');
+  const params=parametrosHorarioFechamento(registro);
+  params.set('callback',nomeCallback);
+  let resolvido=false;
+  const limpar=()=>{
+   try{ delete window[nomeCallback]; }catch(e){ window[nomeCallback]=undefined; }
+   script.remove();
+   clearTimeout(timer);
+  };
+  const timer=setTimeout(()=>{
+   if(resolvido) return;
+   resolvido=true; limpar(); reject(new Error('A ponte não respondeu no tempo esperado.'));
+  },12000);
+
+  window[nomeCallback]=(data)=>{
+   if(resolvido) return;
+   resolvido=true; limpar();
+   const confirmou=!!(data && (data.success===true || data.ok===true || data.written===true || data.updated===true || data.status==='success' || data.status==='ok'));
+   if(confirmou) resolve(data);
+   else reject(new Error(data?.error || 'A ponte respondeu sem confirmar a gravação.'));
+  };
+
+  script.onerror=()=>{
+   if(resolvido) return;
+   resolvido=true; limpar(); reject(new Error('Não foi possível chamar a ponte pelo navegador.'));
+  };
+  script.src=proxyUrl+(proxyUrl.includes('?')?'&':'?')+params.toString();
+  document.head.appendChild(script);
+ });
+}
+
+async function enviarHorarioFechamentoFetch(proxyUrl,registro){
+ const params=parametrosHorarioFechamento(registro);
+ const chamadaUrl=proxyUrl+(proxyUrl.includes('?')?'&':'?')+params.toString();
+ const resp=await fetch(chamadaUrl,{cache:'no-store',keepalive:true});
+ if(!resp.ok) throw new Error('HTTP '+resp.status);
+ let data=null;
+ try{ data=await resp.json(); }catch(e){}
+ const confirmou=!!(data && (data.success===true || data.ok===true || data.written===true || data.updated===true || data.status==='success' || data.status==='ok'));
+ if(!confirmou) throw new Error(data?.error || 'A ponte respondeu sem confirmar a gravação.');
+ return data;
+}
+
+async function tentarEnviarHorarioFechamentoPendente(){
+ const raw=localStorage.getItem('biobel_pendente_horario_fechamento');
+ if(!raw) return;
+ const proxyUrl=getAppsScriptProxyUrl();
+ if(!proxyUrl) return;
+ let registro;
+ try{ registro=JSON.parse(raw); }catch(e){ localStorage.removeItem('biobel_pendente_horario_fechamento'); return; }
+ if(!registro?.spreadsheetId || !registro?.sheetName || registro.cell!=='O26' || !registro.value) return;
+ try{ const resposta=await enviarHorarioFechamentoJSONP(proxyUrl,registro); finalizarRegistroHorarioFechamento(registro); return resposta; }
+ catch(jsonpErro){ console.warn('JSONP da ponte falhou; tentando resposta JSON tradicional.',jsonpErro); }
+ try{ const resposta=await enviarHorarioFechamentoFetch(proxyUrl,registro); finalizarRegistroHorarioFechamento(registro); return resposta; }
+ catch(fetchErro){
+  console.warn('Registro do horário do fechamento ficará pendente para nova tentativa:',fetchErro);
+  const status=document.getElementById('appsScriptUrlStatus');
+  if(status) status.innerHTML='<span class="text-amber-400">🟡 Horário pendente. A ponte precisa aceitar a gravação em O26.</span>';
+  return null;
+ }
+}
+
+function registrarHorarioFechamentoNuvem(diaSelecionado){
+ const spreadsheetId=extractSpreadsheetId(getGoogleUrl());
+ const sheetName=normalizarNomeAba(diaSelecionado);
+ if(!spreadsheetId || !sheetName) return;
+ const agora=obterAgoraBrasilia();
+ const hora=String(agora.getHours()).padStart(2,'0')+':'+String(agora.getMinutes()).padStart(2,'0');
+ const registro={spreadsheetId,sheetName,cell:'O26',value:hora,dia:String(diaSelecionado),registradoEm:String(obterAgoraBrasilia().paraChaveISO())+' '+hora};
+ localStorage.setItem('biobel_pendente_horario_fechamento',JSON.stringify(registro));
+ if(!getAppsScriptProxyUrl()){
+  const status=document.getElementById('appsScriptUrlStatus');
+  if(status) status.innerHTML='<span class="text-amber-400">⚠️ Para registrar O26 na nuvem, configure a URL da ponte do Google Apps Script.</span>';
+  try{ mostrarToast('⚠️ O fechamento foi impresso, mas o horário ficou pendente: configure a ponte do Google Apps Script.'); }catch(e){}
+  return;
+ }
+ tentarEnviarHorarioFechamentoPendente();
+}
+function startReceiptPrint(type){
+ document.body.classList.add('receipt-printing');
+ window.onafterprint=()=>document.body.classList.remove('receipt-printing');
+
+ // Só registra os botões de fechamento diário. Relatórios mensais/PDF não alteram O26.
+ if(type==='daily-simple' || type==='daily-complete'){
+  const seletor=type==='daily-simple' ? 'simpleDaySelect' : 'daySelect';
+  const dia=document.getElementById(seletor)?.value;
+  registrarHorarioFechamentoNuvem(dia);
+ }
+
+ setTimeout(()=>window.print(),50);
+}
+function printDaily(){
+ const day=document.getElementById('daySelect').value;
+ if(!day) return mostrarToast('⚠️ Selecione um dia antes de imprimir.');
+ const d=daysData.find(x=>x.dia===day);
+ if(!d?.closingEncontrado) return mostrarToast('🔴 Não vou imprimir: o fechamento real não foi encontrado na planilha. Atualize a leitura e confira a aba do dia.');
+ updateSelected(day);
+ if(buildReceipt('daily-complete',day)) startReceiptPrint('daily-complete');
+}
+async function carregarJsPDFSobDemanda(){
+ if(window.jspdf) return;
+ await new Promise((resolve,reject)=>{
+  const s=document.createElement('script');
+  s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+  s.onload=resolve; s.onerror=reject;
+  document.head.appendChild(s);
+ });
+}
+
+/* Melhoria de design: dá uma identidade visual às cores da Biobel nos PDFs — uma faixa verde no
+   topo com a logo, em vez de só texto preto no fundo branco. Usada por todos os relatórios,
+   pra ficar todos com a mesma cara. Devolve a posição Y onde o conteúdo pode começar a ser escrito. */
+async function desenharCabecalhoPDF(doc, titulo, subtitulo){
+ const largura = doc.internal.pageSize.getWidth();
+ doc.setFillColor(14,169,122); // verde da marca
+ doc.rect(0, 0, largura, 28, 'F');
+
+ const logoDataUrl = await obterLogoDataUrl();
+ if(logoDataUrl){
+  const formato = logoDataUrl.includes('image/jpeg') ? 'JPEG' : 'PNG';
+  try{ doc.addImage(logoDataUrl, formato, 15, 5, 18, 18); }catch(e){}
+ }
+ doc.setFont('helvetica','bold'); doc.setFontSize(15); doc.setTextColor(255,255,255);
+ doc.text(titulo, 38, 14);
+ doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(230,255,245);
+ doc.text(subtitulo, 38, 21);
+
+ doc.setTextColor(20,20,20); // volta pro preto padrão, pro resto do conteúdo
+ return 38;
+}
+
+/* ============================================================
+   BIOBEL — ZONA: EXPORTAÇÕES / RELATÓRIOS E FECHAMENTO
+   ============================================================ */
+/* ===== Fechamento Mensal Formal (retrato travado dos números, guardado no histórico) ===== */
+function getFechamentosMensais(){
+ try{ return JSON.parse(localStorage.getItem('biobel_adm_fechamentos_mensais')||'[]'); }catch(e){ return []; }
+}
+function encerrarMesAdm(){
+ if(daysData.length===0){ mostrarToast('⚠️ Sem dados carregados ainda pra encerrar o período.'); return; }
+ const usuarioLogado = sessionStorage.getItem('biobel_adm_usuario_logado') || 'não identificado';
+ confirmarBiobel('Encerrar esse período como '+usuarioLogado+'? Isso guarda um retrato definitivo com os números de agora (faturamento, gastos, comissão, lucro) no histórico, com sua confirmação registrada — os dados ao vivo continuam podendo mudar depois, mas esse registro fica travado.', ()=>{
+  const faturamento = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+  const gastosFixos = getGastosFixos().reduce((s,g)=>s+(Number(g.valor)||0),0);
+  const boletos = getBoletos().reduce((s,b)=>s+(Number(b.valor)||0),0);
+  const nivel = nivelAtualAtingido();
+  const custoComissao = custoTotalComissaoAtual();
+  const custoHoraExtra = calcularCustoMensalHoraExtra();
+  const lucro = window._ultimoLucroEstimado || 0;
+  const mesRef = daysData[0]?.dia?.split('.')[1];
+  const nomesMesesPt = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const nomeMes = mesRef ? nomesMesesPt[Number(mesRef)-1]+' de 2026' : 'Período atual';
+
+  const registro = {
+   id: Date.now(),
+   dataFechamento: new Date().toISOString(),
+   periodo: nomeMes,
+   faturamento, gastosFixos, boletos,
+   nivelAtingido: nivel ? nivel.meta : null,
+   custoComissao, custoHoraExtra, lucro,
+   confirmadoPor: usuarioLogado
+  };
+  const historico = getFechamentosMensais();
+  historico.unshift(registro);
+  localStorage.setItem('biobel_adm_fechamentos_mensais', JSON.stringify(historico));
+  mostrarToast('✅ Período encerrado e confirmado por '+usuarioLogado+'!');
+  registrarAlteracao('Fechamento mensal formal registrado: '+nomeMes+' (confirmado por '+usuarioLogado+')');
+  renderLogAlteracoes();
+  renderHistoricoFechamentosMensais();
+ });
+}
+function removerFechamentoMensal(id){
+ confirmarBiobel('Remover esse registro de fechamento?', ()=>{
+  const historico = getFechamentosMensais().filter(r=>r.id!==id);
+  localStorage.setItem('biobel_adm_fechamentos_mensais', JSON.stringify(historico));
+  renderHistoricoFechamentosMensais();
+  mostrarToast('🗑️ Removido.');
+ });
+}
+function renderHistoricoFechamentosMensais(){
+ const el = document.getElementById('historicoFechamentosMensais');
+ if(!el) return;
+ const historico = getFechamentosMensais();
+ if(historico.length===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12px;">Nenhum período encerrado ainda.</p>';
+  return;
+ }
+ el.innerHTML = historico.map(r=>{
+  const data = new Date(r.dataFechamento);
+  const dataTexto = data.toLocaleDateString('pt-BR')+' às '+data.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  return `
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:12px 14px;margin-bottom:8px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+     <span style="color:#dce5f2;font-weight:800;font-size:13px;">${r.periodo}</span>
+     <div style="display:flex;align-items:center;gap:10px;">
+      <span style="color:${r.lucro>=0?'#27d7a0':'#fb7185'};font-weight:900;font-size:13px;">${money(r.lucro)}</span>
+      <button onclick="removerFechamentoMensal(${r.id})" aria-label="Remover" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:13px;">🗑️</button>
+     </div>
+    </div>
+    <div style="font-size:10.5px;color:#93a3ba;margin-top:4px;">Encerrado em ${dataTexto}${r.confirmadoPor?' · ✍️ Confirmado por <strong style="color:#dce5f2;">'+r.confirmadoPor+'</strong>':''}</div>
+    <div style="font-size:11.5px;color:#93a3ba;margin-top:6px;">Faturamento: ${money(r.faturamento)} · Gastos: ${money(r.gastosFixos+r.boletos)} · Comissão/bônus: ${money(r.custoComissao+r.custoHoraExtra)}</div>
+   </div>`;
+ }).join('');
+ renderGraficoGastosMensais();
+}
+
+let chartGastosMensais = null;
+function renderGraficoGastosMensais(){
+ const canvas = document.getElementById('graficoGastosMensais');
+ if(!canvas || typeof Chart==='undefined') return;
+ const historico = [...getFechamentosMensais()].sort((a,b)=>new Date(a.dataFechamento)-new Date(b.dataFechamento));
+ if(chartGastosMensais){ chartGastosMensais.destroy(); chartGastosMensais=null; }
+ if(historico.length<2){
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const wrap = document.getElementById('graficoGastosMensaisWrap');
+  if(wrap && !document.getElementById('avisoPoucosDadosGastos')){
+   const aviso = document.createElement('p');
+   aviso.id = 'avisoPoucosDadosGastos';
+   aviso.style.cssText = 'color:#93a3ba;font-size:12.5px;text-align:center;padding:20px 0;';
+   aviso.textContent = 'Encerre pelo menos 2 períodos (botão "Encerrar este período" acima) pra começar a ver a comparação aqui.';
+   wrap.appendChild(aviso);
+  }
+  return;
+ }
+ const avisoExistente = document.getElementById('avisoPoucosDadosGastos');
+ if(avisoExistente) avisoExistente.remove();
+
+ chartGastosMensais = new Chart(canvas, {
+  type: 'bar',
+  data: {
+   labels: historico.map(r=>r.periodo),
+   datasets: [
+    { label:'Gastos Fixos', data: historico.map(r=>r.gastosFixos), backgroundColor:'#fb7185' },
+    { label:'Gastos Variáveis', data: historico.map(r=>r.boletos), backgroundColor:'#4f9cff' },
+    { label:'Comissões/Bônus', data: historico.map(r=>r.custoComissao+r.custoHoraExtra), backgroundColor:'#fbbf24' }
+   ]
+  },
+  options: {
+   responsive:true,
+   plugins:{ legend:{ position:'bottom', labels:{ color:'#93a3ba', font:{size:10}, boxWidth:10 } } },
+   scales:{
+    x:{ stacked:true, ticks:{ color:'#93a3ba' }, grid:{ color:'rgba(145,161,184,.06)' } },
+    y:{ stacked:true, beginAtZero:true, ticks:{ color:'#93a3ba', callback:v=>money(v) }, grid:{ color:'rgba(145,161,184,.08)' } }
+   }
+  }
+ });
+}
+
+function renderRelatorioAnual(){
+ const el = document.getElementById('conteudoRelatorioAnual');
+ if(!el) return;
+ const historico = getFechamentosMensais();
+ const mesesEncerrados = [...new Set(historico.map(r=>r.periodo))];
+
+ // Soma tudo que já foi encerrado formalmente...
+ let faturamentoAno = historico.reduce((s,r)=>s+(Number(r.faturamento)||0),0);
+ let gastosAno = historico.reduce((s,r)=>s+(Number(r.gastosFixos)||0)+(Number(r.boletos)||0),0);
+ let comissoesAno = historico.reduce((s,r)=>s+(Number(r.custoComissao)||0)+(Number(r.custoHoraExtra)||0),0);
+ let lucroAno = historico.reduce((s,r)=>s+(Number(r.lucro)||0),0);
+
+ // ...mais o período atual em andamento, se ainda não tiver sido encerrado (evita contar 2x).
+ const hoje = obterAgoraBrasilia();
+ const nomesMesesPt = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+ const nomePeriodoAtual = nomesMesesPt[hoje.getMonth()]+' de 2026';
+ const jaEncerrouEsseMes = mesesEncerrados.includes(nomePeriodoAtual);
+ if(!jaEncerrouEsseMes && daysData.length>0){
+  const fatAtual = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+  const gastosAtual = getGastosFixos().reduce((s,g)=>s+(Number(g.valor)||0),0) + getBoletos().reduce((s,b)=>s+(Number(b.valor)||0),0);
+  const comissaoAtual = custoTotalComissaoAtual() + calcularCustoMensalHoraExtra();
+  faturamentoAno += fatAtual;
+  gastosAno += gastosAtual;
+  comissoesAno += comissaoAtual;
+  lucroAno += (window._ultimoLucroEstimado || 0);
+ }
+
+ const totalMesesConsiderados = mesesEncerrados.length + (jaEncerrouEsseMes || daysData.length===0 ? 0 : 1);
+
+ if(totalMesesConsiderados===0){
+  el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Sem nenhum período contabilizado ainda — carregue dados ou encerre algum mês pra começar.</p>';
+  return;
+ }
+
+ el.innerHTML = `
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:10px;">
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
+    <div style="font-size:10px;color:#93a3ba;">💰 Faturamento do ano</div>
+    <div style="font-size:16px;font-weight:900;color:#dce5f2;margin-top:2px;">${money(faturamentoAno)}</div>
+   </div>
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
+    <div style="font-size:10px;color:#93a3ba;">💸 Gastos do ano</div>
+    <div style="font-size:16px;font-weight:900;color:#fb7185;margin-top:2px;">${money(gastosAno)}</div>
+   </div>
+   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;">
+    <div style="font-size:10px;color:#93a3ba;">🎯 Comissões/bônus do ano</div>
+    <div style="font-size:16px;font-weight:900;color:#fbbf24;margin-top:2px;">${money(comissoesAno)}</div>
+   </div>
+   <div style="background:#0b1728;border:1px solid ${lucroAno>=0?'rgba(39,215,160,.4)':'rgba(251,113,133,.4)'};border-radius:10px;padding:12px 14px;">
+    <div style="font-size:10px;color:#93a3ba;">📈 Lucro do ano</div>
+    <div style="font-size:16px;font-weight:900;color:${lucroAno>=0?'#27d7a0':'#fb7185'};margin-top:2px;">${money(lucroAno)}</div>
+   </div>
+  </div>
+  <p style="font-size:10.5px;color:#93a3ba;">📆 Considerando ${totalMesesConsiderados} período${totalMesesConsiderados===1?'':'s'} (${mesesEncerrados.length} encerrado${mesesEncerrados.length===1?'':'s'} formalmente${!jaEncerrouEsseMes&&daysData.length>0?' + '+nomePeriodoAtual+' em andamento':''}).</p>
+ `;
+}
+
+/* ===== Exportar Excel (planilha de verdade, pronta pra levar pro contador) ===== */
+function exportarAdmExcel(){
+ if(typeof XLSX === 'undefined'){ mostrarToast('⚠️ Biblioteca de Excel não carregada — tente atualizar a página.'); return; }
+ const wb = XLSX.utils.book_new();
+
+ const gastosFixosDados = getGastosFixos().map(g=>({ Nome:g.nome, 'Valor (R$)':g.valor, 'Dia Vencimento':g.dia||'' }));
+ XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(gastosFixosDados), 'Gastos Fixos');
+
+ const boletosDados = getBoletos().map(b=>({
+  Fornecedor:b.fornecedor, Marca:b.marca||'', Categoria:b.categoria||'', Quantidade:b.quantidade||'',
+  'Valor (R$)':b.valor, Vencimento:b.vencimento||'', Status: b.pago?'Pago':'Pendente',
+  'Pago por':b.pagoPor||'', Recorrente: b.recorrente?'Sim':'Não', Observações:b.obs||''
+ }));
+ XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(boletosDados), 'Boletos');
+
+ const niveisDados = getNiveisComissao().map(n=>({
+  'Meta (R$)':n.meta, 'Dinheiro cada uma (R$)':n.dinheiro, 'Kit de (R$)':n.kitMin, 'Kit até (R$)':n.kitMax, 'Confraternização (R$)':n.confraternizacao
+ }));
+ XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(niveisDados), 'Comissao por Metas');
+
+ const faturamento = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const resumoDados = [{
+  'Faturamento (R$)': faturamento,
+  'Gastos Fixos (R$)': getGastosFixos().reduce((s,g)=>s+(Number(g.valor)||0),0),
+  'Gastos Variáveis (R$)': getBoletos().reduce((s,b)=>s+(Number(b.valor)||0),0),
+  'Lucro Estimado (R$)': window._ultimoLucroEstimado || 0
+ }];
+ XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(resumoDados), 'Resumo');
+
+ XLSX.writeFile(wb, 'biobel-admin-'+new Date().toISOString().slice(0,10)+'.xlsx');
+ mostrarToast('✅ Excel exportado com sucesso!');
+ registrarAlteracao('Área ADM exportada em Excel');
+ renderLogAlteracoes();
+}
+
+async function gerarResumoAdmPDF(){
+ const btn = document.getElementById('btnExportarPdfAdm');
+ const textoOriginal = btn ? btn.textContent : '';
+ if(btn){ btn.disabled=true; btn.textContent='⏳ Gerando...'; }
+ try{
+  await carregarJsPDFSobDemanda();
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({unit:'mm', format:'a4'});
+  const larguraPagina = doc.internal.pageSize.getWidth();
+  const margem = 15;
+  let y = await desenharCabecalhoPDF(doc, 'BIOBEL', 'Resumo da Área da Gerência — Confidencial');
+  doc.setDrawColor(220,220,220);
+  doc.line(margem, y, larguraPagina-margem, y);
+  y += 10;
+
+  function tituloSecao(texto){
+   if(y > 265){ doc.addPage(); y = 20; }
+   doc.setFontSize(12);
+   doc.setFont('helvetica','bold');
+   doc.setTextColor(20,20,20);
+   doc.text(texto, margem, y);
+   y += 7;
+   doc.setFont('helvetica','normal');
+   doc.setFontSize(10);
+  }
+  function linha(esquerda, direita, corDireita){
+   if(y > 280){ doc.addPage(); y = 20; }
+   doc.setTextColor(90,90,90);
+   doc.text(esquerda, margem, y);
+   if(corDireita) doc.setTextColor(...corDireita); else doc.setTextColor(20,20,20);
+   doc.text(direita, larguraPagina-margem, y, {align:'right'});
+   doc.setTextColor(20,20,20);
+   y += 5.5;
+  }
+
+  // Gastos Fixos
+  tituloSecao('🏠 Gastos Fixos');
+  const gastosFixos = getGastosFixos();
+  if(gastosFixos.length===0){ linha('Nenhum gasto fixo cadastrado.', ''); }
+  gastosFixos.forEach(g=>{
+   const valorTxt = g.valor!==null ? money(g.valor) : 'A definir';
+   linha(g.nome+(g.dia?' (vence dia '+g.dia+')':''), valorTxt);
+  });
+  const totalFixosPdf = gastosFixos.reduce((s,g)=>s+(Number(g.valor)||0),0);
+  y += 2;
+  linha('TOTAL GASTOS FIXOS', money(totalFixosPdf), [251,113,133]);
+  y += 8;
+
+  // Boletos de Fornecedores
+  tituloSecao('📦 Boletos de Fornecedores');
+  const boletos = getBoletos();
+  if(boletos.length===0){ linha('Nenhum boleto cadastrado.', ''); }
+  boletos.forEach(b=>{
+   const statusTxt = b.pago ? '[PAGO] ' : '[PENDENTE] ';
+   linha(statusTxt+b.fornecedor, money(b.valor));
+  });
+  const totalBoletosPdf = boletos.reduce((s,b)=>s+(Number(b.valor)||0),0);
+  y += 2;
+  linha('TOTAL BOLETOS', money(totalBoletosPdf), [79,156,255]);
+  y += 8;
+
+  // Comissão por níveis
+  tituloSecao('🎯 Comissão por Metas (Gabriela e Day)');
+  const niveis = [...getNiveisComissao()].sort((a,b)=>a.meta-b.meta);
+  const nivelBatido = nivelAtualAtingido();
+  niveis.forEach(n=>{
+   const totalPessoa = calcularTotalPorPessoa(n);
+   const status = (nivelBatido && nivelBatido.id===n.id) ? ' [ATINGIDO]' : '';
+   linha('Meta '+money(n.meta)+status, '~'+money(totalPessoa)+' cada uma');
+  });
+  y += 2;
+  const custoComissaoAtual = custoTotalComissaoAtual();
+  linha('CUSTO ATUAL (Gabriela + Day)', money(custoComissaoAtual), [39,215,160]);
+  y += 8;
+
+  // Hora extra
+  const valorHora = getValorHoraExtra();
+  if(valorHora>0){
+   tituloSecao('⏰ Hora Extra — Gabriela');
+   linha('2h/semana × '+money(valorHora)+'/h', money(calcularCustoMensalHoraExtra())+'/mês aprox.');
+   y += 8;
+  }
+
+  // Lucro estimado
+  const faturamento = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+  const totaisVendPdf = {};
+  daysData.forEach(d=>{
+   Object.entries(d.vendedoras||{}).forEach(([nome,valor])=>{ totaisVendPdf[nome]=(totaisVendPdf[nome]||0)+(Number(valor)||0); });
+  });
+  const comissoesIndividuaisPdf = getComissoes();
+  const totalComissoesIndPdf = Object.entries(totaisVendPdf).reduce((s,[nome,valor])=>{
+   const pct = comissoesIndividuaisPdf[nome];
+   return s + (pct!==undefined && !isNaN(pct) ? valor*(pct/100) : 0);
+  }, 0);
+  const totalDeducoes = totalFixosPdf + totalBoletosPdf + custoComissaoAtual + calcularCustoMensalHoraExtra() + totalComissoesIndPdf;
+  const lucroPdf = faturamento - totalDeducoes;
+
+  tituloSecao('📈 Resumo Financeiro');
+  linha('Faturamento do período', money(faturamento));
+  linha('Total de gastos e comissões', money(totalDeducoes));
+  y += 2;
+  linha('LUCRO LÍQUIDO ESTIMADO', money(lucroPdf), lucroPdf>=0 ? [39,215,160] : [251,113,133]);
+
+  const totalPaginas = doc.internal.getNumberOfPages();
+  for(let p=1; p<=totalPaginas; p++){
+   doc.setPage(p);
+   doc.setFontSize(8);
+   doc.setTextColor(150,150,150);
+   doc.text('Gerado em '+new Date().toLocaleString('pt-BR')+' — Documento confidencial, uso interno', margem, 290);
+   doc.text('Página '+p+' de '+totalPaginas, larguraPagina-margem-25, 290);
+  }
+
+  doc.save('biobel-resumo-gerencia-'+new Date().toISOString().slice(0,10)+'.pdf');
+  mostrarToast('✅ PDF gerado com sucesso!');
+ }catch(e){
+  console.error('Erro ao gerar PDF da área ADM:', e);
+  mostrarToast('⚠️ Não foi possível gerar o PDF. Tente novamente.');
+ } finally {
+  if(btn){ btn.disabled=false; btn.textContent=textoOriginal; }
+ }
+}
+
+async function gerarRelatorioMensalPDF(){
+ const btn = document.getElementById('btnGerarPdfMensal');
+ const textoOriginal = btn ? btn.textContent : '';
+ if(btn){ btn.disabled=true; btn.textContent='⏳ Gerando...'; }
+ try{
+  if(daysData.length===0){
+   mostrarToast('⚠️ Não há dados carregados pra gerar o relatório ainda.');
+   return;
+  }
+  await carregarJsPDFSobDemanda();
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({unit:'mm', format:'a4'});
+  const larguraPagina = doc.internal.pageSize.getWidth();
+  const margem = 15;
+  let y = 20;
+
+  // Logo + cabeçalho
+  const logoDataUrl = await obterLogoDataUrl();
+  if(logoDataUrl){
+   // Importante: detectar o formato real da imagem (PNG ou JPEG) pelo início do data URL —
+   // forçar sempre "PNG" fazia o logo falhar silenciosamente quando a pessoa subia um JPG/JPEG.
+   const formatoImagem = logoDataUrl.includes('image/jpeg') || logoDataUrl.includes('image/jpg') ? 'JPEG' : 'PNG';
+   try{ doc.addImage(logoDataUrl, formatoImagem, margem, y-8, 22, 22); }catch(e){ console.warn('Não foi possível inserir a logo no PDF:', e); }
+  }
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(18);
+  doc.setTextColor(20,20,20);
+  doc.text('BIOBEL', margem+28, y);
+  doc.setFontSize(11);
+  doc.setFont('helvetica','normal');
+  doc.setTextColor(90,90,90);
+  const mesAtualNum = daysData[0]?.dia?.split('.')[1];
+  const nomesMesesPt2 = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const nomeMesRelatorio = mesAtualNum ? (nomesMesesPt2[Number(mesAtualNum)-1]+' de 2026') : 'Período atual';
+  doc.text('Relatório Financeiro Mensal — '+nomeMesRelatorio, margem+28, y+7);
+  y += 22;
+  doc.setDrawColor(220,220,220);
+  doc.line(margem, y, larguraPagina-margem, y);
+  y += 10;
+
+  // Resumo (caixas)
+  const totalSales = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+  const totalClosing = daysData.reduce((s,d)=>s+(Number(d.closing)||0),0);
+  const goal = getSalesGoal();
+  const pctMeta = goal>0 ? Math.min(100,(totalSales/goal)*100) : 0;
+
+  const caixas = [
+   ['Faturamento Total', money(totalSales)],
+   ['Meta do Mês', money(goal)+' ('+pctMeta.toFixed(1)+'%)'],
+   ['Dias Lançados', String(daysData.length)],
+   ['Total dos Fechamentos', money(totalClosing)]
+  ];
+  const larguraCaixa = (larguraPagina - margem*2 - 15) / 2;
+  caixas.forEach((c,i)=>{
+   const col = i%2, row = Math.floor(i/2);
+   const x = margem + col*(larguraCaixa+15);
+   const yy = y + row*22;
+   doc.setFillColor(245,247,250);
+   doc.roundedRect(x, yy, larguraCaixa, 18, 2, 2, 'F');
+   doc.setFontSize(8);
+   doc.setTextColor(120,120,120);
+   doc.text(c[0].toUpperCase(), x+5, yy+7);
+   doc.setFontSize(13);
+   doc.setFont('helvetica','bold');
+   doc.setTextColor(20,20,20);
+   doc.text(c[1], x+5, yy+14);
+   doc.setFont('helvetica','normal');
+  });
+  y += 50;
+
+  // Forma de pagamento
+  doc.setFontSize(12);
+  doc.setFont('helvetica','bold');
+  doc.setTextColor(20,20,20);
+  doc.text('Por forma de pagamento', margem, y);
+  y += 7;
+  const totalDinheiro = daysData.reduce((s,d)=>s+(Number(d.dinheiro)||0),0);
+  const totalDebito = daysData.reduce((s,d)=>s+(Number(d.debito)||0),0);
+  const totalCredito = daysData.reduce((s,d)=>s+(Number(d.credito)||0),0);
+  const totalPix = daysData.reduce((s,d)=>s+(Number(d.pix)||0),0);
+  const formasPagamento = [
+   ['Dinheiro', totalDinheiro], ['Débito', totalDebito], ['Crédito', totalCredito], ['Pix', totalPix]
+  ];
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(10);
+  formasPagamento.forEach(([nome,valor],i)=>{
+   const x = margem + (i%2)*90;
+   const yy = y + Math.floor(i/2)*7;
+   const pct = totalSales>0 ? (valor/totalSales*100).toFixed(1) : '0.0';
+   doc.setTextColor(90,90,90);
+   doc.text(nome+':', x, yy);
+   doc.setTextColor(20,20,20);
+   doc.setFont('helvetica','bold');
+   doc.text(money(valor)+' ('+pct+'%)', x+22, yy);
+   doc.setFont('helvetica','normal');
+  });
+  y += 22;
+
+  // Tabela diária
+  doc.setFontSize(12);
+  doc.setFont('helvetica','bold');
+  doc.text('Fechamento por dia', margem, y);
+  y += 7;
+  doc.setFontSize(9);
+  doc.setFillColor(20,20,20);
+  doc.setTextColor(255,255,255);
+  doc.rect(margem, y-4.5, larguraPagina-margem*2, 6, 'F');
+  doc.text('Dia', margem+2, y);
+  doc.text('Vendas', margem+55, y);
+  doc.text('Fechamento', margem+105, y);
+  doc.text('Diferença (dinheiro)', margem+150, y);
+  y += 6;
+  doc.setFont('helvetica','normal');
+  doc.setTextColor(40,40,40);
+  const ordenadosPorDia = [...daysData].sort((a,b)=>a.dia.localeCompare(b.dia));
+  ordenadosPorDia.forEach((d,i)=>{
+   if(y > 275){ doc.addPage(); y = 20; }
+   if(i%2===0){ doc.setFillColor(248,249,251); doc.rect(margem, y-4, larguraPagina-margem*2, 5.5, 'F'); }
+   const esperado = (Number(d.initial)||0) + (Number(d.dinheiro)||0) - (Number(d.withdrawals)||0);
+   const diferenca = (Number(d.closing)||0) - esperado;
+   doc.text(diaComAno(d.dia), margem+2, y);
+   doc.text(money(d.sales), margem+55, y);
+   doc.text(money(d.closing), margem+105, y);
+   if(Math.abs(diferenca)>=20) doc.setTextColor(200,50,50); else doc.setTextColor(40,150,90);
+   doc.text((diferenca>=0?'+':'')+money(diferenca), margem+150, y);
+   doc.setTextColor(40,40,40);
+   y += 5.5;
+  });
+
+  // Rodapé
+  const totalPaginas = doc.internal.getNumberOfPages();
+  for(let p=1; p<=totalPaginas; p++){
+   doc.setPage(p);
+   doc.setFontSize(8);
+   doc.setTextColor(150,150,150);
+   doc.text('Gerado em '+new Date().toLocaleString('pt-BR')+' — Painel Biobel', margem, 290);
+   doc.text('Página '+p+' de '+totalPaginas, larguraPagina-margem-25, 290);
+  }
+
+  doc.save('biobel-relatorio-mensal-'+(mesAtualNum||'')+'-2026.pdf');
+  mostrarToast('✅ PDF gerado com sucesso!');
+ }catch(e){
+  console.error('Erro ao gerar PDF:', e);
+  mostrarToast('⚠️ Não foi possível gerar o PDF. Tente novamente.');
+ } finally {
+  if(btn){ btn.disabled=false; btn.textContent=textoOriginal; }
+ }
+}
+
+function printMonthly(){
+ buildReceipt('monthly');
+ startReceiptPrint('monthly');
+}
+function getChaveFechamentoCaixaSimple(dia){
+ return 'biobel_fechamento_caixa_confirmado_'+String(dia||'').replace(/[^0-9.]/g,'_');
+}
+
+function renderStatusFechamentoCaixaSimple(dia){
+ const box=document.getElementById('statusFechamentoCaixaSimple');
+ const txt=document.getElementById('statusFechamentoCaixaSimpleTexto');
+ const sub=document.getElementById('statusFechamentoCaixaSimpleSub');
+ const btn=document.getElementById('btnConfirmarFechamentoCaixaSimple');
+ if(!box||!txt||!sub||!btn) return;
+
+ const chave=getChaveFechamentoCaixaSimple(dia);
+ let registro=null;
+ try{ registro=JSON.parse(localStorage.getItem(chave)||'null'); }catch(e){ registro=null; }
+
+ if(registro?.confirmado){
+  box.style.display='block';
+  box.style.borderColor='rgba(39,215,160,.45)';
+  box.style.background='rgba(39,215,160,.08)';
+  txt.textContent='✅ Caixa fechado e confirmado';
+  sub.textContent='Dia '+diaComAno(dia)+' confirmado às '+(registro.hora||'—')+'.';
+  btn.style.display='none';
+ }else{
+  box.style.display='none';
+  btn.style.display='none';
+ }
+}
+
+function prepararConfirmacaoFechamentoCaixaSimple(dia){
+ const box=document.getElementById('statusFechamentoCaixaSimple');
+ const txt=document.getElementById('statusFechamentoCaixaSimpleTexto');
+ const sub=document.getElementById('statusFechamentoCaixaSimpleSub');
+ const btn=document.getElementById('btnConfirmarFechamentoCaixaSimple');
+ if(!box||!txt||!sub||!btn) return;
+
+ box.style.display='block';
+ box.style.borderColor='rgba(234,179,8,.45)';
+ box.style.background='rgba(234,179,8,.07)';
+ txt.textContent='🖨️ Impressão concluída — confirme o fechamento';
+ sub.textContent='Confira a gaveta e clique em “Confirmar fechamento” para registrar que o caixa foi conferido.';
+ btn.style.display='inline-block';
+ btn.disabled=false;
+ btn.style.opacity='1';
+}
+
+function confirmarFechamentoCaixaSimple(){
+ const dia=document.getElementById('simpleDaySelect')?.value;
+ if(!dia) return mostrarToast('⚠️ Selecione um dia antes de confirmar o fechamento.');
+
+ const d=daysData.find(x=>x.dia===dia);
+ if(!d) return mostrarToast('⚠️ Não encontrei os dados desse dia.');
+
+ const agora=obterAgoraBrasilia();
+ const hora=String(agora.getHours()).padStart(2,'0')+':'+String(agora.getMinutes()).padStart(2,'0');
+ const registro={
+  confirmado:true,
+  dia:String(dia),
+  hora,
+  confirmadoEm:String(agora.paraChaveISO())+' '+hora,
+  valorFechamento:Number(d.closing)||0
+ };
+ localStorage.setItem(getChaveFechamentoCaixaSimple(dia),JSON.stringify(registro));
+
+ const btn=document.getElementById('btnConfirmarFechamentoCaixaSimple');
+ if(btn) btn.style.display='none';
+ renderStatusFechamentoCaixaSimple(dia);
+ registrarAlteracao('Fechamento de caixa confirmado: '+diaComAno(dia)+' — '+money(registro.valorFechamento));
+ renderLogAlteracoes();
+ mostrarToast('✅ Fechamento do dia '+diaComAno(dia)+' confirmado com sucesso!');
+}
+
+function iniciarFechamentoCaixaSimple(){
+ const dia=document.getElementById('simpleDaySelect')?.value;
+ if(!dia) return mostrarToast('⚠️ Selecione um dia antes de fechar o caixa.');
+
+ const d=daysData.find(x=>x.dia===dia);
+ if(!d) return mostrarToast('⚠️ Não encontrei os dados desse dia. Atualize a planilha e tente novamente.');
+
+ confirmarBiobel(
+  'Fechar o caixa do dia '+diaComAno(dia)+'?\n\n'+
+  '💼 Inicial: '+money(d.initial)+'\n'+
+  '💰 Vendas: '+money(d.sales)+'\n'+
+  '💸 Retiradas: '+money(d.withdrawals)+'\n'+
+  '🔒 Valor no caixa: '+money(d.closing)+'\n\n'+
+  'Depois da confirmação, o sistema abrirá a impressão do fechamento. Ao voltar da impressão, você poderá confirmar que o caixa foi conferido.',
+  ()=>{
+   const btn=document.getElementById('btnFecharCaixaSimple');
+   if(btn){ btn.disabled=true; btn.textContent='⏳ Preparando...'; }
+   if(buildReceipt('daily-simple',dia)){
+    startReceiptPrint('daily-simple');
+    setTimeout(()=>prepararConfirmacaoFechamentoCaixaSimple(dia),800);
+   }
+   if(btn){ btn.disabled=false; btn.textContent='✅ Fechar caixa'; }
+  }
+ );
+}
+
+function printSimpleDay(){
+ const day=document.getElementById('simpleDaySelect').value;
+ if(!day) return mostrarToast('⚠️ Selecione um dia antes de imprimir.');
+ const d=daysData.find(x=>x.dia===day);
+ if(!d?.closingEncontrado) return mostrarToast('🔴 Não vou imprimir: o fechamento real não foi encontrado na planilha. Atualize a leitura e confira a aba do dia.');
+ if(buildReceipt('daily-simple',day)) startReceiptPrint('daily-simple');
+}
+
+const DEFAULT_GOOGLE_URL='https://docs.google.com/spreadsheets/d/1idL5VN5CRRgQaXZb4i14V9_sRg6CbxUJx3M-PdSpJGA/edit?usp=sharing';
+let googleTimer=null;
+function updateConnBadge(state){
+ // state: 'ok' | 'error' | 'connecting'
+ const el = document.getElementById('connBadge');
+ const faixa = document.getElementById('faixaErroConexao');
+ if(state==='ok'){
+  localStorage.setItem('biobel_ultima_sincronizacao_ok', new Date().toISOString());
+ }
+ if(state==='error'){ registrarErroConexao(); renderDiasSemErroConexao(); }
+ // A faixa vermelha de aviso foi desativada por pedido — nunca mais aparece na tela,
+ // mesmo se a planilha realmente desconectar.
+ if(faixa) faixa.style.display = 'none';
+ if(!el) return;
+
+ // O indicador de "Erro de conexão" também foi desativado — em vez de alarmar, mostra a
+ // última vez que sincronizou com sucesso, ou fica quieto se nunca sincronizou ainda.
+ if(state==='error'){
+  const ultima = localStorage.getItem('biobel_ultima_sincronizacao_ok');
+  if(ultima){
+   el.style.display = '';
+   el.className = 'conn-badge conn-ok';
+   el.textContent = '🟢 Última att.: '+new Date(ultima).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  } else {
+   el.style.display = 'none';
+  }
+  return;
+ }
+
+ el.style.display = '';
+ el.className = 'conn-badge conn-'+state;
+ if(state==='ok'){
+  const agora = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  el.textContent = '🟢 Atualizado às '+agora;
+ } else {
+  el.textContent = '🟡 Conectando...';
+ }
+}
+function renderDiasSemErroConexao(){
+ const el = document.getElementById('diasSemErroConexao');
+ if(!el) return;
+ const dias = diasSemErroConexao();
+ if(dias===null){
+  el.textContent = '✅ Nenhum erro de conexão registrado ainda por aqui.';
+ } else if(dias===0){
+  el.textContent = '🔴 Último erro de conexão foi hoje.';
+ } else {
+  el.textContent = '🟢 '+dias+' dia'+(dias===1?'':'s')+' sem erro de conexão.';
+ }
+}
+function setGoogleStatus(msg, ok=false, state){
+ const el=document.getElementById('googleStatus');
+ if(el) el.innerHTML=`Status: <span class="${ok?'text-emerald-400':'text-slate-400'}">${msg}</span>`;
+ updateConnBadge(state || (ok ? 'ok' : 'error'));
+ atualizarNomePlanilhaAtiva();
+}
+function extractSpreadsheetId(url){
+ const m=String(url||'').match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+ return m?m[1]:'';
+}
+function mostrarSecaoConfig(secao){
+ const secoes = ['Conexao','Planilhas','Metas','Email','Horarios','Empresa','Log','Backup','Logo','SitePublico','Mensagens','Vagas','Dicas','Novidades'];
+ secoes.forEach(s=>{
+  const el = document.getElementById('configSecao'+s);
+  const chip = document.getElementById('chip'+s);
+  const ativo = s===secao;
+  if(el) el.style.display = ativo ? 'block' : 'none';
+  if(chip){
+   chip.classList.toggle('active', ativo);
+   chip.setAttribute('aria-selected', ativo ? 'true' : 'false');
+  }
+ });
+ try{ localStorage.setItem('biobel_config_secao_ativa', secao); }catch(e){}
+ if(secao==='Backup') renderStatusBackupAutomatico();
+ if(secao==='Vagas') initTextosVaga();
+ if(secao==='Dicas') renderListaDicasDoDia();
+}
+
+function saveGoogleConfig(){
+ const url=document.getElementById('googleSheetUrl').value.trim();
+ const id=extractSpreadsheetId(url);
+ if(!id) return setGoogleStatus('link inválido. Cole o endereço completo do Google Sheets.', false, 'error');
+ localStorage.setItem('biobel_google_sheet_url',url);
+ setGoogleStatus('configuração salva.',true);
+ loadGoogleSheet();
+}
+function getGoogleUrl(){return localStorage.getItem('biobel_google_sheet_url') || document.getElementById('googleSheetUrl')?.value || DEFAULT_GOOGLE_URL;}
+
+/* ============================================================
+   BIOBEL — ZONA: DADOS / GOOGLE SHEETS E PLANILHAS
+   ============================================================ */
+/* ===== Múltiplas planilhas salvas (troca rápida entre meses) ===== */
+function getPlanilhasSalvas(){
+ try{ return JSON.parse(localStorage.getItem('biobel_planilhas_salvas')||'[]'); }
+ catch(e){ return []; }
+}
+function salvarListaPlanilhas(lista){
+ localStorage.setItem('biobel_planilhas_salvas', JSON.stringify(lista));
+}
+function adicionarNovaPlanilhaMes(){
+ const nomeInput = document.getElementById('novoMesNome');
+ const linkInput = document.getElementById('novoMesLink');
+ const statusEl = document.getElementById('novoMesStatus');
+ const nome = nomeInput.value.trim();
+ const link = linkInput.value.trim();
+
+ if(!nome){
+  statusEl.innerHTML = '<span class="text-rose-400">Digite o nome do mês (ex: Julho 2026).</span>';
+  return;
+ }
+ if(!link){
+  statusEl.innerHTML = '<span class="text-rose-400">Cole o link da planilha desse mês.</span>';
+  return;
+ }
+ const id = extractSpreadsheetId(link);
+ if(!id){
+  statusEl.innerHTML = '<span class="text-rose-400">Esse link não parece ser um link válido do Google Sheets. Confira se copiou certinho (deve começar com "https://docs.google.com/spreadsheets/...").</span>';
+  return;
+ }
+ const lista = getPlanilhasSalvas();
+ if(lista.some(p=>p.nome.trim().toLowerCase()===nome.toLowerCase())){
+  statusEl.innerHTML = '<span class="text-rose-400">Já existe uma planilha salva com esse nome. Escolha outro nome ou remova a antiga na lista abaixo.</span>';
+  return;
+ }
+ lista.push({nome, url:link});
+ salvarListaPlanilhas(lista);
+ nomeInput.value = '';
+ linkInput.value = '';
+ statusEl.innerHTML = '<span class="text-emerald-400">✅ "'+nome+'" adicionada! Escolha ela no menu abaixo quando quiser ver os dados dela.</span>';
+ renderPlanilhasSalvas();
+ mostrarToast('✅ Planilha "'+nome+'" adicionada com sucesso!');
+ registrarAlteracao('Planilha "'+nome+'" adicionada à lista');
+ renderLogAlteracoes();
+}
+function selecionarPlanilhaSalva(){
+ const select = document.getElementById('planilhaSalvaSelect');
+ const url = select.value;
+ if(!url) return;
+ const nomeSelecionado = select.options[select.selectedIndex]?.textContent || '';
+
+ // Item 8: arquiva automaticamente um retrato dos dados que estavam carregados ANTES de trocar,
+ // pra nunca perder o que tinha ali, mesmo que ninguém tenha clicado em "Encerrar período" antes.
+ arquivarDadosAntesDeTrocarPlanilha();
+
+ // Item 10: resumo de "boas-vindas" mostrando como fechou o período anterior, antes de mergulhar
+ // nos dados novos — só mostra se já tinha dados carregados antes da troca.
+ const resumoAnterior = daysData.length>0 ? montarResumoBoasVindas() : null;
+
+ document.getElementById('googleSheetUrl').value = url;
+ localStorage.setItem('biobel_google_sheet_url', url);
+ setGoogleStatus('trocando de planilha...', false, 'connecting');
+ mostrarToast('🔄 Trocando para: '+nomeSelecionado);
+
+ // Item 7: guarda no histórico qual planilha ficou ativa a partir de agora.
+ registrarTrocaDePlanilha(nomeSelecionado, url);
+
+ loadGoogleSheet();
+ atualizarNomePlanilhaAtiva();
+
+ if(resumoAnterior) setTimeout(()=>mostrarPopupBoasVindas(resumoAnterior, nomeSelecionado), 600);
+}
+function arquivarDadosAntesDeTrocarPlanilha(){
+ if(daysData.length===0) return;
+ const mesRef = daysData[0]?.dia?.split('.')[1];
+ if(!mesRef) return;
+ try{
+  const arquivo = JSON.parse(localStorage.getItem('biobel_arquivo_meses')||'{}');
+  arquivo[mesRef] = daysData;
+  localStorage.setItem('biobel_arquivo_meses', JSON.stringify(arquivo));
+ }catch(e){}
+}
+function montarResumoBoasVindas(){
+ const faturamento = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ const meta = getSalesGoal();
+ const bateuMeta = meta>0 && faturamento>=meta;
+ const mesRef = daysData[0]?.dia?.split('.')[1];
+ const nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+ const nomeMesAnterior = mesRef ? nomesMeses[Number(mesRef)-1] : 'período anterior';
+ return { nomeMesAnterior, faturamento, meta, bateuMeta };
+}
+function mostrarPopupBoasVindas(resumo, nomeNovaPlanilha){
+ const el = document.getElementById('faixaMensagemProgramada');
+ if(!el) return;
+ el.style.cssText = 'display:flex;position:fixed;inset:0;z-index:9999;background:rgba(7,17,31,.78);align-items:center;justify-content:center;padding:20px;';
+ el.onclick = function(e){ if(e.target===el) el.style.display='none'; };
+ el.innerHTML = `<div onclick="event.stopPropagation()" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid #1e2c42;border-radius:20px;padding:28px 26px;position:relative;max-width:400px;width:100%;box-shadow:0 24px 70px rgba(0,0,0,.55);text-align:center;">
+   <button onclick="document.getElementById('faixaMensagemProgramada').style.display='none';" aria-label="Fechar" style="position:absolute;top:12px;right:14px;background:none;border:none;color:#dce5f2;font-size:22px;cursor:pointer;opacity:.75;line-height:1;">✕</button>
+   <div style="font-size:28px;">${resumo.bateuMeta?'🎉':'📊'}</div>
+   <div style="font-size:15px;color:#dce5f2;font-weight:800;margin-top:8px;">Fechamento de ${resumo.nomeMesAnterior}</div>
+   <div style="font-size:22px;color:${resumo.bateuMeta?'#27d7a0':'#dce5f2'};font-weight:900;margin-top:6px;">${money(resumo.faturamento)}</div>
+   <div style="font-size:12px;color:#93a3ba;margin-top:4px;">${resumo.meta>0 ? (resumo.bateuMeta?'✅ Meta batida! ('+money(resumo.meta)+')':'Meta era '+money(resumo.meta)) : ''}</div>
+   <div style="font-size:11px;color:#93a3ba;margin-top:14px;border-top:1px solid #1e2c42;padding-top:12px;">Agora vendo: <strong style="color:#dce5f2;">${nomeNovaPlanilha}</strong></div>
+  </div>`;
+}
+function registrarTrocaDePlanilha(nome, url){
+ try{
+  const historico = JSON.parse(localStorage.getItem('biobel_historico_planilhas_ativas')||'[]');
+  historico.unshift({ data: new Date().toISOString(), nome, url });
+  localStorage.setItem('biobel_historico_planilhas_ativas', JSON.stringify(historico.slice(0,30)));
+ }catch(e){}
+}
+function atualizarNomePlanilhaAtiva(){
+ const el = document.getElementById('nomePlanilhaAtivaHeader');
+ if(!el) return;
+ const lista = getPlanilhasSalvas();
+ const urlAtual = getGoogleUrl();
+ const encontrada = lista.find(p=>p.url===urlAtual);
+ el.textContent = encontrada ? '📅 Vendo: '+encontrada.nome : '';
+ verificarMesDivergente(encontrada ? encontrada.nome : null);
+}
+
+/* ===== Aviso de mês divergente (itens 1, 2, 3, 4, 9) ===== */
+function verificarMesDivergente(nomePlanilhaAtiva){
+ const el = document.getElementById('avisoMesDivergente');
+ if(!el) return;
+ if(!nomePlanilhaAtiva){ el.style.display='none'; return; }
+
+ const hoje = obterAgoraBrasilia();
+ const nomesMeses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+ const nomeMesReal = nomesMeses[hoje.getMonth()];
+ const bateComMesAtual = nomePlanilhaAtiva.toLowerCase().includes(nomeMesReal);
+
+ if(bateComMesAtual){ el.style.display='none'; return; }
+
+ // Acha a planilha salva que já tem o nome do mês atual, pra oferecer o botão de troca rápida —
+ // ou trocar sozinho, se ainda não tiver feito isso nessa sessão (ver abaixo).
+ const lista = getPlanilhasSalvas();
+ const nomeMesRealCapitalizado = nomeMesReal.charAt(0).toUpperCase()+nomeMesReal.slice(1);
+ const planilhaDoMesAtual = lista.find(p=>p.nome.toLowerCase().includes(nomeMesReal));
+
+ // Troca automática — só na primeira checagem de cada sessão (aba aberta). Depois disso, mesmo
+ // que a pessoa escolha de propósito ver um mês antigo, o sistema não fica forçando de volta a
+ // cada checagem (que roda 1x por minuto), só mostra o aviso com o botão pra trocar se quiser.
+ const jaTrocouAutomaticoNessaSessao = sessionStorage.getItem('biobel_ja_trocou_mes_automatico')==='yes';
+ if(planilhaDoMesAtual && !jaTrocouAutomaticoNessaSessao){
+  sessionStorage.setItem('biobel_ja_trocou_mes_automatico', 'yes');
+  mostrarToast('📅 O mês virou! Trocando sozinho pra planilha de '+planilhaDoMesAtual.nome+'...');
+  irParaPlanilhaPorNome(planilhaDoMesAtual.nome);
+  el.style.display = 'none';
+  return;
+ }
+
+ el.style.display = 'block';
+ el.innerHTML = `<div style="background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.35);border-radius:14px;padding:14px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+   <div style="font-size:12.5px;color:#fbbf24;font-weight:700;">📅 O mês virou! Você está vendo "<strong>${nomePlanilhaAtiva}</strong>", mas hoje já é ${nomeMesRealCapitalizado}.</div>
+   ${planilhaDoMesAtual
+    ? `<button onclick="irParaPlanilhaPorNome('${planilhaDoMesAtual.nome.replace(/'/g,"\\'")}')" style="background:#fbbf24;color:#3a2a0b;border:none;border-radius:10px;padding:8px 14px;font-weight:800;font-size:12px;cursor:pointer;white-space:nowrap;">🔄 Ir pra ${planilhaDoMesAtual.nome}</button>`
+    : `<button onclick="showTab('config');mostrarSecaoConfig('Planilhas');" style="background:#fbbf24;color:#3a2a0b;border:none;border-radius:10px;padding:8px 14px;font-weight:800;font-size:12px;cursor:pointer;white-space:nowrap;">➕ Cadastrar planilha de ${nomeMesRealCapitalizado}</button>`}
+  </div>`;
+
+ dispararNotificacaoMesDivergente(nomePlanilhaAtiva, nomeMesRealCapitalizado);
+}
+function irParaPlanilhaPorNome(nome){
+ const lista = getPlanilhasSalvas();
+ const encontrada = lista.find(p=>p.nome===nome);
+ if(!encontrada) return;
+ document.getElementById('googleSheetUrl').value = encontrada.url;
+ localStorage.setItem('biobel_google_sheet_url', encontrada.url);
+ registrarTrocaDePlanilha(encontrada.nome, encontrada.url);
+ mostrarToast('🔄 Trocando para: '+encontrada.nome);
+ loadGoogleSheet();
+ atualizarNomePlanilhaAtiva();
+}
+function dispararNotificacaoMesDivergente(nomeAtual, nomeMesReal){
+ // Reaproveita o mesmo sistema de notificação da meta batida — só avisa nos 3 primeiros dias
+ // do mês novo, uma vez por dia, pra não incomodar depois disso.
+ const ativado = localStorage.getItem('biobel_notificacoes_ativas') === 'yes';
+ if(!ativado) return;
+ if(typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+ const hoje = obterAgoraBrasilia();
+ if(hoje.getDate()>3) return;
+ const hojeStr = hoje.paraChaveISO();
+ const jaAvisouHoje = localStorage.getItem('biobel_notif_mes_divergente_dia') === hojeStr;
+ if(jaAvisouHoje) return;
+ localStorage.setItem('biobel_notif_mes_divergente_dia', hojeStr);
+ try{
+  new Notification('📅 O mês virou!', {
+   body: 'Você ainda está vendo "'+nomeAtual+'" — já é '+nomeMesReal+'. Hora de trocar de planilha.',
+   icon: '/logo_biobel_gravatai.png'
+  });
+ }catch(e){}
+}
+function sugerirProximaPlanilha(){
+ // Item 9: perto do fim do mês, sugere já preparar a planilha do mês seguinte, evitando a
+ // correria do dia 1.
+ const el = document.getElementById('avisoProximaPlanilha');
+ if(!el) return;
+ const hoje = obterAgoraBrasilia();
+ if(hoje.getDate()<25){ el.style.display='none'; return; }
+
+ const nomesMeses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+ const proximoMesIdx = (hoje.getMonth()+1)%12;
+ const nomeProximoMes = nomesMeses[proximoMesIdx];
+ const lista = getPlanilhasSalvas();
+ const jaTemProximoMes = lista.some(p=>p.nome.toLowerCase().includes(nomeProximoMes));
+ if(jaTemProximoMes){ el.style.display='none'; return; }
+
+ const nomeProximoMesCap = nomeProximoMes.charAt(0).toUpperCase()+nomeProximoMes.slice(1);
+ el.style.display = 'block';
+ el.innerHTML = `<div style="background:rgba(79,156,255,.08);border:1px solid rgba(79,156,255,.3);border-radius:14px;padding:14px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+   <div style="font-size:12.5px;color:#93a3ba;">💡 Faltam poucos dias pro mês virar — que tal já deixar a planilha de <strong style="color:#dce5f2;">${nomeProximoMesCap}</strong> pronta?</div>
+   <button onclick="showTab('config');mostrarSecaoConfig('Planilhas');" style="background:#4f9cff;color:#04182e;border:none;border-radius:10px;padding:8px 14px;font-weight:800;font-size:12px;cursor:pointer;white-space:nowrap;">➕ Cadastrar agora</button>
+  </div>`;
+}
+function removerPlanilhaSalva(index){
+ const lista0 = getPlanilhasSalvas();
+ const nome = lista0[index]?.nome || 'esta planilha';
+ confirmarBiobel(`Remover "${nome}" da lista salva? (Isso não apaga a planilha, só tira ela da listinha aqui.)`, ()=>{
+  const lista = getPlanilhasSalvas();
+  lista.splice(index,1);
+  salvarListaPlanilhas(lista);
+  renderPlanilhasSalvas();
+ });
+}
+function seedPlanilhaSetembro2026(){
+ // Recupera referências conhecidas sem apagar nenhuma planilha já cadastrada.
+ // A planilha principal continua disponível mesmo se a lista local tiver sido limpa.
+ const lista = getPlanilhasSalvas();
+ const principal = { nome:'Planilha principal', url:DEFAULT_GOOGLE_URL };
+ const setembro = { nome:'Setembro 2026', url:'https://docs.google.com/spreadsheets/d/1o99UbEDpc0wgnjAfF0D0DQZcLdR53zBMW3Cieqoa1IQ/edit?usp=sharing' };
+ let mudou = false;
+ if(!lista.some(p=>p.url===principal.url)){ lista.unshift(principal); mudou = true; }
+ if(!lista.some(p=>p.url===setembro.url)){ lista.push(setembro); mudou = true; }
+ if(mudou) salvarListaPlanilhas(lista);
+}
+function renderPlanilhasSalvas(){
+ seedPlanilhaSetembro2026();
+ const select = document.getElementById('planilhaSalvaSelect');
+ const listaEl = document.getElementById('listaPlanilhasSalvas');
+ const selectInfo = document.getElementById('seletorPlanilhaInfoGeral');
+ const lista = getPlanilhasSalvas();
+ const urlAtual = getGoogleUrl();
+ if(select){
+  select.innerHTML = '<option value="">— Escolher planilha salva —</option>' +
+   lista.map(p=>`<option value="${p.url}" ${p.url===urlAtual?'selected':''}>${p.nome}</option>`).join('');
+ }
+ if(selectInfo){
+  selectInfo.innerHTML = '<option value="">— Escolher planilha salva —</option>' +
+   lista.map(p=>`<option value="${p.url}" ${p.url===urlAtual?'selected':''}>${p.nome}</option>`).join('');
+ }
+ if(!listaEl) return;
+ if(lista.length===0){
+  listaEl.innerHTML = '';
+  return;
+ }
+ listaEl.innerHTML = lista.map((p,i)=>`
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;background:#0b1728;border:1px solid #1c2c42;border-radius:10px;padding:8px 12px;font-size:12.5px;">
+   <span style="color:#dce5f2;font-weight:600;">${p.nome}</span>
+   <button onclick="removerPlanilhaSalva(${i})" title="Remover da lista" class="no-print text-rose-400 hover:text-rose-300">🗑</button>
+  </div>`).join('');
+}
+
+async function lerPlanilhaSelecionadaInfoGeral(){
+ const select = document.getElementById('seletorPlanilhaInfoGeral');
+ const btn = document.getElementById('btnLerPlanilhaInfoGeral');
+ const url = select.value;
+ if(!url){
+  mostrarToast('⚠️ Escolha uma planilha na lista antes de clicar.');
+  return;
+ }
+ const nomeSelecionado = select.options[select.selectedIndex]?.textContent || '';
+ document.getElementById('googleSheetUrl').value = url;
+ localStorage.setItem('biobel_google_sheet_url', url);
+
+ const textoOriginal = btn.textContent;
+ btn.disabled = true;
+ btn.style.opacity = '0.65';
+ btn.textContent = '⏳ Lendo...';
+
+ await loadGoogleSheet();
+
+ // loadGoogleSheet trata o próprio erro por dentro (não rejeita a Promise),
+ // então a forma confiável de saber se deu certo é olhar o badge de conexão que ela mesma atualiza.
+ const badge = document.getElementById('connBadge');
+ const deuCerto = badge && badge.className.includes('conn-ok');
+ if(deuCerto){
+  mostrarToast('✅ Planilha "'+nomeSelecionado+'" lida com sucesso!');
+ } else {
+  mostrarToast('🔴 Não consegui ler "'+nomeSelecionado+'" agora. Tente de novo em alguns segundos.');
+ }
+
+ btn.disabled = false;
+ btn.style.opacity = '';
+ btn.textContent = textoOriginal;
+ atualizarNomePlanilhaAtiva();
+}
+
+async function voltarPlanilhaPadrao(){
+ const btn = document.getElementById('btnVoltarPadraoInfoGeral');
+ document.getElementById('googleSheetUrl').value = DEFAULT_GOOGLE_URL;
+ localStorage.setItem('biobel_google_sheet_url', DEFAULT_GOOGLE_URL);
+
+ const textoOriginal = btn.textContent;
+ btn.disabled = true;
+ btn.style.opacity = '0.65';
+ btn.textContent = '⏳ Lendo...';
+
+ await loadGoogleSheet();
+
+ const badge = document.getElementById('connBadge');
+ const deuCerto = badge && badge.className.includes('conn-ok');
+ if(deuCerto){
+  mostrarToast('✅ Voltou pra planilha padrão com sucesso!');
+ } else {
+  mostrarToast('🔴 Não consegui ler a planilha padrão agora. Tente de novo em alguns segundos.');
+ }
+
+ btn.disabled = false;
+ btn.style.opacity = '';
+ btn.textContent = textoOriginal;
+ atualizarNomePlanilhaAtiva();
+ renderPlanilhasSalvas();
+}
+
+function findPaymentTotals(rows){
+ // Procura a linha "total" da seção FORMA DE PAGAMENTO (colunas: nº, Dinheiro, Débito, Crédito, Pix)
+ for(let r=0;r<rows.length;r++){
+  const label=String(rows[r]?.[0]??'').trim().toLowerCase();
+  if(label==='total'){
+   const dinheiro=numeroPlanilha(rows[r][1]);
+   const debito=numeroPlanilha(rows[r][2]);
+   const credito=numeroPlanilha(rows[r][3]);
+   const pix=numeroPlanilha(rows[r][4]);
+   return {dinheiro,debito,credito,pix};
+  }
+ }
+ return {dinheiro:0,debito:0,credito:0,pix:0};
+}
+
+function extractSellerTotals(rows){
+ // Cada linha de venda tem: nº (col A), Dinheiro/Débito/Crédito/Pix (col B-E), vendedora (col F).
+ // Soma o valor da venda (uma das 4 colunas de pagamento) por vendedora, até achar a linha "total".
+ const totals = {};
+ for(let r=0;r<rows.length;r++){
+  const rownum = rows[r]?.[0];
+  const label = String(rownum??'').trim().toLowerCase();
+  if(label==='total') break;
+  if(typeof rownum!=='number') continue;
+  const vendedora = rows[r]?.[5];
+  if(!vendedora || typeof vendedora!=='string' || !vendedora.trim()) continue;
+  const nome = normalizarNome(vendedora);
+  let valorVenda = 0;
+  for(const c of [1,2,3,4]){
+   const v = rows[r]?.[c];
+   if(typeof v==='number') valorVenda += v;
+  }
+  if(valorVenda>0) totals[nome] = (totals[nome]||0) + valorVenda;
+ }
+ return totals;
+}
+
+function extractSellerDetalhes(rows){
+ // Igual extractSellerTotals, mas tambem conta quantas vendas cada vendedora fez, em qual forma
+ // de pagamento (Dinheiro/Débito/Crédito/Pix) — tanto a QUANTIDADE quanto o VALOR em R$ de cada uma.
+ const detalhes = {};
+ const colunaParaForma = {1:'dinheiro',2:'debito',3:'credito',4:'pix'};
+ for(let r=0;r<rows.length;r++){
+  const rownum = rows[r]?.[0];
+  const label = String(rownum??'').trim().toLowerCase();
+  if(label==='total') break;
+  if(typeof rownum!=='number') continue;
+  const vendedora = rows[r]?.[5];
+  if(!vendedora || typeof vendedora!=='string' || !vendedora.trim()) continue;
+  const nome = normalizarNome(vendedora);
+  if(!detalhes[nome]) detalhes[nome]={total:0,qtd:0,dinheiro:0,debito:0,credito:0,pix:0,dinheiroValor:0,debitoValor:0,creditoValor:0,pixValor:0};
+  for(const c of [1,2,3,4]){
+   const v = rows[r]?.[c];
+   if(typeof v==='number' && v>0){
+    detalhes[nome].total += v;
+    detalhes[nome].qtd += 1;
+    detalhes[nome][colunaParaForma[c]] += 1;
+    detalhes[nome][colunaParaForma[c]+'Valor'] += v;
+   }
+  }
+ }
+ return detalhes;
+}
+
+function extractTipoVendaTotais(rows){
+ // Conta quantos atendimentos foram presenciais e quantos online, olhando a coluna "tipo de venda" (G),
+ // e também soma o valor de cada venda (não só a quantidade), pra dar pra usar em filtros.
+ // Importante: só conta se a venda teve valor de verdade (mesmo critério de countTransactions) —
+ // sem essa checagem, linhas do molde com "presencial" pré-preenchido mas sem pagamento inflavam a contagem.
+ const totais = {presencial:0, online:0, presencialValor:0, onlineValor:0};
+ for(let r=0;r<rows.length;r++){
+  const rownum = rows[r]?.[0];
+  const label = String(rownum??'').trim().toLowerCase();
+  if(label==='total') break;
+  if(typeof rownum!=='number') continue;
+  const tipo = rows[r]?.[6];
+  if(!tipo || typeof tipo!=='string') continue;
+  const t = tipo.trim().toLowerCase();
+  if(t!=='presencial' && t!=='online') continue;
+  let valorVenda = 0;
+  for(const c of [1,2,3,4]){
+   const v = rows[r]?.[c];
+   if(typeof v==='number') valorVenda += v;
+  }
+  if(valorVenda<=0) continue;
+  totais[t]++;
+  totais[t+'Valor'] += valorVenda;
+ }
+ return totais;
+}
+
+function extrairHoraDoValor(v){
+ // A coluna L guarda o horário exato de cada venda. O XLSX.js entrega isso como
+ // uma fração do dia (ex: 0.40 = 09:36) na maioria dos casos, mas também trata
+ // o caso raro de vir como um objeto Date.
+ if(v==null) return null;
+ if(v instanceof Date) return v.getHours();
+ if(typeof v==='number'){
+  const fracao = v % 1;
+  if(fracao>=0 && fracao<1) return Math.floor(fracao*24);
+ }
+ if(typeof v==='string'){
+  const m = v.match(/^(\d{1,2}):(\d{2})/);
+  if(m) return Number(m[1]);
+ }
+ return null;
+}
+
+function extrairFracaoTempo(v){
+ // Igual extrairHoraDoValor, mas devolve a fração exata do dia (não só a hora arredondada),
+ // pra dar pra comparar qual venda foi mais cedo/mais tarde com precisão de minuto.
+ if(v==null) return null;
+ if(v instanceof Date) return (v.getHours()*3600+v.getMinutes()*60+v.getSeconds())/86400;
+ if(typeof v==='number'){
+  const fracao = v % 1;
+  if(fracao>=0 && fracao<1) return fracao;
+ }
+ if(typeof v==='string'){
+  const m = v.match(/^(\d{1,2}):(\d{2})(:(\d{2}))?/);
+  if(m){
+   const h=Number(m[1]), mi=Number(m[2]), s=Number(m[4]||0);
+   return (h*3600+mi*60+s)/86400;
+  }
+ }
+ return null;
+}
+function formatarHoraFracao(frac){
+ if(frac==null) return null;
+ const totalSeg = Math.round(frac*86400);
+ const h = Math.floor(totalSeg/3600) % 24;
+ const mi = Math.floor((totalSeg%3600)/60);
+ return String(h).padStart(2,'0')+':'+String(mi).padStart(2,'0');
+}
+function extractPrimeiraUltimaVenda(rows){
+ // Usa a coluna "temp" (L) — mesma coluna já usada em Horários de Pico —
+ // mas aqui guarda o horário exato da primeira e da última venda do dia.
+ let primeira=null, ultima=null;
+ for(let r=0;r<rows.length;r++){
+  const rownum = rows[r]?.[0];
+  const label = String(rownum??'').trim().toLowerCase();
+  if(label==='total') break;
+  if(typeof rownum!=='number') continue;
+  const frac = extrairFracaoTempo(rows[r]?.[11]);
+  if(frac===null) continue;
+  if(primeira===null || frac<primeira) primeira=frac;
+  if(ultima===null || frac>ultima) ultima=frac;
+ }
+ return { primeiraVenda: formatarHoraFracao(primeira), ultimaVenda: formatarHoraFracao(ultima) };
+}
+
+function normalizarNomeAba(nome){
+ // Reconhece abas no formato "DD.MM" mesmo quando alguém digita sem o zero à esquerda
+ // (ex: "25.8" em vez de "25.08") — erro comum de digitação que fazia o sistema
+ // ignorar o dia inteiro, silenciosamente, sem nenhum aviso.
+ const m = String(nome||'').trim().match(/^(\d{1,2})\.(\d{1,2})$/);
+ if(!m) return null;
+ const dia = String(m[1]).padStart(2,'0');
+ const mes = String(m[2]).padStart(2,'0');
+ if(Number(dia)<1 || Number(dia)>31 || Number(mes)<1 || Number(mes)>12) return null;
+ return dia+'.'+mes;
+}
+
+function extractHorariosVendas(rows){
+ // Lista o horário exato (em fração do dia) de cada venda individual, em ordem crescente —
+ // usada pra calcular os "intervalos sem vendas" (maiores gaps de tempo entre uma venda e outra).
+ const horarios = [];
+ for(let r=0;r<rows.length;r++){
+  const rownum = rows[r]?.[0];
+  const label = String(rownum??'').trim().toLowerCase();
+  if(label==='total') break;
+  if(typeof rownum!=='number') continue;
+  let valorVenda = 0;
+  for(const c of [1,2,3,4]){
+   const v = rows[r]?.[c];
+   if(typeof v==='number') valorVenda += v;
+  }
+  if(valorVenda<=0) continue;
+  const frac = extrairFracaoTempo(rows[r]?.[11]);
+  if(frac===null) continue;
+  horarios.push(frac);
+ }
+ return horarios.sort((a,b)=>a-b);
+}
+
+function extractGeneroTotais(rows){
+ // Usa a coluna "genero" (J). Só conta linhas com vendedora preenchida (venda real) —
+ // a planilha vem com "mulher" pré-preenchido em todo o molde de 60 linhas, mesmo nas vazias.
+ // Também exige valor de venda > 0 (mesmo critério de countTransactions), pra bater com a contagem oficial de vendas.
+ const totais = {mulher:{qtd:0,valor:0}, homem:{qtd:0,valor:0}};
+ for(let r=0;r<rows.length;r++){
+  const rownum = rows[r]?.[0];
+  const label = String(rownum??'').trim().toLowerCase();
+  if(label==='total') break;
+  if(typeof rownum!=='number') continue;
+  const vendedoraRaw = rows[r]?.[5];
+  if(!vendedoraRaw || typeof vendedoraRaw!=='string' || !vendedoraRaw.trim()) continue; // sem vendedora = linha vazia do molde
+  const generoRaw = rows[r]?.[9];
+  if(!generoRaw || typeof generoRaw!=='string') continue;
+  const g = generoRaw.trim().toLowerCase();
+  if(g!=='mulher' && g!=='homem') continue;
+  let valorVenda = 0;
+  for(const c of [1,2,3,4]){
+   const v = rows[r]?.[c];
+   if(typeof v==='number') valorVenda += v;
+  }
+  if(valorVenda<=0) continue;
+  totais[g].qtd += 1;
+  totais[g].valor += valorVenda;
+ }
+ return totais;
+}
+
+function extractTurnos(rows){
+ // Usa a coluna "turno de atendimento" (K) que já vem pronta na planilha (manhã/meio-dia/tarde).
+ // Exige valor de venda > 0 (mesmo critério das outras contagens), pra não inflar com linhas vazias do molde.
+ const porTurno = {};
+ const porTurnoVend = {};
+ const turnosValidos = ['manhã','meio-dia','tarde'];
+ let totalComTurno = 0;
+ for(let r=0;r<rows.length;r++){
+  const rownum = rows[r]?.[0];
+  const label = String(rownum??'').trim().toLowerCase();
+  if(label==='total') break;
+  if(typeof rownum!=='number') continue;
+  const turnoRaw = rows[r]?.[10];
+  if(!turnoRaw || typeof turnoRaw!=='string') continue;
+  const turno = turnoRaw.trim();
+  if(!turnosValidos.includes(turno)) continue; // ignora valores estranhos tipo #VALUE!
+  let valorVenda = 0;
+  for(const c of [1,2,3,4]){
+   const v = rows[r]?.[c];
+   if(typeof v==='number') valorVenda += v;
+  }
+  if(valorVenda<=0) continue;
+  if(!porTurno[turno]) porTurno[turno] = {qtd:0, valor:0};
+  porTurno[turno].qtd += 1;
+  porTurno[turno].valor += valorVenda;
+  totalComTurno++;
+
+  const vendedoraRaw = rows[r]?.[5];
+  if(vendedoraRaw && typeof vendedoraRaw==='string' && vendedoraRaw.trim()){
+   const nome = normalizarNome(vendedoraRaw);
+   if(!porTurnoVend[turno]) porTurnoVend[turno] = {};
+   if(!porTurnoVend[turno][nome]) porTurnoVend[turno][nome] = {qtd:0, valor:0};
+   porTurnoVend[turno][nome].qtd += 1;
+   porTurnoVend[turno][nome].valor += valorVenda;
+  }
+ }
+ return {porTurno, porTurnoVend, totalComTurno};
+}
+
+function extractHorariosPico(rows){
+ // Conta quantas vendas, o valor total e quanto foi em dinheiro, em cada hora do dia (coluna L, "temp").
+ const porHora = {};
+ for(let r=0;r<rows.length;r++){
+  const rownum = rows[r]?.[0];
+  const label = String(rownum??'').trim().toLowerCase();
+  if(label==='total') break;
+  if(typeof rownum!=='number') continue;
+  const hora = extrairHoraDoValor(rows[r]?.[11]);
+  if(hora===null || hora<0 || hora>23) continue;
+  const dinheiro = typeof rows[r]?.[1]==='number' ? rows[r][1] : 0;
+  let valorVenda = 0;
+  for(const c of [1,2,3,4]){
+   const v = rows[r]?.[c];
+   if(typeof v==='number') valorVenda += v;
+  }
+  if(!porHora[hora]) porHora[hora] = {qtd:0, valor:0, dinheiro:0};
+  porHora[hora].qtd += 1;
+  porHora[hora].valor += valorVenda;
+  porHora[hora].dinheiro += dinheiro;
+ }
+ return porHora;
+}
+
+function extractProdutosVendidos(rows){
+ // Soma a quantidade e o valor de cada produto vendido, olhando as colunas
+ // "produto que foram vendidos" (H) e "qt de produtos" (I).
+ const produtos = {};
+ for(let r=0;r<rows.length;r++){
+  const rownum = rows[r]?.[0];
+  const label = String(rownum??'').trim().toLowerCase();
+  if(label==='total') break;
+  if(typeof rownum!=='number') continue;
+  const produto = rows[r]?.[7];
+  if(!produto || typeof produto!=='string' || !produto.trim()) continue;
+  const nome = produto.trim();
+  const qt = rows[r]?.[8];
+  let valorVenda = 0;
+  for(const c of [1,2,3,4]){
+   const v = rows[r]?.[c];
+   if(typeof v==='number') valorVenda += v;
+  }
+  if(!produtos[nome]) produtos[nome] = {qtd:0, valor:0};
+  produtos[nome].qtd += (typeof qt==='number' ? qt : 1);
+  produtos[nome].valor += valorVenda;
+ }
+ return produtos;
+}
+
+function countTransactions(rows){
+ // Conta quantas linhas de venda existem (uma linha = um atendimento/venda), até achar a linha "total".
+ let qtd = 0;
+ for(let r=0;r<rows.length;r++){
+  const rownum = rows[r]?.[0];
+  const label = String(rownum??'').trim().toLowerCase();
+  if(label==='total') break;
+  if(typeof rownum!=='number') continue;
+  let valorVenda = 0;
+  for(const c of [1,2,3,4]){
+   const v = rows[r]?.[c];
+   if(typeof v==='number') valorVenda += v;
+  }
+  if(valorVenda>0) qtd++;
+ }
+ return qtd;
+}
+
+function setRefreshButtonsLoading(loading){
+ const btns = [
+  document.getElementById('btnRefreshSidebar'),
+  document.getElementById('btnRefreshConfig'),
+  document.getElementById('btnRefreshSimple'),
+  document.getElementById('btnRefreshCompleto')
+ ].filter(Boolean);
+ btns.forEach(btn=>{
+  if(loading){
+   btn.dataset.originalText = btn.dataset.originalText || btn.textContent;
+   btn.disabled = true;
+   btn.style.opacity = '0.65';
+   btn.style.cursor = 'wait';
+   btn.textContent = '⏳ Atualizando...';
+  } else {
+   btn.disabled = false;
+   btn.style.opacity = '';
+   btn.style.cursor = '';
+   btn.textContent = btn.dataset.originalText || '↻ Atualizar agora';
+  }
+ });
+}
+function extractVendasIndividuais(rows){
+ // Lista o valor de cada venda individual do dia (soma das colunas de pagamento por linha),
+ // usada pra detectar vendas muito fora do padrão (possível erro de digitação).
+ const valores = [];
+ for(let r=0;r<rows.length;r++){
+  const rownum = rows[r]?.[0];
+  const label = String(rownum??'').trim().toLowerCase();
+  if(label==='total') break;
+  if(typeof rownum!=='number') continue;
+  let valorVenda = 0;
+  for(const c of [1,2,3,4]){
+   const v = rows[r]?.[c];
+   if(typeof v==='number') valorVenda += v;
+  }
+  if(valorVenda>0) valores.push(valorVenda);
+ }
+ return valores;
+}
+
+function extractRegistrosVendas(rows){
+ // Igual extractVendasIndividuais, mas guarda o contexto completo de cada venda
+ // (vendedora, turno, quantidade de itens) — usado no card de "Recordes de Vendas Individuais".
+ const registros = [];
+ for(let r=0;r<rows.length;r++){
+  const rownum = rows[r]?.[0];
+  const label = String(rownum??'').trim().toLowerCase();
+  if(label==='total') break;
+  if(typeof rownum!=='number') continue;
+  let valorVenda = 0;
+  for(const c of [1,2,3,4]){
+   const v = rows[r]?.[c];
+   if(typeof v==='number') valorVenda += v;
+  }
+  if(valorVenda<=0) continue;
+  const vendedoraRaw = rows[r]?.[5];
+  const vendedora = (vendedoraRaw && typeof vendedoraRaw==='string' && vendedoraRaw.trim()) ? normalizarNome(vendedoraRaw) : null;
+  const turnoRaw = rows[r]?.[10];
+  const turno = (turnoRaw && typeof turnoRaw==='string' && ['manhã','meio-dia','tarde'].includes(turnoRaw.trim())) ? turnoRaw.trim() : null;
+  const qtdItensRaw = rows[r]?.[8];
+  const qtdItens = (typeof qtdItensRaw==='number' && qtdItensRaw>0) ? qtdItensRaw : null;
+  registros.push({ valor: valorVenda, vendedora, turno, qtdItens });
+ }
+ return registros;
+}
+
+/* ===== Conversão robusta de valores vindos da planilha ===== */
+function numeroPlanilha(v){
+ if(typeof v==='number' && Number.isFinite(v)) return v;
+ if(v===null || v===undefined) return 0;
+ let s=String(v).trim();
+ if(!s) return 0;
+ s=s.replace(/R\$/gi,'').replace(/\s/g,'');
+ if(s.includes(',') && s.includes('.')) s=s.replace(/\./g,'').replace(',','.');
+ else if(s.includes(',')) s=s.replace(',','.');
+ else if((s.match(/\./g)||[]).length>1) s=s.replace(/\./g,'');
+ const n=Number(s);
+ return Number.isFinite(n) ? n : 0;
+}
+
+/* ===== PROCESSAMENTO DE DADOS DA PLANILHA =====
+   REGRA CRÍTICA DO CAIXA:
+   O fechamento da gaveta é o valor informado pela própria planilha.
+   Nunca substituir esse valor por uma conta parcial. Se não for localizado,
+   marcar como ausente e bloquear o fechamento/impressão.
+   ============================================================ */
+function colunaExcel(indiceZero){
+ let n=Number(indiceZero);
+ if(!Number.isFinite(n)||n<0) return '?';
+ let s='';
+ do{ s=String.fromCharCode(65+(n%26))+s; n=Math.floor(n/26)-1; }while(n>=0);
+ return s;
+}
+function valorPlanilhaPreenchido(bruto){
+ if(typeof bruto==='number') return Number.isFinite(bruto);
+ if(bruto===null||bruto===undefined) return false;
+ const s=String(bruto).trim();
+ if(!s) return false;
+ return Number.isFinite(numeroPlanilha(bruto));
+}
+function textoNormalizadoPlanilha(v){
+ return String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
+}
+function ehRotuloFechamentoCaixa(v){
+ const t=textoNormalizadoPlanilha(v);
+ return ((t.includes('fechamento')&&t.includes('caixa')) ||
+         t.includes('saldo final do caixa') ||
+         t==='saldo final' ||
+         t.includes('valor que ficou no caixa'));
+}
+function extrairFechamentoCaixaDaPlanilha(rows){
+ const rotulos=[];
+ for(let r=0;r<rows.length;r++){
+  for(let c=0;c<(rows[r]?.length||0);c++){
+   if(ehRotuloFechamentoCaixa(rows[r]?.[c])) rotulos.push({r,c});
+  }
+ }
+ if(!rotulos.length) return {encontrado:false,valor:null,celula:null,rotulo:null};
+
+ // A planilha já usa os dois formatos:
+ // 26/09 -> rótulo acima e valor abaixo (M24 -> M25)
+ // 28/09 -> valor acima e rótulo abaixo (M25 -> M26)
+ // Portanto, só avaliamos células imediatamente ligadas ao rótulo e preferimos ABAIXO.
+ for(let i=rotulos.length-1;i>=0;i--){
+  const {r,c}=rotulos[i];
+  const ordem=[
+   {r:r+1,c},
+   {r:r-1,c},
+   {r,c:c+1},
+   {r,c:c-1}
+  ];
+  for(const x of ordem){
+   if(x.r<0||x.r>=rows.length||x.c<0) continue;
+   const bruto=rows[x.r]?.[x.c];
+   if(!valorPlanilhaPreenchido(bruto)) continue;
+   return {
+    encontrado:true,
+    valor:numeroPlanilha(bruto),
+    celula:colunaExcel(x.c)+String(x.r+1),
+    rotulo:colunaExcel(c)+String(r+1)
+   };
+  }
+ }
+ const ultimo=rotulos[rotulos.length-1];
+ return {encontrado:false,valor:null,celula:null,rotulo:colunaExcel(ultimo.c)+String(ultimo.r+1)};
+}
+function extrairValorPorRotulo(rows, predicado){
+ for(let r=0;r<rows.length;r++){
+  for(let c=0;c<(rows[r]?.length||0);c++){
+   if(!predicado(rows[r]?.[c])) continue;
+   for(const dr of [1,-1]){
+    const rr=r+dr;
+    if(rr<0||rr>=rows.length) continue;
+    const bruto=rows[rr]?.[c];
+    if(valorPlanilhaPreenchido(bruto)) return {encontrado:true,valor:numeroPlanilha(bruto),celula:colunaExcel(c)+String(rr+1)};
+   }
+  }
+ }
+ return {encontrado:false,valor:0,celula:null};
+}
+function processarLinhasDoDia(sheetName, rows){
+ const pagamentos=findPaymentTotals(rows);
+ const initialInfo=extrairValorPorRotulo(rows,v=>textoNormalizadoPlanilha(v).includes('inicio do caixa'));
+ const retiradaInfo=extrairValorPorRotulo(rows,v=>textoNormalizadoPlanilha(v).includes('retirada do caixa'));
+
+ const {dinheiro,debito,credito,pix}=pagamentos;
+ const totalPagamentos=dinheiro+debito+credito+pix;
+
+ // Fonte oficial da venda diária: soma dos totais de pagamento.
+ // Isso evita que alterações de layout/fórmulas em "Entrada do dia" façam o
+ // sistema capturar uma célula errada e transformar dezenas de milhares em milhões.
+ let sales=totalPagamentos;
+ let salesCelula='TOTAL_PAGAMENTOS';
+
+ // Fallback somente quando a planilha não trouxe nenhum total de pagamento.
+ // Nesse caso, tenta localizar "Entrada do dia" nos formatos antigos.
+ if(sales<=0){
+  sales=0;
+  salesCelula=null;
+  for(let r=0;r<rows.length&&sales===0;r++){
+   for(let c=0;c<(rows[r]?.length||0)&&sales===0;c++){
+    const cel=rows[r]?.[c];
+    if(typeof cel!=='string'||!textoNormalizadoPlanilha(cel).includes('entrada do dia')) continue;
+    for(let cc=c+1;cc<Math.min(c+3,rows[r].length);cc++){
+     const bruto=rows[r][cc];
+     if(valorPlanilhaPreenchido(bruto)){ sales=numeroPlanilha(bruto); salesCelula=colunaExcel(cc)+String(r+1); break; }
+    }
+   }
+  }
+  if(sales===0&&valorPlanilhaPreenchido(rows[1]?.[15])){ sales=numeroPlanilha(rows[1][15]); salesCelula='P2'; }
+ }
+
+ const fechamentoInfo=extrairFechamentoCaixaDaPlanilha(rows);
+ const closing=fechamentoInfo.encontrado ? fechamentoInfo.valor : null;
+
+ const vendedoras=extractSellerTotals(rows);
+ const vendedorasDetalhe=extractSellerDetalhes(rows);
+ const qtdVendas=countTransactions(rows);
+ const tipoVenda=extractTipoVendaTotais(rows);
+ const produtos=extractProdutosVendidos(rows);
+ const horarios=extractHorariosPico(rows);
+ const {porTurno,porTurnoVend,totalComTurno}=extractTurnos(rows);
+ const genero=extractGeneroTotais(rows);
+ const vendasIndividuais=extractVendasIndividuais(rows);
+ const {primeiraVenda,ultimaVenda}=extractPrimeiraUltimaVenda(rows);
+ const horariosVendas=extractHorariosVendas(rows);
+ const registrosVendas=extractRegistrosVendas(rows);
+
+ const diferencaVendasPagamentos=sales>0 ? sales-totalPagamentos : 0;
+
+ return {
+  dia:sheetName,
+  initial:initialInfo.valor,
+  initialEncontrado:initialInfo.encontrado,
+  initialCelula:initialInfo.celula,
+  sales,
+  salesCelula,
+  withdrawals:retiradaInfo.valor,
+  withdrawalsEncontrado:retiradaInfo.encontrado,
+  withdrawalsCelula:retiradaInfo.celula,
+  closing,
+  closingEncontrado:fechamentoInfo.encontrado,
+  closingCelula:fechamentoInfo.celula,
+  dinheiro,debito,credito,pix,totalPagamentos,diferencaVendasPagamentos,
+  vendedoras,qtdVendas,vendedorasDetalhe,tipoVenda,produtos,horarios,porTurno,porTurnoVend,totalComTurno,genero,
+  vendasIndividuais,primeiraVenda,ultimaVenda,horariosVendas,registrosVendas
+ };
+}
+
+function getAppsScriptProxyUrl(){
+ return (localStorage.getItem('biobel_apps_script_url')||'').trim();
+}
+function saveAppsScriptUrl(){
+ const val = document.getElementById('appsScriptUrl').value.trim();
+ const statusEl = document.getElementById('appsScriptUrlStatus');
+ if(val && !val.startsWith('https://script.google.com/')){
+  statusEl.innerHTML = '<span class="text-rose-400">Essa URL não parece ser do Google Apps Script. Confira se copiou certinho.</span>';
+  return;
+ }
+ localStorage.setItem('biobel_apps_script_url', val);
+ if(val){
+  statusEl.innerHTML = '<span class="text-emerald-400">✅ Ponte configurada! A próxima leitura já vai usar ela.</span>';
+  mostrarToast('✅ URL da ponte salva! Agora as leituras passam por ela.');
+ } else {
+  statusEl.innerHTML = '<span class="text-slate-400">Ponte removida — voltando pro jeito de leitura de sempre.</span>';
+  mostrarToast('Ponte desativada, voltando pro modo padrão.');
+ }
+}
+function initAppsScriptUrlUI(){
+ const el = document.getElementById('appsScriptUrl');
+ if(el) el.value = getAppsScriptProxyUrl();
+}
+
+let carregandoPlanilha = false; // evita duas leituras da planilha rodando ao mesmo tempo (ex: atualização automática + clique manual), que podiam misturar dados de meses diferentes
+async function loadGoogleSheet(){
+ if(carregandoPlanilha){
+  mostrarToast('⏳ Já tem uma leitura em andamento, aguarde ela terminar.');
+  return;
+ }
+ carregandoPlanilha = true;
+ const url=getGoogleUrl();
+ const id=extractSpreadsheetId(url);
+ if(!id){ carregandoPlanilha=false; return setGoogleStatus('link inválido.'); }
+ setGoogleStatus('conectando à planilha...', false, 'connecting');
+ setRefreshButtonsLoading(true);
+ try{
+  const proxyUrl = getAppsScriptProxyUrl();
+  let found=0;
+  const novosDias=[]; // só substitui daysData depois que a leitura terminar com sucesso
+
+  if(proxyUrl){
+   // Caminho novo: passa pela "ponte" do Google Apps Script — roda dentro do Google,
+   // não esbarra no bloqueio de navegador (CORS) que às vezes acontecia no caminho antigo.
+   const chamadaUrl = proxyUrl + (proxyUrl.includes('?')?'&':'?') + 'id=' + encodeURIComponent(id) + '&_t=' + Date.now();
+   const resp = await fetch(chamadaUrl, {cache:'no-store'});
+   if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
+   const data = await resp.json();
+   if(data.error) throw new Error(data.error);
+   for(const sheetName in (data.sheets||{})){
+    const nomeNormalizado = normalizarNomeAba(sheetName);
+    if(!nomeNormalizado) continue; // ignora abas que não são de um dia (ex: aba de resumo, config, etc.)
+    novosDias.push(processarLinhasDoDia(nomeNormalizado, data.sheets[sheetName]));
+    found++;
+   }
+  } else {
+   // Caminho antigo (ainda funciona, mas pode falhar por bloqueio de navegador às vezes):
+   // baixa o .xlsx direto do Google e lê com a biblioteca XLSX.js.
+   // Importante: o Google às vezes guarda uma cópia em cache desse link de exportação no
+   // próprio servidor dele, e demora pra atualizar (às vezes só no dia seguinte) — o "cache:no-store"
+   // sozinho não resolve isso, porque só afeta o cache do navegador, não o do lado do Google.
+   // Adicionar um parâmetro único a cada busca (a hora atual) força o Google a tratar como um
+   // pedido novo, sem usar a cópia antiga guardada.
+   const exportUrl=`https://docs.google.com/spreadsheets/d/${id}/export?format=xlsx&_biobel_cache_bust=${Date.now()}`;
+   const response=await fetch(exportUrl,{cache:'no-store'});
+   if(!response.ok) throw new Error(`HTTP ${response.status}`);
+   const buf=await response.arrayBuffer();
+   const wb=XLSX.read(buf,{type:'array'});
+   for(const sheetName of wb.SheetNames){
+    const nomeNormalizado = normalizarNomeAba(sheetName);
+    if(!nomeNormalizado) continue;
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{header:1,defval:null,raw:true});
+    novosDias.push(processarLinhasDoDia(nomeNormalizado, rows));
+    found++;
+   }
+  }
+
+  if(found===0 || novosDias.length===0) throw new Error('Nenhuma aba de dia válida foi encontrada na planilha.');
+  daysData=novosDias;
+  render();
+  window.dispatchEvent(new CustomEvent('biobel:data-updated'));
+  setGoogleStatus(`conectado. ${found} dia(s) atualizado(s) às ${new Date().toLocaleTimeString('pt-BR')}.`,true);
+  verificarEnvioEmailMensal();
+  sugerirProximaPlanilha();
+  // Se uma gravação ficou pendente durante uma queda/instabilidade, tenta agora novamente.
+  tentarEnviarHorarioFechamentoPendente();
+ }catch(err){
+  console.error(err);
+  setGoogleStatus('não foi possível ler a planilha. Verifique se ela está acessível para leitura sem login e se o navegador permite o acesso.');
+ }finally{
+  setRefreshButtonsLoading(false);
+  carregandoPlanilha = false;
+  // Roda sempre, sucesso ou falha — o aviso de "mês virou" só depende de qual planilha está
+  // configurada (já salva no navegador), não precisa de conexão nenhuma pra funcionar.
+  atualizarNomePlanilhaAtiva();
+ }
+}
+function startGoogleAutoRefresh(){
+ if(googleTimer) clearInterval(googleTimer);
+ googleTimer=setInterval(loadGoogleSheet,60000);
+}
+(function initGoogleConfig(){
+ const saved=localStorage.getItem('biobel_google_sheet_url');
+ const input=document.getElementById('googleSheetUrl');
+ if(saved && input) input.value=saved;
+ // O aviso de "mês virou" já aparece na hora, mesmo antes da planilha terminar de carregar (ou
+ // mesmo se a conexão falhar) — ele só depende de saber qual planilha está configurada, que já
+ // está salva no navegador.
+ atualizarNomePlanilhaAtiva();
+ // Sempre busca a planilha ao abrir a página (usa o link salvo, ou o link padrão da loja),
+ // e sempre mantém a atualização automática ligada — mesmo em um computador novo.
+ startGoogleAutoRefresh();
+ setTimeout(loadGoogleSheet,800);
+})();
+
+document.getElementById('fileInput')?.addEventListener('change',async e=>{
+ for(const file of e.target.files){
+  try{
+   const buf=await file.arrayBuffer();
+   const wb=XLSX.read(buf,{type:'array'});
+   const validSheets=wb.SheetNames.map(original=>({original,normalizado:normalizarNomeAba(original)})).filter(x=>x.normalizado!==null);
+   const jaExistem=validSheets.filter(x=>daysData.some(d=>d.dia===x.normalizado)).map(x=>x.normalizado);
+   if(!validSheets.length){ mostrarToast('⚠️ Nenhuma aba de dia (DD.MM) foi encontrada em "'+file.name+'".'); continue; }
+   if(jaExistem.length){
+    const ok=await confirmarBiobelAsync('O arquivo "'+file.name+'" tem dados para: '+jaExistem.join(', ')+'.\\n\\nEsses dias serão substituídos pelos novos dados.\\n\\nDeseja continuar?');
+    if(!ok) continue;
+   }
+   for(const {original,normalizado} of validSheets){
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[original],{header:1,defval:null,raw:true});
+    const item=processarLinhasDoDia(normalizado,rows);
+    daysData=daysData.filter(x=>x.dia!==normalizado);
+    daysData.push(item);
+   }
+  }catch(err){
+   console.error('Erro ao importar "'+file.name+'":',err);
+   mostrarToast('🔴 Não consegui ler "'+file.name+'". Verifique o arquivo e tente novamente.');
+  }
+ }
+ e.target.value='';
+ render();
+ window.dispatchEvent(new CustomEvent('biobel:data-updated'));
+});
+
+let advSummaryDonut = null;
+
+/* ============================================================
+   BIOBEL — ZONA: RENDERIZAÇÃO / DASHBOARD AVANÇADO
+   ============================================================ */
+/* ============================================================
+   BIOBEL — ZONA: INTELIGÊNCIA DA PLANILHA (v10.24)
+   Quatro leituras automáticas sem cadastro de produtos/clientes:
+   2) possíveis inconsistências, 3) comparação, 5) explicação e 10) destaques.
+   ============================================================ */
+function escInteligencia(valor){
+ const s=String(valor??'');
+ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function qtdVendasInteligencia(d){
+ const q=Number(d?.qtdVendas)||0;
+ return q>0?q:(Array.isArray(d?.vendasIndividuais)?d.vendasIndividuais.length:0);
+}
+function ticketMedioInteligencia(d){
+ const qtd=qtdVendasInteligencia(d);
+ return qtd>0?(Number(d?.sales)||0)/qtd:0;
+}
+function diferencaCaixaInteligencia(d){
+ const esperado=(Number(d?.initial)||0)+(Number(d?.dinheiro)||0)-(Number(d?.withdrawals)||0);
+ return (Number(d?.closing)||0)-esperado;
+}
+function serieDiasInteligencia(){
+ return [...daysData].sort((a,b)=>{
+  const [da,ma]=String(a.dia).split('.').map(Number);
+  const [db,mb]=String(b.dia).split('.').map(Number);
+  return (ma*100+da)-(mb*100+db);
+ });
+}
+function listaHtmlIntel(itens, vazio){
+ return itens.length ? itens.join('') : '<div class="biobel-inteligencia-vazio">'+(vazio||'Nenhum ponto relevante encontrado no momento.')+'</div>';
+}
+function renderInteligenciaInconsistencias(dias){
+ const el=document.getElementById('intelErros');
+ if(!el) return;
+ const problemas=[];
+ const vistos=new Set();
+ dias.forEach(d=>{
+  const dia=escInteligencia(d.dia);
+  if(vistos.has(d.dia)) problemas.push('<div class="biobel-inteligencia-item">🗓️ A aba <strong>'+dia+'</strong> apareceu mais de uma vez na leitura.</div>');
+  vistos.add(d.dia);
+  const vendas=Number(d.sales)||0;
+  const pagamentos=(Number(d.dinheiro)||0)+(Number(d.debito)||0)+(Number(d.credito)||0)+(Number(d.pix)||0);
+  if(vendas>0 && pagamentos>0 && Math.abs(vendas-pagamentos)>0.01){
+   problemas.push('<div class="biobel-inteligencia-item">💳 <strong>'+dia+'</strong>: vendas '+money(vendas)+' x pagamentos '+money(pagamentos)+'. Diferença de '+money(vendas-pagamentos)+'. Confira a planilha antes de fechar o dia.</div>');
+  }
+  const indiv=Array.isArray(d.vendasIndividuais)?d.vendasIndividuais:[];
+  if(indiv.length && vendas>0){
+   const somaInd=indiv.reduce((s,v)=>s+(Number(v)||0),0);
+   if(Math.abs(vendas-somaInd)>0.01){
+    problemas.push('<div class="biobel-inteligencia-item">🧮 <strong>'+dia+'</strong>: entrada do dia '+money(vendas)+' x soma das vendas individuais '+money(somaInd)+'.</div>');
+   }
+  }
+  const qtd=qtdVendasInteligencia(d);
+  if(qtd>0 && vendas<=0){
+   problemas.push('<div class="biobel-inteligencia-item">📋 <strong>'+dia+'</strong>: existem '+qtd+' venda(s) lida(s), mas o total de vendas está zerado.</div>');
+  }
+  if(vendas>0 && (Number(d.closing)||0)<=0){
+   problemas.push('<div class="biobel-inteligencia-item">🔒 <strong>'+dia+'</strong>: há vendas registradas, mas o fechamento do caixa está zerado.</div>');
+  }
+  const diff=diferencaCaixaInteligencia(d);
+  if(Math.abs(diff)>=20){
+   problemas.push('<div class="biobel-inteligencia-item">💰 <strong>'+dia+'</strong>: diferença de caixa de '+(diff>=0?'+':'')+money(diff)+' entre esperado e fechamento contado.</div>');
+  }
+ });
+ const unicos=[]; const seen=new Set();
+ problemas.forEach(x=>{const k=x.replace(/<[^>]+>/g,''); if(!seen.has(k)){seen.add(k);unicos.push(x);}});
+ el.innerHTML=listaHtmlIntel(unicos.slice(0,5),'✅ Nenhuma inconsistência relevante encontrada pelos testes automáticos.');
+}
+function renderInteligenciaComparacao(dias){
+ const el=document.getElementById('intelComparacao');
+ if(!el) return;
+ if(dias.length<2){el.innerHTML='<div class="biobel-inteligencia-vazio">É preciso ter pelo menos 2 dias lançados para comparar.</div>';return;}
+ const atual=dias[dias.length-1], anterior=dias[dias.length-2];
+ const anteriores=dias.slice(Math.max(0,dias.length-8),dias.length-1);
+ const mediaAnterior=anteriores.length?anteriores.reduce((s,d)=>s+(Number(d.sales)||0),0)/anteriores.length:0;
+ const va=Number(atual.sales)||0, vp=Number(anterior.sales)||0;
+ const delta=va-vp;
+ const pct=vp!==0?(delta/vp)*100:null;
+ const qa=qtdVendasInteligencia(atual), qp=qtdVendasInteligencia(anterior);
+ const ta=ticketMedioInteligencia(atual), tp=ticketMedioInteligencia(anterior);
+ const deltaTicket=ta-tp;
+ const itens=[];
+ itens.push('<div class="biobel-inteligencia-item">📅 Último dia lançado: <strong>'+escInteligencia(atual.dia)+'</strong> com <strong>'+money(va)+'</strong> em vendas.</div>');
+ itens.push('<div class="biobel-inteligencia-item">↔️ Dia anterior (<strong>'+escInteligencia(anterior.dia)+'</strong>): <strong>'+money(vp)+'</strong>. Variação: <strong>'+(delta>=0?'+':'')+money(delta)+(pct===null?'':' ('+(pct>=0?'+':'')+pct.toFixed(1)+'%)')+'</strong>.</div>');
+ if(mediaAnterior>0){
+  const deltaMedia=va-mediaAnterior;
+  const pctMedia=(deltaMedia/mediaAnterior)*100;
+  itens.push('<div class="biobel-inteligencia-item">📊 Média dos '+anteriores.length+' dia(s) anteriores: <strong>'+money(mediaAnterior)+'</strong>. O último dia ficou <strong>'+(deltaMedia>=0?'+':'')+money(deltaMedia)+'</strong> ('+(pctMedia>=0?'+':'')+pctMedia.toFixed(1)+'%) em relação a essa média.</div>');
+ }
+ itens.push('<div class="biobel-inteligencia-item">🧾 Vendas: <strong>'+qa+'</strong> no último dia x <strong>'+qp+'</strong> no anterior. Ticket médio: <strong>'+money(ta)+'</strong> x <strong>'+money(tp)+'</strong>'+(Math.abs(deltaTicket)>0.009?' ('+(deltaTicket>=0?'+':'')+money(deltaTicket)+').':'')+'</div>');
+ el.innerHTML=listaHtmlIntel(itens);
+}
+function renderInteligenciaExplicacao(dias){
+ const el=document.getElementById('intelExplicacao');
+ if(!el) return;
+ if(!dias.length){el.innerHTML='<div class="biobel-inteligencia-vazio">Carregue a planilha para explicar os números.</div>';return;}
+ const d=dias[dias.length-1];
+ const vendas=Number(d.sales)||0, qtd=qtdVendasInteligencia(d), ticket=ticketMedioInteligencia(d);
+ const pag=[
+  ['Pix',Number(d.pix)||0],['Dinheiro',Number(d.dinheiro)||0],['Crédito',Number(d.credito)||0],['Débito',Number(d.debito)||0]
+ ].filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]);
+ const totalPag=pag.reduce((s,x)=>s+x[1],0);
+ const itens=[];
+ itens.push('<div class="biobel-inteligencia-item">💰 O dia <strong>'+escInteligencia(d.dia)+'</strong> registrou <strong>'+money(vendas)+'</strong> em '+qtd+' venda(s), com ticket médio de <strong>'+money(ticket)+'</strong>.</div>');
+ if(pag.length){
+  const top=pag[0];
+  const pct=totalPag>0?(top[1]/totalPag)*100:0;
+  itens.push('<div class="biobel-inteligencia-item">💳 O meio de pagamento com maior valor foi <strong>'+escInteligencia(top[0])+'</strong>: '+money(top[1])+' ('+pct.toFixed(1)+'% dos pagamentos identificados).</div>');
+ }
+ const esperado=(Number(d.initial)||0)+(Number(d.dinheiro)||0)-(Number(d.withdrawals)||0);
+ const fechamento=Number(d.closing)||0;
+ itens.push('<div class="biobel-inteligencia-item">🏦 No dinheiro físico, o sistema calcula <strong>'+money(esperado)+'</strong> como valor esperado e encontrou <strong>'+money(fechamento)+'</strong> no fechamento, diferença de <strong>'+(fechamento-esperado>=0?'+':'')+money(fechamento-esperado)+'</strong>.</div>');
+ if(d.primeiraVenda || d.ultimaVenda){
+  itens.push('<div class="biobel-inteligencia-item">⏰ A primeira venda lida foi às <strong>'+escInteligencia(d.primeiraVenda||'—')+'</strong> e a última às <strong>'+escInteligencia(d.ultimaVenda||'—')+'</strong>.</div>');
+ }
+ el.innerHTML=listaHtmlIntel(itens);
+}
+function renderInteligenciaAtencao(dias){
+ const el=document.getElementById('intelAtencao');
+ const frase=document.getElementById('intelFrasePrincipal');
+ if(!el) return;
+ if(!dias.length){
+  el.textContent='📥 Ainda não há dados carregados. Quando a planilha chegar, esta área vai selecionar automaticamente os fatos mais importantes.';
+  el.innerHTML=''; return;
+ }
+ const itens=[];
+ const atual=dias[dias.length-1];
+ const anterior=dias.length>1?dias[dias.length-2]:null;
+ const diffCaixa=diferencaCaixaInteligencia(atual);
+ if(Math.abs(diffCaixa)>=20) itens.push('<div class="biobel-inteligencia-item">🚨 O fechamento mais recente tem diferença de <strong>'+(diffCaixa>=0?'+':'')+money(diffCaixa)+'</strong> entre o valor esperado e o contado.</div>');
+ if(anterior){
+  const a=Number(atual.sales)||0,b=Number(anterior.sales)||0;
+  if(b!==0){
+   const pct=((a-b)/b)*100;
+   if(Math.abs(pct)>=15) itens.push('<div class="biobel-inteligencia-item">📈 As vendas do último dia variaram <strong>'+(pct>=0?'+':'')+pct.toFixed(1)+'%</strong> em relação ao dia anterior.</div>');
+  }
+ }
+ const outliers=[];
+ dias.forEach(d=>{
+  (d.vendasIndividuais||[]).forEach(v=>{ if(Number(v)>0) outliers.push({dia:d.dia,valor:Number(v)}); });
+ });
+ if(outliers.length>=5){
+  const media=outliers.reduce((s,x)=>s+x.valor,0)/outliers.length;
+  const maior=outliers.reduce((a,b)=>b.valor>a.valor?b:a,outliers[0]);
+  if(maior.valor>media*5 && maior.valor>100) itens.push('<div class="biobel-inteligencia-item">🔎 A maior venda individual lida foi <strong>'+money(maior.valor)+'</strong> em <strong>'+escInteligencia(maior.dia)+'</strong>, acima de 5× a média das vendas individuais do período. Vale conferir a linha na planilha.</div>');
+ }
+ const maiorDia=[...dias].reduce((a,b)=>(Number(b.sales)||0)>(Number(a.sales)||0)?b:a,dias[0]);
+ if(maiorDia && dias.length>2) itens.push('<div class="biobel-inteligencia-item">🏅 O maior faturamento diário do período foi <strong>'+money(maiorDia.sales)+'</strong> no dia <strong>'+escInteligencia(maiorDia.dia)+'</strong>.</div>');
+ const problemaEl=document.getElementById('intelErros');
+ const problemaTexto=(problemaEl?.innerText||'').trim();
+ if(problemaTexto && !problemaTexto.startsWith('✅')) itens.push('<div class="biobel-inteligencia-item">🧩 A conferência automática encontrou pelo menos uma possível inconsistência para revisar.</div>');
+ const fraseTexto = Math.abs(diffCaixa)>=20
+  ? '🚨 O fechamento mais recente merece uma conferência: a conta automática encontrou uma diferença no dinheiro físico.'
+  : (anterior && (Number(atual.sales)||0)>(Number(anterior.sales)||0)
+     ? '📈 O último dia lançado vendeu mais que o dia anterior; abaixo o painel mostra quanto mudou e o que compôs esse resultado.'
+     : '👀 O painel analisou os dados carregados e destacou abaixo os pontos que mais chamaram atenção.');
+ if(frase) frase.textContent=fraseTexto;
+ el.innerHTML=listaHtmlIntel(itens.slice(0,4),'✅ Nenhum ponto fora do padrão mínimo foi destacado.');
+}
+function renderCentralInteligencia(){
+ const root=document.getElementById('centralInteligenciaBiobel');
+ if(!root) return;
+ if(!Array.isArray(daysData)||daysData.length===0){
+  const frase=document.getElementById('intelFrasePrincipal'); if(frase) frase.textContent='📥 Carregue a planilha para a Central de Inteligência analisar os dados.';
+  ['intelErros','intelComparacao','intelExplicacao','intelAtencao'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
+  return;
+ }
+ const dias=serieDiasInteligencia();
+ renderInteligenciaInconsistencias(dias);
+ renderInteligenciaComparacao(dias);
+ renderInteligenciaExplicacao(dias);
+ renderInteligenciaAtencao(dias);
+}
+
+function renderAdvancedDashboard(){
+  sortDays();
+
+  const emptyEl = document.getElementById('emptyStateDashboard');
+  const contentEl = document.getElementById('dashboardContent');
+  if(emptyEl && contentEl){
+    if(daysData.length===0){
+      emptyEl.style.display='block';
+      contentEl.style.display='none';
+    } else {
+      emptyEl.style.display='none';
+      contentEl.style.display='block';
+    }
+  }
+
+  const totalSales = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+  const totalClosing = daysData.reduce((s,d)=>s+(Number(d.closing)||0),0);
+  const avgClosing = daysData.length ? totalClosing/daysData.length : 0;
+
+  // Destaque de meta no topo — a informação mais importante, sempre visível de cara.
+  const metaGoal = getSalesGoal();
+  const metaPct = metaGoal>0 ? Math.min(100,(totalSales/metaGoal)*100) : 0;
+  const metaFaltam = Math.max(0, metaGoal-totalSales);
+  const elMV=document.getElementById('metaDestaqueValor'), elMT=document.getElementById('metaDestaqueTotal'),
+        elMP=document.getElementById('metaDestaquePct'), elMB=document.getElementById('metaDestaqueBar'),
+        elMF=document.getElementById('metaDestaqueFaltam');
+  if(elMV) elMV.textContent = money(totalSales);
+  if(elMT) elMT.textContent = money(metaGoal);
+  if(elMP) elMP.textContent = metaPct.toFixed(1)+'%';
+  if(elMB) elMB.style.width = metaPct.toFixed(1)+'%';
+  if(elMF) elMF.textContent = money(metaFaltam);
+  try{ verificarMetaMensalBatidaEmail(totalSales, metaGoal); }catch(e){ console.error('Erro em verificarMetaMensalBatidaEmail:', e); }
+  try{ verificarResumoSemanalEmail(); }catch(e){ console.error('Erro em verificarResumoSemanalEmail:', e); }
+
+  // Dias restantes do mês, e projeção de "no ritmo atual, dá tempo de bater a meta?"
+  const elDiasRestantes = document.getElementById('metaDiasRestantes');
+  const elProjecao = document.getElementById('metaProjecaoTexto');
+  if(elDiasRestantes && daysData.length>0){
+   const mesRef = Number(String(daysData[0].dia).split('.')[1]);
+   const anoRef = anoReferenciaPlanilha();
+   const ultimoDiaDoMes = new Date(anoRef, mesRef, 0).getDate();
+   const hoje = obterAgoraBrasilia();
+   const diaAtual = hoje.getMonth()+1===mesRef ? hoje.getDate() : ultimoDiaDoMes;
+   const diasRestantes = contarDiasUteisRestantes(mesRef, diaAtual, ultimoDiaDoMes);
+   // Fração de hoje que ainda resta (baseado no horário de funcionamento real) — no começo do
+   // expediente hoje conta quase inteiro, no fim da tarde quase nada. Somado aos dias úteis
+   // futuros, dá uma contagem bem mais precisa de "quanto tempo de venda ainda resta".
+   const fracaoHoje = calcularFracaoHojeRestante();
+   const diasRestantesPrecisos = diasRestantes + fracaoHoje;
+   // Frase explícita, sem ambiguidade: mostra o dia de hoje, o total do mês, e deixa claro que
+   // a conta NÃO inclui o dia de hoje, NÃO conta domingo (loja fechada) nem feriado marcado —
+   // assim a pessoa consegue conferir a matemática sozinha.
+   elDiasRestantes.innerHTML = diasRestantes===0
+    ? 'Hoje (dia '+diaAtual+') é o último dia útil do mês.'
+    : 'Hoje é dia '+diaAtual+' de '+ultimoDiaDoMes+'. Faltam mais <strong style="color:#dce5f2;">'+diasRestantes+'</strong> dia'+(diasRestantes===1?' útil':'s úteis')+' (sem contar hoje, domingo ou feriado marcado) pra fechar o mês. Contando o que ainda dá pra vender hoje, são <strong style="color:#dce5f2;">'+diasRestantesPrecisos.toFixed(1).replace('.',',')+'</strong> dias de trabalho pela frente.';
+
+   const elMetaPorDia = document.getElementById('metaPorDiaTexto');
+   if(elMetaPorDia){
+    if(metaFaltam<=0){
+     elMetaPorDia.innerHTML = '';
+    } else if(diasRestantesPrecisos<=0){
+     elMetaPorDia.innerHTML = '<span style="color:#fb7185;">⚠️ Não sobrou tempo de venda nesse mês pra calcular uma meta diária.</span>';
+    } else {
+     const metaPorDia = metaFaltam/diasRestantesPrecisos;
+     elMetaPorDia.innerHTML = '🎯 Pra bater a meta, precisa vender em média <span style="color:#27d7a0;">'+money(metaPorDia)+'</span>/dia daqui pra frente (contando o resto de hoje). <button onclick="irParaAlertaDetalhe(\'info\',\'Dias\')" style="background:none;border:none;color:#4f9cff;text-decoration:underline;cursor:pointer;font-size:11.5px;font-weight:600;padding:0;">Ver dias acima/abaixo da média →</button>';
+    }
+   }
+
+   if(elProjecao){
+    if(metaFaltam<=0){
+     elProjecao.innerHTML = '<span style="color:#27d7a0;">🎉 Meta já batida!</span>';
+    } else if(diasRestantesPrecisos<=0){
+     elProjecao.innerHTML = '<span style="color:#fb7185;">⚠️ Hoje é o último dia do mês.</span>';
+    } else {
+     const mediaAtual = totalSales/daysData.length;
+     const projecaoTotal = totalSales + (mediaAtual*diasRestantesPrecisos);
+     const vaiBater = projecaoTotal >= metaGoal;
+     elProjecao.innerHTML = vaiBater
+      ? `<span style="color:#27d7a0;">📈 No ritmo atual (${money(mediaAtual)}/dia), a projeção é fechar em ${money(projecaoTotal)} — deve bater a meta.</span>`
+      : `<span style="color:#fbbf24;">📉 No ritmo atual (${money(mediaAtual)}/dia), a projeção é fechar em ${money(projecaoTotal)} — abaixo da meta, precisa acelerar.</span>`;
+    }
+   }
+  }
+
+  const ids = {
+    advTotalSales: totalSales, advTotalClosing: totalClosing,
+    advDaysCount: daysData.length, advAvgClosing: avgClosing,
+    advPillInitial: 0, advPillClosing: 0, advPillSales: 0,
+    advInitial: 0, advSales: 0, advWithdrawals: 0, advClosing: 0,
+    donutSales: totalSales, donutClosing: totalClosing
+  };
+  Object.entries(ids).forEach(([id,val])=>{
+    const el=document.getElementById(id); if(!el) return;
+    el.textContent = id==='advDaysCount' ? String(val) : money(val);
+  });
+
+  const sel=document.getElementById('daySelect');
+  const current=sel?.value;
+  if(sel){
+    sel.innerHTML=daysData.map(d=>`<option value="${d.dia}">${d.dia}/2026</option>`).join('');
+    if(current && daysData.some(d=>d.dia===current)) sel.value=current;
+    else if(daysData.length) sel.value=daysData[daysData.length-1].dia;
+    updateAdvancedSelected(sel.value);
+  }
+
+  const tbody=document.getElementById('advTableBody');
+  if(tbody){
+    tbody.innerHTML=daysData.map(d=>`
+      <tr>
+        <td><b>${d.dia}/2026</b></td>
+        <td class="right">${money(d.initial)}</td>
+        <td class="right">${money(d.sales)}</td>
+        <td class="right">${money(d.withdrawals)}</td>
+        <td class="right"><b style="color:var(--green)">${money(d.closing)}</b></td>
+        <td class="right">${money(d.closing-d.initial)}</td>
+      </tr>`).join('');
+    tbody.innerHTML += `<tr>
+      <td><b>TOTAIS</b></td>
+      <td class="right"><b>${money(daysData.reduce((s,d)=>s+d.initial,0))}</b></td>
+      <td class="right"><b>${money(totalSales)}</b></td>
+      <td class="right"><b>${money(daysData.reduce((s,d)=>s+d.withdrawals,0))}</b></td>
+      <td class="right"><b style="color:var(--green)">${money(totalClosing)}</b></td>
+      <td class="right"><b>${money(daysData.reduce((s,d)=>s+(d.closing-d.initial),0))}</b></td>
+    </tr>`;
+  }
+
+  // Existing chart canvas is reused, but with the designer styling.
+  if(window.chart && typeof chart.destroy==='function') { try{ chart.destroy(); }catch(e){} }
+  const ctx=document.getElementById('closingChart');
+  if(ctx){
+    const metaDiariaChart = getDailyGoal();
+    chart=new Chart(ctx,{
+      data:{
+        labels:daysData.map(d=>d.dia),
+        datasets:[
+          {
+            type:'bar',
+            label:'Vendas do dia',
+            data:daysData.map(d=>d.sales),
+            backgroundColor:daysData.map(d=>(Number(d.sales)||0)>=metaDiariaChart ? 'rgba(39,215,160,.75)' : 'rgba(79,156,255,.6)'),
+            borderRadius:4,
+            order:2
+          },
+          {
+            type:'line',
+            label:'Meta diária',
+            data:daysData.map(()=>metaDiariaChart),
+            borderColor:'#fbbf24',
+            borderDash:[6,4],
+            borderWidth:2,
+            pointRadius:0,
+            fill:false,
+            order:1
+          }
+        ]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        interaction:{mode:'index',intersect:false},
+        plugins:{
+          legend:{display:true, labels:{color:'#93a3ba', boxWidth:12, font:{size:11}}},
+          tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${money(c.raw)}`}}
+        },
+        scales:{
+          x:{ticks:{color:'#93a3ba'},grid:{color:'rgba(145,161,184,.06)'}},
+          y:{beginAtZero:true,ticks:{color:'#93a3ba',callback:v=>money(v)},grid:{color:'rgba(145,161,184,.08)'}}
+        }
+      }
+    });
+  }
+
+  const dctx=document.getElementById('summaryDonut');
+  if(dctx){
+    if(advSummaryDonut) advSummaryDonut.destroy();
+    const withdrawals=daysData.reduce((s,d)=>s+d.withdrawals,0);
+    const initials=daysData.reduce((s,d)=>s+d.initial,0);
+    const dadosDonut = [totalSales,totalClosing,withdrawals,initials];
+    const somaDonut = dadosDonut.reduce((a,b)=>a+b,0);
+    advSummaryDonut=new Chart(dctx,{
+      type:'doughnut',
+      data:{
+        labels:['Faturamento','Fechamentos','Retiradas','Saldo Inicial'],
+        datasets:[{
+          data:dadosDonut,
+          backgroundColor:['#27d7a0','#4f9cff','#ff6174','#ffbf47'],
+          borderWidth:0,
+          hoverOffset:5
+        }]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{
+          legend:{
+            position:'bottom',
+            labels:{
+             color:'#cbd5e1',boxWidth:10,font:{size:10},
+             generateLabels(chartInstance){
+              const dataset = chartInstance.data.datasets[0];
+              return chartInstance.data.labels.map((label,i)=>{
+               const valor = dataset.data[i];
+               const pct = somaDonut>0 ? ((valor/somaDonut)*100).toFixed(1) : '0.0';
+               return {
+                text: `${label}: ${money(valor)} (${pct}%)`,
+                fillStyle: dataset.backgroundColor[i],
+                strokeStyle: dataset.backgroundColor[i],
+                index: i
+               };
+              });
+             }
+            }
+          },
+          tooltip:{callbacks:{label:c=>{
+           const pct = somaDonut>0 ? ((c.raw/somaDonut)*100).toFixed(1) : '0.0';
+           return `${c.label}: ${money(c.raw)} (${pct}%)`;
+          }}}
+        },
+        cutout:'64%'
+      }
+    });
+  }
+  const now=new Date().toLocaleString('pt-BR');
+  const last=document.getElementById('advLastUpdate'); if(last) last.textContent=now;
+
+  // Card grande de Diferença de Caixa — usa a mesma conta do alerta (esperado x contado),
+  // com cor de alerta quando a diferença for negativa e relevante.
+  renderCardDiferencaCaixa();
+}
+
+function renderCardDiferencaCaixa(){
+ const el=document.getElementById('cardDiferencaCaixa');
+ if(!el) return;
+ const ultimo=[...daysData].reverse().find(d=>d.closingEncontrado);
+ if(!ultimo){
+  el.style.background='rgba(251,113,133,.07)';
+  el.style.border='1px solid rgba(251,113,133,.3)';
+  el.innerHTML='<div class="adv-card-title"><h3>💰 Conferência do Caixa</h3><span>proteção contra cálculo incompleto</span></div><div style="font-size:14px;font-weight:800;color:#fb7185;">⚠️ Fechamento da planilha não encontrado.</div><div style="font-size:12px;color:#93a3ba;margin-top:8px;">O sistema não inventa um valor. Atualize a leitura e confira o campo de fechamento.</div>';
+  return;
+ }
+ const fluxoConhecido=(Number(ultimo.initial)||0)+(Number(ultimo.dinheiro)||0)-(Number(ultimo.withdrawals)||0);
+ const fechamento=Number(ultimo.closing)||0;
+ const diff=fechamento-fluxoConhecido;
+ const exato=Math.abs(diff)<0.01;
+ el.style.background=exato?'rgba(39,215,160,.06)':'rgba(251,191,36,.06)';
+ el.style.border='1px solid '+(exato?'rgba(39,215,160,.25)':'rgba(251,191,36,.3)');
+ el.innerHTML='<div class="adv-card-title"><h3>💰 Conferência do Caixa</h3><span>checagem dos campos conhecidos; o fechamento vem da planilha</span></div>'+
+ '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">'+
+ '<div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px;"><div style="font-size:10.5px;color:#93a3ba;">🔒 Fechamento da planilha</div><strong style="display:block;margin-top:5px;font-size:22px;color:#27d7a0;">'+money(fechamento)+'</strong><div style="font-size:10px;color:#93a3ba;margin-top:3px;">'+(ultimo.closingCelula||'fonte da planilha')+'</div></div>'+
+ '<div style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px;"><div style="font-size:10.5px;color:#93a3ba;">🧮 Fluxo conhecido</div><strong style="display:block;margin-top:5px;font-size:22px;color:#dce5f2;">'+money(fluxoConhecido)+'</strong><div style="font-size:10px;color:#93a3ba;margin-top:3px;">inicial + dinheiro − retirada</div></div></div>'+
+ '<div style="margin-top:10px;font-size:12px;font-weight:800;color:'+(exato?'#27d7a0':'#fbbf24')+';">'+(exato?'✅ Os campos conhecidos fecham com o valor da planilha.':'ℹ️ Diferença de '+money(diff)+' — pode haver outras saídas/ajustes na seção "saída" da planilha.')+'</div>';
+}
+function updateAdvancedSelected(day){
+ const d=daysData.find(x=>x.dia===day); if(!d) return;
+ const map={
+  advPillInitial:money(d.initial),
+  advPillClosing:d.closingEncontrado?money(d.closing):'⚠️ Não encontrado',
+  advPillSales:money(d.sales),
+  advInitial:money(d.initial),
+  advSales:money(d.sales),
+  advWithdrawals:money(d.withdrawals),
+  advClosing:d.closingEncontrado?money(d.closing):'⚠️ Não encontrado'
+ };
+ Object.entries(map).forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.textContent=v;});
+ const sel=document.getElementById('simpleDaySelect');
+ if(sel){ sel.innerHTML=daysData.map(x=>'<option value="'+x.dia+'">'+x.dia+'</option>').join(''); sel.value=day; updateSimpleDay(day); }
+}
+
+// O Dashboard Avançado usa uma renderização própria; as abas simples/configuração
+// continuam usando suas funções originais.
+render = function(){
+ const p=document.body?.dataset?.biobelPage||'dashboard';
+ if(p==='dashboard'){try{inicializarColapsoCards();}catch(e){}try{renderAdvancedDashboard();}catch(e){}try{renderCentralInteligencia();}catch(e){}try{renderCentralDeAlertas();}catch(e){}try{renderDatasComerciais();}catch(e){}try{renderFaixaMensagemProgramada();}catch(e){}}
+ else if(p==='central'){try{window.renderCentralOperacional?.();}catch(e){}}
+ else if(p==='caixa'){try{const sel=document.getElementById('simpleDaySelect');if(sel){const prev=sel.value;sel.innerHTML=daysData.map(d=>'<option value="'+d.dia+'">'+d.dia+'</option>').join('');if(daysData.length){sel.value=daysData.some(d=>d.dia===prev)?prev:daysData[daysData.length-1].dia;updateSimpleDay(sel.value);}}renderBannerEnviarContadora();}catch(e){}}
+ else if(p==='equipe'){try{initEquipeTab();}catch(e){}}
+ else if(p==='campanhas'){try{initCampanhas();}catch(e){}}
+ else if(p==='info'){try{renderInfoTab();}catch(e){}}
+ else if(p==='alertas'){try{renderCentralDeAlertas();}catch(e){}}
+ else if(p==='config'){try{initDailyGoalUI();renderListaMetasVendedoras();renderLogAlteracoes();renderDiasSemErroConexao();initNotificacoesUI();renderMensagensProgramadas();renderPlanilhasSalvas();initHorarioFuncionamentoUI();initDadosEmpresaUI();initAppsScriptUrlUI();}catch(e){}}
+ else if(p==='adm'){try{initAdmTab();}catch(e){}}
+};
+
+updateSelected = function(day){
+  updateAdvancedSelected(day);
+};
+
+document.getElementById('daySelect')?.addEventListener('change',e=>updateAdvancedSelected(e.target.value));
+
+attachMoneyMask('salesGoalInput');
+attachMoneyMask('dailyGoalInput');
+
+// Atalho de teclado: Alt+A atualiza a planilha na hora, de qualquer aba (evita precisar clicar).
+document.addEventListener('keydown', e=>{
+ if(e.altKey && (e.key==='a' || e.key==='A')){
+  e.preventDefault();
+  loadGoogleSheet();
+  mostrarToast('🔄 Atualizando planilha... (atalho Alt+A)');
+ }
+ // Alt+P imprime o que fizer sentido na aba que estiver aberta no momento.
+ if(e.altKey && (e.key==='p' || e.key==='P')){
+  e.preventDefault();
+  const mapaImpressao = [
+   ['dashboardTab', printMonthly],
+   ['caixaTab', printSimpleDay],
+   ['equipeTab', printEquipeWeek]
+  ];
+  for(const [id, fn] of mapaImpressao){
+   const el = document.getElementById(id);
+   if(el && !el.classList.contains('hidden')){ fn(); return; }
+  }
+ }
+ // Alt+1 a Alt+7 trocam de aba rapidamente (evita Ctrl+número, que o navegador já usa pra trocar de aba dele mesmo).
+ if(e.altKey && ['1','2','3','4','5','6','7','8'].includes(e.key)){
+  e.preventDefault();
+  const abas = ['dashboard','info','alertas','caixa','equipe','config','adm'];
+  const alvo = abas[Number(e.key)-1];
+  if(alvo) showTab(alvo);
+ }
+});
+
+function biobelPaginaAtual(){return document.body?.dataset?.biobelPage||'dashboard';}
+function initPaginaAtiva(){
+ if(sessionStorage.getItem('biobel_logged_in')!=='yes'){window.location.href='login.html';return;}
+ aplicarLogoPersonalizadaNoSistema();inicializarBotoesCompartilharNativo();atualizarBotaoModoCompacto();
+ const p=biobelPaginaAtual();
+ if(p==='dashboard'){initModoDashboard();renderClimaHojeStatus();renderIndicadorClimaTopo();renderPrevisaoProximosDias();verificarFimDeSemanaChuvoso();verificarBackupAutomatico();verificarEspacoArmazenamento();verificarPrimeiroAcessoTour();verificarDicaDoDia();verificarLembreteReunioesHoje();render();}
+ else if(p==='central'){document.getElementById('centralTab')?.classList.remove('hidden');render();}
+ else if(p==='caixa'){document.getElementById('caixaTab')?.classList.remove('hidden');render();}
+ else if(p==='equipe'){document.getElementById('equipeTab')?.classList.remove('hidden');try{initEquipeTab();}catch(e){}}
+ else if(p==='campanhas'){document.getElementById('campanhasTab')?.classList.remove('hidden');try{initCampanhas();}catch(e){}}
+ else if(p==='info'){document.getElementById('infoTab')?.classList.remove('hidden');try{renderInfoTab();const sec=new URLSearchParams(location.search).get('secao')||localStorage.getItem('biobel_info_secao_ativa')||'Financeiro';mostrarSecaoInfo(sec);}catch(e){}}
+ else if(p==='alertas'){document.getElementById('alertasTab')?.classList.remove('hidden');render();}
+ else if(p==='config'){document.getElementById('configTab')?.classList.remove('hidden');try{render();const sec=new URLSearchParams(location.search).get('secao')||localStorage.getItem('biobel_config_secao_ativa')||'Conexao';mostrarSecaoConfig(sec);}catch(e){}}
+ else if(p==='adm'){document.getElementById('admTab')?.classList.remove('hidden');try{initAdmTab();}catch(e){}}
+}
+let promptDeInstalacaoGuardado=null;
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();promptDeInstalacaoGuardado=e;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='inline-block';});
+function instalarAppBiobel(){if(!promptDeInstalacaoGuardado)return;promptDeInstalacaoGuardado.prompt();promptDeInstalacaoGuardado.userChoice.then(function(){promptDeInstalacaoGuardado=null;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';});}
+window.addEventListener('appinstalled',function(){const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';try{mostrarToast('✅ Biobel instalado!');}catch(e){}});
+if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=10.39',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
+window.addEventListener('load',initPaginaAtiva,{once:true});

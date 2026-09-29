@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="theme-color" content="#0ea97a"><meta name="robots" content="noindex,nofollow"><link rel="icon" type="image/png" href="/logo_biobel_gravatai.png"><link rel="manifest" href="manifest.json"><title>Biobel — Visão Geral</title><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="biobel-design-system.css"><link rel="stylesheet" href="biobel-ux-refinement.css"><link rel="stylesheet" href="biobel-app.css"></head><body data-biobel-page="dashboard">
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="theme-color" content="#0ea97a"><meta name="robots" content="noindex,nofollow"><link rel="icon" type="image/png" href="/logo_biobel_gravatai.png"><link rel="manifest" href="manifest.json"><title>Biobel — Administração</title><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="biobel-design-system.css"><link rel="stylesheet" href="biobel-ux-refinement.css"><link rel="stylesheet" href="biobel-app.css"></head><body data-biobel-page="adm">
 TYPE html>
 <html lang="pt-BR">
 <head>
@@ -855,235 +855,789 @@ body.light-mode .config-chips{
 <a href="#dashboardTab" style="position:absolute;left:-9999px;top:0;z-index:9999;background:#0ea97a;color:#04241a;padding:12px 18px;border-radius:0 0 10px 0;font-weight:700;text-decoration:none" onfocus="this.style.left='0'" onblur="this.style.left='-9999px'">Pular para o conteúdo</a>
 
 
-<div id="biobel-shell"></div><main id="dashboardTab" class="max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabDashboard">
+<div id="biobel-shell"></div><section id="admTab" class="hidden max-w-5xl 2xl:max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabAdm">
 
-  <div id="indicadorClimaTopo" class="no-print" style="display:none;justify-content:flex-end;margin-bottom:4px;"></div>
-  <div class="no-print" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:6px;">
-   <button onclick="showTab('caixa')" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(39,215,160,.35);border-radius:14px;padding:16px 10px;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;text-align:center;">⚡<br>Fechar Caixa</button>
-   <button onclick="showTab('equipe')" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(79,156,255,.35);border-radius:14px;padding:16px 10px;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;text-align:center;">📋<br>Folha de Ponto</button>
-   <button onclick="showTab('alertas')" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(251,191,36,.35);border-radius:14px;padding:16px 10px;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;text-align:center;">🚨<br>Ver Alertas</button>
-   <button onclick="showTab('info')" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(139,92,246,.35);border-radius:14px;padding:16px 10px;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;text-align:center;">📊<br>Como Estou Indo?</button>
+ <div id="admLoginWrap" class="adv-card" style="max-width:380px;margin:40px auto;">
+  <div style="text-align:center;margin-bottom:20px;">
+   <div style="font-size:34px;">👑</div>
+   <h3 style="margin-top:6px;">Área da Gerência</h3>
+   <p style="font-size:12.5px;color:#93a3ba;margin-top:4px;">Acesso restrito — gastos fixos, boletos de fornecedores e comissões da equipe.</p>
   </div>
+  <label class="block text-sm font-semibold mb-2" for="admLoginUser">Usuário</label>
+  <input id="admLoginUser" type="text" autocomplete="username" placeholder="usuário" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500 mb-3" onkeydown="if(event.key==='Enter')document.getElementById('admLoginPass').focus()">
+  <label class="block text-sm font-semibold mb-2" for="admLoginPass">Senha</label>
+  <div style="position:relative;">
+   <input id="admLoginPass" type="password" autocomplete="current-password" placeholder="senha" style="padding-right:44px;" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500" onkeydown="if(event.key==='Enter')fazerLoginAdm()">
+   <button type="button" id="btnMostrarSenhaAdm" onclick="alternarMostrarSenhaAdm()" aria-label="Mostrar senha" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:#7e92aa;">👁️</button>
+  </div>
+  <button onclick="fazerLoginAdm()" class="mt-4 w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-xl font-semibold text-sm">Entrar</button>
+  <div id="admLoginErro" style="color:#fb7185;font-size:12.5px;margin-top:10px;text-align:center;min-height:16px;"></div>
+ </div>
 
-  <div class="no-print" style="display:flex;justify-content:flex-end;margin-bottom:-6px;">
-   <button id="btnAlternarModoDashboard" onclick="alternarModoDashboard()" style="background:#0b1728;border:1px solid #1e2c42;border-radius:999px;padding:6px 14px;font-size:12px;color:#93a3ba;cursor:pointer;font-weight:700;">🔍 Ver modo completo</button>
-  </div>
-
-  <div id="avisoMesDivergente" class="no-print" style="display:none;"></div>
-  <div id="bannerClimaChuva" class="no-print" style="display:none;"></div>
-  <div id="checklistChuvaDashboard" class="no-print" style="display:none;"></div>
-  <div class="no-print" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:10px 14px;margin-bottom:6px;">
-   <span style="font-size:12px;color:#93a3ba;font-weight:700;">🌦️ Clima de hoje:</span>
-   <button onclick="marcarClimaHojeRapido('Sol')" style="background:#1c2c42;border:none;color:#dce5f2;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;">☀️ Sol</button>
-   <button onclick="marcarClimaHojeRapido('Nublado')" style="background:#1c2c42;border:none;color:#dce5f2;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;">☁️ Nublado</button>
-   <button onclick="marcarClimaHojeRapido('Chuva')" style="background:#1c2c42;border:none;color:#dce5f2;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;">🌧️ Chuva</button>
-   <button onclick="marcarClimaHojeRapido('Frio')" style="background:#1c2c42;border:none;color:#dce5f2;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;">🥶 Frio</button>
-   <span id="climaHojeMarcadoTexto" style="font-size:11.5px;color:#27d7a0;font-weight:700;"></span>
-   <span style="font-size:10px;color:#93a3ba;">(o sistema tenta detectar sozinho — clique pra corrigir se estiver errado)</span>
-  </div>
-  <div id="previsaoProximosDiasFaixa" class="no-print" style="display:none;margin-bottom:6px;"></div>
-  <div id="bannerClimaSol" class="no-print" style="display:none;"></div>
-  <div id="avisoFimDeSemanaChuvoso" class="no-print" style="display:none;"></div>
-  <div id="avisoProximaPlanilha" class="no-print" style="display:none;"></div>
-  <div id="metaDestaqueTopo" class="no-print" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid #1e2c42;border-radius:20px;padding:24px 28px;margin-bottom:16px;">
-   <div style="font-size:11px;color:#93a3ba;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">🎯 Meta do mês</div>
-   <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;">
-    <span id="metaDestaqueValor" style="font-size:38px;font-weight:900;color:#27d7a0;line-height:1;">R$ 0,00</span>
-    <span style="font-size:16px;color:#93a3ba;">de <strong id="metaDestaqueTotal" style="color:#dce5f2;">R$ 0,00</strong></span>
-    <span id="metaDestaquePct" style="font-size:16px;font-weight:900;color:#27d7a0;background:rgba(39,215,160,.12);padding:3px 10px;border-radius:999px;">0%</span>
+ <div id="admConteudoWrap" style="display:none;">
+  <div class="adv-card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+   <div>
+    <h3 style="margin:0;">👑 Área da Gerência</h3>
+    <p style="font-size:12px;color:#93a3ba;margin-top:2px;" id="admUsuarioLogadoTexto">Gastos fixos, boletos de fornecedores e comissões da equipe.</p>
    </div>
-   <div style="background:#0b1728;border-radius:999px;height:14px;overflow:hidden;margin-top:14px;">
-    <div id="metaDestaqueBar" style="height:100%;width:0%;background:linear-gradient(90deg,#27d7a0,#0ea97a);transition:width .4s;"></div>
-   </div>
-   <div style="font-size:13px;color:#93a3ba;margin-top:10px;">Faltam <strong id="metaDestaqueFaltam" style="color:#dce5f2;">R$ 0,00</strong> para bater a meta.</div>
-   <div style="font-size:12.5px;color:#93a3ba;margin-top:6px;">📅 <span id="metaDiasRestantes">0</span></div>
-   <div id="metaProjecaoTexto" style="font-size:12px;margin-top:6px;"></div>
-   <div id="metaPorDiaTexto" style="font-size:12.5px;margin-top:8px;font-weight:700;"></div>
-   <div id="bannerEmailMetaBatida" style="display:none;margin-top:12px;"></div>
-   <div id="bannerResumoSemanalEmail" style="display:none;margin-top:12px;"></div>
+   <button id="btnExportarPdfAdm" onclick="gerarResumoAdmPDF()" class="bg-purple-600 hover:bg-purple-500 px-4 py-2 rounded-xl font-semibold text-sm" style="background:#8b5cf6;color:#fff;">📑 Exportar PDF</button>
+   <button onclick="sairAdm()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl font-semibold text-sm">🔒 Sair da área da gerência</button>
   </div>
 
-  <div class="adv-card no-print" style="margin-bottom:16px;">
+  <nav class="adm-shortcut-nav no-print" aria-label="Atalhos da área ADM" style="position:sticky;top:64px;z-index:15;">
+   <div class="adm-shortcut-group">
+    <span class="adm-shortcut-group-label">👁️ Visão</span>
+    <button type="button" id="btnAdmVerTudo" onclick="mostrarTodasSecoesAdm()" class="config-chip" style="display:none;background:#1c2c42;">👁️ Ver tudo</button>
+    <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraResumo')">📊 Resumo</button>
+    <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraFechamento')">🔒 Fechamento</button>
+   </div>
+   <div class="adm-shortcut-group">
+    <span class="adm-shortcut-group-label">💰 Financeiro</span>
+    <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraGastos')">🏠 Gastos</button>
+    <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraFornecedoresReal')">🤝 Fornecedores</button>
+   </div>
+   <div class="adm-shortcut-group">
+    <span class="adm-shortcut-group-label">👥 Pessoas</span>
+    <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraComissoes')">🎯 Comissões</button>
+    <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraFuncionarios')">👥 Funcionários</button>
+   </div>
+   <div class="adm-shortcut-group">
+    <span class="adm-shortcut-group-label">🗓️ Planejamento</span>
+    <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraAgenda')">🗓️ Agenda</button>
+   </div>
+  </nav>
+
+  <button id="btnAlternarTodosGrupos" onclick="alternarTodosGruposAdm()" class="no-print text-xs text-slate-300 hover:text-white" style="background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:6px 12px;margin-bottom:14px;">▾ Expandir todos os grupos</button>
+
+  <div class="adm-context-strip no-print">
+   <div><strong>👑 Administração</strong><span>Financeiro, pessoas, fornecedores e planejamento</span></div>
+   <button type="button" onclick="mostrarTodasSecoesAdm()" title="Mostrar todas as áreas da Administração">👁️ Ver tudo</button>
+  </div>
+  <div id="admResumoAtencao" style="display:none;"></div>
+  <div id="admAncoraResumo"></div>
+
+  <div class="adv-card" style="border-color:rgba(79,156,255,.35);">
    <div class="adv-card-title">
-    <h3>📅 Calendário Comercial</h3>
-    <span>datas especiais que vêm por aí — bom pra todo mundo já ir se preparando</span>
+    <h3>💳 Chaves PIX — Pagamento Rápido</h3>
+    <span>pra pagar a Gabriela e a Day sem precisar procurar em outro lugar</span>
    </div>
-   <div id="listaDatasComerciaisDashboard" style="display:flex;flex-direction:column;gap:8px;"></div>
+   <div id="conteudoChavesPixAdm"></div>
   </div>
 
-  <div id="centralInteligenciaBiobel" class="adv-card no-print" style="margin-bottom:16px;background:linear-gradient(135deg,rgba(13,26,44,.98),rgba(8,19,32,.98));border-color:rgba(39,215,160,.25);">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">
+   <div class="adv-kpi red" id="admKpiGastosFixos">
+    <div class="label">🏠 Gastos Fixos (mensal)</div>
+    <div class="value" id="admTotalGastosFixos">R$ 0,00</div>
+    <div class="sub">aluguel, água, luz, internet...</div>
+   </div>
+   <div class="adv-kpi blue">
+    <div class="label">📦 Gastos Variáveis</div>
+    <div class="value" id="admTotalGastosVariaveis">R$ 0,00</div>
+    <div class="sub">boletos de fornecedores atuais</div>
+   </div>
+   <div class="adv-kpi gold" id="admKpiTotalGastos">
+    <div class="label">💸 Total de Gastos</div>
+    <div class="value" id="admTotalGastosGeral">R$ 0,00</div>
+    <div class="sub" id="admTotalGastosGeralSub">fixos + variáveis</div>
+   </div>
+   <div class="adv-kpi green">
+    <div class="label">📈 Lucro Líquido Estimado</div>
+    <div class="value" id="admLucroEstimado">R$ 0,00</div>
+    <div class="sub" id="admLucroEstimadoSub" style="font-size:10px;">faturamento − gastos − comissões</div>
+   </div>
+  </div>
+  <div id="admUltimoSalvo" style="font-size:10.5px;color:#93a3ba;text-align:right;margin-top:-6px;"></div>
+  <p style="font-size:10.5px;color:#93a3ba;margin-top:2px;">⚠️ O Lucro Estimado usa o valor <em>base</em> da hora extra e das comissões — não inclui encargos trabalhistas (DSR, 13º, férias+1/3, FGTS). O custo real pode ser um pouco maior; confirme com a contadora pro número oficial.</p>
+
+  <div id="admAlertaFluxoCaixa" style="display:none;"></div>
+
+  <div class="adv-card">
    <div class="adv-card-title">
-    <h3>🧠 Central de Inteligência</h3>
-    <span>lê a planilha e destaca o que merece atenção</span>
+    <h3>📅 Projeção de Fluxo de Caixa (3 meses)</h3>
+    <span>estimativa baseada na média diária atual e nos gastos fixos conhecidos — não conta reajustes nem imprevistos</span>
    </div>
-   <div id="intelFrasePrincipal" style="font-size:13px;line-height:1.55;color:#dce5f2;background:rgba(39,215,160,.07);border:1px solid rgba(39,215,160,.18);border-radius:12px;padding:11px 13px;margin-bottom:12px;"></div>
-   <div class="biobel-inteligencia-grid">
-    <div class="biobel-inteligencia-box">
-     <h4>🚨 2. Possíveis inconsistências</h4>
-     <div class="sub">Conferência automática dos números lidos na planilha.</div>
-     <div id="intelErros" class="biobel-inteligencia-list"></div>
+   <div id="conteudoProjecao3Meses"></div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>📋 DRE Simplificado</h3>
+    <span>resumo formal do período — bom pra imprimir e levar direto pra contadora</span>
+   </div>
+   <div id="conteudoDRE"></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+   <div class="adv-card">
+    <div class="adv-card-title">
+     <h3>🥧 Pra onde vai o faturamento</h3>
+     <span>gastos fixos × variáveis × comissões × lucro</span>
     </div>
-    <div class="biobel-inteligencia-box">
-     <h4>📊 3. Comparação automática</h4>
-     <div class="sub">Último dia lançado, dia anterior e média dos dias anteriores.</div>
-     <div id="intelComparacao" class="biobel-inteligencia-list"></div>
+    <div style="max-width:220px;margin:0 auto;"><canvas id="graficoPizzaAdm" role="img" aria-label="Gráfico de pizza mostrando a divisão do faturamento entre gastos e lucro"></canvas></div>
+   </div>
+   <div class="adv-card">
+    <div class="adv-card-title">
+     <h3>⚖️ Ponto de Equilíbrio</h3>
+     <span>quanto precisa faturar só pra cobrir os gastos conhecidos</span>
     </div>
-    <div class="biobel-inteligencia-box">
-     <h4>💡 5. O que os números estão mostrando</h4>
-     <div class="sub">Explicação simples, sem precisar interpretar a tabela.</div>
-     <div id="intelExplicacao" class="biobel-inteligencia-list"></div>
+    <div id="resumoPontoEquilibrio"></div>
+   </div>
+  </div>
+
+  <div id="admAncoraFechamento"></div>
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>🔒 Fechamento Mensal Formal</h3>
+    <span>trava um retrato definitivo dos números desse período, pra guardar como referência (mesmo que os dados mudem depois)</span>
+   </div>
+   <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <button onclick="encerrarMesAdm()" class="bg-purple-600 hover:bg-purple-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="background:#8b5cf6;flex:1;min-width:200px;">🔒 Encerrar este período</button>
+    <button onclick="exportarAdmExcel()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="flex:1;min-width:200px;">📊 Exportar Excel</button>
+   </div>
+   <div id="historicoFechamentosMensais" style="margin-top:16px;"></div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>📊 Gastos ao Longo do Tempo</h3>
+    <span>compara os períodos já encerrados formalmente (use o botão "Encerrar este período" acima pra ir guardando histórico)</span>
+   </div>
+   <div id="graficoGastosMensaisWrap">
+    <div style="max-width:100%;"><canvas id="graficoGastosMensais" role="img" aria-label="Gráfico comparando gastos entre os meses encerrados"></canvas></div>
+   </div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>📅 Relatório Anual Consolidado — 2026</h3>
+    <span>soma dos meses já encerrados formalmente + o período atual em andamento</span>
+   </div>
+   <div id="conteudoRelatorioAnual"></div>
+  </div>
+
+  <div id="admAncoraGastos"></div>
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>🏠 Gastos Fixos</h3>
+    <span>as contas que se repetem todo mês</span>
+   </div>
+   <label style="display:flex;align-items:center;gap:8px;font-size:11.5px;color:#93a3ba;margin-bottom:12px;cursor:pointer;background:#0b1728;border:1px solid #1e2c42;border-radius:8px;padding:8px 12px;">
+    <input id="modoTravadoGastosCheckbox" type="checkbox" onchange="salvarModoTravadoGastos()">
+    🔒 Proteger contra edição sem querer (pede confirmação antes de mudar um valor já cadastrado)
+   </label>
+   <div id="listaGastosFixos" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
+   <div style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:8px;margin-bottom:8px;">
+    <input id="novoGastoFixoNome" type="text" placeholder="Nome (ex: Aluguel)" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <input id="novoGastoFixoValor" type="text" inputmode="decimal" placeholder="R$ (opcional)" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <input id="novoGastoFixoDia" type="number" min="1" max="31" placeholder="Dia venc." style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button id="btnAdicionarGastoFixo" onclick="adicionarGastoFixo()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">➕ Add</button>
+   </div>
+   <label for="novoGastoFixoDiaUtil" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">📅 OU: Nº-ésimo dia útil (ex: salário sempre no 5º dia útil — muda de data a cada mês)</label>
+   <input id="novoGastoFixoDiaUtil" type="number" min="1" max="22" placeholder="Ex: 5 (deixe em branco se usar 'Dia venc.' acima)" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:8px;">
+   <select id="novoGastoFixoCategoria" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:8px;">
+    <option value="Aluguel/Imóvel">🏠 Aluguel/Imóvel</option>
+    <option value="Pessoal">👥 Pessoal (salários, VT)</option>
+    <option value="Sócios">🤝 Sócios (retiradas)</option>
+    <option value="Utilidades">💡 Utilidades (água, luz, internet)</option>
+    <option value="Serviços">🧾 Serviços (contadora, etc.)</option>
+    <option value="Outros">📋 Outros</option>
+   </select>
+   <label for="novoGastoFixoRenovacao" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">📄 Data de renovação do contrato (opcional — pra aluguel, internet, etc.)</label>
+   <input id="novoGastoFixoRenovacao" type="date" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+   <button id="btnCancelarEdicaoGastoFixo" onclick="cancelarEdicaoGastoFixo()" style="display:none;margin-top:8px;background:none;border:none;color:#93a3ba;font-size:12px;text-decoration:underline;cursor:pointer;">✕ Cancelar edição</button>
+   <p style="font-size:11px;color:#93a3ba;margin-top:8px;">💡 Pode deixar o valor em branco pra cadastrar o nome agora e preencher o valor depois — vai aparecer como "⚠️ A definir".</p>
+  </div>
+
+  <div id="admAncoraFornecedoresReal"></div>
+  <div class="grupo-adm-header" data-grupo="fornecedores" onclick="alternarGrupoAdm('fornecedores')" style="display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#1a1408,#150f06);border:1px solid rgba(251,191,36,.35);border-radius:16px;padding:16px 20px;cursor:pointer;position:relative;overflow:hidden;">
+   <span style="position:absolute;right:-10px;top:-10px;font-size:70px;opacity:.08;pointer-events:none;">🤝</span>
+   <div>
+    <h2 style="font-size:17px;font-weight:900;color:#dce5f2;">🤝 Fornecedores</h2>
+    <p style="font-size:12px;color:#93a3ba;margin-top:2px;">Boletos e histórico de preços por fornecedor</p>
+    <div id="previaGrupo-fornecedores" style="font-size:11px;color:#fbbf24;margin-top:6px;font-weight:700;"></div>
+   </div>
+   <div style="display:flex;align-items:center;gap:10px;">
+    <span id="contadorGrupo-fornecedores" style="font-size:11px;color:#fbbf24;background:rgba(251,191,36,.12);border-radius:999px;padding:3px 10px;"></span>
+    <span id="setaGrupo-fornecedores" style="font-size:22px;color:#93a3ba;">▸</span>
+   </div>
+  </div>
+  <div id="conteudoGrupo-fornecedores" style="display:none;">
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>📦 Boletos de Fornecedores</h3>
+    <span>gastos variáveis — cada compra registrada separadamente</span>
+   </div>
+   <div style="display:flex;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;overflow:hidden;width:fit-content;margin-bottom:12px;">
+    <button type="button" id="btnFiltroBoletoTodos" onclick="filtrarBoletos('todos')" style="border:0;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer;background:#27d7a0;color:#04241a;">Todos</button>
+    <button type="button" id="btnFiltroBoletoPendentes" onclick="filtrarBoletos('pendentes')" style="border:0;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer;background:transparent;color:#93a3ba;">Pendentes</button>
+    <button type="button" id="btnFiltroBoletoPagos" onclick="filtrarBoletos('pagos')" style="border:0;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer;background:transparent;color:#93a3ba;">Pagos</button>
+   </div>
+   <input id="buscaBoletoInput" type="text" placeholder="🔎 Buscar por fornecedor, marca ou observação..." oninput="renderBoletos()" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:12px;">
+   <div style="display:flex;gap:8px;margin-bottom:12px;">
+    <button onclick="exportarBoletosPDF()" class="no-print flex-1 bg-purple-600 hover:bg-purple-500 px-3 py-2 rounded-lg font-semibold text-xs">📑 Exportar PDF</button>
+    <button onclick="exportarBoletosCSV()" class="no-print flex-1 bg-emerald-600 hover:bg-emerald-500 px-3 py-2 rounded-lg font-semibold text-xs">📊 Exportar CSV (Excel)</button>
+   </div>
+   <div id="listaBoletos" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;"></div>
+   <div id="formWrapperBoleto" style="border-top:1px solid #1e2c42;padding-top:14px;transition:background-color .2s;">
+    <div id="tituloFormBoleto" style="font-size:12px;font-weight:800;color:#93a3ba;margin-bottom:10px;">➕ Adicionar novo boleto</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:8px;">
+     <input id="novoBoletoFornecedor" type="text" placeholder="Fornecedor" list="listaFornecedoresConhecidos" onblur="aplicarPadraoParceladoFornecedor()" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     <datalist id="listaFornecedoresConhecidos"></datalist>
+     <div id="avisoPadraoFornecedor" style="display:none;grid-column:1/-1;font-size:11px;color:#a78bfa;"></div>
+     <select id="novoBoletoMarcaSelect" onchange="alternarCampoMarcaOutros()" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+      <option value="">Marca (escolha)</option>
+      <option value="Truss">Truss</option>
+      <option value="Porto Dez">Porto Dez</option>
+      <option value="Plattelli">Plattelli</option>
+      <option value="Eudora">Eudora</option>
+      <option value="Natura">Natura</option>
+      <option value="__outros__">Outros...</option>
+     </select>
+     <input id="novoBoletoMarca" type="text" placeholder="Marca" style="display:none;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     <input id="novoBoletoQuantidade" type="text" placeholder="Quantidade" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     <input id="novoBoletoValidade" type="text" placeholder="Validade (ex: 12/2027)" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     <input id="novoBoletoValor" type="text" inputmode="decimal" placeholder="Valor R$" oninput="atualizarPreviewParcelasBoletoInline()" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     <div>
+      <label id="labelNovoBoletoVencimento" for="novoBoletoVencimento" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Data de vencimento</label>
+      <input id="novoBoletoVencimento" type="date" onchange="atualizarPreviewParcelasBoletoInline()" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     </div>
+     <div>
+      <label for="novoBoletoCategoria" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Categoria</label>
+      <select id="novoBoletoCategoria" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+       <option value="Produto">📦 Produto</option>
+       <option value="Manutenção">🔧 Manutenção</option>
+       <option value="Marketing">📣 Marketing</option>
+       <option value="Outros">📋 Outros</option>
+      </select>
+     </div>
+     <div>
+      <label style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Quantos boletos?</label>
+      <div style="display:flex;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;overflow:hidden;height:38px;">
+       <button type="button" id="btnQuantasVezesBoleto1" onclick="selecionarQuantasVezesBoleto(1)" style="flex:1;border:none;background:#0ea97a;color:#04241a;font-weight:800;font-size:13px;cursor:pointer;">1x</button>
+       <button type="button" id="btnQuantasVezesBoleto2" onclick="selecionarQuantasVezesBoleto(2)" style="flex:1;border:none;border-left:1px solid #1e2c42;background:transparent;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;">2x</button>
+       <button type="button" id="btnQuantasVezesBoleto3" onclick="selecionarQuantasVezesBoleto(3)" style="flex:1;border:none;border-left:1px solid #1e2c42;background:transparent;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;">3x</button>
+      </div>
+     </div>
+     <div>
+      <label for="novoBoletoPagoPor" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Pago por</label>
+      <input id="novoBoletoPagoPor" type="text" placeholder="Ex: Jhonatan" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     </div>
     </div>
-    <div class="biobel-inteligencia-box">
-     <h4>👀 10. O que chamou atenção</h4>
-     <div class="sub">Principais fatos encontrados no período carregado.</div>
-     <div id="intelAtencao" class="biobel-inteligencia-list"></div>
+
+    <div id="parcelasExtrasBoletoContainer" style="display:none;background:rgba(99,102,241,.06);border:1px solid rgba(99,102,241,.3);border-radius:12px;padding:14px;margin-bottom:12px;">
+     <div id="valorDivididoBoletoTexto" style="font-size:12.5px;color:#a78bfa;font-weight:700;margin-bottom:10px;"></div>
+     <div id="datasExtrasBoletoContainer" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>
+    </div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#dce5f2;cursor:pointer;margin-bottom:8px;">
+     <input type="checkbox" id="novoBoletoRecorrente" style="width:15px;height:15px;accent-color:#27d7a0;">
+     🔁 Esse fornecedor é recorrente (compro sempre, todo mês)
+    </label>
+    <textarea id="novoBoletoObs" rows="2" placeholder="Observações (opcional)" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;resize:vertical;margin-bottom:8px;"></textarea>
+    <label for="novoBoletoComprovante" style="font-size:11px;color:#93a3ba;display:block;margin-bottom:4px;">📎 Foto do comprovante/nota fiscal (opcional)</label>
+    <input id="novoBoletoComprovante" type="file" accept="image/png,image/jpeg" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:8px 12px;color:#93a3ba;font-size:12px;margin-bottom:10px;">
+    <div id="previewComprovanteBoleto" style="display:none;margin-bottom:10px;">
+     <img id="imgPreviewComprovanteBoleto" style="max-width:120px;max-height:120px;border-radius:8px;border:1px solid #1e2c42;">
+     <button type="button" onclick="removerComprovanteAnexado()" style="display:block;margin-top:4px;background:none;border:none;color:#fb7185;font-size:11px;cursor:pointer;">✕ Remover comprovante</button>
+    </div>
+    <button id="btnAdicionarBoleto" onclick="adicionarBoleto()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Adicionar boleto</button>
+    <button id="btnCancelarEdicaoBoleto" onclick="cancelarEdicaoBoleto()" style="display:none;margin-top:8px;background:none;border:none;color:#93a3ba;font-size:12px;text-decoration:underline;cursor:pointer;width:100%;">✕ Cancelar edição</button>
+   </div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>📈 Histórico de Preços por Fornecedor</h3>
+    <span>veja se um fornecedor está cobrando mais caro ao longo do tempo</span>
+   </div>
+   <select id="fornecedorHistoricoSelect" onchange="renderHistoricoPrecoFornecedor()" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:12px;">
+    <option value="">Escolha um fornecedor...</option>
+   </select>
+   <div id="conteudoHistoricoPrecoFornecedor"></div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>📇 Dados dos Fornecedores</h3>
+    <span>telefone e CNPJ de cada um — útil pra ligar rápido ou conferir dado fiscal</span>
+   </div>
+   <div style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:8px;margin-bottom:12px;">
+    <input id="dadosFornecedorNomeInput" type="text" placeholder="Fornecedor" list="listaFornecedoresConhecidos" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <input id="dadosFornecedorTelefoneInput" type="text" placeholder="Telefone" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <input id="dadosFornecedorCnpjInput" type="text" placeholder="CNPJ" onblur="checarFormatoDocumento('dadosFornecedorCnpjInput','cnpj')" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="salvarDadosFornecedor()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+   </div>
+   <div id="listaDadosFornecedores" style="display:flex;flex-direction:column;gap:8px;"></div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>🏆 Ranking de Fornecedores</h3>
+    <span>quem mais pesa no seu bolso — útil pra saber quem vale a pena negociar melhor</span>
+   </div>
+   <div id="rankingFornecedores" style="display:flex;flex-direction:column;gap:8px;"></div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>🏷️ Gastos por Marca</h3>
+    <span>quanto você já comprou de cada marca, somando todos os fornecedores</span>
+   </div>
+   <div id="gastosPorMarca" style="display:flex;flex-direction:column;gap:8px;"></div>
+  </div>
+
+  </div>
+
+  <div id="admAncoraComissoes"></div>
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>🎯 Comissão por Metas (Gabriela e Day)</h3>
+    <span>cada nível tem um valor que a Gabriela E a Day recebem, cada uma — só as duas participam disso</span>
+   </div>
+   <div id="statusNivelComissao" style="margin-bottom:16px;"></div>
+
+   <div id="listaNiveisComissao" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;"></div>
+
+   <div style="border-top:1px solid #1e2c42;padding-top:14px;">
+    <div style="font-size:12px;font-weight:800;color:#93a3ba;margin-bottom:10px;" id="tituloFormNivel">➕ Adicionar nível de meta</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:8px;">
+     <div>
+      <label style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;" for="nivelMetaInput">Meta (R$)</label>
+      <input id="nivelMetaInput" type="text" inputmode="decimal" placeholder="45.000" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     </div>
+     <div>
+      <label style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;" for="nivelDinheiroInput">Dinheiro (cada uma)</label>
+      <input id="nivelDinheiroInput" type="text" inputmode="decimal" placeholder="R$ 200" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     </div>
+     <div>
+      <label style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;" for="nivelKitMinInput">Kit — de (R$)</label>
+      <input id="nivelKitMinInput" type="text" inputmode="decimal" placeholder="0" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     </div>
+     <div>
+      <label style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;" for="nivelKitMaxInput">Kit — até (R$)</label>
+      <input id="nivelKitMaxInput" type="text" inputmode="decimal" placeholder="0" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     </div>
+     <div>
+      <label style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;" for="nivelConfraInput">Confraternização</label>
+      <input id="nivelConfraInput" type="text" inputmode="decimal" placeholder="R$ 0" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     </div>
+    </div>
+    <button id="btnAdicionarNivel" onclick="adicionarNivelComissao()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Adicionar nível</button>
+    <button id="btnCancelarEdicaoNivel" onclick="cancelarEdicaoNivel()" style="display:none;margin-top:8px;background:none;border:none;color:#93a3ba;font-size:12px;text-decoration:underline;cursor:pointer;width:100%;">✕ Cancelar edição</button>
+   </div>
+  </div>
+
+  <div id="admAncoraFuncionarios"></div>
+  <button onclick="exportarTodosDesligamentos()" class="no-print w-full bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="margin-bottom:10px;">🖨️ Exportar todos os PDFs de desligamento registrados</button>
+  <div class="grupo-adm-header" data-grupo="funcionarios" onclick="alternarGrupoAdm('funcionarios')" style="display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(79,156,255,.35);border-radius:16px;padding:16px 20px;cursor:pointer;position:relative;overflow:hidden;">
+   <span style="position:absolute;right:-10px;top:-10px;font-size:70px;opacity:.08;pointer-events:none;">👥</span>
+   <div>
+    <h2 style="font-size:17px;font-weight:900;color:#dce5f2;">👥 Funcionários</h2>
+    <p style="font-size:12px;color:#93a3ba;margin-top:2px;">Dados, PIX, desligamento, férias/recesso e hora extra de cada uma — clique pra abrir</p>
+    <div id="previaGrupo-funcionarios" style="font-size:11px;color:#fb7185;margin-top:6px;font-weight:700;"></div>
+   </div>
+   <div style="display:flex;align-items:center;gap:10px;">
+    <span id="contadorGrupo-funcionarios" style="font-size:11px;color:#4f9cff;background:rgba(79,156,255,.12);border-radius:999px;padding:3px 10px;"></span>
+    <span id="setaGrupo-funcionarios" style="font-size:22px;color:#93a3ba;">▸</span>
+   </div>
+  </div>
+  <div id="conteudoGrupo-funcionarios" style="display:none;">
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>📅 Dados de Gabriela (CLT)</h3>
+    <span>admissão (pra férias e FGTS) e nascimento (pro aniversário)</span>
+   </div>
+   <label class="block text-sm font-semibold mb-2" for="dataInicioInformalGabrielaInput">Data de início informal (antes de assinar a carteira, se houve)</label>
+   <div style="display:flex;gap:8px;margin-bottom:12px;">
+    <input id="dataInicioInformalGabrielaInput" type="date" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="salvarDataInicioInformalGabriela()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+   </div>
+   <div style="background:rgba(79,156,255,.06);border-left:2px solid rgba(79,156,255,.4);border-radius:6px;padding:8px 10px;margin-top:-4px;margin-bottom:12px;">
+    <p style="font-size:10px;color:#93a3ba;margin:0;">💡 Só preencha se ela trabalhou um tempo antes de assinar a carteira. Esse período <strong>não conta</strong> pra férias/FGTS (que usam a data de admissão oficial abaixo) — serve só pra registro do tempo total que ela ficou na loja.</p>
+   </div>
+   <label class="block text-sm font-semibold mb-2" for="dataAdmissaoGabrielaInput">Data de admissão (carteira assinada)</label>
+   <div style="display:flex;gap:8px;margin-bottom:12px;">
+    <input id="dataAdmissaoGabrielaInput" type="date" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="salvarDataAdmissaoGabriela()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+   </div>
+   <label class="block text-sm font-semibold mb-2" for="dataNascimentoGabrielaInput">🎂 Data de nascimento</label>
+   <div style="display:flex;gap:8px;">
+    <input id="dataNascimentoGabrielaInput" type="date" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="salvarNascimento('gabriela')" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+   </div>
+   <div id="resumoAdmissaoGabriela" style="margin-top:12px;"></div>
+   <div id="resumoNascimentoGabriela" style="margin-top:10px;"></div>
+   <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">💡 A estagiária (Day) não tem férias nem FGTS pelas regras de estágio — esse campo é só pra Gabriela, que é CLT.</p>
+   <div style="border-top:1px solid #1e2c42;margin-top:14px;padding-top:14px;">
+    <label class="block text-sm font-semibold mb-2" for="chavePixGabrielaInput">💳 Chave PIX (pra pagamento)</label>
+    <div style="display:flex;gap:8px;">
+     <input id="chavePixGabrielaInput" type="text" placeholder="CPF, e-mail, telefone ou chave aleatória" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     <button onclick="salvarChavePix('gabriela')" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
     </div>
    </div>
   </div>
 
-  <div class="adv-shell" id="dashboardModoAvancado">
+  <div class="adv-card" id="cardDesligamentoGabriela">
+   <div class="adv-card-title">
+    <h3>🚪 Desligamento — Gabriela</h3>
+    <span>registra a saída da funcionária e gera um resumo em PDF pra contadora</span>
+   </div>
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+    <div>
+     <label class="block text-sm font-semibold mb-2" for="nomeCompletoGabrielaInput">Nome completo</label>
+     <input id="nomeCompletoGabrielaInput" type="text" placeholder="Nome completo" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    </div>
+    <div>
+     <label class="block text-sm font-semibold mb-2" for="cpfGabrielaInput">CPF</label>
+     <input id="cpfGabrielaInput" type="text" placeholder="000.000.000-00" onblur="checarFormatoDocumento('cpfGabrielaInput','cpf')" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    </div>
+   </div>
+   <label class="block text-sm font-semibold mb-2" for="cargoGabrielaInput">Cargo/função</label>
+   <input id="cargoGabrielaInput" type="text" placeholder="Ex: Vendedora" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:8px;">
+   <button onclick="salvarDadosPessoaisDesligamento('gabriela')" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl font-semibold text-sm" style="margin-bottom:14px;">💾 Salvar dados pessoais</button>
 
-    <aside class="adv-sidebar no-print">
-      <div class="adv-brand">Resumo</div>
+   <div style="border-top:1px solid #1e2c42;padding-top:14px;">
+    <div style="font-size:11px;font-weight:800;color:#fb7185;text-transform:uppercase;letter-spacing:.03em;margin-bottom:10px;">🚪 Detalhes da Saída</div>
+    <label class="block text-sm font-semibold mb-2" for="dataDesligamentoGabrielaInput">Data do desligamento</label>
+    <input id="dataDesligamentoGabrielaInput" type="date" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:8px;">
 
-      <div class="adv-summary">
-        <div class="mini">
-          <div class="k">Faturamento total</div>
-          <div class="v g" id="advTotalSales">R$ 0,00</div>
-        </div>
-        <div class="mini">
-          <div class="k">Total de fechamentos</div>
-          <div class="v b" id="advTotalClosing">R$ 0,00</div>
-        </div>
-        <div class="mini">
-          <div class="k">Dias lançados</div>
-          <div class="v p" id="advDaysCount">0</div>
-        </div>
-        <div class="mini">
-          <div class="k">Média de fechamento</div>
-          <div class="v y" id="advAvgClosing">R$ 0,00</div>
-        </div>
-      </div>
+    <label class="block text-sm font-semibold mb-2">Tipo de contrato</label>
+    <select id="tipoContratoGabrielaSelect" onchange="alternarAvisoPrevioGabriela()" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:8px;">
+     <option value="normal">CLT normal</option>
+     <option value="experiencia">Contrato de experiência (não precisa de aviso-prévio)</option>
+    </select>
 
-      <div class="adv-update">
-        <div class="k" style="color:#93a3ba;font-size:11px;">Última atualização</div>
-        <div id="advLastUpdate" style="font-size:12px;margin-top:4px;color:#dce5f2;">—</div>
-        <button id="btnRefreshSidebar" class="adv-btn green" style="width:100%;margin-top:10px;" onclick="loadGoogleSheet()" title="Atalho: Alt+A">↻ Atualizar agora</button>
-        <button class="adv-btn" style="width:100%;margin-top:8px;background:#1c2c42;color:#dce5f2;" onclick="ativarModoApresentacao()" title="Deixa o painel em tela cheia, com fontes maiores e alternando entre telas — pensado pra ficar numa TV da loja">📺 Modo Apresentação</button>
-      </div>
-    </aside>
+    <label class="block text-sm font-semibold mb-2">Quem pediu o desligamento?</label>
+    <select id="quemPediuGabrielaSelect" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:8px;">
+     <option value="funcionaria">A funcionária pediu demissão</option>
+     <option value="empresa">A empresa decidiu desligar</option>
+    </select>
 
-    <section class="adv-main">
-      <div class="adv-topbar">
-        <div class="adv-topbar-left">
-          <div class="adv-select-wrap">📅 <span>Selecione o Dia:</span>
-            <select id="daySelect" class="adv-select" aria-label="Selecionar dia do caixa"></select>
-          </div>
-        </div>
-        <div class="adv-pills">
-          <div class="adv-pill">💼 Inicial: <b id="advPillInitial">R$ 0,00</b></div>
-          <div class="adv-pill">✅ Fechamento: <b id="advPillClosing">R$ 0,00</b></div>
-          <div class="adv-pill">💰 Total Vendas: <b id="advPillSales">R$ 0,00</b></div>
-        </div>
-      </div>
+    <div id="wrapperAvisoPrevioGabriela">
+     <label class="block text-sm font-semibold mb-2">Aviso-prévio</label>
+     <select id="avisoPrevioGabrielaSelect" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:8px;">
+      <option value="trabalhado">Trabalhado</option>
+      <option value="indenizado">Indenizado</option>
+      <option value="dispensado_empresa">Dispensado pela empresa</option>
+      <option value="dispensa_pedida">A funcionária pediu dispensa do aviso</option>
+     </select>
+    </div>
 
-      <div id="emptyStateDashboard" class="empty-state adv-card" style="display:none;">
-        <div class="icon">📭</div>
-        <div class="title">Nenhum dado carregado ainda</div>
-        <div class="desc">Clique em "↻ Atualizar agora" para buscar a planilha do Google Sheets, ou use o botão "Carregar Excel/CSV" no topo da página.</div>
-      </div>
-
-      <div id="dashboardContent">
-      <div class="adv-grid4">
-        <div class="adv-kpi green">
-          <div class="label">Saldo inicial (caixa)</div>
-          <div class="value" id="advInitial">R$ 0,00</div>
-          <div class="sub">Reposição e fundo de troco</div>
-        </div>
-        <div class="adv-kpi blue">
-          <div class="label">Entradas (vendas dia)</div>
-          <div class="value" id="advSales">R$ 0,00</div>
-          <div class="sub">Total faturado no dia</div>
-        </div>
-        <div class="adv-kpi red">
-          <div class="label">Saídas / retiradas</div>
-          <div class="value" id="advWithdrawals">R$ 0,00</div>
-          <div class="sub">Retiradas ou sangrias de gaveta</div>
-        </div>
-        <div class="adv-kpi green">
-          <div class="label">Fechamento do caixa</div>
-          <div class="value" id="advClosing">R$ 0,00</div>
-          <div class="sub">Valor conferido na gaveta</div>
-        </div>
-      </div>
-
-      <div id="cardDiferencaCaixa" class="adv-card" style="margin-top:16px;"></div>
-
-      <div class="adv-content2">
-        <div class="adv-card">
-          <div class="adv-card-title">
-            <h3>📊 Vendas Diárias × Meta Diária</h3>
-            <span>comparação dia a dia com a meta configurada</span>
-          </div>
-          <div class="adv-chart"><canvas id="closingChart"></canvas></div>
-        </div>
-
-        <div class="adv-card" id="cardVendasPorPeriodo">
-          <div class="adv-card-title">
-            <h3>📊 Vendas por período — dia a dia</h3>
-            <span>mostra quanto foi vendido de manhã, no meio-dia e à tarde em cada dia lançado</span>
-          </div>
-          <div class="biobel-periodo-chart-wrap"><canvas id="graficoVendasPorPeriodo" role="img" aria-label="Gráfico diário de vendas por manhã, meio-dia e tarde"></canvas></div>
-          <div id="resumoVendasPorPeriodo" class="biobel-periodo-resumo"></div>
-          <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">💡 A divisão usa o horário real registrado na planilha: manhã até 11h59, meio-dia das 12h às 13h59 e tarde a partir das 14h.</p>
-        </div>
-
-        <div class="adv-card">
-          <div class="adv-card-title">
-            <h3>🍩 Resumo Geral</h3>
-            <span>visão acumulada</span>
-          </div>
-          <div class="adv-donut"><canvas id="summaryDonut"></canvas></div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
-            <div class="adv-pill">Faturamento<br><b id="donutSales">R$ 0,00</b></div>
-            <div class="adv-pill">Fechamentos<br><b id="donutClosing">R$ 0,00</b></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="adv-card adv-table-card">
-        <div class="adv-card-title">
-          <h3>📋 Resumo Diário</h3>
-          <div class="adv-actions">
-            <button class="adv-btn green" onclick="printMonthly()">🖨 Imprimir Relatório</button>
-            <button class="adv-btn blue" onclick="printDaily()">🖨 Imprimir Dia</button>
-            <button class="adv-btn" style="background:#8b5cf6;color:#fff;" onclick="gerarRelatorioMensalPDF()" id="btnGerarPdfMensal">📑 Relatório em PDF</button>
-          </div>
-        </div>
-
-        <div class="scroll-hint">⇔ arraste a tabela para o lado para ver mais colunas</div>
-        <div class="table-scroll-wrap">
-        <div style="overflow:auto">
-          <table class="adv-table">
-            <thead>
-              <tr>
-                <th>Data</th>
-                <th class="right">Saldo inicial</th>
-                <th class="right">Vendas do dia</th>
-                <th class="right">Retiradas</th>
-                <th class="right">Fechamento</th>
-                <th class="right" title="Fechamento menos saldo inicial. Só reflete dinheiro físico, não inclui cartão/Pix.">Variação (dinheiro)</th>
-              </tr>
-            </thead>
-            <tbody id="advTableBody"></tbody>
-          </table>
-        </div>
-        </div>
-      </div>
-      </div>
-    </section>
+    <label class="block text-sm font-semibold mb-2" for="motivoDesligamentoGabrielaInput">Motivo/observação (opcional)</label>
+    <input id="motivoDesligamentoGabrielaInput" type="text" placeholder="Alguma observação adicional..." style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:10px;">
+    <button onclick="salvarDesligamento('gabriela')" class="w-full bg-rose-600 hover:bg-rose-500 px-4 py-2 rounded-xl font-semibold text-sm">💾 Salvar desligamento</button>
+   </div>
+   <div id="resumoDesligamentoGabriela" style="margin:12px 0;"></div>
+   <button onclick="gerarPdfDesligamento('gabriela')" class="w-full bg-purple-600 hover:bg-purple-500 px-4 py-2.5 rounded-xl font-semibold text-sm">🖨️ Gerar PDF de Desligamento</button>
+   <button id="btnArquivarGabriela" onclick="arquivarExFuncionaria('gabriela')" style="display:none;margin-top:8px;" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl font-semibold text-sm">🗄️ Mover pro Arquivo de Ex-Funcionários</button>
   </div>
-</main></div>`;
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>🏖️ Férias — Gabriela</h3>
+    <span>registre quando ela tirar férias, pra evitar pagar em dobro por vencimento</span>
+   </div>
+   <div id="statusFeriasGabriela" style="margin-bottom:14px;"></div>
+   <div id="historicoFeriasGabriela" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
+   <div style="border-top:1px solid #1e2c42;padding-top:14px;">
+    <div style="font-size:12px;font-weight:800;color:#93a3ba;margin-bottom:10px;">➕ Registrar férias tiradas</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+     <div>
+      <label for="feriasInicioInput" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Data de início</label>
+      <input id="feriasInicioInput" type="date" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     </div>
+     <div>
+      <label for="feriasFimInput" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Data de volta</label>
+      <input id="feriasFimInput" type="date" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     </div>
+    </div>
+    <button onclick="registrarFerias()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Registrar período de férias</button>
+   </div>
+   <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">⚠️ A regra: depois de completar 12 meses trabalhados, a loja tem mais 12 meses pra conceder as férias. Se passar desse prazo sem conceder, a lei manda pagar em dobro. O sistema calcula isso automaticamente com base na admissão (ou na última férias registrada).</p>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3 id="tituloCardDadosDay">📋 Dados de Day (Estágio)</h3>
+    <span>início do contrato (pra saber quando renovar) e nascimento</span>
+   </div>
+   <label class="block text-sm font-semibold mb-2" for="dataInicioEstagioInput">Data de início do estágio</label>
+   <div style="display:flex;gap:8px;margin-bottom:12px;">
+    <input id="dataInicioEstagioInput" type="date" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="salvarInicioEstagio()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+   </div>
+   <label class="block text-sm font-semibold mb-2" for="renovacaoEstagioMesesInput">Renovar o contrato a cada quantos meses?</label>
+   <div style="display:flex;gap:8px;margin-bottom:12px;">
+    <input id="renovacaoEstagioMesesInput" type="number" min="1" max="24" placeholder="6" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="salvarRenovacaoEstagio()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+   </div>
+   <label class="block text-sm font-semibold mb-2" for="dataNascimentoDayInput">🎂 Data de nascimento</label>
+   <div style="display:flex;gap:8px;">
+    <input id="dataNascimentoDayInput" type="date" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="salvarNascimento('day')" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+   </div>
+   <div id="resumoEstagioDay" style="margin-top:12px;"></div>
+   <div id="resumoNascimentoDay" style="margin-top:10px;"></div>
+   <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">⚠️ A lei do estágio (Lei 11.788/2008) limita o contrato a no máximo 2 anos (24 meses) com a mesma empresa, exceto pra pessoas com deficiência. O sistema avisa quando estiver chegando perto desse limite.</p>
+
+   <div id="blocoPromoverDayEstagio" style="border-top:1px solid #1e2c42;margin-top:14px;padding-top:14px;">
+    <div style="font-size:11px;font-weight:800;color:#27d7a0;text-transform:uppercase;letter-spacing:.03em;margin-bottom:10px;">🎓 Promoção pra CLT</div>
+    <div style="background:rgba(39,215,160,.06);border-left:2px solid rgba(39,215,160,.4);border-radius:6px;padding:8px 10px;margin-bottom:10px;">
+     <p style="font-size:11px;color:#93a3ba;margin:0;">Se um dia ela virar funcionária CLT, registra a data aqui — o tempo de estágio fica guardado como histórico, e a partir dessa data os cálculos de férias/FGTS passam a valer.</p>
+    </div>
+    <label class="block text-sm font-semibold mb-2" for="dataPromocaoCltDayInput">Data da promoção pra CLT</label>
+    <div style="display:flex;gap:8px;">
+     <input id="dataPromocaoCltDayInput" type="date" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     <button onclick="promoverDayParaClt()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">🎓 Promover</button>
+    </div>
+   </div>
+   <div id="resumoPromocaoDay" style="margin-top:12px;"></div>
+
+   <div style="border-top:1px solid #1e2c42;margin-top:14px;padding-top:14px;">
+    <label class="block text-sm font-semibold mb-2" for="chavePixDayInput">💳 Chave PIX (pra pagamento)</label>
+    <div style="display:flex;gap:8px;">
+     <input id="chavePixDayInput" type="text" placeholder="CPF, e-mail, telefone ou chave aleatória" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     <button onclick="salvarChavePix('day')" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+    </div>
+   </div>
+  </div>
+
+  <div class="adv-card" id="cardDesligamentoDay">
+   <div class="adv-card-title">
+    <h3>🚪 Desligamento — Day</h3>
+    <span>registra o fim do estágio e gera um resumo em PDF pra contadora</span>
+   </div>
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+    <div>
+     <label class="block text-sm font-semibold mb-2" for="nomeCompletoDayInput">Nome completo</label>
+     <input id="nomeCompletoDayInput" type="text" placeholder="Nome completo" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    </div>
+    <div>
+     <label class="block text-sm font-semibold mb-2" for="cpfDayInput">CPF</label>
+     <input id="cpfDayInput" type="text" placeholder="000.000.000-00" onblur="checarFormatoDocumento('cpfDayInput','cpf')" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    </div>
+   </div>
+   <label class="block text-sm font-semibold mb-2" for="cargoDayInput">Cargo/função</label>
+   <input id="cargoDayInput" type="text" placeholder="Ex: Estagiária de Vendas" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:8px;">
+   <button onclick="salvarDadosPessoaisDesligamento('day')" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl font-semibold text-sm" style="margin-bottom:14px;">💾 Salvar dados pessoais</button>
+
+   <div style="border-top:1px solid #1e2c42;padding-top:14px;">
+    <div style="font-size:11px;font-weight:800;color:#fb7185;text-transform:uppercase;letter-spacing:.03em;margin-bottom:10px;">🚪 Detalhes da Saída</div>
+    <label class="block text-sm font-semibold mb-2" for="dataDesligamentoDayInput">Data do desligamento</label>
+    <input id="dataDesligamentoDayInput" type="date" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:8px;">
+
+    <label class="block text-sm font-semibold mb-2">Quem pediu o desligamento?</label>
+    <select id="quemPediuDaySelect" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:8px;">
+     <option value="funcionaria">A estagiária pediu o desligamento</option>
+     <option value="empresa">A empresa decidiu desligar</option>
+    </select>
+    <p style="font-size:10px;color:#93a3ba;margin-bottom:10px;">💡 Contrato de estágio não tem aviso-prévio no sentido da CLT — por isso esse campo não aparece aqui.</p>
+
+    <label class="block text-sm font-semibold mb-2" for="motivoDesligamentoDayInput">Motivo/observação (opcional)</label>
+    <input id="motivoDesligamentoDayInput" type="text" placeholder="Ex: fim do contrato de estágio, etc." style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:10px;">
+    <button onclick="salvarDesligamento('day')" class="w-full bg-rose-600 hover:bg-rose-500 px-4 py-2 rounded-xl font-semibold text-sm">💾 Salvar desligamento</button>
+   </div>
+   <div id="resumoDesligamentoDay" style="margin:12px 0;"></div>
+   <button onclick="gerarPdfDesligamento('day')" class="w-full bg-purple-600 hover:bg-purple-500 px-4 py-2.5 rounded-xl font-semibold text-sm">🖨️ Gerar PDF de Desligamento</button>
+   <button id="btnArquivarDay" onclick="arquivarExFuncionaria('day')" style="display:none;margin-top:8px;" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl font-semibold text-sm">🗄️ Mover pro Arquivo de Ex-Funcionários</button>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>🌴 Recesso Remunerado — Day</h3>
+    <span>diferente de férias (isso é regra de CLT) — estagiário tem direito a 30 dias de recesso remunerado por ano de estágio</span>
+   </div>
+   <div id="statusRecessoDay" style="margin-bottom:14px;"></div>
+   <div id="historicoRecessoDay" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
+   <div style="border-top:1px solid #1e2c42;padding-top:14px;">
+    <div style="font-size:12px;font-weight:800;color:#93a3ba;margin-bottom:10px;">➕ Registrar recesso tirado</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+     <div>
+      <label for="recessoInicioInput" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Data de início</label>
+      <input id="recessoInicioInput" type="date" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     </div>
+     <div>
+      <label for="recessoFimInput" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Data de volta</label>
+      <input id="recessoFimInput" type="date" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     </div>
+    </div>
+    <button onclick="registrarRecesso()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Registrar recesso</button>
+   </div>
+   <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">💡 Só tem direito ao recesso completo (30 dias) se o estágio durar 1 ano ou mais — antes disso, o direito é proporcional. Preferencialmente, deve coincidir com as férias escolares dela.</p>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>⏰ Hora extra — Gabriela</h3>
+    <span>2 horas extras por semana, fixas</span>
+   </div>
+   <label class="block text-sm font-semibold mb-2" for="valorHoraExtraInput">Valor da hora extra (R$/hora)</label>
+   <div style="display:flex;gap:8px;">
+    <input id="valorHoraExtraInput" type="text" inputmode="decimal" placeholder="R$ 0,00" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="salvarHoraExtra()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+   </div>
+   <div id="resumoHoraExtra"></div>
+   <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">💡 Valor pré-calculado: salário (R$1.836,00) ÷ 220h = R$8,35/hora normal × 1,5 (adicional de 50%) = R$12,52/hora extra. Ajuste o campo acima se precisar corrigir.</p>
+   <div style="margin-top:12px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:12px;padding:12px 14px;">
+    <div style="font-size:11.5px;font-weight:800;color:#fbbf24;margin-bottom:6px;">⚠️ Esse valor é só a hora extra em si — não é o custo total</div>
+    <div style="font-size:11px;color:#93a3ba;line-height:1.6;">
+     Dependendo da situação trabalhista da Gabriela, o custo real pode ficar maior por causa de reflexos que <strong style="color:#dce5f2;">não estão incluídos</strong> nesse cálculo:
+     <br>• <strong style="color:#dce5f2;">DSR</strong> (Descanso Semanal Remunerado) sobre horas extras
+     <br>• Reflexo em <strong style="color:#dce5f2;">13º salário</strong>
+     <br>• Reflexo em <strong style="color:#dce5f2;">férias + 1/3</strong>
+     <br>• Reflexo no <strong style="color:#dce5f2;">FGTS</strong>
+    </div>
+    <div style="font-size:11px;color:#93a3ba;margin-top:8px;">Pra saber o custo total exato com esses encargos, confirme com a contadora — esse painel mostra só a base, não substitui o cálculo oficial da folha.</div>
+   </div>
+  </div>
+
+  </div>
+
+  <div class="grupo-adm-header" data-grupo="exfuncionarios" onclick="alternarGrupoAdm('exfuncionarios')" style="display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#1a1414,#150e0e);border:1px solid rgba(148,163,184,.35);border-radius:16px;padding:16px 20px;cursor:pointer;position:relative;overflow:hidden;">
+   <span style="position:absolute;right:-10px;top:-10px;font-size:70px;opacity:.08;pointer-events:none;">🗄️</span>
+   <div>
+    <h2 style="font-size:17px;font-weight:900;color:#dce5f2;">🗄️ Ex-Funcionários</h2>
+    <p style="font-size:12px;color:#93a3ba;margin-top:2px;">Registro histórico de quem já trabalhou aqui — pra consultar se precisar de alguma informação depois</p>
+   </div>
+   <div style="display:flex;align-items:center;gap:10px;">
+    <span id="contadorGrupo-exfuncionarios" style="font-size:11px;color:#94a3b8;background:rgba(148,163,184,.12);border-radius:999px;padding:3px 10px;"></span>
+    <span id="setaGrupo-exfuncionarios" style="font-size:22px;color:#93a3ba;">▸</span>
+   </div>
+  </div>
+  <div id="conteudoGrupo-exfuncionarios" style="display:none;">
+   <div class="adv-card">
+    <div id="listaExFuncionarios"></div>
+   </div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>📊 Participação no Lucro (opcional)</h3>
+    <span>diferente da comissão por metas acima — essa aqui é uma % sobre o lucro que sobrou de verdade, não sobre o faturamento. Deixe em 0% se não usar.</span>
+   </div>
+   <label class="block text-sm font-semibold mb-2" for="pctParticipacaoLucroInput">% do lucro líquido, dividido entre Gabriela e Day</label>
+   <div style="display:flex;gap:8px;">
+    <input id="pctParticipacaoLucroInput" type="text" inputmode="decimal" placeholder="0" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="salvarParticipacaoLucro()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+   </div>
+   <div id="resumoParticipacaoLucro" style="margin-top:12px;"></div>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>🧾 Impostos</h3>
+    <span>DAS/MEI, Simples Nacional ou outro — o valor exato só você sabe, então fica em branco até preencher</span>
+   </div>
+   <label class="block text-sm font-semibold mb-2" for="tipoImpostoSelect">Regime tributário</label>
+   <select id="tipoImpostoSelect" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:12px;">
+    <option value="MEI">MEI (DAS)</option>
+    <option value="Simples Nacional">Simples Nacional</option>
+    <option value="Outro">Outro</option>
+   </select>
+   <label class="block text-sm font-semibold mb-2" for="valorImpostoMensalInput">Valor mensal (R$)</label>
+   <div style="display:flex;gap:8px;">
+    <input id="valorImpostoMensalInput" type="text" inputmode="decimal" placeholder="R$ 0,00" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="salvarImposto()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+   </div>
+   <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">💡 Enquanto não preencher, esse valor entra como R$ 0,00 no Lucro Estimado — ou seja, o lucro real tende a ser menor do que o mostrado até você colocar o valor certo aqui.</p>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>💳 Taxa da Máquina de Cartão</h3>
+    <span>débito e crédito têm taxa descontada pelo banco/operadora — o faturamento que aparece no resto do sistema é o valor bruto, sem descontar isso</span>
+   </div>
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px;">
+    <div>
+     <label class="block text-sm font-semibold mb-2" for="taxaDebitoInput">Taxa no débito (%)</label>
+     <input id="taxaDebitoInput" type="text" inputmode="decimal" placeholder="Ex: 1,5" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    </div>
+    <div>
+     <label class="block text-sm font-semibold mb-2" for="taxaCreditoInput">Taxa no crédito (%)</label>
+     <input id="taxaCreditoInput" type="text" inputmode="decimal" placeholder="Ex: 3,5" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    </div>
+   </div>
+   <button onclick="salvarTaxasCartao()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">💾 Salvar taxas</button>
+   <div id="resumoTaxasCartao" style="margin-top:12px;"></div>
+   <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">💡 Dinheiro e Pix normalmente não têm taxa, então não entram nessa conta. Confira a taxa exata com a sua maquininha — cada operadora cobra um valor diferente.</p>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>📦 Valor do Estoque Parado</h3>
+    <span>quanto (em custo) está guardado em produto — atualize de vez em quando, o sistema não calcula sozinho</span>
+   </div>
+   <label class="block text-sm font-semibold mb-2" for="valorEstoqueInput">Valor do estoque (R$)</label>
+   <div style="display:flex;gap:8px;">
+    <input id="valorEstoqueInput" type="text" inputmode="decimal" placeholder="R$ 0,00" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="salvarValorEstoque()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+   </div>
+   <div id="ultimaAtualizacaoEstoque" style="font-size:10.5px;color:#93a3ba;margin-top:8px;"></div>
+   <p style="font-size:10.5px;color:#93a3ba;margin-top:6px;">💡 A planilha de vendas não tem coluna de custo/preço de compra, então isso não dá pra calcular sozinho — é um valor que você atualiza manualmente de vez em quando, só pra referência.</p>
+  </div>
+
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>🏦 Reserva de Emergência / Capital de Giro</h3>
+    <span>quanto a loja tem guardado, fora do caixa do dia a dia</span>
+   </div>
+   <label class="block text-sm font-semibold mb-2" for="valorReservaInput">Valor guardado (R$)</label>
+   <div style="display:flex;gap:8px;">
+    <input id="valorReservaInput" type="text" inputmode="decimal" placeholder="R$ 0,00" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="salvarValorReserva()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+   </div>
+   <div id="ultimaAtualizacaoReserva" style="font-size:10.5px;color:#93a3ba;margin-top:8px;"></div>
+  </div>
+
+  <div class="adv-card" style="opacity:.85;border-style:dashed;">
+   <div class="adv-card-title">
+    <h3 style="color:#93a3ba;">🗄️ Avançado: Comissão individual (não usada hoje)</h3>
+    <span>diferente da "Comissão por Metas" acima (que é a política real da loja) — esse aqui é um recurso à parte, pra caso um dia alguém tenha uma % própria sobre o que vendeu. Deixe em 0% se não for usar.</span>
+   </div>
+   <div id="listaComissoes" style="display:flex;flex-direction:column;gap:12px;"></div>
+  </div>
+
+  <div id="admAncoraAgenda"></div>
+  <div class="grupo-adm-header" data-grupo="agenda" onclick="alternarGrupoAdm('agenda')" style="display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#1a1408,#0f1a08);border:1px solid rgba(163,230,53,.35);border-radius:16px;padding:16px 20px;cursor:pointer;position:relative;overflow:hidden;">
+   <span style="position:absolute;right:-10px;top:-10px;font-size:70px;opacity:.08;pointer-events:none;">🗓️</span>
+   <div>
+    <h2 style="font-size:17px;font-weight:900;color:#dce5f2;">🗓️ Agenda de Reuniões</h2>
+    <p style="font-size:12px;color:#93a3ba;margin-top:2px;">Quando um fornecedor vem até a loja, ou uma reunião marcada</p>
+   </div>
+   <div style="display:flex;align-items:center;gap:10px;">
+    <span id="contadorGrupo-agenda" style="font-size:11px;color:#a3e635;background:rgba(163,230,53,.12);border-radius:999px;padding:3px 10px;"></span>
+    <span id="setaGrupo-agenda" style="font-size:22px;color:#93a3ba;">▸</span>
+   </div>
+  </div>
+  <div id="conteudoGrupo-agenda" style="display:none;">
+  <div class="adv-card">
+   <div class="adv-card-title">
+    <h3>🤝 Agenda de Reuniões com Fornecedores</h3>
+    <span>quando um fornecedor vem até a loja, ou uma reunião marcada</span>
+   </div>
+   <div id="listaReunioes" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;"></div>
+   <div style="border-top:1px solid #1e2c42;padding-top:14px;">
+    <div style="font-size:12px;font-weight:800;color:#93a3ba;margin-bottom:10px;" id="tituloFormReuniao">➕ Adicionar reunião</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:8px;">
+     <input id="novaReuniaoFornecedor" type="text" placeholder="Fornecedor / pessoa" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     <div>
+      <label for="novaReuniaoData" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Data</label>
+      <input id="novaReuniaoData" type="date" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     </div>
+     <div>
+      <label for="novaReuniaoHora" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Hora</label>
+      <input id="novaReuniaoHora" type="time" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     </div>
+    </div>
+    <textarea id="novaReuniaoAssunto" rows="2" placeholder="Assunto (opcional)" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;resize:vertical;margin-bottom:8px;"></textarea>
+    <button id="btnAdicionarReuniao" onclick="adicionarReuniao()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Adicionar reunião</button>
+    <button id="btnCancelarEdicaoReuniao" onclick="cancelarEdicaoReuniao()" style="display:none;margin-top:8px;background:none;border:none;color:#93a3ba;font-size:12px;text-decoration:underline;cursor:pointer;width:100%;">✕ Cancelar edição</button>
+   </div>
+  </div>
+  </div>
+ </div>
+</section></div>`;
  renderChecklistChuvaDashboard();
 }
 function renderChecklistChuvaDashboard(){
@@ -2380,4 +2934,4 @@ function verComprovanteBoleto(id){
  if(!b || !b.comprovante) return;
  const win = window.open('', '_blank');
  if(win) win.document.write('<title>Comprovante — '+b.fornecedor+'</title><body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="'+b.comprovante+'" style="max-width:100%;max-height:100vh;">
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js"></script><script src="biobel-app.js"></script><script src="inteligencia-operacional.js"></script></body></html>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js"></script><script src="biobel-app.js"></script></body></html>
