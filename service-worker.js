@@ -6,7 +6,7 @@
 // internet, a versão mais nova é buscada e exibida; o cache só entra em ação quando o
 // aparelho está genuinamente sem conexão.
 
-const CACHE_NAME = 'biobel-cache-v10.42';
+const CACHE_NAME = 'biobel-cache-v10.43';
 const ARQUIVOS_ESSENCIAIS=[
  './dashboard.html','./login.html','./central.html','./operacao.html','./equipe.html',
  './vendas.html','./analises.html','./alertas.html','./config.html','./administracao.html',
@@ -31,12 +31,8 @@ self.addEventListener('activate', (event) => {
       nomes.filter((n) => n !== CACHE_NAME).map((n) => caches.delete(n))
     );
     await self.clients.claim();
-    const janelas = await self.clients.matchAll({type:'window', includeUncontrolled:true});
-    await Promise.all(
-      janelas
-        .filter((client) => client.url.startsWith(self.location.origin))
-        .map((client) => client.navigate(client.url).catch(() => null))
-    );
+    // O painel já cuida de recarregar a página uma única vez no "controllerchange".
+    // Não force navigate() aqui: isso podia gerar duas navegações seguidas e deixar a tela travando.
   })());
 });
 
