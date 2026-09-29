@@ -1,3 +1,9 @@
+## v10.53 — Restauração da Visão Geral completa
+- **Correção:** a Visão Geral completa volta a aparecer por padrão no Dashboard.
+- **Correção:** remove uma preferência antiga que podia deixar todo o conteúdo avançado escondido sem o usuário ter escolhido isso.
+- **Mantido:** o botão permite alternar para o modo simples quando desejado.
+- **Preservado:** nenhum dado de vendas, metas ou configurações é removido nessa migração; apenas a preferência de visualização antiga é limpa uma única vez.
+
 ## v10.52 — Resumo secundário no fechamento de caixa
 - **Novo:** no Fechamento Rápido, acima dos valores do caixa, aparece um resumo do dia selecionado.
 - **Mostra:** posição do dia no mês, quantidade de atendimentos, quem trabalhou e total vendido.
