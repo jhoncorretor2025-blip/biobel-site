@@ -6,7 +6,7 @@
 // internet, a versão mais nova é buscada e exibida; o cache só entra em ação quando o
 // aparelho está genuinamente sem conexão.
 
-const CACHE_NAME = 'biobel-cache-v10.86';
+const CACHE_NAME = 'biobel-cache-v10.87';
 const ARQUIVOS_ESSENCIAIS=[
  './dashboard.html','./login.html','./central.html','./operacao.html','./equipe.html',
  './vendas.html','./analises.html','./alertas.html','./config.html','./administracao.html','./administracao/fornecedor.html',
