@@ -3562,6 +3562,7 @@ function mostrarConteudoAdm(){
  renderFaixaMensagemProgramada();
  initModoTravadoGastos();
  renderGastosFixos();
+ renderCadastrosAdm();
  renderBoletos();
  if(document.getElementById('novoBoletoVencimento') && typeof selecionarQuantasVezesBoleto==='function' && boletoEditandoId===null){
   selecionarQuantasVezesBoleto(1);
@@ -4756,6 +4757,191 @@ function renderHistoricoPrecoFornecedor(){
   </div>`;
 }
 
+
+/* ===== Cadastros de Marcas e Fornecedores — usados automaticamente no módulo de boletos ===== */
+const MARCAS_PADRAO_BIOBEL=['Truss','Porto Dez','Plattelli','Eudora','Natura'];
+function getCadastrosAdm(){
+ try{
+  const salvo=JSON.parse(localStorage.getItem('biobel_cadastros_adm')||'{}')||{};
+  if(!Array.isArray(salvo.marcas)) salvo.marcas=[];
+  if(!Array.isArray(salvo.fornecedores)) salvo.fornecedores=[];
+  return salvo;
+ }catch(e){ return {marcas:[],fornecedores:[]}; }
+}
+function salvarCadastrosAdm(dados){
+ localStorage.setItem('biobel_cadastros_adm',JSON.stringify(dados));
+}
+function normalizarNomeCadastro(v){
+ return String(v||'').trim().replace(/\s+/g,' ');
+}
+function chaveCadastro(v){
+ return normalizarNomeCadastro(v).toLowerCase();
+}
+function seedCadastrosAdm(){
+ const dados=getCadastrosAdm();
+ let mudou=false;
+ MARCAS_PADRAO_BIOBEL.forEach(nome=>{
+  if(!dados.marcas.some(m=>chaveCadastro(m)===chaveCadastro(nome))){
+   dados.marcas.push(nome); mudou=true;
+  }
+ });
+ // Aproveita fornecedores que já existem em boletos, dados de contato ou memória de parcelamento.
+ const existentes=[];
+ getBoletos().forEach(b=>{if(b.fornecedor) existentes.push(b.fornecedor);});
+ Object.values(getDadosFornecedores()).forEach(d=>{if(d?.nomeOriginal) existentes.push(d.nomeOriginal);});
+ Object.values(getPadroesParceladoFornecedores()).forEach(d=>{if(d?.nomeOriginal) existentes.push(d.nomeOriginal);});
+ [...new Set(existentes.map(normalizarNomeCadastro).filter(Boolean))].forEach(nome=>{
+  if(!dados.fornecedores.some(f=>chaveCadastro(f.nome||f.nomeOriginal)===chaveCadastro(nome))){
+   dados.fornecedores.push({id:Date.now()+Math.random(),nome,telefone:'',cnpj:''});
+   mudou=true;
+  }
+ });
+ if(mudou) salvarCadastrosAdm(dados);
+ return dados;
+}
+function abrirAbaCadastro(aba){
+ const marcas=document.getElementById('cadastroAbaMarcas');
+ const fornecedores=document.getElementById('cadastroAbaFornecedores');
+ const bm=document.getElementById('tabCadastroMarcas');
+ const bf=document.getElementById('tabCadastroFornecedores');
+ const souMarca=aba==='marcas';
+ if(marcas) marcas.style.display=souMarca?'block':'none';
+ if(fornecedores) fornecedores.style.display=souMarca?'none':'block';
+ if(bm){bm.classList.toggle('is-active',souMarca);bm.setAttribute('aria-selected',souMarca?'true':'false');}
+ if(bf){bf.classList.toggle('is-active',!souMarca);bf.setAttribute('aria-selected',!souMarca?'true':'false');}
+ renderCadastrosAdm();
+}
+function adicionarMarcaCadastro(){
+ const input=document.getElementById('novaMarcaCadastro');
+ const nome=normalizarNomeCadastro(input?.value);
+ if(!nome){mostrarToast('⚠️ Digite o nome da marca.');return;}
+ const dados=getCadastrosAdm();
+ if(dados.marcas.some(m=>chaveCadastro(m)===chaveCadastro(nome))){
+  mostrarToast('ℹ️ Essa marca já está cadastrada.');return;
+ }
+ dados.marcas.push(nome);
+ salvarCadastrosAdm(dados);
+ if(input) input.value='';
+ renderCadastrosAdm();
+ sincronizarCadastrosNoBoleto();
+ mostrarToast('✅ Marca cadastrada!');
+}
+function removerMarcaCadastro(index){
+ const dados=getCadastrosAdm();
+ const nome=dados.marcas[index];
+ if(!nome)return;
+ if(!confirm('Remover a marca "'+nome+'" do cadastro? Os boletos já salvos não serão alterados.'))return;
+ dados.marcas.splice(index,1);
+ salvarCadastrosAdm(dados);
+ renderCadastrosAdm();
+ sincronizarCadastrosNoBoleto();
+ mostrarToast('🗑️ Marca removida do cadastro.');
+}
+function editarMarcaCadastro(index){
+ const dados=getCadastrosAdm();
+ const antigo=dados.marcas[index];
+ if(!antigo)return;
+ const novo=normalizarNomeCadastro(prompt('Nome da marca:',antigo));
+ if(!novo||novo===antigo)return;
+ if(dados.marcas.some((m,i)=>i!==index&&chaveCadastro(m)===chaveCadastro(novo))){
+  mostrarToast('ℹ️ Essa marca já está cadastrada.');return;
+ }
+ dados.marcas[index]=novo;
+ salvarCadastrosAdm(dados);
+ renderCadastrosAdm();
+ sincronizarCadastrosNoBoleto();
+ mostrarToast('✅ Marca atualizada!');
+}
+function salvarFornecedorCadastro(){
+ const nome=normalizarNomeCadastro(document.getElementById('novoFornecedorCadastroNome')?.value);
+ const telefone=normalizarNomeCadastro(document.getElementById('novoFornecedorCadastroTelefone')?.value);
+ const cnpj=normalizarNomeCadastro(document.getElementById('novoFornecedorCadastroCnpj')?.value);
+ if(!nome){mostrarToast('⚠️ Digite o nome do fornecedor.');return;}
+ const dados=getCadastrosAdm();
+ const idx=dados.fornecedores.findIndex(f=>chaveCadastro(f.nome)===chaveCadastro(nome));
+ if(idx>=0) dados.fornecedores[idx]={...dados.fornecedores[idx],nome,telefone,cnpj};
+ else dados.fornecedores.push({id:Date.now()+Math.random(),nome,telefone,cnpj});
+ salvarCadastrosAdm(dados);
+ // Mantém a base antiga de dados de fornecedor sincronizada.
+ const contatos=getDadosFornecedores();
+ contatos[chaveCadastro(nome)]={nomeOriginal:nome,telefone,cnpj};
+ salvarDadosFornecedores(contatos);
+ document.getElementById('novoFornecedorCadastroNome').value='';
+ document.getElementById('novoFornecedorCadastroTelefone').value='';
+ document.getElementById('novoFornecedorCadastroCnpj').value='';
+ renderCadastrosAdm();
+ sincronizarCadastrosNoBoleto();
+ mostrarToast('✅ Fornecedor salvo!');
+}
+function editarFornecedorCadastro(id){
+ const dados=getCadastrosAdm();
+ const idx=dados.fornecedores.findIndex(f=>f.id===id);
+ if(idx<0)return;
+ const f=dados.fornecedores[idx];
+ const nome=normalizarNomeCadastro(prompt('Nome do fornecedor:',f.nome||''));
+ if(!nome)return;
+ const telefone=normalizarNomeCadastro(prompt('Telefone:',f.telefone||''));
+ const cnpj=normalizarNomeCadastro(prompt('CNPJ:',f.cnpj||''));
+ if(dados.fornecedores.some((x,i)=>i!==idx&&chaveCadastro(x.nome)===chaveCadastro(nome))){mostrarToast('ℹ️ Esse fornecedor já está cadastrado.');return;}
+ dados.fornecedores[idx]={...f,nome,telefone,cnpj};
+ salvarCadastrosAdm(dados);
+ const contatos=getDadosFornecedores();
+ contatos[chaveCadastro(nome)]={nomeOriginal:nome,telefone,cnpj};
+ salvarDadosFornecedores(contatos);
+ renderCadastrosAdm();
+ sincronizarCadastrosNoBoleto();
+ mostrarToast('✅ Fornecedor atualizado!');
+}
+function removerFornecedorCadastro(id){
+ const dados=getCadastrosAdm();
+ const idx=dados.fornecedores.findIndex(f=>f.id===id);
+ if(idx<0)return;
+ const f=dados.fornecedores[idx];
+ if(!confirm('Remover "'+f.nome+'" do cadastro? Os boletos já salvos não serão apagados.'))return;
+ dados.fornecedores.splice(idx,1);
+ salvarCadastrosAdm(dados);
+ renderCadastrosAdm();
+ sincronizarCadastrosNoBoleto();
+ mostrarToast('🗑️ Fornecedor removido do cadastro.');
+}
+function renderCadastrosAdm(){
+ const dados=seedCadastrosAdm();
+ const marcasEl=document.getElementById('listaMarcasCadastro');
+ const fornecedoresEl=document.getElementById('listaFornecedoresCadastro');
+ const busca=normalizarNomeCadastro(document.getElementById('buscaFornecedorCadastro')?.value).toLowerCase();
+ const cm=document.getElementById('cadastroContadorMarcas');
+ const cf=document.getElementById('cadastroContadorFornecedores');
+ if(cm)cm.textContent=dados.marcas.length+(dados.marcas.length===1?' marca':' marcas');
+ if(cf)cf.textContent=dados.fornecedores.length+(dados.fornecedores.length===1?' fornecedor':' fornecedores');
+ if(marcasEl){
+  marcasEl.innerHTML=dados.marcas.map((nome,i)=>'<div class="cadastro-chip"><span>🏷️ <strong>'+esc(nome)+'</strong></span><div><button type="button" onclick="editarMarcaCadastro('+i+')" aria-label="Editar '+esc(nome)+'">✏️</button><button type="button" onclick="removerMarcaCadastro('+i+')" aria-label="Remover '+esc(nome)+'">×</button></div></div>').join('')||'<div class="cadastro-empty">Nenhuma marca cadastrada.</div>';
+ }
+ if(fornecedoresEl){
+  const lista=dados.fornecedores.filter(f=>!busca||String(f.nome||'').toLowerCase().includes(busca)||String(f.telefone||'').toLowerCase().includes(busca)||String(f.cnpj||'').toLowerCase().includes(busca));
+  fornecedoresEl.innerHTML=lista.map(f=>'<article class="cadastro-supplier-card"><div class="cadastro-supplier-icon">🤝</div><div class="cadastro-supplier-main"><strong>'+esc(f.nome)+'</strong><span>'+((f.telefone?'📞 '+esc(f.telefone):'')+(f.telefone&&f.cnpj?' · ':'')+(f.cnpj?'🏢 '+esc(f.cnpj):'')||'Sem telefone/CNPJ cadastrado')+'</span></div><div class="cadastro-supplier-actions"><button type="button" onclick="editarFornecedorCadastro('+f.id+')" aria-label="Editar '+esc(f.nome)+'">✏️</button><button type="button" onclick="removerFornecedorCadastro('+f.id+')" aria-label="Remover '+esc(f.nome)+'">×</button></div></article>').join('')||'<div class="cadastro-empty">Nenhum fornecedor encontrado.</div>';
+ }
+ sincronizarCadastrosNoBoleto();
+}
+function sincronizarCadastrosNoBoleto(){
+ const dados=getCadastrosAdm();
+ const marcas=[...new Set([...(Array.isArray(MARCAS_FORNECEDOR_CONHECIDAS)?MARCAS_FORNECEDOR_CONHECIDAS:[]),...dados.marcas])].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+ const select=document.getElementById('novoBoletoMarcaSelect');
+ if(select){
+  const atual=select.value;
+  const outras='<option value="__outros__">Outros / digitar...</option>';
+  select.innerHTML='<option value="">Marca do produto</option>'+marcas.map(m=>'<option value="'+esc(m)+'">'+esc(m)+'</option>').join('')+outras;
+  if(marcas.includes(atual))select.value=atual;
+  else if(atual==='__outros__')select.value=atual;
+ }
+ const datalist=document.getElementById('listaFornecedoresConhecidos');
+ if(datalist){
+  const fornecedores=dados.fornecedores.map(f=>f.nome).filter(Boolean);
+  const nomesBoletos=getBoletos().map(b=>b.fornecedor).filter(Boolean);
+  const nomesPadroes=Object.values(getPadroesParceladoFornecedores()).map(p=>p.nomeOriginal).filter(Boolean);
+  const unicos=[...new Set([...fornecedores,...nomesBoletos,...nomesPadroes])].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  datalist.innerHTML=unicos.map(n=>'<option value="'+esc(n)+'">').join('');
+ }
+}
 function renderBoletos(){
  renderSeletorFornecedorHistorico();
  const todosBoletos = getBoletos();
