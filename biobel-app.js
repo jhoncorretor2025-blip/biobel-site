@@ -6268,16 +6268,24 @@ function renderParticipacaoLucro(){
 
 function atualizarTotaisAdm(){
  const gastosFixos = getGastosFixos().reduce((s,g)=>s+(Number(g.valor)||0),0);
- const boletos = getBoletos().reduce((s,b)=>s+(Number(b.valor)||0),0);
+ const agoraFinanceiro = obterAgoraBrasilia();
+ const boletosDoMes = getBoletosDoMesFinanceiro(agoraFinanceiro.getFullYear(),agoraFinanceiro.getMonth()+1);
+ const boletos = boletosDoMes.reduce((s,b)=>s+(Number(b.valor)||0),0);
  const elFixos = document.getElementById('admTotalGastosFixos');
  const elVar = document.getElementById('admTotalGastosVariaveis');
  const elGeral = document.getElementById('admTotalGastosGeral');
+ const elVarSub = document.getElementById('admTotalGastosVariaveisSub');
+ const elQtdBoletosMes = document.getElementById('admQtdBoletosMes');
+ const elFaturamentoResumo = document.getElementById('admFaturamentoResumo');
  if(elFixos) elFixos.textContent = money(gastosFixos);
  if(elVar) elVar.textContent = money(boletos);
+ if(elVarSub) elVarSub.textContent = boletosDoMes.length===0 ? 'nenhuma parcela com vencimento neste mês' : boletosDoMes.length+' boleto'+(boletosDoMes.length===1?'':'s')+' / parcela'+(boletosDoMes.length===1?'':'s')+' neste mês';
+ if(elQtdBoletosMes) elQtdBoletosMes.textContent = boletosDoMes.length+' boleto'+(boletosDoMes.length===1?'':'s')+' do mês atual';
  if(elGeral) elGeral.textContent = money(gastosFixos+boletos);
 
  // Lucro líquido estimado: faturamento do período carregado, menos gastos (fixos + variáveis) e comissões.
  const faturamento = daysData.reduce((s,d)=>s+(Number(d.sales)||0),0);
+ if(elFaturamentoResumo) elFaturamentoResumo.textContent = money(faturamento);
 
  // Destaque de cor nos KPIs de gastos, conforme o quanto representam do faturamento —
  // dá pra perceber de cara se os gastos estão "pesados" sem precisar fazer conta de cabeça.
@@ -6447,11 +6455,12 @@ function renderDRE(faturamento, gastosFixos, boletos, comissoesEBonus, imposto, 
   <div>
    ${linha('Receita Bruta (Faturamento)', money(faturamento))}
    ${linha('(−) Gastos Fixos', '−'+money(gastosFixos))}
-   ${linha('(−) Gastos Variáveis (Boletos)', '−'+money(boletos))}
+   ${linha('(−) Gastos Variáveis — parcelas/boletos do mês', '−'+money(boletos))}
+   <div style="font-size:10px;color:#71839c;margin:-3px 0 4px;">Cada parcela entra somente no mês do vencimento. Boletos futuros ficam nos meses futuros.</div>
    ${linha('(−) Comissões e Bônus', '−'+money(comissoesEBonus))}
    ${linha('(−) Impostos', '−'+money(imposto))}
    ${taxasCartao>0 ? linha('(−) Taxa da Máquina de Cartão', '−'+money(taxasCartao)) : ''}
-   ${linha('= Resultado do Período', money(resultado), true, resultado>=0?'#27d7a0':'#fb7185')}
+   ${linha('= Resultado do Mês', money(resultado), true, resultado>=0?'#27d7a0':'#fb7185')}
   </div>
   <p style="font-size:10px;color:#93a3ba;margin-top:10px;">💡 Resultado simplificado — não substitui o DRE oficial da contabilidade, mas dá uma visão rápida e organizada do período.</p>
  `;
@@ -6504,8 +6513,11 @@ function chaveMesFinanceiro(ano,mes){
  return String(ano)+'-'+String(mes).padStart(2,'0');
 }
 function getGastoVariavelPorMesFinanceiro(ano,mes){
+ return getBoletosDoMesFinanceiro(ano,mes).reduce((s,b)=>s+(Number(b.valor)||0),0);
+}
+function getBoletosDoMesFinanceiro(ano,mes){
  const alvo=chaveMesFinanceiro(ano,mes);
- return getBoletos().reduce((s,b)=>{
+ return getBoletos().filter(b=>{
   let data=null;
   if(b.vencimento){
    const d=new Date(b.vencimento+'T00:00:00');
@@ -6515,8 +6527,8 @@ function getGastoVariavelPorMesFinanceiro(ano,mes){
    const d=new Date(b.criadoEm);
    if(!isNaN(d.getTime()))data=chaveMesFinanceiro(d.getFullYear(),d.getMonth()+1);
   }
-  return s+(data===alvo?(Number(b.valor)||0):0);
- },0);
+  return data===alvo;
+ });
 }
 function getFaturamentoPorMesFinanceiro(ano,mes){
  return daysData.reduce((s,d)=>{
