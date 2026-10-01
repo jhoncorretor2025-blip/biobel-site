@@ -39,6 +39,40 @@
 .adm-resumo-grupo-titulo{font-size:10px;font-weight:900;color:#71839c;text-transform:uppercase;letter-spacing:.08em;margin:2px 2px 10px}
 .adm-resumo-resultado{border-color:rgba(39,215,160,.18);background:rgba(39,215,160,.025)}
 @media(max-width:640px){.adm-resumo-grupo{padding:10px}.adm-resumo-grupo-titulo{margin-bottom:8px}}
+</style><style>
+.planejamento-semanal-controles{display:flex;align-items:end;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.planejamento-semanal-controles label{font-size:10.5px;color:#93a3ba;font-weight:700}
+.planejamento-semanal-controles select{background:#0b1728;border:1px solid #1e2c42;border-radius:10px;color:#dce5f2;padding:9px 11px;font-size:12px;min-width:180px}
+.gastos-semanais-resumo{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-bottom:12px}
+.gasto-semanal-resumo-card{background:#0b1728;border:1px solid #1c2c42;border-radius:12px;padding:10px 12px}
+.gasto-semanal-resumo-card small{display:block;font-size:9.5px;color:#71839c;text-transform:uppercase;letter-spacing:.06em;font-weight:800}
+.gasto-semanal-resumo-card strong{display:block;font-size:17px;color:#dce5f2;margin-top:4px}
+.gasto-semanal-resumo-card span{display:block;font-size:9.5px;color:#93a3ba;margin-top:3px}
+.gastos-semanais-lista{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.gasto-semanal-card{background:#0b1728;border:1px solid #1c2c42;border-radius:14px;padding:12px}
+.gasto-semanal-card.destaque{border-color:rgba(39,215,160,.35);box-shadow:0 0 0 1px rgba(39,215,160,.05)}
+.gasto-semanal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.gasto-semanal-title{font-size:13px;font-weight:900;color:#dce5f2}
+.gasto-semanal-periodo{font-size:10px;color:#71839c;margin-top:3px}
+.gasto-semanal-total{font-size:18px;font-weight:900;color:#27d7a0;white-space:nowrap}
+.gasto-semanal-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.gasto-semanal-box{background:#081424;border:1px solid #16263b;border-radius:10px;padding:8px 9px}
+.gasto-semanal-box small{display:block;font-size:9px;color:#71839c}
+.gasto-semanal-box strong{display:block;font-size:12px;color:#dce5f2;margin-top:3px}
+.gasto-semanal-itens{margin-top:10px;padding-top:9px;border-top:1px solid rgba(30,44,66,.8)}
+.gasto-semanal-itens-title{font-size:9.5px;font-weight:900;color:#71839c;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.gasto-semanal-item{display:flex;justify-content:space-between;gap:8px;padding:5px 0;font-size:10.5px;border-bottom:1px dashed rgba(30,44,66,.55)}
+.gasto-semanal-item:last-child{border-bottom:0}
+.gasto-semanal-item .nome{color:#cbd5e1;min-width:0}
+.gasto-semanal-item .nome small{color:#71839c;margin-left:4px}
+.gasto-semanal-item .valor{color:#dce5f2;font-weight:800;white-space:nowrap}
+.gastos-semanais-sem-data{background:rgba(251,191,36,.05);border:1px dashed rgba(251,191,36,.3);border-radius:12px;padding:10px 12px}
+.gastos-semanais-sem-data strong{font-size:11px;color:#fbbf24}
+.gastos-semanais-sem-data p{font-size:10px;color:#93a3ba;margin:5px 0 0}
+.gastos-semanais-sem-data-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.gastos-semanais-sem-data-pill{background:#0b1728;border:1px solid rgba(251,191,36,.2);border-radius:999px;padding:5px 8px;font-size:9.5px;color:#dce5f2}
+@media(max-width:760px){.gastos-semanais-lista{grid-template-columns:1fr}.gastos-semanais-resumo{grid-template-columns:1fr 1fr}}
+@media(max-width:460px){.gastos-semanais-resumo{grid-template-columns:1fr}.gasto-semanal-total{font-size:16px}.gasto-semanal-grid{grid-template-columns:1fr}}
 </style></head><body data-biobel-page="adm" class="min-h-screen bg-slate-950 text-slate-100">
 <div id="faixaMensagemProgramada" style="display:none;"></div>
 <div id="tourGuiadoOverlay" style="display:none;"></div>
@@ -160,6 +194,24 @@
   <p style="font-size:10.5px;color:#93a3ba;margin-top:2px;">⚠️ O Lucro Estimado usa o valor <em>base</em> da hora extra e das comissões — não inclui encargos trabalhistas (DSR, 13º, férias+1/3, FGTS). O custo real pode ser um pouco maior; confirme com a contadora pro número oficial.</p>
 
   <div id="admAlertaFluxoCaixa" style="display:none;"></div>
+
+  <div class="adv-card" id="painelGastosSemanais">
+   <div class="adv-card-title">
+    <div>
+     <h3>📅 Planejamento de Gastos por Semana</h3>
+     <span>Veja quanto a Biobel precisa pagar em cada faixa do mês: 1–7, 8–15, 16–23 e 24 até o fim do mês.</span>
+    </div>
+   </div>
+
+   <div class="planejamento-semanal-controles">
+    <label for="seletorMesGastosSemanais">🗓️ Mês para planejar</label>
+    <select id="seletorMesGastosSemanais" onchange="renderPlanejamentoGastosSemanais()" aria-label="Selecionar mês do planejamento semanal"></select>
+   </div>
+
+   <div id="resumoGastosSemanais" class="gastos-semanais-resumo"></div>
+   <div id="listaGastosSemanais" class="gastos-semanais-lista"></div>
+   <div id="gastosSemVencimentoSemanal" style="margin-top:12px;"></div>
+  </div>
 
   <div class="adv-card" id="painelFinanceiroMensal">
    <div class="adv-card-title">
@@ -810,4 +862,62 @@
  };
  setTimeout(window.initSubAbasFuncionarios,0);
 })();
+</script><script>
+function inicializarSeletorMesGastosSemanais(){
+ const sel=document.getElementById('seletorMesGastosSemanais');
+ if(!sel||sel.options.length)return;
+ const agora=obterAgoraBrasilia();
+ const meses=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+ for(let offset=-1;offset<=5;offset++){
+  const d=new Date(agora.getFullYear(),agora.getMonth()+offset,1);
+  const value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+  const opt=document.createElement('option');
+  opt.value=value;
+  opt.textContent=meses[d.getMonth()]+'/'+d.getFullYear()+(offset===0?' — ATUAL':'');
+  if(offset===0)opt.selected=true;
+  sel.appendChild(opt);
+ }
+}
+function formatarDataCurtaFinanceira(data){
+ return data.getDate().toString().padStart(2,'0')+'/'+(data.getMonth()+1).toString().padStart(2,'0');
+}
+function renderPlanejamentoGastosSemanais(){
+ const lista=document.getElementById('listaGastosSemanais');
+ if(!lista)return;
+ inicializarSeletorMesGastosSemanais();
+ const sel=document.getElementById('seletorMesGastosSemanais');
+ const valorSel=sel?.value||'';
+ if(!valorSel)return;
+ const partes=valorSel.split('-').map(Number);
+ const ano=partes[0],mes=partes[1];
+ const resumo=getResumoGastosSemanaisFinanceiro(ano,mes);
+ const nomesMeses=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+ const totalMes=resumo.totalMes;
+ const resumoEl=document.getElementById('resumoGastosSemanais');
+ if(resumoEl){
+  resumoEl.innerHTML=
+   '<div class="gasto-semanal-resumo-card"><small>💸 Total previsto</small><strong>'+money(totalMes)+'</strong><span>fixos + boletos/parcelas com vencimento no mês</span></div>'+
+   '<div class="gasto-semanal-resumo-card"><small>🏠 Fixos</small><strong>'+money(resumo.totalFixos)+'</strong><span>gastos recorrentes com data definida</span></div>'+
+   '<div class="gasto-semanal-resumo-card"><small>🧾 Variáveis</small><strong>'+money(resumo.totalVariaveis)+'</strong><span>parcelas/boletos do mês</span></div>';
+ }
+ lista.innerHTML=resumo.semanas.map((s,i)=>{
+  const detalhesFixos=s.itensFixos.map(x=>'<div class="gasto-semanal-item"><span class="nome">🏠 '+esc(x.nome)+'<small>dia '+x.dia+'</small></span><span class="valor">'+money(x.valor)+'</span></div>').join('');
+  const detalhesVar=s.itensVariaveis.map(x=>'<div class="gasto-semanal-item"><span class="nome">🧾 '+esc(x.nome)+(x.marca?' <small>· '+esc(x.marca)+'</small>':'')+'<small>dia '+x.dia+'</small></span><span class="valor">'+money(x.valor)+'</span></div>').join('');
+  const detalhes=(detalhesFixos||detalhesVar)?'<div class="gasto-semanal-itens"><div class="gasto-semanal-itens-title">📋 O que vence nesta faixa</div>'+detalhesFixos+detalhesVar+'</div>':'';
+  return '<article class="gasto-semanal-card">'+
+   '<div class="gasto-semanal-head"><div><div class="gasto-semanal-title">📅 '+s.nome+'</div><div class="gasto-semanal-periodo">Dias '+s.inicio+' a '+s.fim+' · '+nomesMeses[mes-1]+'/'+ano+'</div></div><div class="gasto-semanal-total">'+money(s.total)+'</div></div>'+
+   '<div class="gasto-semanal-grid"><div class="gasto-semanal-box"><small>🏠 Gastos fixos</small><strong>'+money(s.totalFixos)+'</strong></div><div class="gasto-semanal-box"><small>🧾 Boletos / parcelas</small><strong>'+money(s.totalVariaveis)+'</strong></div></div>'+
+   (detalhes||'<div class="gasto-semanal-itens"><div class="gasto-semanal-itens-title">📋 O que vence nesta faixa</div><div style="font-size:10px;color:#71839c;">Nenhum gasto com vencimento cadastrado.</div></div>')+
+  '</article>';
+ }).join('');
+ const sem=document.getElementById('gastosSemVencimentoSemanal');
+ if(sem){
+  const ss=resumo.semVencimento;
+  if(ss.fixos.length||ss.variaveis.length){
+   const itens=ss.fixos.map(x=>'<span class="gastos-semanais-sem-data-pill">🏠 '+esc(x.nome)+' · '+money(x.valor)+'</span>').join('')+
+    ss.variaveis.map(x=>'<span class="gastos-semanais-sem-data-pill">🧾 '+esc(x.nome)+' · '+money(x.valor)+'</span>').join('');
+   sem.innerHTML='<div class="gastos-semanais-sem-data"><strong>🟡 Sem vencimento definido</strong><p>Estes gastos não entram em nenhuma semana porque ainda não têm dia de vencimento cadastrado.</p><div class="gastos-semanais-sem-data-list">'+itens+'</div></div>';
+  }else sem.innerHTML='';
+ }
+}
 </script></body></html>
