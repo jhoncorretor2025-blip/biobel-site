@@ -1,3 +1,8 @@
+## v10.54 — 01/10/2026
+- Outubro 2026 passa a ser a planilha padrão do sistema.
+- Outubro 2026 é cadastrado automaticamente na lista de planilhas salvas.
+- Versão exibida no shell e cache PWA atualizados para v10.54.
+
 ## v10.53 — Restauração da Visão Geral completa
 - **Correção:** a Visão Geral completa volta a aparecer por padrão no Dashboard.
 - **Correção:** remove uma preferência antiga que podia deixar todo o conteúdo avançado escondido sem o usuário ter escolhido isso.
