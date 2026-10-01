@@ -1,3 +1,10 @@
+## v10.71 — 01/10/2026
+- Cadastro de Fornecedores reorganizado na ordem solicitada: **Cadastrar Boleto → Cadastrar Fornecedor → Cadastrar Marca**.
+- O formulário completo de boleto foi restaurado na página exclusiva de fornecedores, com parcelamento, vencimento, recorrência, observações e comprovante.
+- Fornecedores possuem **Editar** e **Excluir** em cada registro.
+- Marcas possuem **Editar** e **Excluir** em cada registro.
+- Mantido o compartilhamento com as bases de dados já existentes, sem criar cadastro paralelo.
+
 ## v10.69 — 01/10/2026
 - Usuário **Alesandra** passa a ser perfil **Master** da Biobel.
 - Um único login da gerência agora autentica simultaneamente o painel normal e a área administrativa.
