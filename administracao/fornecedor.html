@@ -324,6 +324,11 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
         <div id="tiposSemCompraProdutos" class="tipo-analise-zero-list"></div>
       </div>
 
+      <div class="section-head" style="margin-top:18px;">
+        <div><h3 style="margin:0;font-size:13px;">🏪 Gastos por fornecedor</h3><p class="sub" style="margin-bottom:0;">Ranking dos fornecedores pelo valor total dos boletos cadastrados.</p></div>
+      </div>
+      <div id="listaAnaliseFornecedores" class="tipo-analise-list"></div>
+
       <div class="tipo-analise-note">💡 **Geral** é para quando o boleto tiver produtos misturados. Boletos antigos que ainda não têm tipo informado continuam separados como “Não informado” para não inventar uma classificação.</div>
     </div>
   </section>
@@ -353,7 +358,7 @@ function mostrarAbaFornecedor(aba){
   if(aba==='resumoFornecedor')renderVisaoFornecedores();
   atualizarResumoGastosVariaveisFornecedores();
   if(aba==='conferencia')renderConferenciaPagina();
-  if(aba==='analise')renderAnaliseTiposProdutos();
+  if(aba==='analise'){renderAnaliseTiposProdutos();renderAnaliseFornecedores();}
 }
 function renderPaginaFornecedores(){
   if(typeof seedCadastrosAdm!=='function')return;
@@ -577,6 +582,25 @@ function renderAnaliseTiposProdutos(){
   }
 }
 
+function renderAnaliseFornecedores(){
+  const boletos=typeof getBoletos==='function'?getBoletos():[];
+  const grupos={};
+  boletos.forEach(b=>{
+    const nome=String(b.fornecedor||'').trim(); if(!nome)return;
+    const k=nome.toLowerCase();
+    if(!grupos[k])grupos[k]={nome,total:0,qtd:0,pendente:0};
+    grupos[k].qtd++; grupos[k].total+=Number(b.valor)||0; if(!b.pago)grupos[k].pendente+=Number(b.valor)||0;
+  });
+  const arr=Object.values(grupos).sort((a,b)=>b.total-a.total);
+  const maior=arr.length?arr[0].total:0;
+  const el=document.getElementById('listaAnaliseFornecedores');
+  if(!el)return;
+  el.innerHTML=arr.length?arr.map((g,i)=>{
+    const pct=maior>0?(g.total/maior)*100:0;
+    return '<article class="tipo-analise-item"><div class="tipo-analise-top"><span class="tipo-analise-name">'+(i+1)+'. 🏪 '+esc(g.nome)+'</span><span class="tipo-analise-values"><strong style="color:#dce5f2;">'+money(g.total)+'</strong> · '+g.qtd+' boleto'+(g.qtd===1?'':'s')+' · '+money(g.pendente)+' pendente</span></div><div class="tipo-analise-bar" aria-label="'+esc(g.nome)+': '+pct.toFixed(0)+'% do maior gasto"><div class="tipo-analise-bar-fill" style="width:'+pct.toFixed(1)+'%"></div></div></article>';
+  }).join(''):'<div class="empty">Ainda não há compras com fornecedor identificado.</div>';
+}
+
 function renderConferenciaPagina(){
   const boletos=typeof getBoletos==='function'?getBoletos():[];
   const hoje=new Date();hoje.setHours(0,0,0,0);
@@ -607,6 +631,7 @@ window.addEventListener('DOMContentLoaded',()=>{
     document.getElementById('fornecedorApp').classList.remove('hidden');
     renderPaginaFornecedores();
     renderAnaliseTiposProdutos();
+    renderAnaliseFornecedores();
     renderVisaoFornecedores();
   }
 });
