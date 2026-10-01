@@ -6,7 +6,7 @@
    ============================================================ */
 // Proteção de acesso: só entra aqui quem passou pela tela de login (login.html).
 if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
-  window.location.href = 'login.html';
+  window.location.href = location.pathname.includes('/administracao/') ? '../login.html' : 'login.html';
 }
 // Aplica o tema salvo o mais cedo possível, para evitar "flash" de tela escura/clara.
 // Na primeira visita (sem preferência salva ainda), usa o tema do sistema operacional.
