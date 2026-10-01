@@ -1,3 +1,9 @@
+## v10.86 — 01/10/2026
+- Histórico de **Compras e boletos por fornecedor** ganhou coluna **Ações**.
+- Fornecedores cadastrados agora podem ser **editados** ou **excluídos** diretamente do histórico.
+- A exclusão é somente do cadastro do fornecedor; os boletos históricos continuam preservados.
+- Fornecedores usados em boletos mas ainda não cadastrados recebem botão **Cadastrar** no próprio histórico.
+
 ## v10.85 — 01/10/2026
 - Planejamento de Gastos por Semana passa a exibir **4 blocos semanais diretamente no resumo**.
 - Adicionada **Média de referência** (total mensal ÷ 4) para servir como parâmetro de planejamento.
