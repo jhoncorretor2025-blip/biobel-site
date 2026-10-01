@@ -4419,7 +4419,7 @@ function aplicarPadraoParceladoFornecedor(){
  if(!chave){ aviso.style.display='none'; return; }
  const padroes = getPadroesParceladoFornecedores();
  const padrao = padroes[chave];
- if(padrao && padrao.qtd>=1 && padrao.qtd<=3){
+ if(padrao && padrao.qtd>=1 && padrao.qtd<=4){
   selecionarQuantasVezesBoleto(padrao.qtd); // já recalcula as datas sozinho, usando esse padrão
   aviso.style.display = 'block';
   aviso.innerHTML = '📌 Esse fornecedor costuma parcelar em <strong>'+padrao.qtd+'x</strong> — já preenchi sozinho, pode ajustar se for diferente dessa vez.';
@@ -4438,11 +4438,11 @@ function preencherListaFornecedoresConhecidos(){
 let quantasVezesBoletoSelecionado = 1;
 function selecionarQuantasVezesBoleto(n){
  quantasVezesBoletoSelecionado = n;
- for(let i=1;i<=3;i++){
+ for(let i=1;i<=4;i++){
   const btn = document.getElementById('btnQuantasVezesBoleto'+i);
   if(!btn) continue;
-  if(i===n){ btn.style.background='#0ea97a'; btn.style.color='#04241a'; }
-  else { btn.style.background='transparent'; btn.style.color='#dce5f2'; }
+  if(i===n){ btn.style.background='#0ea97a'; btn.style.color='#04241a'; btn.setAttribute('aria-pressed','true'); }
+  else { btn.style.background='transparent'; btn.style.color='#dce5f2'; btn.setAttribute('aria-pressed','false'); }
  }
  const labelVenc = document.getElementById('labelNovoBoletoVencimento');
  if(labelVenc) labelVenc.textContent = n===1 ? 'Data de vencimento' : '1º vencimento';
@@ -4467,7 +4467,7 @@ function selecionarQuantasVezesBoleto(n){
   diasSugeridos = [30];
   for(let i=1;i<n;i++) diasSugeridos.push(30+(padraoSalvo.intervalo*i));
  } else {
-  const padroesGenericos = { 1:[30], 2:[30,45], 3:[30,45,60] };
+  const padroesGenericos = { 1:[30], 2:[30,45], 3:[30,45,60], 4:[30,45,60,75] };
   diasSugeridos = padroesGenericos[n] || [30];
  }
 
@@ -4499,7 +4499,7 @@ function atualizarPreviewParcelasBoletoInline(){
  if(!texto) return;
  if(isNaN(valorTotal) || valorTotal<=0){ texto.textContent = '💰 Digite o valor total pra ver quanto fica cada boleto.'; return; }
  const valorCada = valorTotal/quantasVezesBoletoSelecionado;
- texto.textContent = '💰 Cada boleto: '+money(valorCada)+' (total '+money(valorTotal)+' ÷ '+quantasVezesBoletoSelecionado+')';
+ texto.innerHTML = '<span class=\"boleto-installments-count\">'+quantasVezesBoletoSelecionado+' parcelas</span> <strong>de '+money(valorCada)+'</strong> <span>• total '+money(valorTotal)+'</span>';
 }
 function limparFormularioBoleto(){
  ['novoBoletoFornecedor','novoBoletoMarca','novoBoletoQuantidade','novoBoletoValidade','novoBoletoValor','novoBoletoVencimento','novoBoletoPagoPor','novoBoletoObs'].forEach(id=>{
@@ -4527,7 +4527,7 @@ async function adicionarBoleto(){
  if(!fornecedor){ mostrarToast('⚠️ Digite o nome do fornecedor.'); return; }
  if(isNaN(valor) || valor<=0){ mostrarToast('⚠️ Digite um valor válido.'); return; }
 
- // Se marcou 2x ou 3x (e não está editando um boleto já existente), gera vários boletos de uma
+ // Se marcou 2x, 3x ou 4x (e não está editando um boleto já existente), gera vários boletos de uma
  // vez, cada um com sua própria data e o valor total dividido igualmente entre eles.
  if(quantasVezesBoletoSelecionado>1 && boletoEditandoId===null){
   if(!vencimento){ mostrarToast('⚠️ Escolha a data do 1º vencimento.'); return; }
@@ -4747,6 +4747,18 @@ function renderHistoricoPrecoFornecedor(){
 
 function renderBoletos(){
  renderSeletorFornecedorHistorico();
+ const todosBoletos = getBoletos();
+ const resumoEl = document.getElementById('boletoResumoCards');
+ if(resumoEl){
+  const pendentes=todosBoletos.filter(b=>!b.pago);
+  const pagos=todosBoletos.filter(b=>b.pago);
+  const valorPendente=pendentes.reduce((total,b)=>total+(Number(b.valor)||0),0);
+  resumoEl.innerHTML =
+   '<article><small>📋 Total</small><strong>'+todosBoletos.length+'</strong><span>boletos cadastrados</span></article>'+
+   '<article class="pending"><small>⏳ Pendentes</small><strong>'+pendentes.length+'</strong><span>'+money(valorPendente)+' a pagar</span></article>'+
+   '<article class="paid"><small>✅ Pagos</small><strong>'+pagos.length+'</strong><span>já registrados</span></article>'+
+   '<article class="total"><small>💰 Valor pendente</small><strong>'+money(valorPendente)+'</strong><span>não considera boletos já pagos</span></article>';
+ }
  preencherListaFornecedoresConhecidos();
  renderRankingFornecedores();
  renderGastosPorMarca();
@@ -13578,5 +13590,5 @@ let promptDeInstalacaoGuardado=null;
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();promptDeInstalacaoGuardado=e;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='inline-block';});
 function instalarAppBiobel(){if(!promptDeInstalacaoGuardado)return;promptDeInstalacaoGuardado.prompt();promptDeInstalacaoGuardado.userChoice.then(function(){promptDeInstalacaoGuardado=null;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';});}
 window.addEventListener('appinstalled',function(){const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';try{mostrarToast('✅ Biobel instalado!');}catch(e){}});
-if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=10.60',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
+if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=10.61',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
 window.addEventListener('load',initPaginaAtiva,{once:true});
