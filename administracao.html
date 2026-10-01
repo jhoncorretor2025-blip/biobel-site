@@ -105,6 +105,27 @@
 
   <div id="admAlertaFluxoCaixa" style="display:none;"></div>
 
+  <div class="adv-card" id="painelFinanceiroMensal">
+   <div class="adv-card-title">
+    <div>
+     <h3>📊 Planejamento Financeiro — Mês a Mês</h3>
+     <span>Veja quanto a Biobel prevê gastar em cada mês e quanto precisa faturar para cobrir esses gastos.</span>
+    </div>
+   </div>
+
+   <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:14px;">
+    <div style="flex:1;min-width:220px;">
+     <label for="metaLucroMensalInput" style="font-size:10.5px;color:#93a3ba;display:block;margin-bottom:4px;">🎯 Lucro desejado por mês (opcional)</label>
+     <input id="metaLucroMensalInput" type="text" inputmode="decimal" placeholder="Ex.: R$ 5.000,00" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 12px;color:#dce5f2;font-size:13px;">
+    </div>
+    <button onclick="salvarMetaLucroMensal()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="white-space:nowrap;">💾 Salvar meta</button>
+   </div>
+
+   <div id="resumoMetaLucroMensal" style="margin-bottom:14px;"></div>
+   <div id="tabelaFinanceiroMensal"></div>
+   <div class="financeiro-mensal-nota">💡 O <strong>faturamento mínimo</strong> aqui é o valor dos gastos cadastrados no sistema (fixos + boletos/variáveis do mês). A meta com lucro soma o lucro desejado. Comissões sobre vendas e taxas de cartão podem aumentar a necessidade real de faturamento.</div>
+  </div>
+
   <div class="adv-card">
    <div class="adv-card-title">
     <h3>📅 Projeção de Fluxo de Caixa (3 meses)</h3>
