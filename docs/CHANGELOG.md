@@ -1,3 +1,7 @@
+## v10.78 — 01/10/2026
+- Corrigida a barra de atalhos da Administração que estava posicionada como sticky e podia sobrepor visualmente os cards durante a rolagem.
+- A barra agora permanece no fluxo normal da página, com fundo e borda próprios para separar os atalhos do conteúdo.
+
 ## v10.77 — 01/10/2026
 - Nova aba **Análise por tipo** na área de Fornecedores.
 - Mostra gasto por tipo de produto, quantidade de boletos, quantidade de fornecedores e participação em relação ao maior gasto classificado.
