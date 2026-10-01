@@ -42,13 +42,10 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
 <body data-biobel-page="fornecedores">
 <div id="biobelFornecedorLogin" class="login">
   <div class="panel">
-    <div style="font-size:34px">🤝</div>
-    <h2 style="margin-top:5px">Fornecedores Biobel</h2>
-    <p class="sub">Área administrativa separada para cadastro, compras e conferência.</p>
-    <div class="field"><label for="fornUser">Usuário</label><input id="fornUser" autocomplete="username"></div>
-    <div class="field" style="margin-top:10px"><label for="fornPass">Senha</label><input id="fornPass" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')entrarFornecedores()"></div>
-    <button class="btn primary" style="width:100%;margin-top:12px" onclick="entrarFornecedores()">Entrar</button>
-    <div id="fornLoginErro" style="color:#fb7185;font-size:11px;min-height:18px;text-align:center;margin-top:8px"></div>
+    <div style="font-size:34px">🔒</div>
+    <h2 style="margin-top:5px">Área de Fornecedores</h2>
+    <p class="sub">Esta página usa o mesmo acesso da Administração da Biobel. Entre primeiro na Administração e depois abra Fornecedores.</p>
+    <a class="btn primary" style="display:block;text-align:center;margin-top:12px" href="../administracao.html">⚙️ Abrir Administração</a>
   </div>
 </div>
 
@@ -110,18 +107,7 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
 
 <script src="../biobel-app.js"></script>
 <script>
-function entrarFornecedores(){
-  const u=(document.getElementById('fornUser').value||'').trim().toLowerCase();
-  const p=document.getElementById('fornPass').value||'';
-  const valido=Array.isArray(window.ADM_USUARIOS_VALIDOS)?window.ADM_USUARIOS_VALIDOS.find(x=>x.usuario===u&&x.senha===p):null;
-  const erro=document.getElementById('fornLoginErro');
-  if(!valido){erro.textContent='Usuário ou senha incorretos.';return;}
-  sessionStorage.setItem('biobel_adm_autenticado','yes');
-  sessionStorage.setItem('biobel_adm_usuario_logado',valido.nomeExibicao);
-  document.getElementById('biobelFornecedorLogin').classList.add('hidden');
-  document.getElementById('fornecedorApp').classList.remove('hidden');
-  renderPaginaFornecedores();
-}
+function entrarFornecedores(){ location.href='../administracao.html'; }
 function mostrarAbaFornecedor(aba){
   ['cadastro','historico','conferencia'].forEach(x=>{
     document.getElementById('aba'+x.charAt(0).toUpperCase()+x.slice(1)).classList.toggle('hidden',x!==aba);
@@ -193,10 +179,6 @@ function renderConferenciaPagina(){
 function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function money(v){return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
 window.addEventListener('DOMContentLoaded',()=>{
-  if(sessionStorage.getItem('biobel_logged_in')!=='yes'){
-    document.getElementById('fornLoginErro').textContent='Abra primeiro o login principal da Biobel.';
-    return;
-  }
   if(sessionStorage.getItem('biobel_adm_autenticado')==='yes'){
     document.getElementById('biobelFornecedorLogin').classList.add('hidden');
     document.getElementById('fornecedorApp').classList.remove('hidden');
