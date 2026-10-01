@@ -532,3 +532,68 @@ body.light-mode .cadastro-master-card{background:linear-gradient(150deg,#fff,#f8
 body.light-mode .cadastro-tabs,body.light-mode .cadastro-chip,body.light-mode .cadastro-supplier-card,.light-mode .cadastro-counter{background:#f8fafc;border-color:#dbe4ee}
 body.light-mode .cadastro-field input,body.light-mode .cadastro-search-row input{background:#fff;color:#1e293b;border-color:#cbd5e1}
 body.light-mode .cadastro-pane-head h4,body.light-mode .cadastro-supplier-main strong{color:#1e293b}
+
+/* v10.66 — separação das informações de fornecedores. */
+.fornecedor-subtabs{
+ display:flex;gap:4px;padding:4px;margin:0 0 12px;
+ width:max-content;max-width:100%;overflow:auto;
+ background:#07111f;border:1px solid #223754;border-radius:13px;
+}
+.fornecedor-subtab{
+ border:0;border-radius:9px;background:transparent;color:#8093ab;
+ padding:9px 13px;font-size:10.5px;font-weight:900;cursor:pointer;white-space:nowrap;transition:.15s;
+}
+.fornecedor-subtab:hover{color:#dce5f2;background:rgba(79,156,255,.05)}
+.fornecedor-subtab.is-active{
+ background:#27d7a0;color:#04241a;box-shadow:0 7px 16px rgba(39,215,160,.12);
+}
+.fornecedor-conferencia-card{
+ background:linear-gradient(145deg,#0b1728,#091524)!important;
+ border-color:#253b58!important;
+}
+.fornecedor-conferencia-grid{
+ display:grid;grid-template-columns:repeat(4,1fr);gap:9px;
+}
+.fornecedor-check-card{
+ min-width:0;display:flex;gap:9px;align-items:flex-start;padding:11px;
+ background:#091524;border:1px solid #1b2d46;border-radius:12px;
+}
+.fornecedor-check-card.attention{border-color:rgba(251,191,36,.18);background:rgba(251,191,36,.025)}
+.fornecedor-check-icon{
+ width:30px;height:30px;display:grid;place-items:center;flex:0 0 30px;
+ border-radius:9px;background:rgba(79,156,255,.08);border:1px solid rgba(79,156,255,.14);font-size:14px;
+}
+.fornecedor-check-card small{display:block;color:#71839a;font-size:9px;font-weight:800;line-height:1.3}
+.fornecedor-check-card strong{display:block;color:#f6f9fd;font-size:18px;line-height:1.1;margin-top:4px}
+.fornecedor-check-card span{display:block;color:#6f8199;font-size:8.8px;line-height:1.35;margin-top:3px}
+.fornecedor-check-note{
+ margin-top:10px;padding:10px 11px;border-radius:10px;
+ background:rgba(79,156,255,.045);border:1px solid rgba(79,156,255,.12);
+ color:#7f90a7;font-size:9.8px;line-height:1.45;
+}
+.fornecedor-check-note strong{color:#cbd5e1}
+.fornecedor-contact-row{
+ display:flex;justify-content:space-between;align-items:center;gap:10px;
+ background:#091524;border:1px solid #1b2d46;border-radius:11px;padding:10px 12px;
+}
+.fornecedor-contact-row strong{display:block;color:#dce5f2;font-size:11.5px}
+.fornecedor-contact-row span{display:block;color:#71839a;font-size:9.5px;margin-top:3px}
+.fornecedor-contact-row button{
+ border:0;background:transparent;color:#fb7185;cursor:pointer;font-size:13px;padding:5px 7px;border-radius:7px;
+}
+.fornecedor-contact-row button:hover{background:rgba(251,113,133,.07)}
+@media(max-width:1000px){
+ .fornecedor-conferencia-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:760px){
+ .fornecedor-subtabs{width:100%;box-sizing:border-box}
+ .fornecedor-subtab{flex:1;padding:9px 7px;font-size:10px}
+ .fornecedor-conferencia-grid{grid-template-columns:1fr 1fr}
+ .fornecedor-check-card strong{font-size:17px}
+}
+@media(max-width:430px){
+ .fornecedor-conferencia-grid{grid-template-columns:1fr}
+}
+body.light-mode .fornecedor-subtabs{background:#f1f5f9;border-color:#dbe4ee}
+body.light-mode .fornecedor-subtab{color:#64748b}
+body.light-mode .fornecedor-check-card,body.light-mode .fornecedor-contact-row{background:#fff;border-color:#dbe4ee}
