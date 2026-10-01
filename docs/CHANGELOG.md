@@ -1,3 +1,9 @@
+## v10.81 — 01/10/2026
+- Planejamento Financeiro — Mês a Mês reorganizado em **cartões por mês**, substituindo a tabela muito larga que causava sobreposição visual.
+- Cada mês agora separa claramente **Custos** e **Faturamento**, com gasto previsto, faturamento mínimo, meta com lucro, faturado, falta e status.
+- Adicionada barra de progresso do faturamento da meta.
+- Layout adaptado para computador e celular.
+
 ## v10.80 — 01/10/2026
 - Corrigido o resumo financeiro da Administração para considerar **boletos/parcelas pelo mês de vencimento**.
 - Uma compra parcelada não é mais somada inteira no mês atual; cada parcela entra no respectivo mês.
