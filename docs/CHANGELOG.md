@@ -1,3 +1,10 @@
+## v10.82 — 01/10/2026
+- Adicionada a seção **Planejamento de Gastos por Semana** na Administração.
+- Divide o mês em quatro faixas: **1–7, 8–15, 16–23 e 24–fim do mês**.
+- Cada semana mostra **gastos fixos**, **boletos/parcelas**, o **total previsto** e os itens que vencem naquela faixa.
+- Incluído seletor para consultar o mês atual e meses próximos.
+- Gastos sem dia de vencimento ficam em uma área separada e não são atribuídos a uma semana por suposição.
+
 ## v10.81 — 01/10/2026
 - Planejamento Financeiro — Mês a Mês reorganizado em **cartões por mês**, substituindo a tabela muito larga que causava sobreposição visual.
 - Cada mês agora separa claramente **Custos** e **Faturamento**, com gasto previsto, faturamento mínimo, meta com lucro, faturado, falta e status.
