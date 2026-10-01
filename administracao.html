@@ -240,6 +240,14 @@
      <input id="novoBoletoFornecedor" type="text" placeholder="Fornecedor" list="listaFornecedoresConhecidos" onblur="aplicarPadraoParceladoFornecedor()" class="boleto-input">
      <datalist id="listaFornecedoresConhecidos"></datalist>
      <div id="avisoPadraoFornecedor" style="display:none;grid-column:1/-1;font-size:11px;color:#a78bfa;"></div>
+     <div class="boleto-product-guide">
+      <div class="boleto-product-guide-icon">📦</div>
+      <div>
+       <strong>Informações do produto</strong>
+       <span><b>Quantidade do produto:</b> informe quantas unidades você comprou (ex.: 10 unidades, 6 frascos ou 2 kits).</span>
+       <span><b>Validade do produto:</b> informe a validade do produto comprado, de preferência no formato <b>MM/AAAA</b> (ex.: 12/2027). Se não houver validade, deixe em branco.</span>
+      </div>
+     </div>
      <select id="novoBoletoMarcaSelect" onchange="alternarCampoMarcaOutros()" class="boleto-input">
       <option value="">Marca (escolha)</option>
       <option value="Truss">Truss</option>
@@ -250,8 +258,10 @@
       <option value="__outros__">Outros...</option>
      </select>
      <input id="novoBoletoMarca" type="text" placeholder="Marca" class="boleto-input">
-     <input id="novoBoletoQuantidade" type="text" placeholder="Quantidade" class="boleto-input">
-     <input id="novoBoletoValidade" type="text" placeholder="Validade (ex: 12/2027)" class="boleto-input">
+     <div class="boleto-field-hint"><span>Quantidade do produto</span><small>nº de unidades, frascos, caixas ou kits</small></div>
+     <input id="novoBoletoQuantidade" type="text" placeholder="Ex.: 10 unidades" aria-label="Quantidade do produto" aria-describedby="ajudaQuantidadeProduto" class="boleto-input">
+     <div class="boleto-field-hint"><span>Validade do produto</span><small>use MM/AAAA — ex.: 12/2027</small></div>
+     <input id="novoBoletoValidade" type="text" placeholder="Ex.: 12/2027" aria-label="Validade do produto" aria-describedby="ajudaValidadeProduto" class="boleto-input">
      <input id="novoBoletoValor" type="text" inputmode="decimal" placeholder="Valor R$" oninput="atualizarPreviewParcelasBoletoInline()" class="boleto-input">
      <div>
       <label id="labelNovoBoletoVencimento" for="novoBoletoVencimento" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Data de vencimento</label>
