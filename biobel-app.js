@@ -3632,7 +3632,7 @@ function fecharTodosGruposAdmExceto(grupoQueFicaAberto){
   }
  });
 }
-const ANCORAS_SECOES_ADM = ['admAncoraResumo','admAncoraFechamento','admAncoraGastos','admAncoraComissoes','admAncoraFuncionarios','admAncoraFornecedoresReal','admAncoraAgenda'];
+const ANCORAS_SECOES_ADM = ['admAncoraResumo','admAncoraPlanejamentoSemanal','admAncoraPlanejamentoMensal','admAncoraFechamento','admAncoraGastos','admAncoraComissoes','admAncoraFuncionarios','admAncoraFornecedoresReal','admAncoraAgenda'];
 function isolarSecaoAdm(idAncoraAlvo){
  const container = document.getElementById('admConteudoWrap');
  if(!container) return;
