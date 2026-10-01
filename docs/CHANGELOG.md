@@ -1,3 +1,12 @@
+## v10.87 — 01/10/2026
+- Navegação principal reforça visualmente a página atual e usa aria-current.
+- Página de Fornecedores passa a carregar o shell principal, com navegação completa e caminhos corretos para a pasta interna.
+- Criada trilha de navegação nas páginas internas, incluindo Administração > Fornecedores.
+- Adicionado indicador visual de carregamento da planilha e aviso de erro com botão para tentar novamente.
+- Menu mobile passa a ter Mais áreas com Central, Análises, Alertas, Configuração, Administração, Fornecedores e Backup.
+- Ações principais de salvar/adicionar recebem feedback visual temporário.
+- Campos obrigatórios passam a ter contraste visual e indicação com * nos principais formulários.
+
 ## v10.86 — 01/10/2026
 - Histórico de **Compras e boletos por fornecedor** ganhou coluna **Ações**.
 - Fornecedores cadastrados agora podem ser **editados** ou **excluídos** diretamente do histórico.
