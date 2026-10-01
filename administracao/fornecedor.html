@@ -48,7 +48,8 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
 @media(max-width:520px){.supplier-page{padding:12px}.grid{grid-template-columns:1fr 1fr}.form-grid{grid-template-columns:1fr}.form-grid .wide{grid-column:auto}.btn{padding:9px 11px}.panel{padding:13px}}
 .flow-badge,.counter-badge{display:inline-flex;align-items:center;white-space:nowrap;border-radius:999px;padding:5px 9px;font-size:10px;font-weight:800;border:1px solid rgba(14,169,122,.3);background:rgba(14,169,122,.08);color:#4ade80}.supplier-section-intro{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}.cadastro-simple-card{margin-top:14px}.historico-fornecedor-acoes{display:flex;align-items:center;justify-content:flex-end;gap:5px;white-space:nowrap}.historico-fornecedor-acoes button{border:1px solid #1c2c42;background:#101f34;color:#dce5f2;border-radius:8px;padding:6px 8px;font-size:10px;font-weight:800;cursor:pointer}.historico-fornecedor-acoes button:hover{background:#172a44}.historico-fornecedor-acoes .danger{color:#fb7185;border-color:rgba(251,113,133,.22)}@media(max-width:720px){.historico-fornecedor-acoes{justify-content:flex-start}.historico-fornecedor-acoes button{padding:7px 8px}}.tipo-analise-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px}.tipo-analise-card{background:#081424;border:1px solid #1c2c42;border-radius:12px;padding:12px}.tipo-analise-card small{display:block;color:#93a3ba;font-size:10px}.tipo-analise-card strong{display:block;font-size:20px;margin-top:4px}.tipo-analise-card span{display:block;color:#93a3ba;font-size:10.5px;margin-top:3px}.tipo-analise-list{display:flex;flex-direction:column;gap:10px}.tipo-analise-item{background:#081424;border:1px solid #1c2c42;border-radius:12px;padding:11px 12px}.tipo-analise-top{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}.tipo-analise-name{font-size:12.5px;font-weight:800;color:#dce5f2}.tipo-analise-values{font-size:11px;color:#93a3ba}.tipo-analise-bar{height:8px;background:#07111f;border-radius:999px;overflow:hidden;margin-top:8px}.tipo-analise-bar-fill{height:100%;background:linear-gradient(90deg,#0ea97a,#27d7a0);border-radius:999px;min-width:0}.tipo-analise-zero{border-color:rgba(251,191,36,.22);background:rgba(251,191,36,.04)}.tipo-analise-zero-list{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}.tipo-analise-zero-pill{border:1px dashed rgba(251,191,36,.35);background:rgba(251,191,36,.06);color:#fbbf24;border-radius:999px;padding:6px 9px;font-size:10.5px;font-weight:700}.tipo-analise-note{margin-top:12px;color:#93a3ba;font-size:10.5px;line-height:1.55}@media(max-width:800px){.tipo-analise-grid{grid-template-columns:1fr 1fr}}@media(max-width:520px){.tipo-analise-grid{grid-template-columns:1fr}}.marca-grid{grid-template-columns:1fr auto}.fornecedor-grid{grid-template-columns:2fr 1fr 1fr auto}.cadastro-simple-card .search{margin:12px 0}.cadastro-simple-card .list{margin-top:8px}@media(max-width:800px){.fornecedor-grid{grid-template-columns:1fr 1fr}.fornecedor-grid .wide{grid-column:1/-1}.marca-grid{grid-template-columns:1fr}}@media(max-width:520px){.fornecedor-grid{grid-template-columns:1fr}.fornecedor-grid .wide{grid-column:auto}}</style>
 </head>
-<body data-biobel-page="fornecedores">
+<body data-biobel-page="fornecedores" data-biobel-root="../">
+<div id="biobel-shell"></div>
 <div id="biobelFornecedorLogin" class="login">
   <div class="panel">
     <div style="font-size:34px">🔒</div>
@@ -58,6 +59,7 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
   </div>
 </div>
 
+<button id="btnVoltarTopo" class="no-print" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Voltar ao topo">↑</button>
 <main id="fornecedorApp" class="supplier-page hidden">
   <header class="topbar">
     <div class="brand"><h1>🤝 Fornecedores</h1><p>Cadastro e controle dos fornecedores da Biobel — dados compartilhados com Administração e Boletos.</p></div>
@@ -109,7 +111,7 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
 <div id="formWrapperBoleto" class="boleto-form-wrapper">
     <div id="tituloFormBoleto" class="boleto-form-title">➕ Adicionar novo boleto</div>
     <div class="boleto-form-grid">
-     <input id="novoBoletoFornecedor" type="text" placeholder="Fornecedor" list="listaFornecedoresConhecidos" onblur="aplicarPadraoParceladoFornecedor()" class="boleto-input">
+     <input id="novoBoletoFornecedor" type="text" required aria-required="true" placeholder="Fornecedor" list="listaFornecedoresConhecidos" onblur="aplicarPadraoParceladoFornecedor()" class="boleto-input">
      <datalist id="listaFornecedoresConhecidos"></datalist>
      <div id="avisoPadraoFornecedor" style="display:none;grid-column:1/-1;font-size:11px;color:#a78bfa;"></div>
      <div class="boleto-product-guide">
@@ -132,7 +134,7 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
      <input id="novoBoletoMarca" type="text" placeholder="Digite a marca do produto" class="boleto-input">
      <input id="novoBoletoQuantidade" type="text" placeholder="Ex.: 10 unidades" title="Informe quantas unidades, frascos, caixas ou kits você comprou" aria-label="Quantidade do produto" aria-describedby="guiaQuantidadeProduto" class="boleto-input">
      <input id="novoBoletoValidade" type="text" placeholder="Ex.: 12/2027" title="Informe a validade do produto no formato MM/AAAA. Se não houver validade, deixe em branco." aria-label="Validade do produto" aria-describedby="guiaValidadeProduto" class="boleto-input">
-     <input id="novoBoletoValor" type="text" inputmode="decimal" placeholder="Valor R$" oninput="atualizarPreviewParcelasBoletoInline()" class="boleto-input">
+     <input id="novoBoletoValor" type="text" required aria-required="true" inputmode="decimal" placeholder="Valor R$" oninput="atualizarPreviewParcelasBoletoInline()" class="boleto-input">
      <div>
       <label for="novoBoletoTipoProduto" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Tipo de produto</label>
       <select id="novoBoletoTipoProduto" class="boleto-input" aria-label="Tipo de produto">
@@ -192,7 +194,7 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
      <img id="imgPreviewComprovanteBoleto" style="max-width:120px;max-height:120px;border-radius:8px;border:1px solid #1e2c42;">
      <button type="button" onclick="removerComprovanteAnexado()" style="display:block;margin-top:4px;background:none;border:none;color:#fb7185;font-size:11px;cursor:pointer;">✕ Remover comprovante</button>
     </div>
-    <button id="btnAdicionarBoleto" onclick="adicionarBoleto()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Adicionar boleto</button>
+    <button id="btnAdicionarBoleto" data-action-loading="yes" data-loading-text=" Salvando boleto..." onclick="adicionarBoleto()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Adicionar boleto</button>
     <button id="btnCancelarEdicaoBoleto" onclick="cancelarEdicaoBoleto()" style="display:none;margin-top:8px;background:none;border:none;color:#93a3ba;font-size:12px;text-decoration:underline;cursor:pointer;width:100%;">✕ Cancelar edição</button>
    </div>
    <div class="boleto-list-separator">📋 Boletos cadastrados</div>
@@ -218,10 +220,10 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
         <span id="cadastroContadorFornecedores" class="counter-badge">0 fornecedores</span>
       </div>
       <div class="form-grid fornecedor-grid">
-        <div class="field wide"><label for="novoFornecedorCadastroNome">Fornecedor</label><input id="novoFornecedorCadastroNome" placeholder="Ex.: Distribuidora XYZ" autocomplete="organization"></div>
+        <div class="field wide"><label for="novoFornecedorCadastroNome">Fornecedor</label><input id="novoFornecedorCadastroNome" placeholder="Ex.: Distribuidora XYZ *" required aria-required="true" autocomplete="organization"></div>
         <div class="field"><label for="novoFornecedorCadastroTelefone">Telefone</label><input id="novoFornecedorCadastroTelefone" placeholder="(51) 99999-9999" inputmode="tel"></div>
         <div class="field"><label for="novoFornecedorCadastroCnpj">CNPJ</label><input id="novoFornecedorCadastroCnpj" placeholder="00.000.000/0000-00" onblur="checarFormatoDocumento('novoFornecedorCadastroCnpj','cnpj')"></div>
-        <button type="button" class="btn primary" onclick="salvarFornecedorCadastro();renderPaginaFornecedores()">💾 Salvar</button>
+        <button type="button" class="btn primary" onclick="salvarFornecedorCadastro();renderPaginaFornecedores()" data-action-loading="yes" data-loading-text=" Salvando fornecedor...">💾 Salvar</button>
       </div>
       <input id="buscaFornecedorCadastro" class="search" type="search" placeholder="🔎 Buscar fornecedor..." oninput="renderPaginaFornecedores()">
       <div id="listaFornecedoresCadastro" class="list"></div>
@@ -233,8 +235,8 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
         <span id="cadastroContadorMarcas" class="counter-badge">0 marcas</span>
       </div>
       <div class="form-grid marca-grid">
-        <div class="field wide"><label for="novaMarcaCadastro">Nova marca</label><input id="novaMarcaCadastro" placeholder="Ex.: L'Oréal, Wella, Kérastase" autocomplete="organization" onkeydown="if(event.key==='Enter')adicionarMarcaCadastro()"></div>
-        <button type="button" class="btn primary" onclick="adicionarMarcaCadastro();renderPaginaFornecedores()">➕ Salvar marca</button>
+        <div class="field wide"><label for="novaMarcaCadastro">Nova marca</label><input id="novaMarcaCadastro" placeholder="Ex.: L'Oréal, Wella, Kérastase *" required aria-required="true" autocomplete="organization" onkeydown="if(event.key==='Enter')adicionarMarcaCadastro()"></div>
+        <button type="button" class="btn primary" onclick="adicionarMarcaCadastro();renderPaginaFornecedores()" data-action-loading="yes" data-loading-text=" Salvando marca...">➕ Salvar marca</button>
       </div>
       <div id="listaMarcasCadastro" class="list"></div>
     </section>
@@ -284,7 +286,7 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
   </section>
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="../biobel-app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="../biobel-shell.js"></script><script src="../biobel-app.js"></script>
 <script>
 function entrarFornecedores(){ location.href='../administracao.html'; }
 function mostrarAbaFornecedor(aba){
