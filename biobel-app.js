@@ -11728,7 +11728,7 @@ function printSimpleDay(){
  if(buildReceipt('daily-simple',day)) startReceiptPrint('daily-simple');
 }
 
-const DEFAULT_GOOGLE_URL='https://docs.google.com/spreadsheets/d/1idL5VN5CRRgQaXZb4i14V9_sRg6CbxUJx3M-PdSpJGA/edit?usp=sharing';
+const DEFAULT_GOOGLE_URL='https://docs.google.com/spreadsheets/d/1ipd3Tn_nw8biEwEFMgyC4ZT04RthiTVvFYVRZJ85dj8/edit?usp=sharing';
 let googleTimer=null;
 function updateConnBadge(state){
  // state: 'ok' | 'error' | 'connecting'
@@ -11814,7 +11814,18 @@ function saveGoogleConfig(){
  setGoogleStatus('configuração salva.',true);
  loadGoogleSheet();
 }
-function getGoogleUrl(){return localStorage.getItem('biobel_google_sheet_url') || document.getElementById('googleSheetUrl')?.value || DEFAULT_GOOGLE_URL;}
+function getGoogleUrl(){
+ const salvo=localStorage.getItem('biobel_google_sheet_url');
+ // Ao virar o mês, atualiza automaticamente quem ainda estava usando a planilha padrão antiga
+ // ou a planilha de setembro. Quem escolheu outra planilha manualmente continua com a escolha.
+ if(salvo=== 'https://docs.google.com/spreadsheets/d/1idL5VN5CRRgQaXZb4i14V9_sRg6CbxUJx3M-PdSpJGA/edit?usp=sharing' || salvo=== 'https://docs.google.com/spreadsheets/d/1o99UbEDpc0wgnjAfF0D0DQZcLdR53zBMW3Cieqoa1IQ/edit?usp=sharing'){
+  localStorage.setItem('biobel_google_sheet_url', DEFAULT_GOOGLE_URL);
+  const campo=document.getElementById('googleSheetUrl');
+  if(campo) campo.value=DEFAULT_GOOGLE_URL;
+  return DEFAULT_GOOGLE_URL;
+ }
+ return salvo || document.getElementById('googleSheetUrl')?.value || DEFAULT_GOOGLE_URL;
+}
 
 /* ============================================================
    BIOBEL — ZONA: DADOS / GOOGLE SHEETS E PLANILHAS
@@ -12043,14 +12054,16 @@ function removerPlanilhaSalva(index){
  });
 }
 function seedPlanilhaSetembro2026(){
- // Recupera referências conhecidas sem apagar nenhuma planilha já cadastrada.
- // A planilha principal continua disponível mesmo se a lista local tiver sido limpa.
+ // Mantém referências dos meses recentes e deixa Outubro 2026 como a planilha padrão atual.
  const lista = getPlanilhasSalvas();
- const principal = { nome:'Planilha principal', url:DEFAULT_GOOGLE_URL };
+ const principal = { nome:'Planilha padrão — Outubro 2026', url:DEFAULT_GOOGLE_URL };
  const setembro = { nome:'Setembro 2026', url:'https://docs.google.com/spreadsheets/d/1o99UbEDpc0wgnjAfF0D0DQZcLdR53zBMW3Cieqoa1IQ/edit?usp=sharing' };
  let mudou = false;
  if(!lista.some(p=>p.url===principal.url)){ lista.unshift(principal); mudou = true; }
  if(!lista.some(p=>p.url===setembro.url)){ lista.push(setembro); mudou = true; }
+ // Se já existia o registro antigo "Planilha principal", atualiza o nome sem duplicar.
+ const antigo = lista.find(p=>p.url===DEFAULT_GOOGLE_URL && p.nome==='Planilha principal');
+ if(antigo){ antigo.nome=principal.nome; mudou=true; }
  if(mudou) salvarListaPlanilhas(lista);
 }
 function renderPlanilhasSalvas(){
