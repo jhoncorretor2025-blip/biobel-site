@@ -1,3 +1,8 @@
+## v10.76 — 01/10/2026
+- Adicionado o campo **Tipo de Produto** ao cadastro de Boletos de Fornecedores, posicionado ao lado do valor.
+- Incluídas as categorias usadas na planilha: cabelo / Creme e shapoo e etc, Cabelo/acessorios, shampoo, Creme, Coloração/Tinta, Perfume, Unha, maquiagem e shampoo e cond.
+- O tipo de produto passa a ser salvo no boleto, carregado na edição, pesquisável e incluído na exportação CSV.
+
 ## v10.75 — 01/10/2026
 - Backup completo e automático passam a verificar explicitamente Gastos Fixos (biobel_adm_gastos_fixos).
 - A tela de Backup agora informa claramente que os gastos fixos fazem parte do backup.
