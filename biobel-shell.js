@@ -44,6 +44,7 @@ function montar(){
    link.classList.toggle("active",p===key);
   });
   const moreBtn=m.querySelector("#btnMobileMoreBiobel");if(moreBtn)moreBtn.classList.toggle("active",["fornecedores","adm","central","info","alertas","config","backup"].includes(p));
+  m.querySelectorAll(".biobel-nav-direct-inner a").forEach(link=>{if(!link.getAttribute("title"))link.setAttribute("title",link.textContent.trim());});
   m.querySelectorAll(".biobel-nav-direct-inner a.active").forEach(link=>link.setAttribute("aria-current","page"));
   const bc=m.querySelector("#biobelBreadcrumb");
   if(bc){
