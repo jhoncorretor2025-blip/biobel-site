@@ -1,3 +1,10 @@
+## v10.65 — 01/10/2026
+- Nova aba **🏷️ Cadastros — Marcas e Fornecedores** na Administração.
+- Marcas já conhecidas, marcas usadas em boletos e fornecedores já existentes são aproveitados automaticamente no cadastro.
+- Novos fornecedores e marcas passam a aparecer automaticamente nas opções de boletos.
+- Dados de contato do fornecedor são sincronizados com o cadastro existente.
+- Interface responsiva para desktop e celular.
+
 ## v10.64 — 01/10/2026
 - Criada página exclusiva **💾 Backup** em `backup.html`, acessível diretamente sem entrar em Configuração.
 - Nova página reúne download de backup, restauração, backup automático e conferência dos dados protegidos.
