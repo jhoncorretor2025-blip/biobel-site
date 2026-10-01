@@ -2514,7 +2514,7 @@ function alternarMostrarSenhaAdm(){
 // Lista de quem pode entrar na área ADM. Pra adicionar mais uma pessoa, é só colocar
 // mais uma linha aqui — usuário sempre em letras minúsculas.
 const ADM_USUARIOS_VALIDOS = [
- { usuario:'alesandra', senha:'jhonmeulindo', nomeExibicao:'Alesandra' }
+ { usuario:'alesandra', senha:'jhonmeulindo', nomeExibicao:'Alesandra', perfil:'master' }
 ];
 function fazerLoginAdm(){
  const usuario = (document.getElementById('admLoginUser').value||'').trim().toLowerCase();
@@ -2522,8 +2522,12 @@ function fazerLoginAdm(){
  const erroEl = document.getElementById('admLoginErro');
  const encontrado = ADM_USUARIOS_VALIDOS.find(u=>u.usuario===usuario && u.senha===senha);
  if(encontrado){
+  // Usuário Master: um único login libera o painel normal e toda a área interna.
+  sessionStorage.setItem('biobel_logged_in', 'yes');
   sessionStorage.setItem('biobel_adm_autenticado', 'yes');
   sessionStorage.setItem('biobel_adm_usuario_logado', encontrado.nomeExibicao);
+  sessionStorage.setItem('biobel_perfil', encontrado.perfil || 'admin');
+  sessionStorage.setItem('biobel_acesso_total', encontrado.perfil === 'master' ? 'yes' : 'no');
   document.getElementById('admLoginUser').value='';
   document.getElementById('admLoginPass').value='';
   if(erroEl) erroEl.textContent='';
@@ -2534,8 +2538,11 @@ function fazerLoginAdm(){
 }
 function sairAdm(){
  confirmarBiobel('Sair da área da gerência?', ()=>{
+  sessionStorage.removeItem('biobel_logged_in');
   sessionStorage.removeItem('biobel_adm_autenticado');
   sessionStorage.removeItem('biobel_adm_usuario_logado');
+  sessionStorage.removeItem('biobel_perfil');
+  sessionStorage.removeItem('biobel_acesso_total');
   document.getElementById('admLoginWrap').style.display='block';
   document.getElementById('admConteudoWrap').style.display='none';
  });
