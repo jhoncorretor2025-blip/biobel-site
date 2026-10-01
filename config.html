@@ -79,24 +79,66 @@
  </div>
 
  <div id="configSecaoPlanilhas" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6" style="display:none;">
-   <h3 class="font-bold text-slate-200 mb-1">📂 Planilhas salvas (troca rápida entre meses)</h3>
-   <p class="text-xs text-slate-500 mb-4">Adicione o link de cada mês aqui embaixo. Depois é só escolher no menu pra trocar, sem precisar mexer no campo de cima nunca mais.</p>
+  <div class="biobel-planilhas-header">
+   <div class="biobel-planilhas-title">
+    <div class="biobel-planilhas-icon">📊</div>
+    <div>
+     <h3>Planilhas mensais</h3>
+     <p>Organize uma planilha por mês e troque de período sem alterar a conexão principal.</p>
+    </div>
+   </div>
+   <div id="planilhaAtualPill" class="biobel-planilha-current-pill">🟢 Carregando...</div>
+  </div>
 
-   <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:14px;padding:16px;margin-bottom:16px;">
-    <div class="text-sm font-semibold text-slate-200 mb-3">➕ Adicionar uma nova planilha</div>
-    <label class="block text-xs text-slate-400 font-semibold mb-1" for="novoMesNome">Nome do mês</label>
-    <input id="novoMesNome" type="text" placeholder="Ex: Julho 2026" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-500 mb-3" onkeydown="if(event.key==='Enter'){document.getElementById('novoMesLink').focus();}">
-    <label class="block text-xs text-slate-400 font-semibold mb-1" for="novoMesLink">Link do Google Sheets desse mês</label>
-    <input id="novoMesLink" type="url" placeholder="Cole aqui o link da planilha desse mês" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-500 mb-3" onkeydown="if(event.key==='Enter'){adicionarNovaPlanilhaMes();}">
-    <button onclick="adicionarNovaPlanilhaMes()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Adicionar essa planilha</button>
-    <div id="novoMesStatus" class="mt-2 text-xs text-slate-400"></div>
+  <div class="biobel-planilha-steps">
+   <div class="biobel-planilha-step"><span>1</span><div><b>Adicione</b><small>cadastre o mês e o link</small></div></div>
+   <div class="biobel-planilha-step"><span>2</span><div><b>Escolha</b><small>clique no mês que deseja usar</small></div></div>
+   <div class="biobel-planilha-step"><span>3</span><div><b>Confira</b><small>o painel atualiza os dados</small></div></div>
+  </div>
+
+  <div class="biobel-planilha-add-card">
+   <div class="biobel-planilha-add-title">
+    <div>
+     <div class="eyebrow">➕ Novo mês</div>
+     <h4>Adicionar uma planilha</h4>
+     <p>Cadastre aqui a planilha do próximo mês. Ela ficará salva neste aparelho para acesso rápido.</p>
+    </div>
    </div>
 
-   <label class="block text-xs text-slate-400 font-semibold mb-1" for="planilhaSalvaSelect">Trocar para uma planilha já salva</label>
-   <select id="planilhaSalvaSelect" aria-label="Selecionar planilha salva" onchange="selecionarPlanilhaSalva()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500 mb-3">
-    <option value="">— Nenhuma planilha salva ainda —</option>
-   </select>
-   <div id="listaPlanilhasSalvas" class="space-y-2"></div>
+   <div class="biobel-planilha-form">
+    <div>
+     <label for="novoMesNome">Nome do mês</label>
+     <input id="novoMesNome" type="text" placeholder="Ex.: Outubro 2026" autocomplete="off" onkeydown="if(event.key==='Enter'){document.getElementById('novoMesLink').focus();}">
+    </div>
+    <div>
+     <label for="novoMesLink">Link do Google Sheets</label>
+     <input id="novoMesLink" type="url" placeholder="Cole aqui o link da planilha" autocomplete="off" onkeydown="if(event.key==='Enter'){adicionarNovaPlanilhaMes();}">
+    </div>
+    <button onclick="adicionarNovaPlanilhaMes()" class="biobel-planilha-add-btn">➕ Adicionar planilha</button>
+   </div>
+   <div id="novoMesStatus" class="biobel-planilha-status"></div>
+  </div>
+
+  <div class="biobel-planilha-list-head">
+   <div>
+    <div class="eyebrow">📂 Seus meses</div>
+    <h4>Escolha a planilha que deseja usar</h4>
+    <p>O mês marcado como <strong>EM USO</strong> é o que alimenta o painel neste momento.</p>
+   </div>
+   <div class="biobel-planilha-quick">
+    <label for="planilhaSalvaSelect">Seleção rápida</label>
+    <select id="planilhaSalvaSelect" aria-label="Selecionar planilha salva" onchange="selecionarPlanilhaSalva()">
+     <option value="">— Escolher planilha salva —</option>
+    </select>
+   </div>
+  </div>
+
+  <div id="listaPlanilhasSalvas" class="biobel-planilhas-grid"></div>
+
+  <div class="biobel-planilha-tip">
+   <span>💡</span>
+   <div><strong>Dica:</strong> cada planilha fica salva separadamente. Trocar de mês não apaga os dados do período anterior.</div>
+  </div>
  </div>
 
  <div id="configSecaoMetas" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6" style="display:none;">
