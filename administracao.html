@@ -43,11 +43,11 @@
 .planejamento-semanal-controles{display:flex;align-items:end;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 .planejamento-semanal-controles label{font-size:10.5px;color:#93a3ba;font-weight:700}
 .planejamento-semanal-controles select{background:#0b1728;border:1px solid #1e2c42;border-radius:10px;color:#dce5f2;padding:9px 11px;font-size:12px;min-width:180px}
-.gastos-semanais-resumo{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-bottom:12px}
+.gastos-semanais-resumo{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-bottom:12px}
 .gasto-semanal-resumo-card{background:#0b1728;border:1px solid #1c2c42;border-radius:12px;padding:10px 12px}
 .gasto-semanal-resumo-card small{display:block;font-size:9.5px;color:#71839c;text-transform:uppercase;letter-spacing:.06em;font-weight:800}
 .gasto-semanal-resumo-card strong{display:block;font-size:17px;color:#dce5f2;margin-top:4px}
-.gasto-semanal-resumo-card span{display:block;font-size:9.5px;color:#93a3ba;margin-top:3px}
+.gasto-semanal-resumo-card span{display:block;font-size:9.5px;color:#93a3ba;margin-top:3px}.gasto-semanal-resumo-card.semana-resumo{border-color:rgba(39,215,160,.22)}
 .gastos-semanais-lista{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .gasto-semanal-card{background:#0b1728;border:1px solid #1c2c42;border-radius:14px;padding:12px}
 .gasto-semanal-card.destaque{border-color:rgba(39,215,160,.35);box-shadow:0 0 0 1px rgba(39,215,160,.05)}
@@ -71,7 +71,7 @@
 .gastos-semanais-sem-data p{font-size:10px;color:#93a3ba;margin:5px 0 0}
 .gastos-semanais-sem-data-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
 .gastos-semanais-sem-data-pill{background:#0b1728;border:1px solid rgba(251,191,36,.2);border-radius:999px;padding:5px 8px;font-size:9.5px;color:#dce5f2}
-@media(max-width:760px){.gastos-semanais-lista{grid-template-columns:1fr}.gastos-semanais-resumo{grid-template-columns:1fr 1fr}}
+@media(max-width:900px){.gastos-semanais-resumo{grid-template-columns:repeat(2,minmax(0,1fr))}.gastos-semanais-lista{grid-template-columns:1fr}}
 @media(max-width:460px){.gastos-semanais-resumo{grid-template-columns:1fr}.gasto-semanal-total{font-size:16px}.gasto-semanal-grid{grid-template-columns:1fr}}
 </style><style>
 .destaque-planejamento{border-color:rgba(39,215,160,.38)!important;background:rgba(39,215,160,.09)!important;color:#d8fff2!important}
@@ -904,10 +904,11 @@ function renderPlanejamentoGastosSemanais(){
  const totalMes=resumo.totalMes;
  const resumoEl=document.getElementById('resumoGastosSemanais');
  if(resumoEl){
+  const mediaSemanal=totalMes/4;
   resumoEl.innerHTML=
-   '<div class="gasto-semanal-resumo-card"><small>💸 Total previsto</small><strong>'+money(totalMes)+'</strong><span>fixos + boletos/parcelas com vencimento no mês</span></div>'+
-   '<div class="gasto-semanal-resumo-card"><small>🏠 Fixos</small><strong>'+money(resumo.totalFixos)+'</strong><span>gastos recorrentes com data definida</span></div>'+
-   '<div class="gasto-semanal-resumo-card"><small>🧾 Variáveis</small><strong>'+money(resumo.totalVariaveis)+'</strong><span>parcelas/boletos do mês</span></div>';
+   '<div class="gasto-semanal-resumo-card"><small>💰 Total do mês</small><strong>'+money(totalMes)+'</strong><span>todos os custos com vencimento definido</span></div>'+
+   '<div class="gasto-semanal-resumo-card"><small>📐 Média de referência</small><strong>'+money(mediaSemanal)+'</strong><span>total do mês ÷ 4 semanas</span></div>'+
+   resumo.semanas.map(s=>'<div class="gasto-semanal-resumo-card semana-resumo"><small>📅 '+s.nome+' · dias '+s.inicio+'–'+s.fim+'</small><strong>'+money(s.total)+'</strong><span>🏠 '+money(s.totalFixos)+' fixos · 🧾 '+money(s.totalVariaveis)+' boletos/parcelas</span></div>').join('');
  }
  lista.innerHTML=resumo.semanas.map((s,i)=>{
   const detalhesFixos=s.itensFixos.map(x=>'<div class="gasto-semanal-item"><span class="nome">🏠 '+esc(x.nome)+'<small>dia '+x.dia+'</small></span><span class="valor">'+money(x.valor)+'</span></div>').join('');
