@@ -1,3 +1,7 @@
+## v10.83 — 01/10/2026
+- Ativação automática do **Planejamento de Gastos por Semana** ao abrir a Administração.
+- Mantidas as faixas **1–7, 8–15, 16–23 e 24–fim do mês**, com fixos e boletos/parcelas separados.
+
 ## v10.82 — 01/10/2026
 - Adicionada a seção **Planejamento de Gastos por Semana** na Administração.
 - Divide o mês em quatro faixas: **1–7, 8–15, 16–23 e 24–fim do mês**.
