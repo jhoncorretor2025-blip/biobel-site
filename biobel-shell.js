@@ -1,9 +1,11 @@
-/* Biobel — shell compartilhado. v10.86 */
+/* Biobel — shell compartilhado. v10.87 */
 (function(){
 "use strict";
 const PAGES={dashboard:"dashboard.html",central:"central.html",caixa:"operacao.html",equipe:"equipe.html",campanhas:"vendas.html",info:"analises.html",alertas:"alertas.html",config:"config.html",adm:"administracao.html",backup:"backup.html"};
 window.BIOBEL_PAGES=PAGES;
 const p=document.body&&document.body.dataset?document.body.dataset.biobelPage:"dashboard";
+const ROOT=(document.body&&document.body.dataset&&document.body.dataset.biobelRoot)||"./";
+const pageHref=k=>ROOT+PAGES[k];
 const a=k=>p===k?" active":"";
 function montar(){
  const m=document.getElementById("biobel-shell"); if(!m||m.dataset.ready==="yes") return;
@@ -13,7 +15,7 @@ function montar(){
  '<div class="biobel-search-wrap"><input id="inputBuscaGlobal" type="text" placeholder="🔍 Buscar (ex: aluguel, meta...)" autocomplete="off" oninput="renderResultadosBuscaGlobal&&renderResultadosBuscaGlobal()" onfocus="renderResultadosBuscaGlobal&&renderResultadosBuscaGlobal()" style="width:100%;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:7px 10px;font-size:12px;color:#dce5f2;outline:none;"><div id="resultadosBuscaGlobal" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border:1px solid #1e2c42;border-radius:10px;margin-top:4px;max-height:320px;overflow-y:auto;z-index:200;"></div></div>'+
  '<span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;">📲 App</span>'+
  '<button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:7px 10px;color:#cbd5e1;font-size:11px;"><a href="'+PAGES.backup+'" class="no-print" title="Abrir Backup" style="display:inline-flex;align-items:center;gap:5px;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:7px 10px;color:#cbd5e1;font-size:11px;text-decoration:none;font-weight:800;">💾 Backup</a>📲 Instalar app</button>'+
- '<span id="versaoSistema" class="no-print" onclick="mostrarToast(\'📅 Sistema atualizado em 01/10/2026 — versão v10.86\')" style="font-size:12px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 9px;cursor:pointer;" title="Atualizado em 01/10/2026 — histórico de fornecedores ganhou ações diretas de editar e excluir cadastro." >v10.86</span>'+
+ '<span id="versaoSistema" class="no-print" onclick="mostrarToast(\'📅 Sistema atualizado em 01/10/2026 — versão v10.87\')" style="font-size:12px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 9px;cursor:pointer;" title="Atualizado em 01/10/2026 — implementadas melhorias gráficas de navegação, carregamento, trilha, menu mobile e feedback de ações." >v10.87</span>'+
  '<span id="indicadorUltimoSalvamento" class="no-print" style="font-size:11px;color:#27d7a0;font-weight:700;display:none;white-space:nowrap;"></span>'+
  '<span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>'+
  '<span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>'+
@@ -27,7 +29,36 @@ function montar(){
  '<div id="faixaErroConexao" class="no-print" style="display:none;background:linear-gradient(90deg,#3a0f16,#2a0a10);border-bottom:1px solid rgba(251,113,133,.4);padding:10px 16px;"><div style="max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;"><span style="font-size:12px;color:#fca5b1;">🔴 Não foi possível conectar à planilha.</span><button onclick="loadGoogleSheet()" style="background:#fb7185;color:#3a0f16;border:none;border-radius:9px;padding:7px 14px;font-weight:800;font-size:12px;">🔄 Tentar novamente</button></div></div>'+
  '<nav class="biobel-nav-direct no-print" aria-label="Navegação principal"><div class="biobel-nav-direct-inner"><strong style="color:#dce5f2;font-size:13px;margin-right:4px;">🟢 BioBel</strong>'+
  '<a class="'+a("dashboard")+'" href="'+PAGES.dashboard+'">🏠 Visão Geral</a><a class="'+a("central")+'" href="'+PAGES.central+'">🧭 Central</a><a class="'+a("caixa")+'" href="'+PAGES.caixa+'">💰 Operação</a><a class="'+a("equipe")+'" href="'+PAGES.equipe+'">👥 Equipe</a><a class="'+a("campanhas")+'" href="'+PAGES.campanhas+'">📣 Vendas</a><a class="'+a("info")+'" href="'+PAGES.info+'">📊 Análises</a><a class="'+a("alertas")+'" href="'+PAGES.alertas+'">🚨 Alertas</a><a class="'+a("config")+'" href="'+PAGES.config+'">🔧 Configuração</a><a class="'+a("adm")+'" href="'+PAGES.adm+'">⚙️ Administração</a>'+
- '</div></nav><nav class="biobel-mobile-direct no-print"><a href="'+PAGES.dashboard+'">🏠<small>Início</small></a><a href="'+PAGES.caixa+'">💰<small>Operação</small></a><a href="'+PAGES.equipe+'">👥<small>Equipe</small></a><a href="'+PAGES.campanhas+'">📣<small>Vendas</small></a><a href="'+PAGES.adm+'">☰<small>Mais</small></a></nav>';
+ '</div></nav><div id="biobelBreadcrumb" class="biobel-breadcrumb no-print" aria-label="Trilha de navegação"></div><div id="biobelLoadingPlanilha" class="biobel-loading-planilha no-print" style="display:none;" aria-live="polite"></div><nav class="biobel-mobile-direct no-print"><a data-page="dashboard" href="#" title="Visão Geral">🏠<small>Início</small></a><a data-page="caixa" href="#" title="Operação">💰<small>Operação</small></a><a data-page="equipe" href="#" title="Equipe">👥<small>Equipe</small></a><a data-page="campanhas" href="#" title="Vendas">📣<small>Vendas</small></a><button type="button" id="btnMobileMoreBiobel" onclick="toggleMenuMobileBiobel()" title="Abrir mais áreas" aria-expanded="false">☰<small>Mais</small></button></nav><div id="biobelMobileMoreMenu" class="biobel-mobile-more-menu no-print" aria-hidden="true"><div class="biobel-mobile-more-backdrop" onclick="toggleMenuMobileBiobel(false)"></div><div class="biobel-mobile-more-panel"><div class="biobel-mobile-more-head"><strong>Mais áreas</strong><button type="button" onclick="toggleMenuMobileBiobel(false)" aria-label="Fechar menu Mais">✕</button></div><a data-page="central" href="#" title="Central Operacional">🧭 Central</a><a data-page="info" href="#" title="Análises e indicadores">📊 Análises</a><a data-page="alertas" href="#" title="Alertas e pendências">🚨 Alertas</a><a data-page="config" href="#" title="Configuração">🔧 Configuração</a><a data-page="adm" href="#" title="Administração">⚙️ Administração</a><a data-page="fornecedores" href="#" title="Fornecedores">🤝 Fornecedores</a><a data-page="backup" href="#" title="Backup">💾 Backup</a></div></div>';
+ function configurarShellNavegacaoInterna(){
+  const nomes={dashboard:"🏠 Visão Geral",central:"🧭 Central",caixa:"💰 Operação",equipe:"👥 Equipe",campanhas:"📣 Vendas",info:"📊 Análises",alertas:"🚨 Alertas",config:"🔧 Configuração",adm:"⚙️ Administração",fornecedores:"🤝 Fornecedores",backup:"💾 Backup"};
+  const hrefMap={dashboard:pageHref("dashboard"),central:pageHref("central"),caixa:pageHref("caixa"),equipe:pageHref("equipe"),campanhas:pageHref("campanhas"),info:pageHref("info"),alertas:pageHref("alertas"),config:pageHref("config"),adm:pageHref("adm"),backup:pageHref("backup"),fornecedores:ROOT+"administracao/fornecedor.html"};
+  m.querySelectorAll("a[href]").forEach(link=>{
+   const href=link.getAttribute("href");
+   const hit=Object.keys(PAGES).find(k=>PAGES[k]===href);
+   if(hit)link.setAttribute("href",hrefMap[hit]);
+  });
+  const logo=m.querySelector("#logoHeaderBiobel");if(logo)logo.src=ROOT+"logo_biobel_gravatai.png";
+  m.querySelectorAll("[data-page]").forEach(link=>{
+   const key=link.dataset.page;if(hrefMap[key])link.setAttribute("href",hrefMap[key]);
+   link.classList.toggle("active",p===key);
+  });
+  const moreBtn=m.querySelector("#btnMobileMoreBiobel");if(moreBtn)moreBtn.classList.toggle("active",["fornecedores","adm","central","info","alertas","config","backup"].includes(p));
+  m.querySelectorAll(".biobel-nav-direct-inner a.active").forEach(link=>link.setAttribute("aria-current","page"));
+  const bc=m.querySelector("#biobelBreadcrumb");
+  if(bc){
+   if(p==="dashboard")bc.innerHTML="<span>🏠 Você está em <strong>Visão Geral</strong></span>";
+   else if(p==="fornecedores")bc.innerHTML="<a href='"+hrefMap.adm+"'>⚙️ Administração</a><span>›</span><strong>🤝 Fornecedores</strong>";
+   else bc.innerHTML="<a href='"+hrefMap.dashboard+"'>🏠 Visão Geral</a><span>›</span><strong>"+(nomes[p]||"Página interna")+"</strong>";
+  }
+ }
+ window.toggleMenuMobileBiobel=function(force){
+  const menu=document.getElementById("biobelMobileMoreMenu");if(!menu)return;
+  const abrir=typeof force==="boolean"?force:!menu.classList.contains("show");
+  menu.classList.toggle("show",abrir);menu.setAttribute("aria-hidden",abrir?"false":"true");
+  const btn=document.getElementById("btnMobileMoreBiobel");if(btn)btn.setAttribute("aria-expanded",abrir?"true":"false");
+ };
+ configurarShellNavegacaoInterna();
  m.dataset.ready="yes";
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",montar,{once:true});else montar();
