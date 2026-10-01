@@ -940,3 +940,132 @@ input[required]:focus,select[required]:focus,textarea[required]:focus,input[aria
 @media(max-width:900px){.biobel-attention-panel{grid-template-columns:1fr 1fr}.biobel-attention-intro{grid-column:1/-1}.biobel-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.biobel-nav-group-label{display:none}.biobel-nav-brand{display:none}.biobel-attention-panel{grid-template-columns:1fr}.biobel-attention-intro{grid-column:auto}.biobel-summary-grid{grid-template-columns:1fr 1fr}.biobel-attention-item{min-height:118px}}
 @media(max-width:420px){.biobel-summary-grid{grid-template-columns:1fr}.biobel-search-wrap{max-width:none!important}.biobel-attention-item{min-height:0}}
+
+
+/* ============================================================
+   MODO CLARO GLOBAL — correção de componentes que ainda herdavam
+   fundos/cores do tema escuro. O shell superior continua escuro
+   de propósito; o conteúdo das páginas fica claro.
+   ============================================================ */
+body.light-mode main,
+body.light-mode .supplier-page{
+  color:#172033!important;
+}
+body.light-mode main [style*="background:#0b1728"],
+body.light-mode main [style*="background: #0b1728"],
+body.light-mode main [style*="background:#07111f"],
+body.light-mode main [style*="background: #07111f"],
+body.light-mode main [style*="background:#0d1a2c"],
+body.light-mode main [style*="background: #0d1a2c"],
+body.light-mode main [style*="#0a1525"]{
+  background:#fff!important;
+  color:#172033!important;
+  border-color:#d7e0ea!important;
+}
+body.light-mode main [style*="color:#dce5f2"],
+body.light-mode main [style*="color: #dce5f2"],
+body.light-mode main [style*="color:#f6f9fd"],
+body.light-mode main [style*="color: #f6f9fd"]{
+  color:#172033!important;
+}
+body.light-mode main [style*="color:#93a3ba"],
+body.light-mode main [style*="color: #93a3ba"],
+body.light-mode main [style*="color:#71839c"],
+body.light-mode main [style*="color: #71839c"]{
+  color:#64748b!important;
+}
+body.light-mode main [style*="background:#1c2c42"],
+body.light-mode main [style*="background: #1c2c42"],
+body.light-mode main [style*="background:#1e2c42"],
+body.light-mode main [style*="background: #1e2c42"]{
+  background:#eef2f6!important;
+  color:#334155!important;
+  border-color:#cbd5e1!important;
+}
+body.light-mode main [style*="border-color:#1e2c42"],
+body.light-mode main [style*="border-color: #1e2c42"]{
+  border-color:#d7e0ea!important;
+}
+body.light-mode .adv-card,
+body.light-mode .card,
+body.light-mode .panel,
+body.light-mode .adv-kpi{
+  background:#fff!important;
+  color:#172033!important;
+  border-color:#d7e0ea!important;
+}
+body.light-mode .adv-card-title h3,
+body.light-mode .adv-card h3,
+body.light-mode .card h3,
+body.light-mode .panel h2,
+body.light-mode .panel h3{
+  color:#172033!important;
+}
+body.light-mode .adv-card-title span,
+body.light-mode .adv-card .sub,
+body.light-mode .card .sub,
+body.light-mode .panel .sub{
+  color:#64748b!important;
+}
+/* Botões rápidos da Visão Geral */
+body.light-mode #dashboardTab .no-print>button[onclick*="showTab"]{
+  background:linear-gradient(135deg,#ffffff,#f8fafc)!important;
+  color:#172033!important;
+  border-color:#cbd5e1!important;
+  box-shadow:0 5px 14px rgba(15,23,42,.05);
+}
+body.light-mode #dashboardTab #btnAlternarModoDashboard{
+  background:#fff!important;color:#334155!important;border-color:#cbd5e1!important;
+}
+/* Faixa de clima */
+body.light-mode #dashboardTab .no-print[style*="background:#0b1728"]{
+  background:#fff!important;
+  border-color:#d7e0ea!important;
+}
+body.light-mode #dashboardTab .no-print[style*="background:#0b1728"] button{
+  background:#f1f5f9!important;
+  color:#334155!important;
+  border:1px solid #cbd5e1!important;
+}
+/* Meta */
+body.light-mode #metaDestaqueTopo{
+  background:linear-gradient(135deg,#ffffff,#f8fafc)!important;
+  border-color:#d7e0ea!important;
+}
+body.light-mode #metaDestaqueTopo [style*="background:#0b1728"]{
+  background:#e9eef4!important;
+}
+body.light-mode #metaDestaqueTopo [style*="color:#dce5f2"]{
+  color:#172033!important;
+}
+body.light-mode #metaResumoHoje{
+  border-color:#d7e0ea!important;
+}
+/* Central de Inteligência */
+body.light-mode #centralInteligenciaBiobel{
+  background:linear-gradient(135deg,#ffffff,#f8fafc)!important;
+  border-color:#b9e7d5!important;
+}
+body.light-mode #centralInteligenciaBiobel #intelFrasePrincipal{
+  background:#ecfdf5!important;
+  border-color:#b7e6d2!important;
+  color:#172033!important;
+}
+/* Qualquer caixa de conteúdo que tenha recebido o fundo escuro via style inline. */
+body.light-mode main [style*="background:rgba(13,26,44"],
+body.light-mode main [style*="background:linear-gradient(135deg,rgba(13,26,44"]{
+  background:#fff!important;
+  color:#172033!important;
+  border-color:#d7e0ea!important;
+}
+/* Inputs e selects inline do conteúdo */
+body.light-mode main input[style*="background:#0b1728"],
+body.light-mode main input[style*="background:#07111f"],
+body.light-mode main select[style*="background:#0b1728"],
+body.light-mode main select[style*="background:#07111f"],
+body.light-mode main textarea[style*="background:#0b1728"],
+body.light-mode main textarea[style*="background:#07111f"]{
+  background:#fff!important;color:#172033!important;border-color:#cbd5e1!important;
+}
+body.light-mode main input::placeholder,
+body.light-mode main textarea::placeholder{color:#94a3b8!important;opacity:1}
