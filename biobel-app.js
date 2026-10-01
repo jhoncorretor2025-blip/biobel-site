@@ -4786,14 +4786,33 @@ function seedCadastrosAdm(){
   }
  });
  // Aproveita fornecedores que já existem em boletos, dados de contato ou memória de parcelamento.
+ const contatosExistentes=getDadosFornecedores();
  const existentes=[];
- getBoletos().forEach(b=>{if(b.fornecedor) existentes.push(b.fornecedor);});
- Object.values(getDadosFornecedores()).forEach(d=>{if(d?.nomeOriginal) existentes.push(d.nomeOriginal);});
+ getBoletos().forEach(b=>{
+  if(b.fornecedor) existentes.push(b.fornecedor);
+  if(b.marca) existentes.push('@@MARCA@@'+b.marca);
+ });
+ Object.values(contatosExistentes).forEach(d=>{if(d?.nomeOriginal) existentes.push(d.nomeOriginal);});
  Object.values(getPadroesParceladoFornecedores()).forEach(d=>{if(d?.nomeOriginal) existentes.push(d.nomeOriginal);});
- [...new Set(existentes.map(normalizarNomeCadastro).filter(Boolean))].forEach(nome=>{
-  if(!dados.fornecedores.some(f=>chaveCadastro(f.nome||f.nomeOriginal)===chaveCadastro(nome))){
-   dados.fornecedores.push({id:Date.now()+Math.random(),nome,telefone:'',cnpj:''});
+
+ [...new Set(existentes.filter(Boolean))].forEach(item=>{
+  if(String(item).startsWith('@@MARCA@@')){
+   const nome=normalizarNomeCadastro(String(item).slice(10));
+   if(nome && !dados.marcas.some(m=>chaveCadastro(m)===chaveCadastro(nome))){dados.marcas.push(nome);mudou=true;}
+   return;
+  }
+  const nome=normalizarNomeCadastro(item);
+  if(!nome)return;
+  const chave=chaveCadastro(nome);
+  const contato=contatosExistentes[chave]||{};
+  const idx=dados.fornecedores.findIndex(f=>chaveCadastro(f.nome||f.nomeOriginal)===chave);
+  if(idx<0){
+   dados.fornecedores.push({id:Date.now()+Math.random(),nome,telefone:contato.telefone||'',cnpj:contato.cnpj||''});
    mudou=true;
+  }else{
+   const atual=dados.fornecedores[idx];
+   if(!atual.telefone && contato.telefone){atual.telefone=contato.telefone;mudou=true;}
+   if(!atual.cnpj && contato.cnpj){atual.cnpj=contato.cnpj;mudou=true;}
   }
  });
  if(mudou) salvarCadastrosAdm(dados);
@@ -13801,5 +13820,5 @@ let promptDeInstalacaoGuardado=null;
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();promptDeInstalacaoGuardado=e;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='inline-block';});
 function instalarAppBiobel(){if(!promptDeInstalacaoGuardado)return;promptDeInstalacaoGuardado.prompt();promptDeInstalacaoGuardado.userChoice.then(function(){promptDeInstalacaoGuardado=null;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';});}
 window.addEventListener('appinstalled',function(){const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';try{mostrarToast('✅ Biobel instalado!');}catch(e){}});
-if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=10.64',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
+if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=10.65',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
 window.addEventListener('load',initPaginaAtiva,{once:true});
