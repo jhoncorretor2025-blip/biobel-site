@@ -12054,54 +12054,112 @@ function removerPlanilhaSalva(index){
  });
 }
 function seedPlanilhas2026(){
- // Mantém os meses conhecidos e garante Outubro 2026 cadastrado como planilha padrão atual.
- const lista = getPlanilhasSalvas();
- const outubro = { nome:'Outubro 2026', url:DEFAULT_GOOGLE_URL };
- const setembro = { nome:'Setembro 2026', url:'https://docs.google.com/spreadsheets/d/1o99UbEDpc0wgnjAfF0D0DQZcLdR53zBMW3Cieqoa1IQ/edit?usp=sharing' };
+ // Mantém os meses conhecidos, remove duplicatas pelo mesmo link e garante Outubro 2026 como padrão.
+ let lista = getPlanilhasSalvas();
+ const outubroUrl = DEFAULT_GOOGLE_URL;
+ const setembroUrl = 'https://docs.google.com/spreadsheets/d/1o99UbEDpc0wgnjAfF0D0DQZcLdR53zBMW3Cieqoa1IQ/edit?usp=sharing';
  let mudou = false;
 
- const antigoPrincipal = lista.find(p=>p.url===DEFAULT_GOOGLE_URL);
- if(antigoPrincipal && antigoPrincipal.nome!=='Outubro 2026'){
-   antigoPrincipal.nome='Outubro 2026';
-   mudou=true;
+ const unicas = [];
+ const urlsVistas = new Set();
+ for(const p of Array.isArray(lista)?lista:[]){
+   const url=String(p?.url||'').trim();
+   if(!url || urlsVistas.has(url)){ mudou=true; continue; }
+   urlsVistas.add(url);
+   const item={nome:String(p?.nome||'Planilha').trim()||'Planilha',url};
+   if(url===outubroUrl && item.nome==='Planilha principal'){
+     item.nome='Outubro 2026';
+     mudou=true;
+   }
+   unicas.push(item);
  }
- if(!lista.some(p=>p.url===outubro.url)){
-   lista.unshift(outubro);
-   mudou=true;
+ lista=unicas;
+
+ const idxOutubro=lista.findIndex(p=>p.url===outubroUrl);
+ if(idxOutubro>=0){
+   if(lista[idxOutubro].nome!=='Outubro 2026'){lista[idxOutubro].nome='Outubro 2026';mudou=true;}
+   const [item]=lista.splice(idxOutubro,1); lista.unshift(item); mudou=true;
+ }else{
+   lista.unshift({nome:'Outubro 2026',url:outubroUrl}); mudou=true;
  }
- if(!lista.some(p=>p.url===setembro.url)){
-   lista.push(setembro);
-   mudou=true;
+
+ if(!lista.some(p=>p.url===setembroUrl)){
+   lista.push({nome:'Setembro 2026',url:setembroUrl}); mudou=true;
  }
 
  if(mudou) salvarListaPlanilhas(lista);
+}
+function escPlanilhaHtml(valor){
+ return String(valor??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function abrirPlanilhaGoogle(url){
+ try{window.open(url,'_blank','noopener,noreferrer');}catch(e){window.location.href=url;}
+}
+function selecionarPlanilhaPorUrl(url){
+ const select=document.getElementById('planilhaSalvaSelect');
+ if(!select) return;
+ select.value=url;
+ if(select.value!==url){
+  mostrarToast('⚠️ Planilha não encontrada na lista.');
+  return;
+ }
+ selecionarPlanilhaSalva();
+}
+function removerPlanilhaPorUrl(url){
+ const lista=getPlanilhasSalvas();
+ const index=lista.findIndex(p=>p.url===url);
+ if(index>=0) removerPlanilhaSalva(index);
 }
 function renderPlanilhasSalvas(){
  seedPlanilhas2026();
  const select = document.getElementById('planilhaSalvaSelect');
  const listaEl = document.getElementById('listaPlanilhasSalvas');
  const selectInfo = document.getElementById('seletorPlanilhaInfoGeral');
+ const atualRaw = getGoogleUrl();
  const lista = getPlanilhasSalvas();
- const urlAtual = getGoogleUrl();
+ const vistos=new Set();
+ const listaUnica=lista.filter(p=>{
+   const u=String(p?.url||'').trim();
+   if(!u||vistos.has(u)) return false;
+   vistos.add(u); return true;
+ });
+ const urlAtual=listaUnica.some(p=>p.url===atualRaw)?atualRaw:DEFAULT_GOOGLE_URL;
+ const nomeAtual=listaUnica.find(p=>p.url===urlAtual)?.nome || 'Outubro 2026';
+
+ const pill=document.getElementById('planilhaAtualPill');
+ if(pill) pill.innerHTML='🟢 Em uso: <strong>'+escPlanilhaHtml(nomeAtual)+'</strong>';
+
  if(select){
   select.innerHTML = '<option value="">— Escolher planilha salva —</option>' +
-   lista.map(p=>`<option value="${p.url}" ${p.url===urlAtual?'selected':''}>${p.nome}</option>`).join('');
+   listaUnica.map(p=>'<option value="'+escPlanilhaHtml(p.url)+'" '+(p.url===urlAtual?'selected':'')+'>'+escPlanilhaHtml(p.nome)+'</option>').join('');
  }
  if(selectInfo){
   selectInfo.innerHTML = '<option value="">— Escolher planilha salva —</option>' +
-   lista.map(p=>`<option value="${p.url}" ${p.url===urlAtual?'selected':''}>${p.nome}</option>`).join('');
+   listaUnica.map(p=>'<option value="'+escPlanilhaHtml(p.url)+'" '+(p.url===urlAtual?'selected':'')+'>'+escPlanilhaHtml(p.nome)+'</option>').join('');
  }
  if(!listaEl) return;
- if(lista.length===0){
-  listaEl.innerHTML = '';
+ if(listaUnica.length===0){
+  listaEl.innerHTML='<div class="biobel-planilha-empty">📂 Nenhuma planilha cadastrada ainda.</div>';
   return;
  }
- listaEl.innerHTML = lista.map((p,i)=>`
-  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;background:#0b1728;border:1px solid #1c2c42;border-radius:10px;padding:8px 12px;font-size:12.5px;">
-   <span style="color:#dce5f2;font-weight:600;">${p.nome}</span>
-   <button onclick="removerPlanilhaSalva(${i})" title="Remover da lista" class="no-print text-rose-400 hover:text-rose-300">🗑</button>
-  </div>`).join('');
+ listaEl.innerHTML=listaUnica.map(p=>{
+  const ativo=p.url===urlAtual;
+  return '<article class="biobel-planilha-item '+(ativo?'active':'')+'">'+
+   '<div class="biobel-planilha-item-top">'+
+    '<div class="biobel-planilha-item-icon">'+(ativo?'✅':'📊')+'</div>'+
+    '<div class="biobel-planilha-item-name"><strong>'+escPlanilhaHtml(p.nome)+'</strong><small>Google Sheets • '+(ativo?'alimentando o painel agora':'disponível para troca')+'</small></div>'+
+    '<span class="biobel-planilha-item-badge">'+(ativo?'EM USO':'DISPONÍVEL')+'</span>'+
+   '</div>'+
+   '<div class="biobel-planilha-item-desc">'+(ativo?'Esta é a planilha que o dashboard está lendo neste momento.':'Use este período para carregar os dados deste mês sem alterar os demais.')+'</div>'+
+   '<div class="biobel-planilha-item-actions">'+
+    '<button class="use" onclick=\'selecionarPlanilhaPorUrl('+JSON.stringify(p.url)+')\'>'+(ativo?'↻ Atualizar dados':'▶ Usar esta planilha')+'</button>'+
+    '<button onclick=\'abrirPlanilhaGoogle('+JSON.stringify(p.url)+')\' title="Abrir no Google Sheets">↗ Abrir</button>'+
+    '<button onclick=\'removerPlanilhaPorUrl('+JSON.stringify(p.url)+')\' title="Remover desta lista">🗑</button>'+
+   '</div>'+
+  '</article>';
+ }).join('');
 }
+
 
 async function lerPlanilhaSelecionadaInfoGeral(){
  const select = document.getElementById('seletorPlanilhaInfoGeral');
@@ -13225,7 +13283,12 @@ function renderAdvancedDashboard(){
             label:'Vendas do dia',
             data:daysData.map(d=>d.sales),
             backgroundColor:daysData.map(d=>(Number(d.sales)||0)>=metaDiariaChart ? 'rgba(39,215,160,.75)' : 'rgba(79,156,255,.6)'),
-            borderRadius:4,
+            borderRadius:7,
+            borderSkipped:false,
+            borderWidth:1,
+            borderColor:daysData.map(d=>(Number(d.sales)||0)>=metaDiariaChart ? 'rgba(39,215,160,.55)' : 'rgba(79,156,255,.40)'),
+            barPercentage:.72,
+            categoryPercentage:.68,
             order:2
           },
           {
@@ -13235,7 +13298,12 @@ function renderAdvancedDashboard(){
             borderColor:'#fbbf24',
             borderDash:[6,4],
             borderWidth:2,
-            pointRadius:0,
+            tension:.32,
+            pointRadius:3.5,
+            pointHoverRadius:6,
+            pointBackgroundColor:'#07111f',
+            pointBorderColor:'#fbbf24',
+            pointBorderWidth:2,
             fill:false,
             order:1
           }
@@ -13243,14 +13311,15 @@ function renderAdvancedDashboard(){
       },
       options:{
         responsive:true,maintainAspectRatio:false,
+        layout:{padding:{top:2,right:8,bottom:2,left:2}},
         interaction:{mode:'index',intersect:false},
         plugins:{
-          legend:{display:true, labels:{color:'#93a3ba', boxWidth:12, font:{size:11}}},
-          tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${money(c.raw)}`}}
+          legend:{display:true, position:'top', align:'start', labels:{color:'#b8c5d8', boxWidth:10, usePointStyle:true, pointStyle:'circle', padding:16, font:{size:10.5,weight:'700'}}},
+          tooltip:{backgroundColor:'#07111f',borderColor:'#2a3d58',borderWidth:1,titleColor:'#fff',bodyColor:'#dce5f2',padding:11,cornerRadius:10,displayColors:true,callbacks:{label:c=>` ${c.dataset.label}: ${money(c.raw)}`}}
         },
         scales:{
-          x:{ticks:{color:'#93a3ba'},grid:{color:'rgba(145,161,184,.06)'}},
-          y:{beginAtZero:true,ticks:{color:'#93a3ba',callback:v=>money(v)},grid:{color:'rgba(145,161,184,.08)'}}
+          x:{ticks:{color:'#8193aa',padding:7,font:{size:10}},grid:{display:false},border:{display:false}},
+          y:{beginAtZero:true,ticks:{color:'#8193aa',padding:8,font:{size:10},callback:v=>money(v)},grid:{color:'rgba(145,161,184,.085)',borderDash:[4,5]},border:{display:false}}
         }
       }
     });
@@ -13423,5 +13492,5 @@ let promptDeInstalacaoGuardado=null;
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();promptDeInstalacaoGuardado=e;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='inline-block';});
 function instalarAppBiobel(){if(!promptDeInstalacaoGuardado)return;promptDeInstalacaoGuardado.prompt();promptDeInstalacaoGuardado.userChoice.then(function(){promptDeInstalacaoGuardado=null;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';});}
 window.addEventListener('appinstalled',function(){const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';try{mostrarToast('✅ Biobel instalado!');}catch(e){}});
-if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=10.54',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
+if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=10.55',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
 window.addEventListener('load',initPaginaAtiva,{once:true});
