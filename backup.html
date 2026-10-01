@@ -82,7 +82,7 @@ body{background:#07111f!important;color:#dce5f2}
   <article class="backup-card primary">
    <div class="backup-card-head"><div><div class="backup-card-icon">⬇️</div></div><div><h2>Baixar backup completo</h2><p>Cria um arquivo .JSON com os dados locais protegidos.</p></div></div>
    <button type="button" class="backup-btn primary" onclick="baixarBackupCompleto()">💾 Baixar backup completo (.json)</button>
-   <div class="backup-info">✅ Inclui <strong>fornecedores, telefone/CNPJ, boletos, parcelas, padrões de parcelamento, metas, planilhas salvas, histórico, tarefas, agenda, estoque e demais dados locais</strong> do navegador.</div>
+   <div class="backup-info">✅ Inclui <strong>gastos fixos, fornecedores, telefone/CNPJ, boletos, parcelas, padrões de parcelamento, metas, planilhas salvas, histórico, tarefas, agenda, estoque e demais dados locais</strong> do navegador.</div>
   </article>
 
   <article class="backup-card">
@@ -138,7 +138,7 @@ body{background:#07111f!important;color:#dce5f2}
      const quando=new Date(snap.data).toLocaleString('pt-BR');
      const checks=snap.verificacaoDados;
      const protegidos=checks ? Object.values(checks).filter(Boolean).length : 0;
-     local.innerHTML='✅ Último backup automático: <strong style="color:#27d7a0">'+quando+'</strong><br><span style="color:#71839a">Dados críticos presentes: '+protegidos+'/3</span>';
+     local.innerHTML='✅ Último backup automático: <strong style="color:#27d7a0">'+quando+'</strong><br><span style="color:#71839a">Dados críticos presentes: '+protegidos+'/4</span>';
     }else local.textContent='Ainda não existe backup automático neste navegador.';
    }
   }
