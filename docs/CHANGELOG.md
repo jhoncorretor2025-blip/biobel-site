@@ -1,3 +1,10 @@
+## v10.61 — 01/10/2026
+- Novo design da área de Boletos de Fornecedores, com resumo de total, pendentes, pagos e valor pendente.
+- Formulário de boletos reorganizado para facilitar o cadastro.
+- Parcelamento ampliado de 1x/2x/3x para 1x/2x/3x/4x.
+- Parcelas 4x usam sugestões de vencimento editáveis e divisão automática do valor total.
+- Anexos de boleto/comprovante agora aceitam PDF além de JPG/PNG; PDFs anexados podem ser visualizados dentro do sistema.
+
 ## v10.60 — 01/10/2026
 - Central Operacional passa a informar explicitamente a fonte dos dados e o período exibido.
 - Novo bloco “Como entender” explica de onde vêm faturamento, atingimento, atendimentos e média por venda.
