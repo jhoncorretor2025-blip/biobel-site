@@ -1927,6 +1927,11 @@ function carregarExemploCartaoPontoAgosto(){
  });
 }
 /* ===== Exportar Boletos — PDF e CSV, respeitando o filtro/busca que estiver ativo na tela ===== */
+function notificarAtualizacaoBoletos(){
+ if(typeof window.atualizarResumoGastosVariaveisFornecedores==='function'){
+  window.atualizarResumoGastosVariaveisFornecedores();
+ }
+}
 function getBoletosFiltradosAtual(){
  let lista = getBoletos();
  if(filtroBoletoAtual==='pendentes') lista = lista.filter(b=>!b.pago);
@@ -4586,6 +4591,7 @@ async function adicionarBoleto(){
   limparFormularioBoleto();
   renderBoletos();
   atualizarTotaisAdm();
+  notificarAtualizacaoBoletos();
   renderLogAlteracoes();
   return;
  }
@@ -4623,6 +4629,7 @@ async function adicionarBoleto(){
  limparFormularioBoleto();
  renderBoletos();
  atualizarTotaisAdm();
+ notificarAtualizacaoBoletos();
  renderLogAlteracoes();
 }
 const MARCAS_FORNECEDOR_CONHECIDAS = ['Truss','Porto Dez','Plattelli','Eudora','Natura'];
@@ -4711,6 +4718,7 @@ function alternarPagoBoleto(id){
  lista[idx].pago = !lista[idx].pago;
  salvarBoletos(lista);
  renderBoletos();
+ notificarAtualizacaoBoletos();
  mostrarToast(lista[idx].pago ? '✅ Marcado como pago.' : '↩️ Marcado como pendente.');
 }
 function removerBoleto(id){
@@ -4721,12 +4729,14 @@ function removerBoleto(id){
  salvarBoletos(lista);
  renderBoletos();
  atualizarTotaisAdm();
+ notificarAtualizacaoBoletos();
  mostrarToastComDesfazer('🗑️ Boleto removido.', ()=>{
   const listaAtual = getBoletos();
   listaAtual.push(item);
   salvarBoletos(listaAtual);
   renderBoletos();
   atualizarTotaisAdm();
+  notificarAtualizacaoBoletos();
  });
 }
 /* ===== Histórico de Preços por Fornecedor (item 7) ===== */
