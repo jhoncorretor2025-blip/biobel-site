@@ -73,6 +73,9 @@
 .gastos-semanais-sem-data-pill{background:#0b1728;border:1px solid rgba(251,191,36,.2);border-radius:999px;padding:5px 8px;font-size:9.5px;color:#dce5f2}
 @media(max-width:760px){.gastos-semanais-lista{grid-template-columns:1fr}.gastos-semanais-resumo{grid-template-columns:1fr 1fr}}
 @media(max-width:460px){.gastos-semanais-resumo{grid-template-columns:1fr}.gasto-semanal-total{font-size:16px}.gasto-semanal-grid{grid-template-columns:1fr}}
+</style><style>
+.destaque-planejamento{border-color:rgba(39,215,160,.38)!important;background:rgba(39,215,160,.09)!important;color:#d8fff2!important}
+.destaque-planejamento:hover{background:rgba(39,215,160,.16)!important}
 </style></head><body data-biobel-page="adm" class="min-h-screen bg-slate-950 text-slate-100">
 <div id="faixaMensagemProgramada" style="display:none;"></div>
 <div id="tourGuiadoOverlay" style="display:none;"></div>
@@ -122,6 +125,8 @@
    <div class="adm-shortcut-group">
     <span class="adm-shortcut-group-label">💰 Financeiro</span>
     <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraGastos')">🏠 Gastos</button>
+    <button type="button" class="config-chip destaque-planejamento" onclick="isolarSecaoAdm('admAncoraPlanejamentoSemanal')">📅 Gastos por semana</button>
+    <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraPlanejamentoMensal')">📊 Mês a mês</button>
     <a href="administracao/fornecedor.html" class="config-chip" style="text-decoration:none;">🤝 Fornecedores</a>
    </div>
    <div class="adm-shortcut-group">
@@ -195,6 +200,8 @@
 
   <div id="admAlertaFluxoCaixa" style="display:none;"></div>
 
+  <div id="admAncoraPlanejamentoSemanal"></div>
+
   <div class="adv-card" id="painelGastosSemanais">
    <div class="adv-card-title">
     <div>
@@ -212,6 +219,8 @@
    <div id="listaGastosSemanais" class="gastos-semanais-lista"></div>
    <div id="gastosSemVencimentoSemanal" style="margin-top:12px;"></div>
   </div>
+
+  <div id="admAncoraPlanejamentoMensal"></div>
 
   <div class="adv-card" id="painelFinanceiroMensal">
    <div class="adv-card-title">
