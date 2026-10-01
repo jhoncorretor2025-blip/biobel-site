@@ -1,3 +1,9 @@
+## v10.73 — 01/10/2026
+- Boletos cadastrados na área exclusiva de Fornecedores continuam sendo a fonte do **Gasto Variável** da Biobel.
+- O resumo financeiro da página de Fornecedores passa a mostrar total dos boletos, pendentes, pagos e quantidade de registros.
+- Adicionar, editar, marcar como pago e excluir boleto atualizam a integração do total de gastos variáveis.
+- Administração continua usando a mesma base `biobel_adm_boletos`, sem duplicação.
+
 ## v10.71 — 01/10/2026
 - Cadastro de Fornecedores reorganizado na ordem solicitada: **Cadastrar Boleto → Cadastrar Fornecedor → Cadastrar Marca**.
 - O formulário completo de boleto foi restaurado na página exclusiva de fornecedores, com parcelamento, vencimento, recorrência, observações e comprovante.
