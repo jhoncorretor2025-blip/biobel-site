@@ -1,3 +1,8 @@
+## v10.85 — 01/10/2026
+- Planejamento de Gastos por Semana passa a exibir **4 blocos semanais diretamente no resumo**.
+- Adicionada **Média de referência** (total mensal ÷ 4) para servir como parâmetro de planejamento.
+- A divisão real continua baseada nos **dias de vencimento**; as semanas não são artificialmente igualadas.
+
 ## v10.84 — 01/10/2026
 - Menu da Administração reorganizado para facilitar a navegação.
 - Criado atalho direto **📅 Gastos por semana**.
