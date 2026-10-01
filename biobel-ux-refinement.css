@@ -597,3 +597,48 @@ body.light-mode .cadastro-pane-head h4,body.light-mode .cadastro-supplier-main s
 body.light-mode .fornecedor-subtabs{background:#f1f5f9;border-color:#dbe4ee}
 body.light-mode .fornecedor-subtab{color:#64748b}
 body.light-mode .fornecedor-check-card,body.light-mode .fornecedor-contact-row{background:#fff;border-color:#dbe4ee}
+
+
+/* v10.94 — limpeza visual do modo claro */
+body.light-mode .biobel-nav-direct{background:#fff!important;border-top-color:#dce4ec!important;border-bottom-color:#dce4ec!important}
+body.light-mode .biobel-nav-direct-inner{background:#fff!important}
+body.light-mode .biobel-nav-direct-inner a,body.light-mode .biobel-nav-brand,body.light-mode .biobel-nav-group-label{color:#334155!important}
+body.light-mode .biobel-nav-direct-inner a.active{background:#e8f8f2!important;color:#087f5b!important;border-color:#b7e7d3!important}
+body.light-mode .biobel-nav-direct-inner a:hover{background:#f1f5f9!important;color:#0f172a!important}
+body.light-mode .biobel-shared-header{background:#fff!important;color:#172033!important;border-color:#dce4ec!important}
+body.light-mode .biobel-header-tools input[style*="background:#0b1728"],
+body.light-mode .biobel-header-tools button[style*="background:#0b1728"],
+body.light-mode .biobel-header-tools a[style*="background:#0b1728"],
+body.light-mode #versaoSistema[style*="background:#0b1728"]{background:#f8fafc!important;color:#334155!important;border-color:#cbd5e1!important}
+body.light-mode #resultadosBuscaGlobal{background:#fff!important;color:#172033!important;border-color:#dce4ec!important}
+body.light-mode .biobel-header-brand p.text-slate-400,body.light-mode .biobel-header-brand p[style*="color:#93a3ba"]{color:#64748b!important}
+
+/* Blocos antigos que ainda recebem fundo escuro via style="" */
+body.light-mode [style*="background:#07111f"],
+body.light-mode [style*="background:#070f1b"],
+body.light-mode [style*="background:#081321"],
+body.light-mode [style*="background:#081424"],
+body.light-mode [style*="background:#091422"],
+body.light-mode [style*="background:#091524"],
+body.light-mode [style*="background:#0b1728"],
+body.light-mode [style*="background:#0f172a"],
+body.light-mode [style*="background:#101f34"]{background:#fff!important;color:#172033!important;border-color:#d7e0ea!important}
+body.light-mode [style*="color:#dce5f2"],
+body.light-mode [style*="color:#eef4fb"],
+body.light-mode [style*="color:#f6f9fd"],
+body.light-mode [style*="color:#cbd5e1"],
+body.light-mode [style*="color:#aebbd0"],
+body.light-mode [style*="color:#93a3ba"]{color:#334155!important}
+body.light-mode [style*="border:1px solid #1c2c42"],
+body.light-mode [style*="border:1px solid #1e2c42"],
+body.light-mode [style*="border:1px solid #263a55"],
+body.light-mode [style*="border:1px solid #20334e"]{border-color:#d7e0ea!important}
+
+body.light-mode .adv-table,body.light-mode .adv-table-card,body.light-mode .table-wrap{background:#fff!important}
+body.light-mode .adv-table th{background:#f8fafc!important;color:#64748b!important}
+body.light-mode .adv-table td{color:#334155!important;border-color:#e2e8f0!important}
+body.light-mode .adv-table tbody tr:hover td{background:#f8fafc!important}
+body.light-mode input,body.light-mode select,body.light-mode textarea{color:#172033!important}
+body.light-mode input::placeholder,body.light-mode textarea::placeholder{color:#94a3b8!important}
+body.light-mode .biobel-mobile-more-panel{background:#fff!important;color:#172033!important;border-color:#d7e0ea!important}
+body.light-mode .biobel-mobile-more-panel a,body.light-mode .biobel-mobile-more-head{color:#334155!important}
