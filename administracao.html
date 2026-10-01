@@ -244,12 +244,12 @@
       <div class="boleto-product-guide-icon">📦</div>
       <div>
        <strong>Informações do produto</strong>
-       <span><b>Quantidade do produto:</b> informe quantas unidades você comprou (ex.: 10 unidades, 6 frascos ou 2 kits).</span>
-       <span><b>Validade do produto:</b> informe a validade do produto comprado, de preferência no formato <b>MM/AAAA</b> (ex.: 12/2027). Se não houver validade, deixe em branco.</span>
+       <span id="guiaQuantidadeProduto"><b>Quantidade do produto:</b> informe quantas unidades você comprou (ex.: 10 unidades, 6 frascos ou 2 kits).</span>
+       <span id="guiaValidadeProduto"><b>Validade do produto:</b> informe a validade do produto comprado, de preferência no formato <b>MM/AAAA</b> (ex.: 12/2027). Se não houver validade, deixe em branco.</span>
       </div>
      </div>
-     <select id="novoBoletoMarcaSelect" onchange="alternarCampoMarcaOutros()" class="boleto-input">
-      <option value="">Marca (escolha)</option>
+     <select id="novoBoletoMarcaSelect" onchange="alternarCampoMarcaOutros()" class="boleto-input" aria-label="Marca do produto">
+      <option value="">Marca do produto</option>
       <option value="Truss">Truss</option>
       <option value="Porto Dez">Porto Dez</option>
       <option value="Plattelli">Plattelli</option>
@@ -257,18 +257,16 @@
       <option value="Natura">Natura</option>
       <option value="__outros__">Outros...</option>
      </select>
-     <input id="novoBoletoMarca" type="text" placeholder="Marca" class="boleto-input">
-     <div class="boleto-field-hint"><span>Quantidade do produto</span><small>nº de unidades, frascos, caixas ou kits</small></div>
-     <input id="novoBoletoQuantidade" type="text" placeholder="Ex.: 10 unidades" aria-label="Quantidade do produto" aria-describedby="ajudaQuantidadeProduto" class="boleto-input">
-     <div class="boleto-field-hint"><span>Validade do produto</span><small>use MM/AAAA — ex.: 12/2027</small></div>
-     <input id="novoBoletoValidade" type="text" placeholder="Ex.: 12/2027" aria-label="Validade do produto" aria-describedby="ajudaValidadeProduto" class="boleto-input">
+     <input id="novoBoletoMarca" type="text" placeholder="Digite a marca do produto" class="boleto-input">
+     <input id="novoBoletoQuantidade" type="text" placeholder="Ex.: 10 unidades" title="Informe quantas unidades, frascos, caixas ou kits você comprou" aria-label="Quantidade do produto" aria-describedby="guiaQuantidadeProduto" class="boleto-input">
+     <input id="novoBoletoValidade" type="text" placeholder="Ex.: 12/2027" title="Informe a validade do produto no formato MM/AAAA. Se não houver validade, deixe em branco." aria-label="Validade do produto" aria-describedby="guiaValidadeProduto" class="boleto-input">
      <input id="novoBoletoValor" type="text" inputmode="decimal" placeholder="Valor R$" oninput="atualizarPreviewParcelasBoletoInline()" class="boleto-input">
      <div>
       <label id="labelNovoBoletoVencimento" for="novoBoletoVencimento" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Data de vencimento</label>
       <input id="novoBoletoVencimento" type="date" onchange="atualizarPreviewParcelasBoletoInline()" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
      </div>
      <div>
-      <label for="novoBoletoCategoria" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Categoria</label>
+      <label for="novoBoletoCategoria" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Categoria da compra</label>
       <select id="novoBoletoCategoria" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
        <option value="Produto">📦 Produto</option>
        <option value="Manutenção">🔧 Manutenção</option>
