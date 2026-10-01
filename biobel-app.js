@@ -12255,22 +12255,17 @@ function updateConnBadge(state){
   localStorage.setItem('biobel_ultima_sincronizacao_ok', new Date().toISOString());
  }
  if(state==='error'){ registrarErroConexao(); renderDiasSemErroConexao(); }
- // A faixa vermelha de aviso foi desativada por pedido — nunca mais aparece na tela,
- // mesmo se a planilha realmente desconectar.
- if(faixa) faixa.style.display = 'none';
+  if(faixa) faixa.style.display = state==='error' ? 'block' : 'none';
  if(!el) return;
 
  // O indicador de "Erro de conexão" também foi desativado — em vez de alarmar, mostra a
  // última vez que sincronizou com sucesso, ou fica quieto se nunca sincronizou ainda.
  if(state==='error'){
   const ultima = localStorage.getItem('biobel_ultima_sincronizacao_ok');
-  if(ultima){
-   el.style.display = '';
-   el.className = 'conn-badge conn-ok';
-   el.textContent = '🟢 Última att.: '+new Date(ultima).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-  } else {
-   el.style.display = 'none';
-  }
+  el.style.display = '';
+  el.className = 'conn-badge conn-error';
+  el.textContent = ultima ? '🔴 Falha agora · última atualização '+new Date(ultima).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : '🔴 Falha ao atualizar';
+  atualizarAvisoErroPlanilha('Não consegui atualizar a planilha. Confira a conexão e tente novamente.');
   return;
  }
 
@@ -13138,6 +13133,42 @@ function countTransactions(rows){
  return qtd;
 }
 
+function marcarCamposObrigatoriosBiobel(){
+ const ids=['novoBoletoFornecedor','novoBoletoValor','novoFornecedorCadastroNome','novaMarcaCadastro','novoGastoFixoNome','googleSheetUrl'];
+ ids.forEach(id=>{
+  const el=document.getElementById(id);if(!el)return;
+  el.required=true;el.setAttribute('aria-required','true');
+  if(el.placeholder&&!/\*$/.test(el.placeholder))el.placeholder=el.placeholder.replace(/\s+$/,'')+' *';
+ });
+}
+function inicializarFeedbackBotoesAcao(){
+ if(window.__biobelFeedbackBotoesInit)return;
+ window.__biobelFeedbackBotoesInit=true;
+ document.addEventListener('click',function(e){
+  const btn=e.target.closest('button[data-action-loading]');
+  if(!btn||btn.disabled||btn.dataset.loadingAtivo==='yes')return;
+  btn.dataset.loadingAtivo='yes';
+  btn.dataset.textoOriginal=btn.innerHTML;
+  btn.disabled=true;
+  btn.classList.add('biobel-btn-loading');
+  btn.innerHTML='<span class="biobel-btn-spinner" aria-hidden="true"></span>'+(btn.dataset.loadingText||' Processando...');
+  setTimeout(()=>{
+   btn.disabled=false;btn.classList.remove('biobel-btn-loading');
+   btn.innerHTML=btn.dataset.textoOriginal||btn.innerHTML;
+   delete btn.dataset.loadingAtivo;
+  },1800);
+ },true);
+ const marcar=()=>{
+  document.querySelectorAll('#btnAdicionarBoleto,#btnAdicionarGastoFixo,button[onclick*="salvarFornecedorCadastro"],button[onclick*="adicionarMarcaCadastro"],button[onclick*="salvarMetaLucroMensal"],button[onclick*="saveGoogleConfig"],button[onclick*="adicionarNovaPlanilhaMes"]').forEach(btn=>{
+   btn.dataset.actionLoading='yes';
+   if(!btn.dataset.loadingText)btn.dataset.loadingText=' Salvando...';
+  });
+  marcarCamposObrigatoriosBiobel();
+ };
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',marcar,{once:true});else setTimeout(marcar,0);
+}
+inicializarFeedbackBotoesAcao();
+
 function setRefreshButtonsLoading(loading){
  const btns = [
   document.getElementById('btnRefreshSidebar'),
@@ -13393,6 +13424,24 @@ function initAppsScriptUrlUI(){
  if(el) el.value = getAppsScriptProxyUrl();
 }
 
+function setPlanilhaLoading(loading,mensagem){
+ const el=document.getElementById('biobelLoadingPlanilha');
+ if(!el)return;
+ if(loading){
+  el.style.display='flex';
+  el.innerHTML='<span class="biobel-loading-spinner" aria-hidden="true"></span><strong>'+(mensagem||'Atualizando dados da planilha...')+'</strong><small>Isso pode levar alguns segundos.</small>';
+ }else{
+  el.style.display='none';
+  el.innerHTML='';
+ }
+}
+function atualizarAvisoErroPlanilha(mensagem){
+ const faixa=document.getElementById('faixaErroConexao');
+ if(!faixa)return;
+ const texto=faixa.querySelector('.biobel-faixa-erro-texto');
+ if(texto)texto.textContent='🔴 '+(mensagem||'Não foi possível atualizar a planilha.');
+}
+
 let carregandoPlanilha = false; // evita duas leituras da planilha rodando ao mesmo tempo (ex: atualização automática + clique manual), que podiam misturar dados de meses diferentes
 async function loadGoogleSheet(){
  if(carregandoPlanilha){
@@ -13404,6 +13453,8 @@ async function loadGoogleSheet(){
  const id=extractSpreadsheetId(url);
  if(!id){ carregandoPlanilha=false; return setGoogleStatus('link inválido.'); }
  setGoogleStatus('conectando à planilha...', false, 'connecting');
+ atualizarAvisoErroPlanilha('Atualizando dados da planilha...');
+ setPlanilhaLoading(true,'Buscando os dados da planilha...');
  setRefreshButtonsLoading(true);
  try{
   const proxyUrl = getAppsScriptProxyUrl();
@@ -13451,14 +13502,18 @@ async function loadGoogleSheet(){
   render();
   window.dispatchEvent(new CustomEvent('biobel:data-updated'));
   setGoogleStatus(`conectado. ${found} dia(s) atualizado(s) às ${new Date().toLocaleTimeString('pt-BR')}.`,true);
+  setPlanilhaLoading(false);
   verificarEnvioEmailMensal();
   sugerirProximaPlanilha();
   // Se uma gravação ficou pendente durante uma queda/instabilidade, tenta agora novamente.
   tentarEnviarHorarioFechamentoPendente();
  }catch(err){
   console.error(err);
-  setGoogleStatus('não foi possível ler a planilha. Verifique se ela está acessível para leitura sem login e se o navegador permite o acesso.');
+  atualizarAvisoErroPlanilha('Não consegui atualizar a planilha. Verifique a internet, o acesso de leitura e tente novamente.');
+  setPlanilhaLoading(false);
+  setGoogleStatus('não foi possível ler a planilha. Verifique a internet, o acesso de leitura e tente novamente.',false,'error');
  }finally{
+  setPlanilhaLoading(false);
   setRefreshButtonsLoading(false);
   carregandoPlanilha = false;
   // Roda sempre, sucesso ou falha — o aviso de "mês virou" só depende de qual planilha está
