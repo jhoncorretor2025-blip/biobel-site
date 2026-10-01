@@ -230,3 +230,18 @@ body.light-mode .biobel-planilha-form input,body.light-mode .biobel-planilha-qui
 body.light-mode .biobel-planilha-title h3,body.light-mode .biobel-planilha-add-title h4,body.light-mode .biobel-planilha-list-head h4,body.light-mode .biobel-planilha-item-name strong{color:#16263a}
 body.light-mode .biobel-planilha-add-title p,body.light-mode .biobel-planilha-list-head p,body.light-mode .biobel-planilha-item-desc{color:#64748b}
 body.light-mode .adv-chart{background:linear-gradient(180deg,#f8fafc,#eef4f7);border-color:#dce4ec}
+
+.biobel-planilha-item-actions .compare{
+ background:rgba(39,215,160,.08)!important;
+ border-color:rgba(39,215,160,.22)!important;
+ color:#27d7a0!important;
+}
+.biobel-planilha-item-actions .compare:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.biobel-planilha-item-actions button:disabled{cursor:wait;filter:none!important;transform:none!important;opacity:.7}
+.biobel-planilha-empty{
+ grid-column:1/-1;padding:18px;border:1px dashed #2a3d58;border-radius:14px;text-align:center;
+ color:#72859e;font-size:11px;background:rgba(11,23,40,.55);
+}
+@media(max-width:640px){
+ .biobel-planilha-item-actions button{flex:1;min-width:0}
+}
