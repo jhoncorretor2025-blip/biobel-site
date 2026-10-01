@@ -441,3 +441,94 @@ body.light-mode .boleto-input,body.light-mode #novoBoletoVencimento,body.light-m
 body.light-mode .boleto-product-guide{background:#f5f9fc;border-color:#d7e3ee}
 body.light-mode .boleto-product-guide strong{color:#1e334a}
 body.light-mode .boleto-product-guide span{color:#61758d}
+
+/* v10.65 — aba de Cadastros de Marcas e Fornecedores. */
+.cadastro-master-card{
+ position:relative;overflow:hidden;
+ background:linear-gradient(150deg,#0b1728,#091524)!important;
+ border-color:#233853!important;border-radius:20px!important;
+ box-shadow:0 18px 44px rgba(0,0,0,.14)!important;
+}
+.cadastro-master-card:before{
+ content:"";position:absolute;top:0;left:0;right:0;height:2px;
+ background:linear-gradient(90deg,#27d7a0,#4f9cff,#a78bfa);
+ opacity:.8;
+}
+.cadastro-master-title{align-items:flex-start!important;margin-bottom:14px!important}
+.cadastro-master-title h3{font-size:15px!important;letter-spacing:-.015em}
+.cadastro-master-title>div>span{display:block;color:#71839a!important;font-size:10px!important;margin-top:4px}
+.cadastro-master-badge{
+ display:inline-flex!important;align-items:center;gap:5px;padding:6px 9px;border-radius:999px;
+ background:rgba(39,215,160,.06);border:1px solid rgba(39,215,160,.2);color:#27d7a0!important;
+ font-size:9px!important;font-weight:900;white-space:nowrap;
+}
+.cadastro-tabs{
+ display:flex;gap:4px;padding:4px;background:#07111f;border:1px solid #1e324a;border-radius:13px;
+ width:max-content;margin-bottom:14px;
+}
+.cadastro-tab{
+ border:0;border-radius:9px;background:transparent;color:#7f90a7;padding:9px 14px;
+ font-size:10.5px;font-weight:900;cursor:pointer;transition:.15s;
+}
+.cadastro-tab:hover{color:#dce5f2}.cadastro-tab.is-active{background:#27d7a0;color:#04241a;box-shadow:0 7px 16px rgba(39,215,160,.12)}
+.cadastro-pane-head{display:flex;justify-content:space-between;align-items:end;gap:14px;margin-bottom:11px}
+.cadastro-pane-head h4{margin:0;color:#eef4fb;font-size:13px;font-weight:900}
+.cadastro-pane-head p{margin:3px 0 0;color:#71839a;font-size:10px;line-height:1.4}
+.cadastro-counter{padding:5px 8px;border-radius:999px;background:#091524;border:1px solid #263b57;color:#8ea1b7;font-size:9px;font-weight:900;white-space:nowrap}
+.cadastro-add-row,.cadastro-supplier-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;align-items:end}
+.cadastro-supplier-form{grid-template-columns:1.3fr 1fr 1fr auto}
+.cadastro-field{display:block;min-width:0}
+.cadastro-field>span{display:block;margin-bottom:5px;color:#93a3ba;font-size:9.5px;font-weight:800}
+.cadastro-field input{
+ width:100%;box-sizing:border-box;background:#07111f;color:#dce5f2;border:1px solid #263a55;
+ border-radius:10px;padding:10px 11px;min-height:40px;font-size:12px;outline:none;
+}
+.cadastro-field input:focus{border-color:#27d7a0;box-shadow:0 0 0 3px rgba(39,215,160,.1)}
+.cadastro-btn{
+ min-height:40px;padding:10px 13px;border-radius:10px;border:1px solid #29415e;
+ font-size:10.5px;font-weight:900;cursor:pointer;white-space:nowrap;transition:.15s;
+}
+.cadastro-btn.primary{background:#0ea97a;color:#04241a;border-color:#11b487}.cadastro-btn:hover{filter:brightness(1.05);transform:translateY(-1px)}
+.cadastro-chip-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:11px}
+.cadastro-chip{
+ display:flex;align-items:center;gap:8px;padding:7px 8px 7px 10px;background:#091524;border:1px solid #1e3047;
+ border-radius:11px;color:#dce5f2;font-size:10.5px;
+}
+.cadastro-chip>span{min-width:0}.cadastro-chip strong{font-weight:850}
+.cadastro-chip div{display:flex;gap:2px}
+.cadastro-chip button,.cadastro-supplier-actions button{
+ border:0;background:transparent;color:#7f90a7;font-size:12px;cursor:pointer;padding:3px 4px;border-radius:6px;
+}
+.cadastro-chip button:hover,.cadastro-supplier-actions button:hover{background:#10213a;color:#dce5f2}
+.cadastro-chip button:last-child,.cadastro-supplier-actions button:last-child{color:#fb7185}
+.cadastro-search-row{margin-top:11px}
+.cadastro-search-row input{
+ width:100%;box-sizing:border-box;background:#07111f;color:#dce5f2;border:1px solid #263a55;border-radius:10px;
+ padding:10px 11px;font-size:11px;outline:none;
+}
+.cadastro-search-row input:focus{border-color:#4f9cff;box-shadow:0 0 0 3px rgba(79,156,255,.08)}
+.cadastro-supplier-list{display:flex;flex-direction:column;gap:7px;margin-top:10px}
+.cadastro-supplier-card{
+ display:flex;align-items:center;gap:10px;padding:10px 11px;border-radius:12px;
+ background:#091524;border:1px solid #1b2d46;transition:.15s;
+}
+.cadastro-supplier-card:hover{border-color:#2a4565;transform:translateY(-1px)}
+.cadastro-supplier-icon{
+ width:34px;height:34px;display:grid;place-items:center;flex:0 0 34px;border-radius:10px;
+ background:rgba(79,156,255,.08);border:1px solid rgba(79,156,255,.16);font-size:15px;
+}
+.cadastro-supplier-main{min-width:0;flex:1}.cadastro-supplier-main strong{display:block;color:#eef4fb;font-size:11.5px;font-weight:900}
+.cadastro-supplier-main span{display:block;margin-top:2px;color:#71839a;font-size:9.5px;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cadastro-supplier-actions{display:flex;gap:2px;flex:0 0 auto}
+.cadastro-empty{padding:14px;border:1px dashed #29405e;border-radius:11px;color:#71839a;font-size:10.5px;text-align:center}
+.cadastro-info-strip{
+ display:flex;align-items:flex-start;gap:8px;margin-top:12px;padding:10px 11px;border-radius:11px;
+ background:rgba(79,156,255,.045);border:1px solid rgba(79,156,255,.12);color:#7f90a7;font-size:9.8px;line-height:1.45;
+}
+.cadastro-info-strip span{font-size:14px;line-height:1}.cadastro-info-strip strong{color:#b8c5d8}
+@media(max-width:900px){.cadastro-supplier-form{grid-template-columns:1fr 1fr}.cadastro-supplier-form .cadastro-btn{grid-column:1/-1}.cadastro-supplier-form .cadastro-field:first-child{grid-column:1/-1}}
+@media(max-width:760px){.cadastro-tabs{width:100%}.cadastro-tab{flex:1}.cadastro-pane-head{display:block}.cadastro-counter{display:inline-flex;margin-top:7px}.cadastro-add-row,.cadastro-supplier-form{grid-template-columns:1fr}.cadastro-supplier-form .cadastro-btn{grid-column:auto}.cadastro-btn{width:100%;min-height:44px;font-size:11.5px}.cadastro-field input,.cadastro-search-row input{min-height:44px;font-size:16px}.cadastro-supplier-card{align-items:flex-start}.cadastro-supplier-main span{white-space:normal}}
+body.light-mode .cadastro-master-card{background:linear-gradient(150deg,#fff,#f8fafc)!important;border-color:#dbe4ee!important}
+body.light-mode .cadastro-tabs,body.light-mode .cadastro-chip,body.light-mode .cadastro-supplier-card,.light-mode .cadastro-counter{background:#f8fafc;border-color:#dbe4ee}
+body.light-mode .cadastro-field input,body.light-mode .cadastro-search-row input{background:#fff;color:#1e293b;border-color:#cbd5e1}
+body.light-mode .cadastro-pane-head h4,body.light-mode .cadastro-supplier-main strong{color:#1e293b}
