@@ -70,6 +70,19 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
       <span class="flow-badge">1️⃣ Boleto → 2️⃣ Fornecedor → 3️⃣ Marca</span>
     </div>
 
+    <section class="panel" id="resumoGastoVariavelFornecedores">
+      <div class="section-head">
+        <div><h2>💰 Gastos Variáveis da Biobel</h2><p class="sub">Calculado diretamente pelos boletos cadastrados. É a mesma base usada na Administração.</p></div>
+        <span class="flow-badge">🔗 Mesma base dos boletos</span>
+      </div>
+      <div class="grid">
+        <div class="kpi"><small>📦 Gastos variáveis</small><strong id="fornecedorTotalVariaveis">R$ 0,00</strong><span>total dos boletos</span></div>
+        <div class="kpi"><small>⏳ Pendentes</small><strong id="fornecedorTotalPendente">R$ 0,00</strong><span>ainda não pagos</span></div>
+        <div class="kpi"><small>✅ Pagos</small><strong id="fornecedorTotalPago">R$ 0,00</strong><span>marcados como pagos</span></div>
+        <div class="kpi"><small>🧾 Boletos</small><strong id="fornecedorQtdBoletos">0</strong><span>registros cadastrados</span></div>
+      </div>
+    </section>
+
 <div class="adv-card boleto-management-card" data-fornecedor-view="boletos">
 
 <div class="adv-card-title boleto-card-title">
@@ -224,12 +237,14 @@ function mostrarAbaFornecedor(aba){
     document.getElementById('tab'+x.charAt(0).toUpperCase()+x.slice(1)).classList.toggle('active',x===aba);
   });
   if(aba==='historico')renderHistoricoFornecedores();
+  atualizarResumoGastosVariaveisFornecedores();
   if(aba==='conferencia')renderConferenciaPagina();
 }
 function renderPaginaFornecedores(){
   if(typeof seedCadastrosAdm!=='function')return;
   const dados=seedCadastrosAdm();
   if(typeof renderBoletos==='function')renderBoletos();
+  atualizarResumoGastosVariaveisFornecedores();
   const busca=(document.getElementById('buscaFornecedorCadastro')?.value||'').trim().toLowerCase();
   const lista=dados.fornecedores.filter(f=>!busca||[f.nome,f.telefone,f.cnpj].some(v=>String(v||'').toLowerCase().includes(busca)));
   const cf=document.getElementById('cadastroContadorFornecedores');if(cf)cf.textContent=dados.fornecedores.length+(dados.fornecedores.length===1?' fornecedor':' fornecedores');
@@ -242,6 +257,21 @@ function renderPaginaFornecedores(){
   const lm=document.getElementById('listaMarcasCadastro');
   if(lm)lm.innerHTML=dados.marcas.length?dados.marcas.map((nome,i)=>'<article class="supplier-card"><div class="icon">🏷️</div><div class="main"><strong>'+esc(nome)+'</strong><span>Disponível no cadastro de boletos</span></div><div class="actions"><button type="button" onclick="editarMarcaCadastro('+i+');setTimeout(renderPaginaFornecedores,120)" aria-label="Editar '+esc(nome)+'">✏️</button><button type="button" onclick="removerMarcaCadastro('+i+');setTimeout(renderPaginaFornecedores,120)" aria-label="Excluir '+esc(nome)+'">🗑️</button></div></article>').join(''):'<div class="empty">Nenhuma marca cadastrada.</div>';
 }
+function atualizarResumoGastosVariaveisFornecedores(){
+  const boletos=typeof getBoletos==='function'?getBoletos():[];
+  const total=boletos.reduce((s,b)=>s+(Number(b.valor)||0),0);
+  const pendente=boletos.filter(b=>!b.pago).reduce((s,b)=>s+(Number(b.valor)||0),0);
+  const pago=boletos.filter(b=>!!b.pago).reduce((s,b)=>s+(Number(b.valor)||0),0);
+  const elTotal=document.getElementById('fornecedorTotalVariaveis');
+  const elPendente=document.getElementById('fornecedorTotalPendente');
+  const elPago=document.getElementById('fornecedorTotalPago');
+  const elQtd=document.getElementById('fornecedorQtdBoletos');
+  if(elTotal)elTotal.textContent=money(total);
+  if(elPendente)elPendente.textContent=money(pendente);
+  if(elPago)elPago.textContent=money(pago);
+  if(elQtd)elQtd.textContent=String(boletos.length);
+}
+
 function renderHistoricoFornecedores(){
   const boletos=typeof getBoletos==='function'?getBoletos():[];
   const busca=(document.getElementById('buscaHistoricoFornecedor')?.value||'').trim().toLowerCase();
