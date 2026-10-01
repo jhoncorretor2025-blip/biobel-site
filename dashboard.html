@@ -9,33 +9,15 @@
 <a href="#dashboardTab" style="position:absolute;left:-9999px;top:0;z-index:9999;background:#0ea97a;color:#04241a;padding:12px 18px;border-radius:0 0 10px 0;font-weight:700;text-decoration:none" onfocus="this.style.left='0'" onblur="this.style.left='-9999px'">Pular para o conteúdo</a>
 
 
-<div id="biobel-shell"></div><main id="dashboardTab" class="max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabDashboard">
+<div id="biobel-shell"></div>
+<!--
+  REGRA DE DESIGN — NÃO REINTRODUZIR:
+  Não adicionar novamente o painel “🔔 Precisa da sua atenção / Prioridades” nesta página.
+  Essa área foi removida por decisão de UX. Não recriar, duplicar ou inserir variações desse painel no dashboard.
+-->
+<main id="dashboardTab" class="max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabDashboard">
 
-  <section class="biobel-attention-panel no-print" aria-label="Precisa da sua atenção">
-    <div class="biobel-attention-intro">
-      <span class="biobel-section-kicker">Prioridades</span>
-      <h2>🔔 Precisa da sua atenção</h2>
-      <p>Um resumo rápido do que vale conferir agora, sem precisar procurar pelo sistema.</p>
-    </div>
-    <div id="attentionPlanilha" class="biobel-attention-item status-warn">
-      <span class="att-title">📡 Planilha</span>
-      <span id="attentionPlanilhaValor" class="att-value">Conectando...</span>
-      <span id="attentionPlanilhaSub" class="att-sub">Verificando a conexão com os dados.</span>
-      <div class="att-action"><button type="button" onclick="loadGoogleSheet()">🔄 Atualizar</button></div>
-    </div>
-    <div class="biobel-attention-item">
-      <span class="att-title">🚨 Alertas</span>
-      <span class="att-value">Ver pendências</span>
-      <span class="att-sub">Confira avisos e situações que precisam de acompanhamento.</span>
-      <div class="att-action"><a href="alertas.html">Abrir alertas →</a></div>
-    </div>
-    <div class="biobel-attention-item">
-      <span class="att-title">📊 Desempenho</span>
-      <span class="att-value">Ver análises</span>
-      <span class="att-sub">Compare vendas, fechamento e indicadores do período.</span>
-      <div class="att-action"><a href="analises.html">Abrir análises →</a></div>
-    </div>
-  </section>
+n>
 
   <div id="indicadorClimaTopo" class="no-print" style="display:none;justify-content:flex-end;margin-bottom:4px;"></div>
   <div class="no-print" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:6px;">
@@ -267,23 +249,4 @@
   </div>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js"></script><script src="biobel-app.js"></script><script src="inteligencia-operacional.js"></script>
-<script>
-(function(){
-  function atualizarAtencao(){
-    const badge=document.getElementById("connBadge"), card=document.getElementById("attentionPlanilha");
-    const valor=document.getElementById("attentionPlanilhaValor"), sub=document.getElementById("attentionPlanilhaSub");
-    if(!badge||!card||!valor||!sub)return;
-    const t=(badge.textContent||"").toLowerCase();
-    card.classList.remove("status-ok","status-warn","status-bad");
-    if(t.includes("conectado")){
-      card.classList.add("status-ok"); valor.textContent="Conectada"; sub.textContent="Os dados da planilha estão disponíveis.";
-    }else if(t.includes("erro")||t.includes("falha")||t.includes("offline")){
-      card.classList.add("status-bad"); valor.textContent="Precisa conferir"; sub.textContent="A conexão falhou. Tente atualizar os dados.";
-    }else{
-      card.classList.add("status-warn"); valor.textContent="Verificando..."; sub.textContent="Aguarde enquanto o sistema busca os dados.";
-    }
-  }
-  setInterval(atualizarAtencao,1000);
-  document.addEventListener("DOMContentLoaded",atualizarAtencao);
-})();
-</script></body></html>
+</body></html>
