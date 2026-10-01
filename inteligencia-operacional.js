@@ -7,7 +7,7 @@
 "use strict";
 var K="biobel_inteligencia_v10_13";
 function data(){return Array.isArray(window.daysData)?window.daysData:[]}
-function num(v){return Number(String(v==null?"":v).replace(/\./g,"").replace(",","."))||0}
+function num(v){if(typeof v==="number")return isNaN(v)?0:v;return Number(String(v==null?"":v).replace(/\./g,"").replace(",","."))||0}
 function money(v){try{return typeof window.money==="function"?window.money(num(v)):new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(num(v))}catch(e){return "R$ "+num(v).toFixed(2)}}
 function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(m){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]})}
 function toast(x){if(typeof window.mostrarToast==="function")window.mostrarToast(x)}

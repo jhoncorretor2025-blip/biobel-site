@@ -1,3 +1,8 @@
+## v10.58 — 01/10/2026
+- **Corrigido bug grave:** a Central Operacional (e o card "Central de Inteligência" do Dashboard) mostrava faturamentos astronômicos (ex.: R$ 77 quatrilhões) — as funções de conversão de número (`n()` em `central-operacional.js`, `num()` em `inteligencia-operacional.js`) foram feitas pra ler texto brasileiro ("1.923,08"), mas os valores da planilha já chegam como número puro; ao "converter" um número que já estava certo, o ponto decimal era removido, inflando cada valor em ~100x. Corrigido checando o tipo antes de converter.
+- Design da Central Operacional reformulado pra usar a mesma paleta de cores, cards e botões do resto do sistema.
+- Removidas duas versões antigas (v10.39, v10.48) que tinham ficado fixas no texto da própria página da Central, desatualizadas em relação à versão real do sistema.
+
 ## v10.57 — 01/10/2026
 - A área de comparação passa a ser carregada automaticamente ao abrir a subaba Comparar.
 - Meses históricos, como Setembro, podem ser preparados para comparação sem alterar a planilha ativa.

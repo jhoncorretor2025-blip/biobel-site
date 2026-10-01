@@ -1,6 +1,6 @@
 # CONTEXTO COMPLETO DO PROJETO BIOBEL (arquivo único para colar/anexar em uma IA)
 
-> Gerado automaticamente por `node tools/mapa.js` — NÃO edite à mão. Versão do sistema: v10.42.
+> Gerado automaticamente por `node tools/mapa.js` — NÃO edite à mão. Versão do sistema: v10.58.
 > Instrução para a IA: leia tudo abaixo antes de responder. Depois, o usuário vai enviar a(s) página(s) do painel (ex.: dashboard.html) e/ou os arquivos JS compartilhados (biobel-app.js, biobel-shell.js) e dizer o que quer mudar.
 > Responda em português simples, com emojis e negrito nas palavras-chave. Diga o que testou e o que não conseguiu testar.
 
