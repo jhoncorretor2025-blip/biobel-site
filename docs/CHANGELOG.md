@@ -1,3 +1,9 @@
+## v10.84 — 01/10/2026
+- Menu da Administração reorganizado para facilitar a navegação.
+- Criado atalho direto **📅 Gastos por semana**.
+- Criado atalho direto **📊 Mês a mês**.
+- Os dois atalhos usam âncoras próprias para abrir somente a seção correspondente, evitando que o usuário precise procurar no meio dos outros cards.
+
 ## v10.83 — 01/10/2026
 - Ativação automática do **Planejamento de Gastos por Semana** ao abrir a Administração.
 - Mantidas as faixas **1–7, 8–15, 16–23 e 24–fim do mês**, com fixos e boletos/parcelas separados.
