@@ -1,3 +1,10 @@
+## v10.77 — 01/10/2026
+- Nova aba **Análise por tipo** na área de Fornecedores.
+- Mostra gasto por tipo de produto, quantidade de boletos, quantidade de fornecedores e participação em relação ao maior gasto classificado.
+- Mostra quais tipos ainda não têm nenhuma compra registrada.
+- Adicionado **Geral — produtos misturados** para compras com vários tipos no mesmo boleto.
+- Boletos antigos sem tipo informado continuam separados como **Não informado**, sem classificação automática inventada.
+
 ## v10.76 — 01/10/2026
 - Adicionado o campo **Tipo de Produto** ao cadastro de Boletos de Fornecedores, posicionado ao lado do valor.
 - Incluídas as categorias usadas na planilha: cabelo / Creme e shapoo e etc, Cabelo/acessorios, shampoo, Creme, Coloração/Tinta, Perfume, Unha, maquiagem e shampoo e cond.
