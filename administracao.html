@@ -217,29 +217,30 @@
   </div>
   <div id="conteudoGrupo-fornecedores" style="display:none;">
 
-  <div class="adv-card">
-   <div class="adv-card-title">
-    <h3>📦 Boletos de Fornecedores</h3>
-    <span>gastos variáveis — cada compra registrada separadamente</span>
+  <div class="adv-card boleto-management-card">
+   <div class="adv-card-title boleto-card-title">
+    <div><h3>📦 Boletos de Fornecedores</h3><p class="boleto-card-subtitle">Controle de compras, parcelas, vencimentos e pagamentos.</p></div>
+    <span>gastos variáveis</span>
    </div>
-   <div style="display:flex;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;overflow:hidden;width:fit-content;margin-bottom:12px;">
-    <button type="button" id="btnFiltroBoletoTodos" onclick="filtrarBoletos('todos')" style="border:0;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer;background:#27d7a0;color:#04241a;">Todos</button>
-    <button type="button" id="btnFiltroBoletoPendentes" onclick="filtrarBoletos('pendentes')" style="border:0;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer;background:transparent;color:#93a3ba;">Pendentes</button>
+   <div class="boleto-filters" role="group" aria-label="Filtrar boletos">
+    <button type="button" id="btnFiltroBoletoTodos" onclick="filtrarBoletos('todos')" class="boleto-filter-btn is-active">Todos</button>
+    <button type="button" id="btnFiltroBoletoPendentes" onclick="filtrarBoletos('pendentes')" class="boleto-filter-btn">Pendentes</button>
     <button type="button" id="btnFiltroBoletoPagos" onclick="filtrarBoletos('pagos')" style="border:0;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer;background:transparent;color:#93a3ba;">Pagos</button>
    </div>
-   <input id="buscaBoletoInput" type="text" placeholder="🔎 Buscar por fornecedor, marca ou observação..." oninput="renderBoletos()" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;margin-bottom:12px;">
-   <div style="display:flex;gap:8px;margin-bottom:12px;">
-    <button onclick="exportarBoletosPDF()" class="no-print flex-1 bg-purple-600 hover:bg-purple-500 px-3 py-2 rounded-lg font-semibold text-xs">📑 Exportar PDF</button>
-    <button onclick="exportarBoletosCSV()" class="no-print flex-1 bg-emerald-600 hover:bg-emerald-500 px-3 py-2 rounded-lg font-semibold text-xs">📊 Exportar CSV (Excel)</button>
+   <input id="buscaBoletoInput" type="search" placeholder="🔎 Buscar por fornecedor, marca ou observação..." oninput="renderBoletos()" class="boleto-search-input">
+   <div class="boleto-export-actions">
+    <button onclick="exportarBoletosPDF()" class="no-print boleto-export-btn purple">📑 Exportar PDF</button>
+    <button onclick="exportarBoletosCSV()" class="no-print boleto-export-btn green">📊 Exportar Excel</button>
    </div>
+   <div id="boletoResumoCards" class="boleto-summary-grid" aria-live="polite"></div>
    <div id="listaBoletos" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;"></div>
-   <div id="formWrapperBoleto" style="border-top:1px solid #1e2c42;padding-top:14px;transition:background-color .2s;">
-    <div id="tituloFormBoleto" style="font-size:12px;font-weight:800;color:#93a3ba;margin-bottom:10px;">➕ Adicionar novo boleto</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:8px;">
-     <input id="novoBoletoFornecedor" type="text" placeholder="Fornecedor" list="listaFornecedoresConhecidos" onblur="aplicarPadraoParceladoFornecedor()" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+   <div id="formWrapperBoleto" class="boleto-form-wrapper">
+    <div id="tituloFormBoleto" class="boleto-form-title">➕ Adicionar novo boleto</div>
+    <div class="boleto-form-grid">
+     <input id="novoBoletoFornecedor" type="text" placeholder="Fornecedor" list="listaFornecedoresConhecidos" onblur="aplicarPadraoParceladoFornecedor()" class="boleto-input">
      <datalist id="listaFornecedoresConhecidos"></datalist>
      <div id="avisoPadraoFornecedor" style="display:none;grid-column:1/-1;font-size:11px;color:#a78bfa;"></div>
-     <select id="novoBoletoMarcaSelect" onchange="alternarCampoMarcaOutros()" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     <select id="novoBoletoMarcaSelect" onchange="alternarCampoMarcaOutros()" class="boleto-input">
       <option value="">Marca (escolha)</option>
       <option value="Truss">Truss</option>
       <option value="Porto Dez">Porto Dez</option>
@@ -248,10 +249,10 @@
       <option value="Natura">Natura</option>
       <option value="__outros__">Outros...</option>
      </select>
-     <input id="novoBoletoMarca" type="text" placeholder="Marca" style="display:none;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
-     <input id="novoBoletoQuantidade" type="text" placeholder="Quantidade" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
-     <input id="novoBoletoValidade" type="text" placeholder="Validade (ex: 12/2027)" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
-     <input id="novoBoletoValor" type="text" inputmode="decimal" placeholder="Valor R$" oninput="atualizarPreviewParcelasBoletoInline()" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     <input id="novoBoletoMarca" type="text" placeholder="Marca" class="boleto-input">
+     <input id="novoBoletoQuantidade" type="text" placeholder="Quantidade" class="boleto-input">
+     <input id="novoBoletoValidade" type="text" placeholder="Validade (ex: 12/2027)" class="boleto-input">
+     <input id="novoBoletoValor" type="text" inputmode="decimal" placeholder="Valor R$" oninput="atualizarPreviewParcelasBoletoInline()" class="boleto-input">
      <div>
       <label id="labelNovoBoletoVencimento" for="novoBoletoVencimento" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Data de vencimento</label>
       <input id="novoBoletoVencimento" type="date" onchange="atualizarPreviewParcelasBoletoInline()" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
@@ -271,6 +272,7 @@
        <button type="button" id="btnQuantasVezesBoleto1" onclick="selecionarQuantasVezesBoleto(1)" style="flex:1;border:none;background:#0ea97a;color:#04241a;font-weight:800;font-size:13px;cursor:pointer;">1x</button>
        <button type="button" id="btnQuantasVezesBoleto2" onclick="selecionarQuantasVezesBoleto(2)" style="flex:1;border:none;border-left:1px solid #1e2c42;background:transparent;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;">2x</button>
        <button type="button" id="btnQuantasVezesBoleto3" onclick="selecionarQuantasVezesBoleto(3)" style="flex:1;border:none;border-left:1px solid #1e2c42;background:transparent;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;">3x</button>
+       <button type="button" id="btnQuantasVezesBoleto4" onclick="selecionarQuantasVezesBoleto(4)" aria-pressed="false" style="flex:1;border:none;border-left:1px solid #1e2c42;background:transparent;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;">4x</button>
       </div>
      </div>
      <div>
@@ -279,17 +281,17 @@
      </div>
     </div>
 
-    <div id="parcelasExtrasBoletoContainer" style="display:none;background:rgba(99,102,241,.06);border:1px solid rgba(99,102,241,.3);border-radius:12px;padding:14px;margin-bottom:12px;">
-     <div id="valorDivididoBoletoTexto" style="font-size:12.5px;color:#a78bfa;font-weight:700;margin-bottom:10px;"></div>
-     <div id="datasExtrasBoletoContainer" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>
+    <div id="parcelasExtrasBoletoContainer" class="boleto-installments-panel" style="display:none;">
+     <div id="valorDivididoBoletoTexto" class="boleto-installments-summary"></div>
+     <div id="datasExtrasBoletoContainer" class="boleto-installment-dates"></div>
     </div>
     <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#dce5f2;cursor:pointer;margin-bottom:8px;">
      <input type="checkbox" id="novoBoletoRecorrente" style="width:15px;height:15px;accent-color:#27d7a0;">
      🔁 Esse fornecedor é recorrente (compro sempre, todo mês)
     </label>
     <textarea id="novoBoletoObs" rows="2" placeholder="Observações (opcional)" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;resize:vertical;margin-bottom:8px;"></textarea>
-    <label for="novoBoletoComprovante" style="font-size:11px;color:#93a3ba;display:block;margin-bottom:4px;">📎 Foto do comprovante/nota fiscal (opcional)</label>
-    <input id="novoBoletoComprovante" type="file" accept="image/png,image/jpeg" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:8px 12px;color:#93a3ba;font-size:12px;margin-bottom:10px;">
+    <label for="novoBoletoComprovante" style="font-size:11px;color:#93a3ba;display:block;margin-bottom:4px;">📎 Comprovante / boleto / nota fiscal (opcional)</label>
+    <input id="novoBoletoComprovante" type="file" accept="application/pdf,image/png,image/jpeg" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:8px 12px;color:#93a3ba;font-size:12px;margin-bottom:10px;">
     <div id="previewComprovanteBoleto" style="display:none;margin-bottom:10px;">
      <img id="imgPreviewComprovanteBoleto" style="max-width:120px;max-height:120px;border-radius:8px;border:1px solid #1e2c42;">
      <button type="button" onclick="removerComprovanteAnexado()" style="display:block;margin-top:4px;background:none;border:none;color:#fb7185;font-size:11px;cursor:pointer;">✕ Remover comprovante</button>
