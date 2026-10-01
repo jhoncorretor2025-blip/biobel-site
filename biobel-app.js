@@ -12053,21 +12053,31 @@ function removerPlanilhaSalva(index){
   renderPlanilhasSalvas();
  });
 }
-function seedPlanilhaSetembro2026(){
- // Mantém referências dos meses recentes e deixa Outubro 2026 como a planilha padrão atual.
+function seedPlanilhas2026(){
+ // Mantém os meses conhecidos e garante Outubro 2026 cadastrado como planilha padrão atual.
  const lista = getPlanilhasSalvas();
- const principal = { nome:'Planilha padrão — Outubro 2026', url:DEFAULT_GOOGLE_URL };
+ const outubro = { nome:'Outubro 2026', url:DEFAULT_GOOGLE_URL };
  const setembro = { nome:'Setembro 2026', url:'https://docs.google.com/spreadsheets/d/1o99UbEDpc0wgnjAfF0D0DQZcLdR53zBMW3Cieqoa1IQ/edit?usp=sharing' };
  let mudou = false;
- if(!lista.some(p=>p.url===principal.url)){ lista.unshift(principal); mudou = true; }
- if(!lista.some(p=>p.url===setembro.url)){ lista.push(setembro); mudou = true; }
- // Se já existia o registro antigo "Planilha principal", atualiza o nome sem duplicar.
- const antigo = lista.find(p=>p.url===DEFAULT_GOOGLE_URL && p.nome==='Planilha principal');
- if(antigo){ antigo.nome=principal.nome; mudou=true; }
+
+ const antigoPrincipal = lista.find(p=>p.url===DEFAULT_GOOGLE_URL);
+ if(antigoPrincipal && antigoPrincipal.nome!=='Outubro 2026'){
+   antigoPrincipal.nome='Outubro 2026';
+   mudou=true;
+ }
+ if(!lista.some(p=>p.url===outubro.url)){
+   lista.unshift(outubro);
+   mudou=true;
+ }
+ if(!lista.some(p=>p.url===setembro.url)){
+   lista.push(setembro);
+   mudou=true;
+ }
+
  if(mudou) salvarListaPlanilhas(lista);
 }
 function renderPlanilhasSalvas(){
- seedPlanilhaSetembro2026();
+ seedPlanilhas2026();
  const select = document.getElementById('planilhaSalvaSelect');
  const listaEl = document.getElementById('listaPlanilhasSalvas');
  const selectInfo = document.getElementById('seletorPlanilhaInfoGeral');
