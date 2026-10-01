@@ -1,3 +1,9 @@
+## v10.66 — 01/10/2026
+- Área de Fornecedores separada em abas: **Boletos, Cadastros, Conferência e Histórico**.
+- Criada conferência automática de boletos para apontar vencidos, sem marca, sem fornecedor, sem valor e possíveis duplicidades.
+- Cadastros de marcas e fornecedores agora ficam estruturalmente separados do formulário de boletos.
+- Registros de funcionários deixam de ser usados como fonte automática de fornecedores.
+
 ## v10.65 — 01/10/2026
 - Nova aba **🏷️ Cadastros — Marcas e Fornecedores** na Administração.
 - Marcas já conhecidas, marcas usadas em boletos e fornecedores já existentes são aproveitados automaticamente no cadastro.
