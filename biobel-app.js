@@ -3604,6 +3604,7 @@ function mostrarConteudoAdm(){
  renderHistoricoFechamentosMensais();
  renderRelatorioAnual();
  renderResumoAtencaoAdm();
+ renderPlanejamentoFinanceiroMensal();
 
  // Se a pessoa clicou em "Registrar desligamento" na aba Equipe antes de fazer login, agora que
  // ela já está logada, o assistente guiado abre sozinho, sem precisar procurar nada depois.
