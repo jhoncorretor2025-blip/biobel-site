@@ -1,3 +1,9 @@
+## v10.64 — 01/10/2026
+- Criada página exclusiva **💾 Backup** em `backup.html`, acessível diretamente sem entrar em Configuração.
+- Nova página reúne download de backup, restauração, backup automático e conferência dos dados protegidos.
+- Adicionado acesso direto ao Backup no cabeçalho do sistema.
+- UI, registro do Service Worker e cache PWA alinhados em v10.64.
+
 ## v10.63 — 01/10/2026
 - Cadastro de boletos passa a explicar claramente o significado de **Quantidade do produto** e **Validade do produto**.
 - Orientação fixa adicionada ao formulário para evitar dúvidas no preenchimento.
