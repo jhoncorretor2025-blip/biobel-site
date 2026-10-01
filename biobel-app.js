@@ -12110,6 +12110,85 @@ function removerPlanilhaPorUrl(url){
  const index=lista.findIndex(p=>p.url===url);
  if(index>=0) removerPlanilhaSalva(index);
 }
+
+function obterChaveMesPlanilha(nome){
+ const mapa={janeiro:'01',fevereiro:'02',março:'03',abril:'04',maio:'05',junho:'06',julho:'07',agosto:'08',setembro:'09',outubro:'10',novembro:'11',dezembro:'12'};
+ const txt=String(nome||'').toLowerCase();
+ for(const mes of Object.keys(mapa)) if(txt.includes(mes)) return mapa[mes];
+ const txtSemAcento=txt.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'');
+ const mapaSemAcento={janeiro:'01',fevereiro:'02','marco':'03',abril:'04',maio:'05',junho:'06',julho:'07',agosto:'08',setembro:'09',outubro:'10',novembro:'11',dezembro:'12'};
+ for(const mes of Object.keys(mapaSemAcento)) if(txtSemAcento.includes(mes)) return mapaSemAcento[mes];
+ return '';
+}
+async function lerDadosPlanilhaSemAtivar(url){
+ const id=extractSpreadsheetId(url);
+ if(!id) throw new Error('Link da planilha inválido.');
+ const proxyUrl=getAppsScriptProxyUrl();
+ let found=0;
+ const novosDias=[];
+ if(proxyUrl){
+  const chamadaUrl=proxyUrl+(proxyUrl.includes('?')?'&':'?')+'id='+encodeURIComponent(id)+'&_t='+Date.now();
+  const resp=await fetch(chamadaUrl,{cache:'no-store'});
+  if(!resp.ok) throw new Error('HTTP '+resp.status);
+  const data=await resp.json();
+  if(data.error) throw new Error(data.error);
+  for(const sheetName in (data.sheets||{})){
+   const nomeNormalizado=normalizarNomeAba(sheetName);
+   if(!nomeNormalizado) continue;
+   novosDias.push(processarLinhasDoDia(nomeNormalizado,data.sheets[sheetName]));
+   found++;
+  }
+ }else{
+  const exportUrl='https://docs.google.com/spreadsheets/d/'+id+'/export?format=xlsx&_biobel_cache_bust='+Date.now();
+  const response=await fetch(exportUrl,{cache:'no-store'});
+  if(!response.ok) throw new Error('HTTP '+response.status);
+  const buf=await response.arrayBuffer();
+  const wb=XLSX.read(buf,{type:'array'});
+  for(const sheetName of wb.SheetNames){
+   const nomeNormalizado=normalizarNomeAba(sheetName);
+   if(!nomeNormalizado) continue;
+   const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{header:1,defval:null,raw:true});
+   novosDias.push(processarLinhasDoDia(nomeNormalizado,rows));
+   found++;
+  }
+ }
+ if(found===0||novosDias.length===0) throw new Error('Nenhuma aba de dia válida foi encontrada na planilha.');
+ return novosDias;
+}
+async function prepararComparacaoPlanilha(url,nome){
+ const mesKey=obterChaveMesPlanilha(nome);
+ if(!mesKey){ mostrarToast('⚠️ Não consegui identificar o mês de "'+nome+'".'); return; }
+ const mesAtualKey=String(daysData[0]?.dia||'').split('.')[1]||String(obterAgoraBrasilia().getMonth()+1).padStart(2,'0');
+ if(mesKey===mesAtualKey){
+  mostrarToast('ℹ️ Esta é a planilha do mês atual. Para comparar, escolha um mês anterior.');
+  return;
+ }
+ const itemEl=[...document.querySelectorAll('.biobel-planilha-item')].find(el=>el.dataset.planilhaUrl===url);
+ const btn=itemEl?.querySelector('.compare');
+ if(btn){btn.disabled=true;btn.textContent='⏳ Preparando...';btn.style.opacity='.7';}
+ mostrarToast('🔄 Carregando '+nome+' para comparação, sem trocar a planilha ativa...');
+ try{
+  const dados=await lerDadosPlanilhaSemAtivar(url);
+  let arquivo={};
+  try{arquivo=JSON.parse(localStorage.getItem('biobel_arquivo_meses')||'{}');}catch(e){}
+  arquivo[mesKey]=dados;
+  localStorage.setItem('biobel_arquivo_meses',JSON.stringify(arquivo));
+  let historico={};
+  try{historico=JSON.parse(localStorage.getItem('biobel_historico_meses')||'{}');}catch(e){historico={};}
+  historico[mesKey]=dados.reduce((s,d)=>s+(Number(d.sales)||0),0);
+  localStorage.setItem('biobel_historico_meses',JSON.stringify(historico));
+  montarSeletorMeses();
+  renderListaMesesComparar();
+  mostrarToast('✅ '+nome+' preparado para comparação. A planilha ativa continua a mesma.');
+  try{renderComparacaoMesmoPeriodo();}catch(e){}
+ }catch(err){
+  console.error('Erro ao preparar comparação de '+nome+':',err);
+  mostrarToast('🔴 Não consegui carregar '+nome+' para comparação. Verifique se a planilha permite leitura.');
+ }finally{
+  if(btn){btn.disabled=false;btn.textContent='↔ Comparar';btn.style.opacity='';}
+ }
+}
+
 function renderPlanilhasSalvas(){
  seedPlanilhas2026();
  const select = document.getElementById('planilhaSalvaSelect');
@@ -12119,9 +12198,9 @@ function renderPlanilhasSalvas(){
  const lista = getPlanilhasSalvas();
  const vistos=new Set();
  const listaUnica=lista.filter(p=>{
-   const u=String(p?.url||'').trim();
-   if(!u||vistos.has(u)) return false;
-   vistos.add(u); return true;
+  const u=String(p?.url||'').trim();
+  if(!u||vistos.has(u)) return false;
+  vistos.add(u); return true;
  });
  const urlAtual=listaUnica.some(p=>p.url===atualRaw)?atualRaw:DEFAULT_GOOGLE_URL;
  const nomeAtual=listaUnica.find(p=>p.url===urlAtual)?.nome || 'Outubro 2026';
@@ -12144,15 +12223,16 @@ function renderPlanilhasSalvas(){
  }
  listaEl.innerHTML=listaUnica.map(p=>{
   const ativo=p.url===urlAtual;
-  return '<article class="biobel-planilha-item '+(ativo?'active':'')+'">'+
+  return '<article class="biobel-planilha-item '+(ativo?'active':'')+'" data-planilha-url="'+escPlanilhaHtml(p.url)+'">'+
    '<div class="biobel-planilha-item-top">'+
     '<div class="biobel-planilha-item-icon">'+(ativo?'✅':'📊')+'</div>'+
-    '<div class="biobel-planilha-item-name"><strong>'+escPlanilhaHtml(p.nome)+'</strong><small>Google Sheets • '+(ativo?'alimentando o painel agora':'disponível para troca')+'</small></div>'+
-    '<span class="biobel-planilha-item-badge">'+(ativo?'EM USO':'DISPONÍVEL')+'</span>'+
+    '<div class="biobel-planilha-item-name"><strong>'+escPlanilhaHtml(p.nome)+'</strong><small>Google Sheets • '+(ativo?'alimentando o painel agora':'histórico para consulta e comparação')+'</small></div>'+
+    '<span class="biobel-planilha-item-badge">'+(ativo?'EM USO':'HISTÓRICO')+'</span>'+
    '</div>'+
-   '<div class="biobel-planilha-item-desc">'+(ativo?'Esta é a planilha que o dashboard está lendo neste momento.':'Use este período para carregar os dados deste mês sem alterar os demais.')+'</div>'+
+   '<div class="biobel-planilha-item-desc">'+(ativo?'Esta é a planilha que o dashboard está lendo neste momento.':'Este mês pode ser comparado com o atual sem trocar a planilha que está alimentando o dashboard.')+'</div>'+
    '<div class="biobel-planilha-item-actions">'+
     '<button class="use" onclick=\'selecionarPlanilhaPorUrl('+JSON.stringify(p.url)+')\'>'+(ativo?'↻ Atualizar dados':'▶ Usar esta planilha')+'</button>'+
+    (!ativo?'<button class="compare" onclick=\'prepararComparacaoPlanilha('+JSON.stringify(p.url)+','+JSON.stringify(p.nome)+')\' title="Carrega este mês em segundo plano para comparação, sem trocar a planilha ativa">↔ Comparar</button>':'')+
     '<button onclick=\'abrirPlanilhaGoogle('+JSON.stringify(p.url)+')\' title="Abrir no Google Sheets">↗ Abrir</button>'+
     '<button onclick=\'removerPlanilhaPorUrl('+JSON.stringify(p.url)+')\' title="Remover desta lista">🗑</button>'+
    '</div>'+
@@ -13492,5 +13572,5 @@ let promptDeInstalacaoGuardado=null;
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();promptDeInstalacaoGuardado=e;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='inline-block';});
 function instalarAppBiobel(){if(!promptDeInstalacaoGuardado)return;promptDeInstalacaoGuardado.prompt();promptDeInstalacaoGuardado.userChoice.then(function(){promptDeInstalacaoGuardado=null;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';});}
 window.addEventListener('appinstalled',function(){const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';try{mostrarToast('✅ Biobel instalado!');}catch(e){}});
-if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=10.55',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
+if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=10.56',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
 window.addEventListener('load',initPaginaAtiva,{once:true});
