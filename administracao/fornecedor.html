@@ -61,6 +61,22 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
 .biobel-card-minimized-note{display:none;color:#64748b;font-size:10px;font-weight:700;margin-left:8px}
 .biobel-collapsible-card.is-collapsed .biobel-card-minimized-note{display:inline}
 @media(max-width:520px){.card-collapse-btn{width:34px;height:34px}.biobel-card-header{gap:7px}}
+/* v10.91 — inteligência de fornecedores */
+.supplier-smart-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.supplier-smart-controls .search{flex:1;min-width:240px;margin:8px 0}
+.supplier-filter-chips{display:flex;gap:6px;flex-wrap:wrap}
+.supplier-chip{border:1px solid #263a53;background:#0c1a2d;color:#93a3ba;border-radius:999px;padding:8px 10px;font-size:10.5px;font-weight:800;cursor:pointer}
+.supplier-chip:hover,.supplier-chip.is-active{border-color:rgba(14,169,122,.5);background:rgba(14,169,122,.1);color:#4ade80}
+.supplier-alerts{margin:0 0 12px}.supplier-alert-title{font-size:11px;font-weight:900;color:#fbbf24;margin-bottom:6px}.supplier-alert-item,.supplier-alert-ok{padding:8px 10px;border-radius:9px;margin-bottom:5px;font-size:11px}.supplier-alert-item{background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.2);color:#fcd34d}.supplier-alert-ok{background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.18);color:#86efac}
+.supplier-summary-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.supplier-summary-card{background:#081424;border:1px solid #1c2c42;border-radius:14px;padding:13px}
+.supplier-summary-head{display:flex;align-items:center;gap:9px}.supplier-summary-head .main{flex:1;min-width:0}.supplier-summary-head .main strong{font-size:13px}.supplier-summary-head .main span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.supplier-summary-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:12px 0}.supplier-summary-kpis>div{background:#0b1728;border:1px solid #1c2c42;border-radius:9px;padding:8px}.supplier-summary-kpis small{display:block;color:#93a3ba;font-size:9px}.supplier-summary-kpis strong{display:block;font-size:12px;margin-top:3px}
+.supplier-progress{height:7px;background:#07111f;border-radius:999px;overflow:hidden}.supplier-progress span{display:block;height:100%;background:linear-gradient(90deg,#0ea97a,#27d7a0);border-radius:999px}
+.supplier-summary-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:9px;color:#93a3ba;font-size:10px}.supplier-summary-foot .btn{padding:7px 9px;font-size:10px}.supplier-contact{margin-top:8px;padding-top:8px;border-top:1px solid #1c2c42;color:#93a3ba;font-size:10px}
+.supplier-history-list{display:flex;flex-direction:column;gap:7px}.supplier-history-item{display:flex;justify-content:space-between;gap:12px;padding:10px 12px;background:#081424;border:1px solid #1c2c42;border-radius:10px}.supplier-history-item>div:last-child{text-align:right}.supplier-history-item strong{display:block;font-size:11.5px}.supplier-history-item span{display:block;color:#93a3ba;font-size:10px;margin-top:3px}
+@media(max-width:800px){.supplier-summary-cards{grid-template-columns:1fr}.supplier-summary-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.supplier-smart-controls{display:block}.supplier-filter-chips{overflow:auto;padding-bottom:3px;flex-wrap:nowrap}.supplier-chip{white-space:nowrap}.supplier-summary-kpis{grid-template-columns:1fr 1fr}.supplier-history-item{flex-direction:column}.supplier-history-item>div:last-child{text-align:left}}
 </style>
 </head>
 <body data-biobel-page="fornecedores" data-biobel-root="../">
@@ -89,6 +105,7 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
     <button id="tabHistorico" onclick="mostrarAbaFornecedor('historico')">🧾 Compras e boletos</button>
     <button id="tabConferencia" onclick="mostrarAbaFornecedor('conferencia')">🔎 Conferência</button>
     <button id="tabAnalise" onclick="mostrarAbaFornecedor('analise')">📊 Análise por tipo</button>
+    <button id="tabResumoFornecedor" onclick="mostrarAbaFornecedor('resumoFornecedor')">📈 Visão do fornecedor</button>
   </nav>
 
   <section id="abaCadastro">
@@ -259,6 +276,27 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
     <div class="note">💡 Editar/excluir fornecedor ou marca mexe somente no cadastro. Boletos antigos continuam registrados e não são apagados.</div>
   </section>
 
+  <section id="abaResumoFornecedor" class="hidden">
+    <div class="panel supplier-smart-panel">
+      <div class="section-head">
+        <div><h2>📈 Visão inteligente dos fornecedores</h2><p class="sub">Encontre rapidamente quem vende para a Biobel, quanto já foi comprado, o que está pendente e quais fornecedores merecem atenção.</p></div>
+        <span class="flow-badge">⚡ Atualizado pelos boletos</span>
+      </div>
+      <div class="supplier-alerts" id="alertasFornecedores"></div>
+      <div class="supplier-smart-controls">
+        <input id="buscaInteligenteFornecedor" class="search" type="search" placeholder="🔎 Buscar por fornecedor, marca, telefone ou CNPJ..." oninput="renderVisaoFornecedores()">
+        <div class="supplier-filter-chips" role="group" aria-label="Filtros de fornecedores">
+          <button type="button" class="supplier-chip is-active" data-filter="todos" onclick="selecionarFiltroFornecedor('todos')">Todos</button>
+          <button type="button" class="supplier-chip" data-filter="recorrentes" onclick="selecionarFiltroFornecedor('recorrentes')">🔁 Recorrentes</button>
+          <button type="button" class="supplier-chip" data-filter="pendentes" onclick="selecionarFiltroFornecedor('pendentes')">⏳ Com pendências</button>
+          <button type="button" class="supplier-chip" data-filter="maiores" onclick="selecionarFiltroFornecedor('maiores')">💰 Maiores gastos</button>
+        </div>
+      </div>
+      <div id="resumoFornecedoresCards" class="supplier-summary-cards"></div>
+    </div>
+    <div class="panel" id="historicoDetalhadoFornecedor" style="display:none;"></div>
+  </section>
+
   <section id="abaHistorico" class="hidden">
     <div class="panel">
       <h2>🧾 Compras e boletos por fornecedor</h2>
@@ -304,12 +342,15 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="../biobel-shell.js"></script><script src="../biobel-app.js"></script>
 <script>
 function entrarFornecedores(){ location.href='../administracao.html'; }
+let filtroFornecedorAtual='todos';
+
 function mostrarAbaFornecedor(aba){
-  ['cadastro','historico','conferencia','analise'].forEach(x=>{
+  ['cadastro','historico','conferencia','analise','resumoFornecedor'].forEach(x=>{
     document.getElementById('aba'+x.charAt(0).toUpperCase()+x.slice(1)).classList.toggle('hidden',x!==aba);
     document.getElementById('tab'+x.charAt(0).toUpperCase()+x.slice(1)).classList.toggle('active',x===aba);
   });
   if(aba==='historico')renderHistoricoFornecedores();
+  if(aba==='resumoFornecedor')renderVisaoFornecedores();
   atualizarResumoGastosVariaveisFornecedores();
   if(aba==='conferencia')renderConferenciaPagina();
   if(aba==='analise')renderAnaliseTiposProdutos();
@@ -362,6 +403,82 @@ function atualizarResumoGastosVariaveisFornecedores(){
       wrap.style.display='none';
     }
   }
+}
+
+function selecionarFiltroFornecedor(filtro){
+  filtroFornecedorAtual=filtro;
+  document.querySelectorAll('.supplier-chip').forEach(btn=>btn.classList.toggle('is-active',btn.dataset.filter===filtro));
+  renderVisaoFornecedores();
+}
+
+function abrirDetalhesFornecedor(nome){
+  const boletos=typeof getBoletos==='function'?getBoletos():[];
+  const encontrados=boletos.filter(b=>String(b.fornecedor||'').trim().toLowerCase()===String(nome||'').trim().toLowerCase())
+    .sort((a,b)=>String(b.vencimento||'').localeCompare(String(a.vencimento||'')));
+  const box=document.getElementById('historicoDetalhadoFornecedor');
+  if(!box)return;
+  const total=encontrados.reduce((s,b)=>s+(Number(b.valor)||0),0);
+  const pago=encontrados.filter(b=>b.pago).reduce((s,b)=>s+(Number(b.valor)||0),0);
+  const pendente=total-pago;
+  box.style.display='block';
+  box.innerHTML='<div class="section-head"><div><h2>🧾 Histórico completo — '+esc(nome)+'</h2><p class="sub">'+encontrados.length+' registro(s) · '+money(total)+' em compras · '+money(pendente)+' pendente(s)</p></div><button type="button" class="btn" onclick="this.closest(\'#historicoDetalhadoFornecedor\').style.display=\'none\'">✕ Fechar</button></div>'+
+    (encontrados.length?'<div class="supplier-history-list">'+encontrados.map(b=>{
+      const status=b.pago?'<span class="badge ok">Pago</span>':'<span class="badge warn">Pendente</span>';
+      return '<article class="supplier-history-item"><div><strong>'+esc(b.marca||b.tipoProduto||'Compra')+'</strong><span>'+esc(b.vencimento||'Sem vencimento')+' · '+esc(b.categoria||'Produto')+'</span></div><div><strong>'+money(Number(b.valor)||0)+'</strong><span>'+status+(b.observacoes?' · '+esc(b.observacoes):'')+'</span></div></article>';
+    }).join('')+'</div>':'<div class="empty">Nenhuma compra encontrada para este fornecedor.</div>');
+  box.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function renderVisaoFornecedores(){
+  const boletos=typeof getBoletos==='function'?getBoletos():[];
+  const dados=typeof seedCadastrosAdm==='function'?seedCadastrosAdm():{fornecedores:[]};
+  const cadastroMap={};
+  (dados.fornecedores||[]).forEach(f=>cadastroMap[String(f.nome||'').trim().toLowerCase()]=f);
+  const grupos={};
+  boletos.forEach(b=>{
+    const nome=String(b.fornecedor||'').trim(); if(!nome)return;
+    const k=nome.toLowerCase();
+    if(!grupos[k])grupos[k]={nome,total:0,pago:0,pendente:0,qtd:0,marcas:new Set(),recorrente:false,ultimo:'',vencidos:0};
+    const g=grupos[k], valor=Number(b.valor)||0;
+    g.qtd++; g.total+=valor; if(b.pago)g.pago+=valor; else g.pendente+=valor;
+    if(b.marca)g.marcas.add(String(b.marca));
+    if(b.recorrente)g.recorrente=true;
+    const data=String(b.vencimento||''); if(data>g.ultimo)g.ultimo=data;
+    if(!b.pago&&data&&new Date(data+'T00:00:00')<new Date(new Date().toDateString()+'T00:00:00'))g.vencidos++;
+  });
+  const arr=Object.values(grupos);
+  const q=(document.getElementById('buscaInteligenteFornecedor')?.value||'').trim().toLowerCase();
+  const maxGasto=arr.length?Math.max(...arr.map(g=>g.total)):0;
+  let filtrados=arr.filter(g=>{
+    const cad=cadastroMap[g.nome.toLowerCase()]||{};
+    const texto=[g.nome,cad.telefone,cad.cnpj,[...g.marcas].join(' ')].join(' ').toLowerCase();
+    if(q&&!texto.includes(q))return false;
+    if(filtroFornecedorAtual==='recorrentes'&&!g.recorrente)return false;
+    if(filtroFornecedorAtual==='pendentes'&&g.pendente<=0)return false;
+    if(filtroFornecedorAtual==='maiores'&&g.total<maxGasto*0.5)return false;
+    return true;
+  }).sort((a,b)=>b.total-a.total);
+  const alertas=[];
+  arr.filter(g=>g.vencidos>0).forEach(g=>alertas.push('⏰ '+g.nome+' tem '+g.vencidos+' boleto(s) vencido(s).'));
+  arr.filter(g=>g.recorrente&&g.ultimo).forEach(g=>{
+    const d=new Date(g.ultimo+'T00:00:00'), dias=Math.floor((Date.now()-d.getTime())/86400000);
+    if(dias>45)alertas.push('🔁 '+g.nome+' é recorrente e está há '+dias+' dias sem novo registro.');
+  });
+  const alertBox=document.getElementById('alertasFornecedores');
+  if(alertBox)alertBox.innerHTML=alertas.length?'<div class="supplier-alert-title">🚨 Atenção</div>'+alertas.slice(0,6).map(a=>'<div class="supplier-alert-item">'+esc(a)+'</div>').join(''):'<div class="supplier-alert-ok">✅ Nenhum alerta de fornecedor no momento.</div>';
+  const cards=document.getElementById('resumoFornecedoresCards');
+  if(!cards)return;
+  cards.innerHTML=filtrados.length?filtrados.map(g=>{
+    const cad=cadastroMap[g.nome.toLowerCase()]||{};
+    const pct=g.total>0?Math.round((g.pago/g.total)*100):0;
+    const status=g.vencidos?'bad':(g.pendente?'warn':'ok');
+    return '<article class="supplier-summary-card">'+
+      '<div class="supplier-summary-head"><div class="icon">🤝</div><div class="main"><strong>'+esc(g.nome)+'</strong><span>'+g.qtd+' compra(s) · '+esc([...g.marcas].join(', ')||'marca não informada')+'</span></div><span class="badge '+status+'">'+(g.vencidos?g.vencidos+' vencido(s)':(g.pendente? 'pendente':'em dia'))+'</span></div>'+
+      '<div class="supplier-summary-kpis"><div><small>Total comprado</small><strong>'+money(g.total)+'</strong></div><div><small>Pago</small><strong>'+money(g.pago)+'</strong></div><div><small>Pendente</small><strong>'+money(g.pendente)+'</strong></div><div><small>Último registro</small><strong>'+esc(g.ultimo||'—')+'</strong></div></div>'+
+      '<div class="supplier-progress"><span style="width:'+pct+'%"></span></div><div class="supplier-summary-foot"><span>💳 '+pct+'% pago'+(g.recorrente?' · 🔁 recorrente':'')+'</span><button type="button" class="btn" onclick="abrirDetalhesFornecedor('+JSON.stringify(g.nome)+')">🧾 Ver histórico</button></div>'+
+      (cad.telefone||cad.cnpj?'<div class="supplier-contact">📞 '+esc(cad.telefone||'Não informado')+(cad.cnpj?' · 🏢 '+esc(cad.cnpj):'')+'</div>':'<div class="supplier-contact">⚠️ Cadastro sem telefone/CNPJ</div>')+
+    '</article>';
+  }).join(''):'<div class="empty">Nenhum fornecedor encontrado com esses filtros.</div>';
 }
 
 function renderHistoricoFornecedores(){
@@ -490,6 +607,7 @@ window.addEventListener('DOMContentLoaded',()=>{
     document.getElementById('fornecedorApp').classList.remove('hidden');
     renderPaginaFornecedores();
     renderAnaliseTiposProdutos();
+    renderVisaoFornecedores();
   }
 });
 </script>
