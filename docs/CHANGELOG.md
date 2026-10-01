@@ -1,3 +1,12 @@
+## v10.59 — 01/10/2026
+- Central Operacional reorganizada em três níveis: Agora, Gestão e Administração.
+- Novo bloco "Precisa da sua atenção" para pendências operacionais.
+- Layout desktop com grid de 12 colunas e adaptação preservada para mobile.
+- Formulários da Central com labels visíveis, foco acessível e campos mais claros.
+- Botões de ações e estados visuais mais consistentes.
+- Dados locais da Central migrados sem perder registros anteriores.
+- UI, registro do Service Worker e cache PWA alinhados na mesma versão.
+
 ## v10.58 — 01/10/2026
 - **Corrigido bug grave:** a Central Operacional (e o card "Central de Inteligência" do Dashboard) mostrava faturamentos astronômicos (ex.: R$ 77 quatrilhões) — as funções de conversão de número (`n()` em `central-operacional.js`, `num()` em `inteligencia-operacional.js`) foram feitas pra ler texto brasileiro ("1.923,08"), mas os valores da planilha já chegam como número puro; ao "converter" um número que já estava certo, o ponto decimal era removido, inflando cada valor em ~100x. Corrigido checando o tipo antes de converter.
 - Design da Central Operacional reformulado pra usar a mesma paleta de cores, cards e botões do resto do sistema.
