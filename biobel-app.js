@@ -6538,7 +6538,48 @@ function getFaturamentoPorMesFinanceiro(ano,mes){
   if(diaMes!==mes)return s;
   return s+(Number(d.sales)||0);
  },0);
+}function obterDataVencimentoGastoFixoFinanceiro(g,ano,mes){
+ if(!g)return null;
+ if(g.diaUtil){return calcularEnesimoDiaUtil(ano,mes-1,Number(g.diaUtil));}
+ if(g.dia){
+  const ultimo=new Date(ano,mes,0).getDate();
+  return new Date(ano,mes-1,Math.min(Number(g.dia),ultimo));
+ }
+ return null;
 }
+function obterFaixasSemanaFinanceira(ano,mes){
+ const ultimoDia=new Date(ano,mes,0).getDate();
+ return [
+  {inicio:1,fim:Math.min(7,ultimoDia),nome:'1ª semana'},
+  {inicio:8,fim:Math.min(15,ultimoDia),nome:'2ª semana'},
+  {inicio:16,fim:Math.min(23,ultimoDia),nome:'3ª semana'},
+  {inicio:24,fim:ultimoDia,nome:'4ª semana'}
+ ].filter(x=>x.inicio<=x.fim);
+}
+function getResumoGastosSemanaisFinanceiro(ano,mes){
+ const faixas=obterFaixasSemanaFinanceira(ano,mes);
+ const semanas=faixas.map(f=>({...f,totalFixos:0,totalVariaveis:0,itensFixos:[],itensVariaveis:[],total:0}));
+ const semVencimento={fixos:[],variaveis:[],total:0};
+ getGastosFixos().forEach(g=>{
+  const valor=Number(g.valor);
+  if(!(valor>0))return;
+  const data=obterDataVencimentoGastoFixoFinanceiro(g,ano,mes);
+  if(!data){semVencimento.fixos.push({nome:g.nome,valor});semVencimento.total+=valor;return;}
+  const faixa=semanas.find(s=>data.getDate()>=s.inicio&&data.getDate()<=s.fim);
+  if(faixa){faixa.totalFixos+=valor;faixa.itensFixos.push({nome:g.nome,valor,dia:data.getDate(),diaUtil:g.diaUtil||null});}
+ });
+ getBoletosDoMesFinanceiro(ano,mes).forEach(b=>{
+  const valor=Number(b.valor)||0;
+  if(!(valor>0))return;
+  const data=b.vencimento?new Date(b.vencimento+'T00:00:00'):null;
+  if(!data||isNaN(data.getTime())){semVencimento.variaveis.push({nome:b.fornecedor||'Fornecedor',valor});semVencimento.total+=valor;return;}
+  const faixa=semanas.find(s=>data.getDate()>=s.inicio&&data.getDate()<=s.fim);
+  if(faixa){faixa.totalVariaveis+=valor;faixa.itensVariaveis.push({nome:b.fornecedor||'Fornecedor',marca:b.marca||'',valor,dia:data.getDate(),tipo:b.tipoProduto||''});}
+ });
+ semanas.forEach(s=>{s.total=s.totalFixos+s.totalVariaveis;s.itensFixos.sort((a,b)=>a.dia-b.dia);s.itensVariaveis.sort((a,b)=>a.dia-b.dia);});
+ return {ano,mes,semanas,semVencimento,totalMes:semanas.reduce((s,x)=>s+x.total,0)+semVencimento.total,totalFixos:semanas.reduce((s,x)=>s+x.totalFixos,0)+semVencimento.fixos.reduce((s,x)=>s+x.valor,0),totalVariaveis:semanas.reduce((s,x)=>s+x.totalVariaveis,0)+semVencimento.variaveis.reduce((s,x)=>s+x.valor,0)};
+}
+
 function renderPlanejamentoFinanceiroMensal(){
  const el=document.getElementById('tabelaFinanceiroMensal');
  if(!el)return;
