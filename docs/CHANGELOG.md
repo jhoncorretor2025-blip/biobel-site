@@ -1,3 +1,8 @@
+## v10.75 — 01/10/2026
+- Backup completo e automático passam a verificar explicitamente Gastos Fixos (biobel_adm_gastos_fixos).
+- A tela de Backup agora informa claramente que os gastos fixos fazem parte do backup.
+- Conferência de dados críticos foi ampliada de 3 para 4 itens.
+
 ## v10.74 — 01/10/2026
 - Criado **Planejamento Financeiro — Mês a Mês** na Administração.
 - Mostra gastos fixos mensais, boletos/variáveis por mês, outros custos mensais cadastrados e gasto previsto.
