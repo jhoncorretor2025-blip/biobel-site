@@ -1,3 +1,11 @@
+## v10.79 — 01/10/2026
+- Área de **Funcionários** reorganizada em subtabs: **Ativos, Cadastro, Consulta, Desligamentos e Ex-funcionários**.
+- A aba **Ativos** mostra rapidamente quem está na equipe e o vínculo atual.
+- **Cadastro** concentra os dados das funcionárias.
+- **Consulta** concentra férias, recesso e hora extra.
+- **Desligamentos** reúne os registros de saída e a exportação dos PDFs.
+- **Ex-funcionários** mantém o arquivo histórico separado.
+
 ## v10.78 — 01/10/2026
 - Corrigida a barra de atalhos da Administração que estava posicionada como sticky e podia sobrepor visualmente os cards durante a rolagem.
 - A barra agora permanece no fluxo normal da página, com fundo e borda próprios para separar os atalhos do conteúdo.
