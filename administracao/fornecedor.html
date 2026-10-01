@@ -37,7 +37,7 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
 .login{max-width:390px;margin:12vh auto}.login .panel{text-align:left}.hidden{display:none!important}
 @media(max-width:800px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.form-grid{grid-template-columns:1fr 1fr}.form-grid .wide{grid-column:1/-1}.supplier-card{grid-template-columns:auto 1fr}.actions{grid-column:2}.topbar{align-items:flex-start}}
 @media(max-width:520px){.supplier-page{padding:12px}.grid{grid-template-columns:1fr 1fr}.form-grid{grid-template-columns:1fr}.form-grid .wide{grid-column:auto}.btn{padding:9px 11px}.panel{padding:13px}}
-</style>
+.flow-badge,.counter-badge{display:inline-flex;align-items:center;white-space:nowrap;border-radius:999px;padding:5px 9px;font-size:10px;font-weight:800;border:1px solid rgba(14,169,122,.3);background:rgba(14,169,122,.08);color:#4ade80}.supplier-section-intro{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}.cadastro-simple-card{margin-top:14px}.marca-grid{grid-template-columns:1fr auto}.fornecedor-grid{grid-template-columns:2fr 1fr 1fr auto}.cadastro-simple-card .search{margin:12px 0}.cadastro-simple-card .list{margin-top:8px}@media(max-width:800px){.fornecedor-grid{grid-template-columns:1fr 1fr}.fornecedor-grid .wide{grid-column:1/-1}.marca-grid{grid-template-columns:1fr}}@media(max-width:520px){.fornecedor-grid{grid-template-columns:1fr}.fornecedor-grid .wide{grid-column:auto}}</style>
 </head>
 <body data-biobel-page="fornecedores">
 <div id="biobelFornecedorLogin" class="login">
@@ -65,24 +65,134 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
   </nav>
 
   <section id="abaCadastro">
-    <div class="grid" id="kpisFornecedores"></div>
-    <div class="panel">
-      <h2>➕ Cadastrar fornecedor</h2>
-      <p class="sub">Um cadastro único. Telefone e CNPJ ficam sincronizados com a base antiga de contatos.</p>
-      <div class="form-grid">
-        <div class="field wide"><label for="novoFornecedorCadastroNome">Fornecedor</label><input id="novoFornecedorCadastroNome" placeholder="Ex.: Distribuidora XYZ"></div>
-        <div class="field"><label for="novoFornecedorCadastroTelefone">Telefone</label><input id="novoFornecedorCadastroTelefone" placeholder="(51) 99999-9999" inputmode="tel"></div>
-        <div class="field"><label for="novoFornecedorCadastroCnpj">CNPJ</label><input id="novoFornecedorCadastroCnpj" placeholder="00.000.000/0000-00"></div>
-        <button class="btn primary" onclick="salvarFornecedorCadastro();renderPaginaFornecedores()">💾 Salvar</button>
+    <div class="panel supplier-section-intro">
+      <div><h2>📝 Cadastro</h2><p class="sub">Fluxo de compra: primeiro cadastre o boleto; depois mantenha fornecedores e marcas.</p></div>
+      <span class="flow-badge">1️⃣ Boleto → 2️⃣ Fornecedor → 3️⃣ Marca</span>
+    </div>
+
+<div class="adv-card boleto-management-card" data-fornecedor-view="boletos">
+
+<div class="adv-card-title boleto-card-title">
+    <div><h3>📦 Boletos de Fornecedores</h3><p class="boleto-card-subtitle">Controle de compras, parcelas, vencimentos e pagamentos.</p></div>
+    <span>gastos variáveis</span>
+   </div>
+   <div class="boleto-filters" role="group" aria-label="Filtrar boletos">
+    <button type="button" id="btnFiltroBoletoTodos" onclick="filtrarBoletos('todos')" class="boleto-filter-btn is-active">Todos</button>
+    <button type="button" id="btnFiltroBoletoPendentes" onclick="filtrarBoletos('pendentes')" class="boleto-filter-btn">Pendentes</button>
+    <button type="button" id="btnFiltroBoletoPagos" onclick="filtrarBoletos('pagos')" class="boleto-filter-btn">Pagos</button>
+   </div>
+   <input id="buscaBoletoInput" type="search" placeholder="🔎 Buscar por fornecedor, marca ou observação..." oninput="renderBoletos()" class="boleto-search-input">
+   <div class="boleto-export-actions">
+    <button onclick="exportarBoletosPDF()" class="no-print boleto-export-btn purple">📑 Exportar PDF</button>
+    <button onclick="exportarBoletosCSV()" class="no-print boleto-export-btn green">📊 Exportar Excel</button>
+   </div>
+   <div id="boletoResumoCards" class="boleto-summary-grid" aria-live="polite"></div>
+   <div id="listaBoletos" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;"></div>
+   <div id="formWrapperBoleto" class="boleto-form-wrapper">
+    <div id="tituloFormBoleto" class="boleto-form-title">➕ Adicionar novo boleto</div>
+    <div class="boleto-form-grid">
+     <input id="novoBoletoFornecedor" type="text" placeholder="Fornecedor" list="listaFornecedoresConhecidos" onblur="aplicarPadraoParceladoFornecedor()" class="boleto-input">
+     <datalist id="listaFornecedoresConhecidos"></datalist>
+     <div id="avisoPadraoFornecedor" style="display:none;grid-column:1/-1;font-size:11px;color:#a78bfa;"></div>
+     <div class="boleto-product-guide">
+      <div class="boleto-product-guide-icon">📦</div>
+      <div>
+       <strong>Informações do produto</strong>
+       <span id="guiaQuantidadeProduto"><b>Quantidade do produto:</b> informe quantas unidades você comprou (ex.: 10 unidades, 6 frascos ou 2 kits).</span>
+       <span id="guiaValidadeProduto"><b>Validade do produto:</b> informe a validade do produto comprado, de preferência no formato <b>MM/AAAA</b> (ex.: 12/2027). Se não houver validade, deixe em branco.</span>
       </div>
-      <div class="note">💡 Fornecedores que já aparecem em boletos ou em padrões de parcelamento são recuperados automaticamente. Isso evita criar registros duplicados.</div>
+     </div>
+     <select id="novoBoletoMarcaSelect" onchange="alternarCampoMarcaOutros()" class="boleto-input" aria-label="Marca do produto">
+      <option value="">Marca do produto</option>
+      <option value="Truss">Truss</option>
+      <option value="Porto Dez">Porto Dez</option>
+      <option value="Plattelli">Plattelli</option>
+      <option value="Eudora">Eudora</option>
+      <option value="Natura">Natura</option>
+      <option value="__outros__">Outros...</option>
+     </select>
+     <input id="novoBoletoMarca" type="text" placeholder="Digite a marca do produto" class="boleto-input">
+     <input id="novoBoletoQuantidade" type="text" placeholder="Ex.: 10 unidades" title="Informe quantas unidades, frascos, caixas ou kits você comprou" aria-label="Quantidade do produto" aria-describedby="guiaQuantidadeProduto" class="boleto-input">
+     <input id="novoBoletoValidade" type="text" placeholder="Ex.: 12/2027" title="Informe a validade do produto no formato MM/AAAA. Se não houver validade, deixe em branco." aria-label="Validade do produto" aria-describedby="guiaValidadeProduto" class="boleto-input">
+     <input id="novoBoletoValor" type="text" inputmode="decimal" placeholder="Valor R$" oninput="atualizarPreviewParcelasBoletoInline()" class="boleto-input">
+     <div>
+      <label id="labelNovoBoletoVencimento" for="novoBoletoVencimento" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Data de vencimento</label>
+      <input id="novoBoletoVencimento" type="date" onchange="atualizarPreviewParcelasBoletoInline()" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     </div>
+     <div>
+      <label for="novoBoletoCategoria" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Categoria da compra</label>
+      <select id="novoBoletoCategoria" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+       <option value="Produto">📦 Produto</option>
+       <option value="Manutenção">🔧 Manutenção</option>
+       <option value="Marketing">📣 Marketing</option>
+       <option value="Outros">📋 Outros</option>
+      </select>
+     </div>
+     <div>
+      <label class="boleto-field-label" for="btnQuantasVezesBoleto1">Quantos boletos?</label>
+      <div style="display:flex;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;overflow:hidden;height:38px;">
+       <button type="button" id="btnQuantasVezesBoleto1" aria-label="1 parcelas" onclick="selecionarQuantasVezesBoleto(1)" style="flex:1;border:none;background:#0ea97a;color:#04241a;font-weight:800;font-size:13px;cursor:pointer;">1x</button>
+       <button type="button" id="btnQuantasVezesBoleto2" aria-label="2 parcelas" onclick="selecionarQuantasVezesBoleto(2)" style="flex:1;border:none;border-left:1px solid #1e2c42;background:transparent;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;">2x</button>
+       <button type="button" id="btnQuantasVezesBoleto3" aria-label="3 parcelas" onclick="selecionarQuantasVezesBoleto(3)" style="flex:1;border:none;border-left:1px solid #1e2c42;background:transparent;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;">3x</button>
+       <button type="button" id="btnQuantasVezesBoleto4" aria-label="4 parcelas" onclick="selecionarQuantasVezesBoleto(4)" aria-pressed="false" style="flex:1;border:none;border-left:1px solid #1e2c42;background:transparent;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;">4x</button>
+      </div>
+     </div>
+     <div>
+      <label for="novoBoletoPagoPor" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Pago por</label>
+      <input id="novoBoletoPagoPor" type="text" placeholder="Ex: Jhonatan" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+     </div>
     </div>
-    <div class="panel">
-      <h2>📋 Fornecedores cadastrados</h2>
-      <p class="sub">Edite ou remova somente o cadastro do fornecedor. Boletos antigos não são apagados.</p>
-      <input id="buscaFornecedorCadastro" class="search" type="search" placeholder="🔎 Buscar por nome, telefone ou CNPJ..." oninput="renderPaginaFornecedores()">
+
+    <div id="parcelasExtrasBoletoContainer" class="boleto-installments-panel" style="display:none;">
+     <div id="valorDivididoBoletoTexto" class="boleto-installments-summary"></div>
+     <div id="datasExtrasBoletoContainer" class="boleto-installment-dates"></div>
+    </div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#dce5f2;cursor:pointer;margin-bottom:8px;">
+     <input type="checkbox" id="novoBoletoRecorrente" style="width:15px;height:15px;accent-color:#27d7a0;">
+     🔁 Esse fornecedor é recorrente (compro sempre, todo mês)
+    </label>
+    <textarea id="novoBoletoObs" rows="2" placeholder="Observações (opcional)" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;resize:vertical;margin-bottom:8px;"></textarea>
+    <label for="novoBoletoComprovante" style="font-size:11px;color:#93a3ba;display:block;margin-bottom:4px;">📎 Comprovante / boleto / nota fiscal (opcional)</label>
+    <input id="novoBoletoComprovante" type="file" accept="application/pdf,image/png,image/jpeg" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:8px 12px;color:#93a3ba;font-size:12px;margin-bottom:10px;">
+    <div id="previewComprovanteBoleto" class="boleto-attachment-preview" style="display:none;">
+     <img id="imgPreviewComprovanteBoleto" style="max-width:120px;max-height:120px;border-radius:8px;border:1px solid #1e2c42;">
+     <button type="button" onclick="removerComprovanteAnexado()" style="display:block;margin-top:4px;background:none;border:none;color:#fb7185;font-size:11px;cursor:pointer;">✕ Remover comprovante</button>
+    </div>
+    <button id="btnAdicionarBoleto" onclick="adicionarBoleto()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Adicionar boleto</button>
+    <button id="btnCancelarEdicaoBoleto" onclick="cancelarEdicaoBoleto()" style="display:none;margin-top:8px;background:none;border:none;color:#93a3ba;font-size:12px;text-decoration:underline;cursor:pointer;width:100%;">✕ Cancelar edição</button>
+   </div>
+  </div>
+
+  
+
+    <section class="panel cadastro-simple-card" id="cadastroFornecedorSeparado">
+      <div class="section-head">
+        <div><h2>🤝 Cadastrar fornecedor</h2><p class="sub">Nome, telefone e CNPJ. Cada registro tem editar e excluir.</p></div>
+        <span id="cadastroContadorFornecedores" class="counter-badge">0 fornecedores</span>
+      </div>
+      <div class="form-grid fornecedor-grid">
+        <div class="field wide"><label for="novoFornecedorCadastroNome">Fornecedor</label><input id="novoFornecedorCadastroNome" placeholder="Ex.: Distribuidora XYZ" autocomplete="organization"></div>
+        <div class="field"><label for="novoFornecedorCadastroTelefone">Telefone</label><input id="novoFornecedorCadastroTelefone" placeholder="(51) 99999-9999" inputmode="tel"></div>
+        <div class="field"><label for="novoFornecedorCadastroCnpj">CNPJ</label><input id="novoFornecedorCadastroCnpj" placeholder="00.000.000/0000-00" onblur="checarFormatoDocumento('novoFornecedorCadastroCnpj','cnpj')"></div>
+        <button type="button" class="btn primary" onclick="salvarFornecedorCadastro();renderPaginaFornecedores()">💾 Salvar</button>
+      </div>
+      <input id="buscaFornecedorCadastro" class="search" type="search" placeholder="🔎 Buscar fornecedor..." oninput="renderPaginaFornecedores()">
       <div id="listaFornecedoresCadastro" class="list"></div>
-    </div>
+    </section>
+
+    <section class="panel cadastro-simple-card" id="cadastroMarcaSeparado">
+      <div class="section-head">
+        <div><h2>🏷️ Cadastrar marca</h2><p class="sub">Cadastre marcas para aparecerem automaticamente no boleto.</p></div>
+        <span id="cadastroContadorMarcas" class="counter-badge">0 marcas</span>
+      </div>
+      <div class="form-grid marca-grid">
+        <div class="field wide"><label for="novaMarcaCadastro">Nova marca</label><input id="novaMarcaCadastro" placeholder="Ex.: L'Oréal, Wella, Kérastase" autocomplete="organization" onkeydown="if(event.key==='Enter')adicionarMarcaCadastro()"></div>
+        <button type="button" class="btn primary" onclick="adicionarMarcaCadastro();renderPaginaFornecedores()">➕ Salvar marca</button>
+      </div>
+      <div id="listaMarcasCadastro" class="list"></div>
+    </section>
+
+    <div class="note">💡 Editar/excluir fornecedor ou marca mexe somente no cadastro. Boletos antigos continuam registrados e não são apagados.</div>
   </section>
 
   <section id="abaHistorico" class="hidden">
@@ -105,7 +215,7 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
   </section>
 </main>
 
-<script src="../biobel-app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="../biobel-app.js"></script>
 <script>
 function entrarFornecedores(){ location.href='../administracao.html'; }
 function mostrarAbaFornecedor(aba){
@@ -119,20 +229,18 @@ function mostrarAbaFornecedor(aba){
 function renderPaginaFornecedores(){
   if(typeof seedCadastrosAdm!=='function')return;
   const dados=seedCadastrosAdm();
+  if(typeof renderBoletos==='function')renderBoletos();
   const busca=(document.getElementById('buscaFornecedorCadastro')?.value||'').trim().toLowerCase();
   const lista=dados.fornecedores.filter(f=>!busca||[f.nome,f.telefone,f.cnpj].some(v=>String(v||'').toLowerCase().includes(busca)));
-  const boletos=typeof getBoletos==='function'?getBoletos():[];
-  const comContato=dados.fornecedores.filter(f=>f.telefone||f.cnpj).length;
-  document.getElementById('kpisFornecedores').innerHTML=[
-    ['🤝','Fornecedores',dados.fornecedores.length,'cadastros'],
-    ['📞','Com contato',comContato,'telefone ou CNPJ'],
-    ['🧾','Com compras',new Set(boletos.map(b=>String(b.fornecedor||'').trim().toLowerCase()).filter(Boolean)).size,'fornecedores com boleto'],
-    ['⚠️','Sem contato',Math.max(0,dados.fornecedores.length-comContato),'revisar cadastro']
-  ].map(x=>'<div class="kpi"><small>'+x[0]+' '+x[1]+'</small><strong>'+x[2]+'</strong><span>'+x[3]+'</span></div>').join('');
-  document.getElementById('listaFornecedoresCadastro').innerHTML=lista.length?lista.map(f=>{
+  const cf=document.getElementById('cadastroContadorFornecedores');if(cf)cf.textContent=dados.fornecedores.length+(dados.fornecedores.length===1?' fornecedor':' fornecedores');
+  const cm=document.getElementById('cadastroContadorMarcas');if(cm)cm.textContent=dados.marcas.length+(dados.marcas.length===1?' marca':' marcas');
+  const lf=document.getElementById('listaFornecedoresCadastro');
+  if(lf)lf.innerHTML=lista.length?lista.map(f=>{
     const contato=(f.telefone?'📞 '+esc(f.telefone):'')+(f.telefone&&f.cnpj?' · ':'')+(f.cnpj?'🏢 '+esc(f.cnpj):'');
-    return '<article class="supplier-card"><div class="icon">🤝</div><div class="main"><strong>'+esc(f.nome)+'</strong><span>'+ (contato||'⚠️ Sem telefone/CNPJ cadastrado') +'</span></div><div class="actions"><button onclick="editarFornecedorCadastro('+f.id+');setTimeout(renderPaginaFornecedores,50)">✏️</button><button onclick="removerFornecedorCadastro('+f.id+');setTimeout(renderPaginaFornecedores,50)">🗑️</button></div></article>';
+    return '<article class="supplier-card"><div class="icon">🤝</div><div class="main"><strong>'+esc(f.nome)+'</strong><span>'+(contato||'⚠️ Sem telefone/CNPJ cadastrado')+'</span></div><div class="actions"><button type="button" onclick="editarFornecedorCadastro('+f.id+');setTimeout(renderPaginaFornecedores,120)" aria-label="Editar '+esc(f.nome)+'">✏️</button><button type="button" onclick="removerFornecedorCadastro('+f.id+');setTimeout(renderPaginaFornecedores,120)" aria-label="Excluir '+esc(f.nome)+'">🗑️</button></div></article>';
   }).join(''):'<div class="empty">Nenhum fornecedor encontrado.</div>';
+  const lm=document.getElementById('listaMarcasCadastro');
+  if(lm)lm.innerHTML=dados.marcas.length?dados.marcas.map((nome,i)=>'<article class="supplier-card"><div class="icon">🏷️</div><div class="main"><strong>'+esc(nome)+'</strong><span>Disponível no cadastro de boletos</span></div><div class="actions"><button type="button" onclick="editarMarcaCadastro('+i+');setTimeout(renderPaginaFornecedores,120)" aria-label="Editar '+esc(nome)+'">✏️</button><button type="button" onclick="removerMarcaCadastro('+i+');setTimeout(renderPaginaFornecedores,120)" aria-label="Excluir '+esc(nome)+'">🗑️</button></div></article>').join(''):'<div class="empty">Nenhuma marca cadastrada.</div>';
 }
 function renderHistoricoFornecedores(){
   const boletos=typeof getBoletos==='function'?getBoletos():[];
