@@ -1,5 +1,23 @@
 <!DOCTYPE html>
-<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="theme-color" content="#0ea97a"><meta name="robots" content="noindex,nofollow"><link rel="icon" type="image/png" href="./logo_biobel_gravatai.png"><link rel="manifest" href="manifest.json"><title>Biobel — Administração</title><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="biobel-design-system.css"><link rel="stylesheet" href="biobel-ux-refinement.css"><link rel="stylesheet" href="biobel-app.css"></head><body data-biobel-page="adm" class="min-h-screen bg-slate-950 text-slate-100">
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="theme-color" content="#0ea97a"><meta name="robots" content="noindex,nofollow"><link rel="icon" type="image/png" href="./logo_biobel_gravatai.png"><link rel="manifest" href="manifest.json"><title>Biobel — Administração</title><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="biobel-design-system.css"><link rel="stylesheet" href="biobel-ux-refinement.css"><link rel="stylesheet" href="biobel-app.css"><style>
+.funcionarios-subnav{display:flex;gap:7px;flex-wrap:wrap;padding:10px 0 12px;border-bottom:1px solid #1e2c42;margin-bottom:12px;position:relative;z-index:1}
+.funcionarios-subtab{border:1px solid #1c2c42;background:#0b1728;color:#aebbd0;border-radius:11px;padding:8px 11px;font-size:11.5px;font-weight:800;cursor:pointer;transition:background .15s,border-color .15s,color .15s}
+.funcionarios-subtab:hover{background:#12233b;color:#fff}
+.funcionarios-subtab.is-active{background:linear-gradient(90deg,rgba(39,215,160,.16),rgba(39,215,160,.06));border-color:rgba(39,215,160,.35);color:#27d7a0}
+.funcionarios-subpanel{margin-bottom:12px}
+.funcionarios-ativos-resumo{background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(79,156,255,.28);border-radius:14px;padding:14px}
+.funcionarios-mini-label{font-size:9px;font-weight:900;color:#71839c;letter-spacing:.08em}
+.funcionarios-ativos-lista{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}
+.funcionario-ativo-item{display:flex;align-items:center;justify-content:space-between;gap:9px;background:#0b1728;border:1px solid #1c2c42;border-radius:11px;padding:10px 11px}
+.funcionario-ativo-item .nome{font-size:12.5px;font-weight:900;color:#dce5f2}
+.funcionario-ativo-item .vinculo{font-size:10.5px;color:#93a3ba;margin-top:2px}
+.funcionario-ativo-item .estado{font-size:10px;font-weight:800;color:#27d7a0;margin-top:3px}
+.funcionario-ativo-item.inativo{border-color:rgba(251,113,133,.28)}
+.funcionario-ativo-item.inativo .estado{color:#fb7185}
+.funcionario-ativo-acoes{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.funcionario-ativo-acoes button{border:1px solid #1c2c42;background:#101f34;color:#cbd5e1;border-radius:8px;padding:6px 8px;font-size:10px;font-weight:800;cursor:pointer}
+@media(max-width:640px){.funcionarios-ativos-lista{grid-template-columns:1fr}.funcionarios-subtab{flex:1 1 auto}}
+</style></head><body data-biobel-page="adm" class="min-h-screen bg-slate-950 text-slate-100">
 <div id="faixaMensagemProgramada" style="display:none;"></div>
 <div id="tourGuiadoOverlay" style="display:none;"></div>
 <div id="dicaDoDiaOverlay" style="display:none;"></div>
@@ -263,7 +281,7 @@
   </div>
 
   <div id="admAncoraFuncionarios"></div>
-  <button onclick="exportarTodosDesligamentos()" class="no-print w-full bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="margin-bottom:10px;">🖨️ Exportar todos os PDFs de desligamento registrados</button>
+  <button id="btnExportarTodosDesligamentos" onclick="exportarTodosDesligamentos()" class="no-print w-full bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="display:none;margin-bottom:10px;">🖨️ Exportar todos os PDFs de desligamento registrados</button>
   <div class="grupo-adm-header" data-grupo="funcionarios" onclick="alternarGrupoAdm('funcionarios')" style="display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(79,156,255,.35);border-radius:16px;padding:16px 20px;cursor:pointer;position:relative;overflow:hidden;">
    <span style="position:absolute;right:-10px;top:-10px;font-size:70px;opacity:.08;pointer-events:none;">👥</span>
    <div>
@@ -278,7 +296,25 @@
   </div>
   <div id="conteudoGrupo-funcionarios" style="display:none;">
 
-  <div class="adv-card">
+  <div class="funcionarios-subnav no-print" role="tablist" aria-label="Seções de funcionários">
+   <button type="button" class="funcionarios-subtab is-active" data-func-aba="ativos" onclick="mostrarSubAbaFuncionarios('ativos')">👥 Ativos</button>
+   <button type="button" class="funcionarios-subtab" data-func-aba="cadastro" onclick="mostrarSubAbaFuncionarios('cadastro')">📝 Cadastro</button>
+   <button type="button" class="funcionarios-subtab" data-func-aba="consulta" onclick="mostrarSubAbaFuncionarios('consulta')">🔎 Consulta</button>
+   <button type="button" class="funcionarios-subtab" data-func-aba="desligamentos" onclick="mostrarSubAbaFuncionarios('desligamentos')">🚪 Desligamentos</button>
+   <button type="button" class="funcionarios-subtab" data-func-aba="ex" onclick="mostrarSubAbaFuncionarios('ex')">🗄️ Ex-funcionários</button>
+  </div>
+  <section id="painelFuncionariosAtivos" class="funcionarios-subpanel" aria-label="Funcionários ativos">
+   <div class="funcionarios-ativos-resumo">
+    <div>
+     <div class="funcionarios-mini-label">EQUIPE ATUAL</div>
+     <h3 style="margin:2px 0 0;font-size:16px;font-weight:900;color:#dce5f2;">👥 Funcionários ativos</h3>
+     <p style="margin-top:4px;font-size:11.5px;color:#93a3ba;">Acompanhe rapidamente quem está ativo e abra o cadastro ou a área de desligamento.</p>
+    </div>
+    <div id="listaFuncionariosAtivosResumo" class="funcionarios-ativos-lista"></div>
+   </div>
+  </section>
+
+  <div class="adv-card" data-func-view="cadastro">
    <div class="adv-card-title">
     <h3>📅 Dados de Gabriela (CLT)</h3>
     <span>admissão (pra férias e FGTS) e nascimento (pro aniversário)</span>
@@ -313,7 +349,7 @@
    </div>
   </div>
 
-  <div class="adv-card" id="cardDesligamentoGabriela">
+  <div class="adv-card" data-func-view="desligamentos" id="cardDesligamentoGabriela">
    <div class="adv-card-title">
     <h3>🚪 Desligamento — Gabriela</h3>
     <span>registra a saída da funcionária e gera um resumo em PDF pra contadora</span>
@@ -368,7 +404,7 @@
    <button id="btnArquivarGabriela" onclick="arquivarExFuncionaria('gabriela')" style="display:none;margin-top:8px;" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl font-semibold text-sm">🗄️ Mover pro Arquivo de Ex-Funcionários</button>
   </div>
 
-  <div class="adv-card">
+  <div class="adv-card" data-func-view="consulta">
    <div class="adv-card-title">
     <h3>🏖️ Férias — Gabriela</h3>
     <span>registre quando ela tirar férias, pra evitar pagar em dobro por vencimento</span>
@@ -392,7 +428,7 @@
    <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">⚠️ A regra: depois de completar 12 meses trabalhados, a loja tem mais 12 meses pra conceder as férias. Se passar desse prazo sem conceder, a lei manda pagar em dobro. O sistema calcula isso automaticamente com base na admissão (ou na última férias registrada).</p>
   </div>
 
-  <div class="adv-card">
+  <div class="adv-card" data-func-view="cadastro">
    <div class="adv-card-title">
     <h3 id="tituloCardDadosDay">📋 Dados de Day (Estágio)</h3>
     <span>início do contrato (pra saber quando renovar) e nascimento</span>
@@ -438,7 +474,7 @@
    </div>
   </div>
 
-  <div class="adv-card" id="cardDesligamentoDay">
+  <div class="adv-card" data-func-view="desligamentos" id="cardDesligamentoDay">
    <div class="adv-card-title">
     <h3>🚪 Desligamento — Day</h3>
     <span>registra o fim do estágio e gera um resumo em PDF pra contadora</span>
@@ -478,7 +514,7 @@
    <button id="btnArquivarDay" onclick="arquivarExFuncionaria('day')" style="display:none;margin-top:8px;" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl font-semibold text-sm">🗄️ Mover pro Arquivo de Ex-Funcionários</button>
   </div>
 
-  <div class="adv-card">
+  <div class="adv-card" data-func-view="consulta">
    <div class="adv-card-title">
     <h3>🌴 Recesso Remunerado — Day</h3>
     <span>diferente de férias (isso é regra de CLT) — estagiário tem direito a 30 dias de recesso remunerado por ano de estágio</span>
@@ -502,7 +538,7 @@
    <p style="font-size:10.5px;color:#93a3ba;margin-top:10px;">💡 Só tem direito ao recesso completo (30 dias) se o estágio durar 1 ano ou mais — antes disso, o direito é proporcional. Preferencialmente, deve coincidir com as férias escolares dela.</p>
   </div>
 
-  <div class="adv-card">
+  <div class="adv-card" data-func-view="consulta">
    <div class="adv-card-title">
     <h3>⏰ Hora extra — Gabriela</h3>
     <span>2 horas extras por semana, fixas</span>
@@ -673,4 +709,67 @@
   </div>
  </div>
 </section>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js"></script><script src="biobel-app.js"></script></body></html>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js"></script><script src="biobel-app.js"></script><script>
+(function(){
+ function cardsFuncionarios(){
+  const wrap=document.getElementById('conteudoGrupo-funcionarios');
+  if(!wrap)return [];
+  return Array.from(wrap.querySelectorAll(':scope > .adv-card[data-func-view]'));
+ }
+ function tituloCard(card){
+  return (card.querySelector('.adv-card-title h3')?.textContent||'').trim();
+ }
+ function renderResumoAtivos(){
+  const el=document.getElementById('listaFuncionariosAtivosResumo');
+  if(!el)return;
+  const pessoas=[
+   {chave:'gabriela',nome:'Gabriela',vinculo:'CLT',cadastro:'📅 Dados de Gabriela (CLT)',desligamento:'cardDesligamentoGabriela'},
+   {chave:'day',nome:'Day',vinculo:(typeof ehDayClt==='function'&&ehDayClt())?'CLT':'Estágio',cadastro:'📋 Dados de Day (Estágio)',desligamento:'cardDesligamentoDay'}
+  ];
+  el.innerHTML=pessoas.map(p=>{
+   const saiu=typeof getDesligamento==='function'&&!!getDesligamento(p.chave);
+   const status=saiu?'⚠️ Desligamento registrado':'✅ Ativa';
+   return '<article class="funcionario-ativo-item'+(saiu?' inativo':'')+'">'+
+    '<div><div class="nome">'+p.nome+'</div><div class="vinculo">'+p.vinculo+'</div><div class="estado">'+status+'</div></div>'+
+    '<div class="funcionario-ativo-acoes">'+
+     (!saiu?'<button type="button" onclick="mostrarSubAbaFuncionarios(\'cadastro\')">📝 Cadastro</button>':'<button type="button" onclick="mostrarSubAbaFuncionarios(\'ex\')">🗄️ Histórico</button>')+
+     '<button type="button" onclick="mostrarSubAbaFuncionarios(\'desligamentos\')">🚪 Saída</button>'+
+    '</div></article>';
+  }).join('');
+ }
+ window.mostrarSubAbaFuncionarios=function(aba){
+  const valido=['ativos','cadastro','consulta','desligamentos','ex'];
+  if(!valido.includes(aba))aba='ativos';
+  localStorage.setItem('biobel_funcionarios_aba',aba);
+  document.querySelectorAll('.funcionarios-subtab').forEach(btn=>{
+   const ativo=btn.dataset.funcAba===aba;
+   btn.classList.toggle('is-active',ativo);
+   btn.setAttribute('aria-selected',ativo?'true':'false');
+  });
+  const cards=cardsFuncionarios();
+  cards.forEach(card=>{
+   const view=card.dataset.funcView;
+   let mostrar=aba==='cadastro'&&view==='cadastro' || aba==='consulta'&&view==='consulta' || aba==='desligamentos'&&view==='desligamentos';
+   card.style.display=mostrar?'':'none';
+  });
+  const ativos=document.getElementById('painelFuncionariosAtivos');
+  if(ativos)ativos.style.display=aba==='ativos'?'':'none';
+  const exHead=document.querySelector('.grupo-adm-header[data-grupo="exfuncionarios"]');
+  const exContent=document.getElementById('conteudoGrupo-exfuncionarios');
+  const exp=document.getElementById('btnExportarTodosDesligamentos');
+  const mostraEx=aba==='ex';
+  if(exHead)exHead.style.display=mostraEx?'flex':'none';
+  if(exContent)exContent.style.display=mostraEx?'block':'none';
+  if(exp)exp.style.display=aba==='desligamentos'?'':'none';
+  if(aba==='ativos'||aba==='cadastro'||aba==='consulta'||aba==='desligamentos'){
+   renderResumoAtivos();
+  }
+ };
+ window.initSubAbasFuncionarios=function(){
+  renderResumoAtivos();
+  const aba=localStorage.getItem('biobel_funcionarios_aba')||'ativos';
+  mostrarSubAbaFuncionarios(aba);
+ };
+ setTimeout(window.initSubAbasFuncionarios,0);
+})();
+</script></body></html>
