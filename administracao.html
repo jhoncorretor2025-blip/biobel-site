@@ -216,60 +216,13 @@
    </div>
   </div>
   <div id="conteudoGrupo-fornecedores" style="display:none;">
-  <  <div id="admAncoraCadastros"></div>
-  <section class="adv-card cadastro-master-card" id="cardCadastrosMarcasFornecedores">
-   <div class="adv-card-title cadastro-master-title">
-    <div>
-     <h3>🏷️ Cadastros — Marcas e Fornecedores</h3>
-     <span>Cadastre uma vez e depois escolha no boleto sem precisar digitar tudo de novo.</span>
-    </div>
-    <span class="cadastro-master-badge">💾 Salvo neste aparelho</span>
+  <div id="admAncoraCadastros"></div>
+  <section class="adv-card" id="cardAcessoFornecedoresSeparado">
+   <div class="adv-card-title">
+    <div><h3>🤝 Fornecedores</h3><span>Cadastro, contatos, compras, boletos e conferência em uma página separada.</span></div>
    </div>
-
-   <div class="cadastro-tabs" role="tablist" aria-label="Cadastros">
-    <button type="button" id="tabCadastroMarcas" class="cadastro-tab is-active" role="tab" aria-selected="true" onclick="abrirAbaCadastro('marcas')">🏷️ Marcas</button>
-    <button type="button" id="tabCadastroFornecedores" class="cadastro-tab" role="tab" aria-selected="false" onclick="abrirAbaCadastro('fornecedores')">🤝 Fornecedores</button>
-   </div>
-
-   <div id="cadastroAbaMarcas" class="cadastro-pane" role="tabpanel">
-    <div class="cadastro-pane-head">
-     <div>
-      <h4>Marcas cadastradas</h4>
-      <p>Estas marcas aparecem automaticamente na escolha de marca do boleto.</p>
-     </div>
-     <span id="cadastroContadorMarcas" class="cadastro-counter">0 marcas</span>
-    </div>
-    <div class="cadastro-add-row">
-     <label class="cadastro-field"><span>Nova marca</span><input id="novaMarcaCadastro" type="text" placeholder="Ex.: L'Oréal, Wella, Kérastase" autocomplete="off" onkeydown="if(event.key==='Enter')adicionarMarcaCadastro()"></label>
-     <button type="button" class="cadastro-btn primary" onclick="adicionarMarcaCadastro()">➕ Cadastrar marca</button>
-    </div>
-    <div id="listaMarcasCadastro" class="cadastro-chip-list" aria-live="polite"></div>
-   </div>
-
-   <div id="cadastroAbaFornecedores" class="cadastro-pane" role="tabpanel" style="display:none;">
-    <div class="cadastro-pane-head">
-     <div>
-      <h4>Fornecedores cadastrados</h4>
-      <p>Nome, telefone e CNPJ ficam disponíveis para uso rápido em compras e boletos.</p>
-     </div>
-     <span id="cadastroContadorFornecedores" class="cadastro-counter">0 fornecedores</span>
-    </div>
-    <div class="cadastro-supplier-form">
-     <label class="cadastro-field"><span>Fornecedor</span><input id="novoFornecedorCadastroNome" type="text" placeholder="Ex.: Distribuidora XYZ" autocomplete="organization"></label>
-     <label class="cadastro-field"><span>Telefone</span><input id="novoFornecedorCadastroTelefone" type="text" placeholder="(51) 99999-9999" inputmode="tel"></label>
-     <label class="cadastro-field"><span>CNPJ</span><input id="novoFornecedorCadastroCnpj" type="text" placeholder="00.000.000/0000-00" onblur="checarFormatoDocumento('novoFornecedorCadastroCnpj','cnpj')"></label>
-     <button type="button" class="cadastro-btn primary" onclick="salvarFornecedorCadastro()">💾 Salvar fornecedor</button>
-    </div>
-    <div class="cadastro-search-row">
-     <input id="buscaFornecedorCadastro" type="search" placeholder="🔎 Buscar fornecedor..." oninput="renderCadastrosAdm()">
-    </div>
-    <div id="listaFornecedoresCadastro" class="cadastro-supplier-list" aria-live="polite"></div>
-   </div>
-
-   <div class="cadastro-info-strip">
-    <span>💡</span>
-    <div><strong>Como funciona:</strong> os cadastros são salvos neste aparelho. Ao cadastrar um novo fornecedor ou marca, eles passam a aparecer automaticamente no formulário de boletos.</div>
-   </div>
+   <a href="administracao/fornecedor.html" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm" style="display:inline-flex;text-decoration:none;color:#04241a;background:#0ea97a;">🤝 Abrir área de fornecedores</a>
+   <p style="font-size:10.5px;color:#93a3ba;margin-top:9px;">Os dados continuam compartilhados com os boletos existentes; não é criado um segundo cadastro.</p>
   </section>
 
 
