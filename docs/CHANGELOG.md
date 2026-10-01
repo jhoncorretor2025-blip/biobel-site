@@ -1,3 +1,8 @@
+## v10.55 — 01/10/2026
+- Redesign da área de planilhas mensais com cartões mais claros e indicação da planilha em uso.
+- Remoção automática de duplicatas da mesma planilha na lista.
+- Gráfico principal do dashboard com melhor hierarquia visual, legendas e tooltips.
+
 ## v10.54 — 01/10/2026
 - Outubro 2026 passa a ser a planilha padrão do sistema.
 - Outubro 2026 é cadastrado automaticamente na lista de planilhas salvas.
