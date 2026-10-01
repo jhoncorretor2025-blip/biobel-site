@@ -7087,6 +7087,11 @@ function mostrarSecaoInfo(secao){
   }
  });
  try{ localStorage.setItem('biobel_info_secao_ativa', secao); }catch(e){}
+ if(secao==='Comparar'){
+  try{ renderListaMesesComparar(); }catch(e){ console.error('Erro em renderListaMesesComparar:', e); }
+  try{ renderComparacaoMesmoPeriodo(); }catch(e){ console.error('Erro em renderComparacaoMesmoPeriodo:', e); }
+  try{ renderTop30Dias(); }catch(e){}
+ }
  if(secao==='PorDiaSemana') initPorDiaSemanaView();
  if(secao==='Dias'){
   try{ renderAcimaAbaixoMedia(); }catch(e){ console.error('Erro em renderAcimaAbaixoMedia:', e); }
@@ -7922,6 +7927,7 @@ function renderInfoTab(){
  renderAlertaVendasForaPadrao();
  renderAlertaDiasFaltando();
  renderRecordeDoMes();
+ renderListaMesesComparar();
  renderMetasLongoPrazo();
 }
 
@@ -13572,5 +13578,5 @@ let promptDeInstalacaoGuardado=null;
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();promptDeInstalacaoGuardado=e;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='inline-block';});
 function instalarAppBiobel(){if(!promptDeInstalacaoGuardado)return;promptDeInstalacaoGuardado.prompt();promptDeInstalacaoGuardado.userChoice.then(function(){promptDeInstalacaoGuardado=null;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';});}
 window.addEventListener('appinstalled',function(){const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';try{mostrarToast('✅ Biobel instalado!');}catch(e){}});
-if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=10.56',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
+if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=10.57',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
 window.addEventListener('load',initPaginaAtiva,{once:true});
