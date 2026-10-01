@@ -245,3 +245,176 @@ body.light-mode .adv-chart{background:linear-gradient(180deg,#f8fafc,#eef4f7);bo
 @media(max-width:640px){
  .biobel-planilha-item-actions button{flex:1;min-width:0}
 }
+
+/* v10.61 — Redesign da área de Boletos de Fornecedores + 4 parcelas. */
+.boleto-management-card{
+ position:relative;overflow:hidden;
+ background:linear-gradient(150deg,#0b1728 0%,#091524 100%)!important;
+ border-color:#223754!important;border-radius:20px!important;
+ box-shadow:0 18px 44px rgba(0,0,0,.15)!important;
+}
+.boleto-management-card:before{
+ content:"";position:absolute;top:0;left:0;right:0;height:2px;
+ background:linear-gradient(90deg,#27d7a0,#4f9cff,#a78bfa);
+ opacity:.8;
+}
+.boleto-card-title{align-items:flex-start!important;margin-bottom:15px!important}
+.boleto-card-title h3{font-size:16px!important;letter-spacing:-.02em}
+.boleto-card-title>span{
+ padding:6px 9px;border-radius:999px;background:rgba(79,156,255,.06);
+ border:1px solid rgba(79,156,255,.15);color:#7590ab!important;font-size:9.5px!important;
+}
+.boleto-card-subtitle{margin:4px 0 0;color:#72859e;font-size:10.5px;line-height:1.45}
+.boleto-filters{
+ display:flex!important;gap:3px;width:max-content;margin-bottom:10px;
+ padding:3px;background:#07111f;border:1px solid #1f334c;border-radius:12px;overflow:hidden;
+}
+.boleto-filter-btn{
+ border:0!important;border-radius:9px!important;padding:8px 13px!important;
+ background:transparent!important;color:#8396ad!important;font-size:11px!important;font-weight:900!important;
+ cursor:pointer!important;transition:background .15s,color .15s,transform .15s!important;
+}
+.boleto-filter-btn:hover{color:#dce5f2!important;transform:translateY(-1px)}
+.boleto-filter-btn.is-active{background:#27d7a0!important;color:#04241a!important;box-shadow:0 6px 14px rgba(39,215,160,.12)}
+.boleto-search-input{
+ width:100%!important;box-sizing:border-box;margin-bottom:10px!important;
+ background:#07111f!important;border:1px solid #233952!important;border-radius:12px!important;
+ color:#dce5f2!important;padding:11px 13px!important;font-size:12px!important;outline:none!important;
+}
+.boleto-search-input:focus{border-color:rgba(79,156,255,.7)!important;box-shadow:0 0 0 4px rgba(79,156,255,.08)!important}
+.boleto-export-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:13px}
+.boleto-export-btn{
+ border:1px solid #263b57!important;border-radius:11px!important;padding:10px 12px!important;
+ font-size:10.5px!important;font-weight:900!important;cursor:pointer!important;
+}
+.boleto-export-btn.purple{background:rgba(167,139,250,.09)!important;border-color:rgba(167,139,250,.28)!important;color:#c4b5fd!important}
+.boleto-export-btn.green{background:rgba(39,215,160,.09)!important;border-color:rgba(39,215,160,.25)!important;color:#27d7a0!important}
+.boleto-summary-grid{
+ display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 0 14px;
+}
+.boleto-summary-grid>article{
+ min-width:0;padding:11px 12px;border:1px solid #1c3048;border-radius:13px;
+ background:#091524;
+}
+.boleto-summary-grid small{display:block;color:#71839a;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.05em}
+.boleto-summary-grid strong{display:block;margin-top:5px;color:#f6f9fd;font-size:19px;line-height:1}
+.boleto-summary-grid span{display:block;margin-top:4px;color:#667b95;font-size:9px;line-height:1.35}
+.boleto-summary-grid .pending{border-color:rgba(251,191,36,.2);background:rgba(251,191,36,.035)}
+.boleto-summary-grid .pending strong{color:#fbbf24}
+.boleto-summary-grid .paid{border-color:rgba(39,215,160,.18);background:rgba(39,215,160,.035)}
+.boleto-summary-grid .paid strong{color:#27d7a0}
+.boleto-summary-grid .total{border-color:rgba(79,156,255,.18);background:rgba(79,156,255,.035)}
+.boleto-summary-grid .total strong{color:#75b5ff}
+.boleto-form-wrapper{
+ margin-top:8px!important;padding:17px!important;border-top:1px solid #1e2c42!important;
+ border-radius:16px!important;background:rgba(255,255,255,.012);
+}
+.boleto-form-title{
+ margin-bottom:14px!important;color:#f0f5fb!important;font-size:13px!important;font-weight:900!important;
+}
+.boleto-form-title:after{content:"  •  você pode ajustar qualquer vencimento";color:#6f8199;font-size:9.5px;font-weight:700}
+.boleto-form-grid{
+ display:grid!important;grid-template-columns:repeat(12,minmax(0,1fr));gap:10px!important;margin-bottom:10px;
+}
+.boleto-form-grid>#novoBoletoFornecedor{grid-column:span 4}
+.boleto-form-grid>#listaFornecedoresConhecidos{display:none}
+.boleto-form-grid>#avisoPadraoFornecedor{grid-column:1/-1}
+.boleto-form-grid>#novoBoletoMarcaSelect{grid-column:span 2}
+.boleto-form-grid>#novoBoletoMarca{grid-column:span 2}
+.boleto-form-grid>#novoBoletoQuantidade{grid-column:span 2}
+.boleto-form-grid>#novoBoletoValidade{grid-column:span 2}
+.boleto-form-grid>#novoBoletoValor{grid-column:span 2}
+.boleto-form-grid>div{min-width:0}
+.boleto-form-grid>div:has(#novoBoletoVencimento){grid-column:span 3}
+.boleto-form-grid>div:has(#novoBoletoCategoria){grid-column:span 3}
+.boleto-form-grid>div:has(.boleto-field-label){grid-column:span 3}
+.boleto-form-grid>div:has(#novoBoletoPagoPor){grid-column:span 3}
+.boleto-input,#novoBoletoVencimento,#novoBoletoCategoria,#novoBoletoPagoPor,#novoBoletoObs,#novoBoletoComprovante{
+ width:100%;box-sizing:border-box!important;min-height:41px!important;
+ background:#07111f!important;border:1px solid #263a55!important;border-radius:10px!important;
+ color:#dce5f2!important;padding:10px 11px!important;font-size:12px!important;outline:none!important;
+}
+.boleto-input:focus,#novoBoletoVencimento:focus,#novoBoletoCategoria:focus,#novoBoletoPagoPor:focus,#novoBoletoObs:focus,#novoBoletoComprovante:focus{
+ border-color:#27d7a0!important;box-shadow:0 0 0 3px rgba(39,215,160,.1)!important
+}
+.boleto-field-label,.boleto-field>label>span,.boleto-form-wrapper>label[for],.boleto-form-wrapper>label:not([for]){
+ display:block;color:#93a3ba!important;font-size:9.5px!important;font-weight:800!important;margin:0 0 5px!important;
+}
+.boleto-installments{
+ display:flex!important;height:41px!important;border:1px solid #263a55!important;border-radius:10px!important;
+ overflow:hidden;background:#07111f;
+}
+.boleto-installments button{
+ flex:1;border:0!important;border-left:1px solid #1e2c42!important;background:transparent!important;color:#cbd5e1!important;
+ font-size:11px!important;font-weight:900!important;cursor:pointer!important;transition:.15s!important;
+}
+.boleto-installments button:first-child{border-left:0!important}
+.boleto-installments button:hover{background:rgba(39,215,160,.06)!important}
+.boleto-installments-panel{
+ margin:9px 0 12px!important;padding:13px!important;
+ border:1px solid rgba(99,102,241,.22)!important;border-radius:14px!important;
+ background:linear-gradient(135deg,rgba(99,102,241,.06),rgba(79,156,255,.03))!important;
+}
+.boleto-installments-summary{
+ margin-bottom:10px!important;padding:9px 11px;border-radius:10px;
+ background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.15);
+ color:#c4b5fd!important;font-size:10.5px!important;line-height:1.4;
+}
+.boleto-installments-count{display:inline-flex;padding:3px 7px;border-radius:999px;background:rgba(167,139,250,.14);color:#d8ccff;font-weight:900}
+.boleto-installments-summary strong{color:#f6f9fd}
+.boleto-installment-dates{display:grid!important;grid-template-columns:repeat(3,1fr);gap:9px!important}
+.boleto-installment-dates>div{
+ padding:10px;border:1px solid #273c58;border-radius:11px;background:#091524;
+}
+.boleto-installment-dates label{font-size:9.5px!important;color:#93a3ba!important;font-weight:800!important}
+.boleto-installment-dates input{
+ width:100%!important;box-sizing:border-box;margin-top:5px;background:#07111f;color:#dce5f2;
+ border:1px solid #263a55;border-radius:9px;padding:9px 10px;font-size:11px;min-height:39px;
+}
+.boleto-submit-btn{
+ width:100%;min-height:44px;border:1px solid #27d7a0;border-radius:11px;
+ background:linear-gradient(135deg,#11a97a,#079565);color:#04241a;
+ font-size:12px;font-weight:900;cursor:pointer;box-shadow:0 8px 20px rgba(39,215,160,.1);
+}
+.boleto-submit-btn:hover{filter:brightness(1.05);transform:translateY(-1px)}
+.boleto-cancel-btn{
+ width:100%;margin-top:8px;border:0;background:transparent;color:#7f90a7;font-size:11px;text-decoration:underline;cursor:pointer;
+}
+.boleto-attachment-preview{
+ display:flex!important;align-items:center;gap:10px;padding:9px;margin-bottom:10px;
+ background:#091524;border:1px solid #1e2c42;border-radius:11px;
+}
+.boleto-attachment-name{color:#cbd5e1;font-size:10.5px;font-weight:700}
+#listaBoletos>div>div:first-child{
+ border-radius:13px!important;
+}
+#listaBoletos>div>div:first-child:hover{border-color:#2b486b!important;box-shadow:0 10px 22px rgba(0,0,0,.13)}
+@media(max-width:1180px){
+ .boleto-summary-grid{grid-template-columns:repeat(2,1fr)}
+ .boleto-form-grid>#novoBoletoFornecedor{grid-column:span 6}
+ .boleto-form-grid>#novoBoletoMarcaSelect,.boleto-form-grid>#novoBoletoMarca,.boleto-form-grid>#novoBoletoQuantidade,.boleto-form-grid>#novoBoletoValidade,.boleto-form-grid>#novoBoletoValor{grid-column:span 3}
+ .boleto-form-grid>div:has(#novoBoletoVencimento),.boleto-form-grid>div:has(#novoBoletoCategoria),.boleto-form-grid>div:has(.boleto-field-label),.boleto-form-grid>div:has(#novoBoletoPagoPor){grid-column:span 6}
+}
+@media(max-width:760px){
+ .boleto-card-title{display:block!important}
+ .boleto-card-title>span{display:inline-flex!important;margin-top:7px}
+ .boleto-filters{width:100%;justify-content:stretch}
+ .boleto-filter-btn{flex:1;padding:9px 6px!important}
+ .boleto-export-actions{grid-template-columns:1fr;gap:7px}
+ .boleto-summary-grid{grid-template-columns:1fr 1fr}
+ .boleto-form-grid{grid-template-columns:1fr}
+ .boleto-form-grid>*,
+ .boleto-form-grid>#novoBoletoFornecedor,.boleto-form-grid>#novoBoletoMarcaSelect,.boleto-form-grid>#novoBoletoMarca,
+ .boleto-form-grid>#novoBoletoQuantidade,.boleto-form-grid>#novoBoletoValidade,.boleto-form-grid>#novoBoletoValor,
+ .boleto-form-grid>div:has(#novoBoletoVencimento),.boleto-form-grid>div:has(#novoBoletoCategoria),.boleto-form-grid>div:has(.boleto-field-label),.boleto-form-grid>div:has(#novoBoletoPagoPor){grid-column:1/-1}
+ .boleto-field-label{margin-top:2px!important}
+ .boleto-installment-dates{grid-template-columns:1fr!important}
+ .boleto-form-wrapper{padding:13px!important}
+ .boleto-input,#novoBoletoVencimento,#novoBoletoCategoria,#novoBoletoPagoPor,#novoBoletoObs{min-height:44px!important;font-size:16px!important}
+}
+@media(max-width:420px){
+ .boleto-summary-grid{grid-template-columns:1fr}
+}
+body.light-mode .boleto-management-card{background:linear-gradient(150deg,#fff,#f8fafc)!important;border-color:#dbe4ee!important}
+body.light-mode .boleto-summary-grid>article,body.light-mode .boleto-installment-dates>div{background:#fff;border-color:#dbe4ee}
+body.light-mode .boleto-input,body.light-mode #novoBoletoVencimento,body.light-mode #novoBoletoCategoria,body.light-mode #novoBoletoPagoPor,body.light-mode #novoBoletoObs{background:#fff!important;color:#1e293b!important;border-color:#cbd5e1!important}
