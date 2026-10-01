@@ -76,6 +76,58 @@
 </style><style>
 .destaque-planejamento{border-color:rgba(39,215,160,.38)!important;background:rgba(39,215,160,.09)!important;color:#d8fff2!important}
 .destaque-planejamento:hover{background:rgba(39,215,160,.16)!important}
+</style>
+<style id="adm-visual-upgrades">
+/* Biobel ADM — refinamento visual V11 */
+.adm-hero{position:relative;overflow:hidden;background:linear-gradient(135deg,#0d1a2c 0%,#0b1728 55%,#10243a 100%)!important;border:1px solid rgba(39,215,160,.28)!important;box-shadow:0 16px 40px rgba(0,0,0,.18)}
+.adm-hero:after{content:"";position:absolute;width:180px;height:180px;right:-70px;top:-90px;border-radius:50%;background:rgba(39,215,160,.09);pointer-events:none}
+.adm-hero-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:7px}
+.adm-status-pill{display:inline-flex;align-items:center;gap:5px;border:1px solid rgba(39,215,160,.25);background:rgba(39,215,160,.07);color:#7ef2c8;border-radius:999px;padding:5px 9px;font-size:10px;font-weight:800}
+.adm-status-pill.neutro{border-color:#263850;background:#0b1728;color:#93a3ba}
+.adm-executive-btn{border:1px solid rgba(39,215,160,.28)!important;background:rgba(39,215,160,.08)!important;color:#bfffea!important}
+.adm-executive-btn.is-active{background:#27d7a0!important;color:#04241a!important}
+.adm-executive-panel{background:linear-gradient(135deg,rgba(39,215,160,.09),rgba(79,156,255,.05));border:1px solid rgba(39,215,160,.22);border-radius:18px;padding:14px}
+.adm-executive-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.adm-executive-title{font-size:15px;font-weight:950;color:#ecfff8}
+.adm-executive-sub{font-size:10.5px;color:#93a3ba;margin-top:3px}
+.adm-health{margin-top:12px;background:#07111f;border:1px solid #1c2c42;border-radius:13px;padding:10px 11px}
+.adm-health-head{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:10px;color:#93a3ba;font-weight:800}
+.adm-health-head strong{color:#dce5f2;font-size:11px}
+.adm-health-bar{height:10px;border-radius:999px;background:#101b2b;overflow:hidden;margin-top:8px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.03)}
+.adm-health-fill{height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#fb7185,#fbbf24,#27d7a0);transition:width .35s ease}
+.adm-health-note{font-size:9.5px;color:#71839c;margin-top:6px}
+.adm-kpi-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.adm-kpi-grid.resultado{grid-template-columns:repeat(2,minmax(0,1fr))}
+.adm-kpi-grid .adv-kpi{min-height:112px;display:flex;flex-direction:column;justify-content:center}
+.adm-kpi-grid .adv-kpi .value{font-size:22px;letter-spacing:-.02em}
+.adm-section-banner{display:flex;align-items:center;gap:10px;margin:18px 0 8px;padding:9px 12px;border-radius:12px;background:linear-gradient(90deg,rgba(79,156,255,.09),rgba(79,156,255,.02));border:1px solid rgba(79,156,255,.16);color:#dce5f2}
+.adm-section-banner .icon{font-size:18px}.adm-section-banner strong{font-size:11px;text-transform:uppercase;letter-spacing:.08em}.adm-section-banner span{font-size:9.5px;color:#71839c}
+.adm-fornecedor-destaque{background:linear-gradient(135deg,rgba(39,215,160,.15),rgba(39,215,160,.04))!important;border-color:rgba(39,215,160,.38)!important;color:#bfffea!important;box-shadow:0 6px 18px rgba(39,215,160,.06)}
+.adm-fornecedor-destaque:before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:#27d7a0;margin-right:5px;vertical-align:middle}
+#painelGastosSemanais{border-color:rgba(39,215,160,.22);background:linear-gradient(180deg,#0b1728,#091423)}
+#painelGastosSemanais .gasto-semanal-card{position:relative;overflow:hidden;min-height:175px;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+#painelGastosSemanais .gasto-semanal-card:hover{transform:translateY(-2px);border-color:rgba(39,215,160,.38);box-shadow:0 10px 24px rgba(0,0,0,.16)}
+#painelGastosSemanais .gasto-semanal-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:#27d7a0;opacity:.65}
+.gasto-semanal-total{background:rgba(39,215,160,.08);border-radius:10px;padding:6px 8px}
+#painelFinanceiroMensal{background:linear-gradient(180deg,#0b1728,#091423);border-color:rgba(79,156,255,.22)}
+#painelFinanceiroMensal .financeiro-mensal-card{box-shadow:0 7px 20px rgba(0,0,0,.12)}
+#graficoGastosMensaisWrap{background:#081424;border:1px solid #1c2c42;border-radius:15px;padding:12px;min-height:260px}
+#graficoGastosMensaisWrap canvas{width:100%!important;max-height:330px}
+.funcionario-ativo-item{min-height:78px;position:relative;overflow:hidden;transition:transform .15s ease,border-color .15s ease,background .15s ease}
+.funcionario-ativo-item:hover{transform:translateY(-1px);border-color:rgba(79,156,255,.35);background:#0d1c30}
+.funcionario-ativo-item:before{content:"";width:34px;height:34px;flex:0 0 34px;border-radius:50%;background:linear-gradient(135deg,#27d7a0,#4f9cff);position:absolute;left:11px;top:50%;transform:translateY(-50%);opacity:.18}
+.funcionario-ativo-item>div:first-child{padding-left:42px}
+.adm-ex-func-note{margin-top:9px;padding:8px 10px;border-radius:10px;background:rgba(148,163,184,.06);border:1px dashed rgba(148,163,184,.22);font-size:10px;color:#93a3ba}
+.adm-modo-executivo #painelGastosSemanais,.adm-modo-executivo #painelFinanceiroMensal,.adm-modo-executivo #admAncoraGastos~.adv-card,.adm-modo-executivo #admAncoraComissoes~.adv-card,.adm-modo-executivo #admAncoraFuncionarios~*,.adm-modo-executivo #admAncoraAgenda~*{display:none!important}
+.adm-modo-executivo .adm-executive-panel{display:block!important}
+.adm-modo-executivo #admAncoraResumo~.adv-card[style*="border-color:rgba(79,156,255,.35)"]{display:none}
+@media(max-width:900px){.adm-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.adm-kpi-grid.resultado{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){
+ .adm-hero{padding:14px!important}.adm-hero .adm-hero-actions{width:100%;display:grid!important;grid-template-columns:1fr 1fr;gap:7px}.adm-hero .adm-hero-actions button{width:100%}
+ .adm-kpi-grid,.adm-kpi-grid.resultado{grid-template-columns:1fr 1fr;gap:8px}.adm-kpi-grid .adv-kpi{min-height:96px;padding:10px}.adm-kpi-grid .adv-kpi .value{font-size:18px}
+ .adm-section-banner{margin-top:14px}
+}
+@media(max-width:430px){.adm-kpi-grid,.adm-kpi-grid.resultado{grid-template-columns:1fr}.adm-kpi-grid .adv-kpi .value{font-size:20px}.adm-health-head{align-items:flex-start;flex-direction:column;gap:3px}}
 </style></head><body data-biobel-page="adm" class="min-h-screen bg-slate-950 text-slate-100">
 <div id="faixaMensagemProgramada" style="display:none;"></div>
 <div id="tourGuiadoOverlay" style="display:none;"></div>
@@ -106,13 +158,18 @@
  </div>
 
  <div id="admConteudoWrap" style="display:none;">
-  <div class="adv-card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
-   <div>
-    <h3 style="margin:0;">👑 Área da Gerência</h3>
-    <p style="font-size:12px;color:#93a3ba;margin-top:2px;" id="admUsuarioLogadoTexto">Gastos fixos, boletos de fornecedores e comissões da equipe.</p>
+  <div class="adv-card adm-hero" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding:18px;">
+   <div style="position:relative;z-index:1;">
+    <div style="font-size:10px;font-weight:900;letter-spacing:.12em;color:#27d7a0;text-transform:uppercase;">PAINEL ADMINISTRATIVO</div>
+    <h3 style="margin:3px 0 0;font-size:20px;">👑 Administração Biobel</h3>
+    <p style="font-size:12px;color:#93a3ba;margin-top:3px;" id="admUsuarioLogadoTexto">Financeiro, equipe, fornecedores e planejamento.</p>
+    <div class="adm-hero-meta"><span class="adm-status-pill">● Sistema online</span><span class="adm-status-pill neutro" id="admMesAtualPill">🗓️ Período atual</span><span class="adm-status-pill neutro" id="admUltimaAtualizacaoPill">↻ Dados atualizados</span></div>
    </div>
-   <button id="btnExportarPdfAdm" onclick="gerarResumoAdmPDF()" class="bg-purple-600 hover:bg-purple-500 px-4 py-2 rounded-xl font-semibold text-sm" style="background:#8b5cf6;color:#fff;">📑 Exportar PDF</button>
-   <button onclick="sairAdm()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl font-semibold text-sm">🔒 Sair da área da gerência</button>
+   <div class="adm-hero-actions" style="display:flex;gap:7px;flex-wrap:wrap;position:relative;z-index:1;">
+    <button type="button" class="adm-executive-btn" id="btnModoExecutivoAdm" onclick="alternarModoExecutivoAdm()">👑 Visão Executiva</button>
+    <button id="btnExportarPdfAdm" onclick="gerarResumoAdmPDF()" class="bg-purple-600 hover:bg-purple-500 px-4 py-2 rounded-xl font-semibold text-sm" style="background:#8b5cf6;color:#fff;">📑 PDF</button>
+    <button onclick="sairAdm()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl font-semibold text-sm">🔒 Sair</button>
+   </div>
   </div>
 
   <nav class="adm-shortcut-nav no-print" aria-label="Atalhos da área ADM" style="position:relative;top:auto;z-index:1;background:rgba(13,26,44,.96);border:1px solid #1c2c42;border-radius:14px;padding:8px 12px;margin:10px 0 12px;">
@@ -127,7 +184,7 @@
     <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraGastos')">🏠 Gastos</button>
     <button type="button" class="config-chip destaque-planejamento" onclick="isolarSecaoAdm('admAncoraPlanejamentoSemanal')">📅 Gastos por semana</button>
     <button type="button" class="config-chip" onclick="isolarSecaoAdm('admAncoraPlanejamentoMensal')">📊 Mês a mês</button>
-    <a href="administracao/fornecedor.html" class="config-chip" style="text-decoration:none;">🤝 Fornecedores</a>
+    <a href="administracao/fornecedor.html" class="config-chip adm-fornecedor-destaque" style="text-decoration:none;">🤝 Fornecedores</a>
    </div>
    <div class="adm-shortcut-group">
     <span class="adm-shortcut-group-label">👥 Pessoas</span>
@@ -148,11 +205,22 @@
   </div>
   <div id="admResumoAtencao" style="display:none;"></div>
   <div id="admAncoraResumo"></div>
+  <section class="adm-executive-panel" id="admExecutivePanel" aria-label="Visão executiva">
+   <div class="adm-executive-head">
+    <div><div class="adm-executive-title">📊 Visão Executiva do Mês</div><div class="adm-executive-sub">Os principais números da Biobel em uma leitura rápida.</div></div>
+    <span class="adm-status-pill neutro" id="admExecutiveStatus">Aguardando dados...</span>
+   </div>
+   <div class="adm-health">
+    <div class="adm-health-head"><span>Saúde financeira visual</span><strong id="admHealthText">Calculando...</strong></div>
+    <div class="adm-health-bar"><div class="adm-health-fill" id="admHealthFill"></div></div>
+    <div class="adm-health-note" id="admHealthNote">Compara faturamento e custos previstos do período atual. É um indicador visual, não substitui a análise contábil.</div>
+   </div>
+  </section>
 
   <div class="adv-card" style="border-color:rgba(79,156,255,.35);">
    <div class="adv-card-title">
     <h3>💳 Chaves PIX — Pagamento Rápido</h3>
-    <span>pra pagar a Gabriela e a Day sem precisar procurar em outro lugar</span>
+    <span>chaves cadastradas para pagamentos rápidos da equipe</span>
    </div>
    <div id="conteudoChavesPixAdm"></div>
   </div>
@@ -200,6 +268,7 @@
 
   <div id="admAlertaFluxoCaixa" style="display:none;"></div>
 
+  <div class="adm-section-banner"><span class="icon">💰</span><div><strong>Financeiro</strong><span>planejamento, custos e evolução</span></div></div>
   <div id="admAncoraPlanejamentoSemanal"></div>
 
   <div class="adv-card" id="painelGastosSemanais">
@@ -289,10 +358,10 @@
    <div id="historicoFechamentosMensais" style="margin-top:16px;"></div>
   </div>
 
-  <div class="adv-card">
+  <div class="adv-card adm-evolucao-financeira">
    <div class="adv-card-title">
-    <h3>📊 Gastos ao Longo do Tempo</h3>
-    <span>compara os períodos já encerrados formalmente (use o botão "Encerrar este período" acima pra ir guardando histórico)</span>
+    <h3>📈 Evolução dos Gastos Mensais</h3>
+    <span>compare visualmente os períodos já encerrados formalmente e acompanhe a evolução dos custos</span>
    </div>
    <div id="graficoGastosMensaisWrap">
     <div style="max-width:100%;"><canvas id="graficoGastosMensais" role="img" aria-label="Gráfico comparando gastos entre os meses encerrados"></canvas></div>
@@ -340,11 +409,12 @@
    <p style="font-size:11px;color:#93a3ba;margin-top:8px;">💡 Pode deixar o valor em branco pra cadastrar o nome agora e preencher o valor depois — vai aparecer como "⚠️ A definir".</p>
   </div>
 
+    <div class="adm-section-banner"><span class="icon">👥</span><div><strong>Pessoas</strong><span>comissões, equipe e histórico</span></div></div>
     <div id="admAncoraComissoes"></div>
   <div class="adv-card">
    <div class="adv-card-title">
-    <h3>🎯 Comissão por Metas (Gabriela e Day)</h3>
-    <span>cada nível tem um valor que a Gabriela E a Day recebem, cada uma — só as duas participam disso</span>
+    <h3>🎯 Comissão por Metas</h3>
+    <span>cada nível tem os valores definidos para a política de comissão cadastrada</span>
    </div>
    <div id="statusNivelComissao" style="margin-bottom:16px;"></div>
 
@@ -768,6 +838,7 @@
    <div id="listaComissoes" style="display:flex;flex-direction:column;gap:12px;"></div>
   </div>
 
+  <div class="adm-section-banner"><span class="icon">🗓️</span><div><strong>Planejamento</strong><span>agenda e compromissos da operação</span></div></div>
   <div id="admAncoraAgenda"></div>
   <div class="grupo-adm-header" data-grupo="agenda" onclick="alternarGrupoAdm('agenda')" style="display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#1a1408,#0f1a08);border:1px solid rgba(163,230,53,.35);border-radius:16px;padding:16px 20px;cursor:pointer;position:relative;overflow:hidden;">
    <span style="position:absolute;right:-10px;top:-10px;font-size:70px;opacity:.08;pointer-events:none;">🗓️</span>
@@ -822,8 +893,7 @@
   const el=document.getElementById('listaFuncionariosAtivosResumo');
   if(!el)return;
   const pessoas=[
-   {chave:'gabriela',nome:'Gabriela',vinculo:'CLT',cadastro:'📅 Dados de Gabriela (CLT)',desligamento:'cardDesligamentoGabriela'},
-   {chave:'day',nome:'Day',vinculo:(typeof ehDayClt==='function'&&ehDayClt())?'CLT':'Estágio',cadastro:'📋 Dados de Day (Estágio)',desligamento:'cardDesligamentoDay'}
+   {chave:'day',nome:'Day',vinculo:(typeof ehDayClt==='function'&&ehDayClt())?'CLT':'Estágio'}
   ];
   el.innerHTML=pessoas.map(p=>{
    const saiu=typeof getDesligamento==='function'&&!!getDesligamento(p.chave);
@@ -831,10 +901,19 @@
    return '<article class="funcionario-ativo-item'+(saiu?' inativo':'')+'">'+
     '<div><div class="nome">'+p.nome+'</div><div class="vinculo">'+p.vinculo+'</div><div class="estado">'+status+'</div></div>'+
     '<div class="funcionario-ativo-acoes">'+
-     (!saiu?'<button type="button" onclick="mostrarSubAbaFuncionarios(\'cadastro\')">📝 Cadastro</button>':'<button type="button" onclick="mostrarSubAbaFuncionarios(\'ex\')">🗄️ Histórico</button>')+
-     '<button type="button" onclick="mostrarSubAbaFuncionarios(\'desligamentos\')">🚪 Saída</button>'+
+     (!saiu?'<button type="button" onclick="mostrarSubAbaFuncionarios(\\'cadastro\\')">📝 Cadastro</button>':'<button type="button" onclick="mostrarSubAbaFuncionarios(\\'ex\\')">🗄️ Histórico</button>')+
+     '<button type="button" onclick="mostrarSubAbaFuncionarios(\\'desligamentos\\')">🚪 Saída</button>'+
     '</div></article>';
   }).join('');
+  const painel=document.getElementById('painelFuncionariosAtivos');
+  if(painel&&!document.getElementById('admGabrielaHistoricoNote')){
+   const note=document.createElement('div');
+   note.id='admGabrielaHistoricoNote';
+   note.className='adm-ex-func-note';
+   note.innerHTML='🗄️ <strong>Gabriela</strong> está no histórico de ex-funcionários desde o desligamento informado. Os dados cadastrais antigos continuam disponíveis para consulta.';
+   const resumo=painel.querySelector('.funcionarios-ativos-resumo');
+   if(resumo)resumo.appendChild(note);
+  }
  }
  window.mostrarSubAbaFuncionarios=function(aba){
   const valido=['ativos','cadastro','consulta','desligamentos','ex'];
@@ -931,4 +1010,48 @@ function renderPlanejamentoGastosSemanais(){
  }
 }
 renderPlanejamentoGastosSemanais();
+</script><script>
+(function(){
+ function valorAdm(id){
+  const el=document.getElementById(id); if(!el)return 0;
+  const n=String(el.textContent||'').replace(/[^0-9,.-]/g,'').replace(/\./g,'').replace(',','.');
+  const v=parseFloat(n); return Number.isFinite(v)?v:0;
+ }
+ function atualizarExecutivo(){
+  const fat=valorAdm('admFaturamentoResumo');
+  const custos=valorAdm('admTotalGastosGeral');
+  const lucro=valorAdm('admLucroEstimado');
+  const pct=fat>0?Math.max(0,Math.min(100,(1-(custos/fat))*100)):0;
+  const fill=document.getElementById('admHealthFill');
+  const textEl=document.getElementById('admHealthText');
+  const note=document.getElementById('admHealthNote');
+  const status=document.getElementById('admExecutiveStatus');
+  if(fill)fill.style.width=pct+'%';
+  if(textEl)textEl.textContent=fat>0?(pct.toFixed(0)+'% de cobertura após custos'):'Aguardando faturamento';
+  if(note)note.textContent=fat>0?'Faturamento '+money(fat)+' · custos '+money(custos)+' · lucro estimado '+money(lucro)+'.':'Cadastre ou sincronize os dados para calcular o indicador visual.';
+  if(status)status.textContent=fat>0?'Dados carregados':'Aguardando dados...';
+ }
+ window.alternarModoExecutivoAdm=function(){
+  const wrap=document.getElementById('admConteudoWrap'); const btn=document.getElementById('btnModoExecutivoAdm');
+  if(!wrap)return;
+  const ativo=wrap.classList.toggle('adm-modo-executivo');
+  if(btn){btn.classList.toggle('is-active',ativo);btn.textContent=ativo?'↩️ Voltar ao completo':'👑 Visão Executiva';}
+  localStorage.setItem('biobel_adm_modo_executivo',ativo?'1':'0');
+ };
+ function iniciar(){
+  const wrap=document.getElementById('admConteudoWrap'); if(!wrap)return;
+  if(localStorage.getItem('biobel_adm_modo_executivo')==='1'){
+   wrap.classList.add('adm-modo-executivo');
+   const btn=document.getElementById('btnModoExecutivoAdm'); if(btn){btn.classList.add('is-active');btn.textContent='↩️ Voltar ao completo';}
+  }
+  const d=new Date();
+  const meses=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const pill=document.getElementById('admMesAtualPill'); if(pill)pill.textContent='🗓️ '+meses[d.getMonth()]+'/'+d.getFullYear();
+  atualizarExecutivo();
+  const obs=new MutationObserver(atualizarExecutivo);
+  ['admFaturamentoResumo','admTotalGastosGeral','admLucroEstimado'].forEach(id=>{const el=document.getElementById(id);if(el)obs.observe(el,{childList:true,subtree:true,characterData:true});});
+  setInterval(atualizarExecutivo,3000);
+ }
+ setTimeout(iniciar,800);
+})();
 </script></body></html>
