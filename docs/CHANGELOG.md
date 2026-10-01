@@ -1,3 +1,10 @@
+## v10.80 — 01/10/2026
+- Corrigido o resumo financeiro da Administração para considerar **boletos/parcelas pelo mês de vencimento**.
+- Uma compra parcelada não é mais somada inteira no mês atual; cada parcela entra no respectivo mês.
+- DRE simplificado passou a deixar claro que os gastos variáveis são as parcelas/boletos do mês atual.
+- Resumo superior reorganizado em dois blocos: **Custos previstos do mês** e **Resultado do mês**.
+- Corrigida uma duplicidade do indicador de “último salvamento” no resumo.
+
 ## v10.79 — 01/10/2026
 - Área de **Funcionários** reorganizada em subtabs: **Ativos, Cadastro, Consulta, Desligamentos e Ex-funcionários**.
 - A aba **Ativos** mostra rapidamente quem está na equipe e o vínculo atual.
