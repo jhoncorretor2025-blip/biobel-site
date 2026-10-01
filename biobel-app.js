@@ -6478,6 +6478,96 @@ function renderGraficoPizzaAdm(faturamento, gastosFixos, boletos, comissoesEBonu
  });
 }
 
+function getMetaLucroMensal(){
+ try{return parseValorSimples(localStorage.getItem('biobel_adm_meta_lucro_mensal')||'0')||0;}catch(e){return 0;}
+}
+function salvarMetaLucroMensal(){
+ const input=document.getElementById('metaLucroMensalInput');
+ const valor=parseValorSimples(input?.value||'');
+ if(isNaN(valor)||valor<0){mostrarToast('⚠️ Digite uma meta de lucro válida.');return;}
+ localStorage.setItem('biobel_adm_meta_lucro_mensal',String(valor));
+ if(input)input.value=valor?valor.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'';
+ mostrarToast('✅ Meta de lucro mensal salva!');
+ renderPlanejamentoFinanceiroMensal();
+ registrarAlteracao('Meta de lucro mensal definida em '+money(valor));
+ renderLogAlteracoes();
+}
+function chaveMesFinanceiro(ano,mes){
+ return String(ano)+'-'+String(mes).padStart(2,'0');
+}
+function getGastoVariavelPorMesFinanceiro(ano,mes){
+ const alvo=chaveMesFinanceiro(ano,mes);
+ return getBoletos().reduce((s,b)=>{
+  let data=null;
+  if(b.vencimento){
+   const d=new Date(b.vencimento+'T00:00:00');
+   if(!isNaN(d.getTime()))data=chaveMesFinanceiro(d.getFullYear(),d.getMonth()+1);
+  }
+  if(!data&&b.criadoEm){
+   const d=new Date(b.criadoEm);
+   if(!isNaN(d.getTime()))data=chaveMesFinanceiro(d.getFullYear(),d.getMonth()+1);
+  }
+  return s+(data===alvo?(Number(b.valor)||0):0);
+ },0);
+}
+function getFaturamentoPorMesFinanceiro(ano,mes){
+ return daysData.reduce((s,d)=>{
+  const partes=String(d.dia||'').split('.');
+  if(partes.length<2)return s;
+  const diaMes=Number(partes[1]);
+  if(diaMes!==mes)return s;
+  return s+(Number(d.sales)||0);
+ },0);
+}
+function renderPlanejamentoFinanceiroMensal(){
+ const el=document.getElementById('tabelaFinanceiroMensal');
+ if(!el)return;
+ const metaLucro=getMetaLucroMensal();
+ const input=document.getElementById('metaLucroMensalInput');
+ if(input&&!input.matches(':focus'))input.value=metaLucro?metaLucro.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'';
+ const agora=obterAgoraBrasilia();
+ const anoBase=agora.getFullYear(),mesBase=agora.getMonth()+1;
+ const meses=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+ const gastosFixos=getGastosFixos().reduce((s,g)=>s+(Number(g.valor)||0),0);
+ const imposto=getValorImpostoMensal();
+ const horaExtra=calcularCustoMensalHoraExtra();
+ const mensalExtras=imposto+horaExtra;
+ let rows=[];
+ for(let offset=0;offset<6;offset++){
+  const d=new Date(anoBase,mesBase-1+offset,1);
+  const ano=d.getFullYear(),mes=d.getMonth()+1;
+  const variavel=getGastoVariavelPorMesFinanceiro(ano,mes);
+  const base=gastosFixos+variavel+mensalExtras;
+  const alvo=base+metaLucro;
+  const vendido=getFaturamentoPorMesFinanceiro(ano,mes);
+  const falta=Math.max(0,alvo-vendido);
+  const atual=(ano===anoBase&&mes===mesBase);
+  rows.push({ano,mes,variavel,base,alvo,vendido,falta,atual});
+ }
+ const totalBase=rows.reduce((s,r)=>s+r.base,0);
+ const rAtual=rows[0];
+ const resumo=document.getElementById('resumoMetaLucroMensal');
+ if(resumo){
+  resumo.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:9px;">'+
+   '<div class="adv-kpi blue"><div class="label">🏠 Fixo mensal</div><div class="value">'+money(gastosFixos)+'</div><div class="sub">contas recorrentes cadastradas</div></div>'+
+   '<div class="adv-kpi gold"><div class="label">🧾 Variável do mês</div><div class="value">'+money(rAtual.variavel)+'</div><div class="sub">boletos com vencimento no mês</div></div>'+
+   '<div class="adv-kpi green"><div class="label">🎯 Faturamento mínimo</div><div class="value">'+money(rAtual.base)+'</div><div class="sub">para cobrir os custos cadastrados</div></div>'+
+   '<div class="adv-kpi purple"><div class="label">🚀 Com lucro desejado</div><div class="value">'+money(rAtual.alvo)+'</div><div class="sub">gastos + meta de lucro</div></div>'+
+  '</div>';
+ }
+ el.innerHTML='<div class="financeiro-mensal-table-wrap"><table class="financeiro-mensal-table"><thead><tr><th>Mês</th><th>Gastos fixos</th><th>Variáveis</th><th>Outros</th><th>Gasto previsto</th><th>Faturamento mínimo</th><th>Meta com lucro</th><th>Faturado</th><th>Falta</th><th>Status</th></tr></thead><tbody>'+
+ rows.map(r=>{
+  const outros=mensalExtras;
+  let status='Planejado',cls='financeiro-warn';
+  if(r.atual){
+    if(r.vendido>=r.alvo){status='Meta atingida';cls='financeiro-ok';}
+    else if(r.vendido>=r.base){status='Custos cobertos';cls='financeiro-ok';}
+    else if(r.vendido>0){status='Faltam '+money(r.falta);cls='financeiro-danger';}
+    else {status='Aguardando vendas';cls='financeiro-warn';}
+  }
+  return '<tr class="'+(r.atual?'financeiro-mensal-current':'')+'"><td><strong>'+meses[r.mes-1]+'/'+r.ano+'</strong>'+(r.atual?' <span class="financeiro-badge financeiro-ok">ATUAL</span>':'')+'</td><td>'+money(gastosFixos)+'</td><td>'+money(r.variavel)+'</td><td>'+money(outros)+'</td><td><strong>'+money(r.base)+'</strong></td><td>'+money(r.base)+'</td><td><strong>'+money(r.alvo)+'</strong></td><td>'+money(r.vendido)+'</td><td>'+money(r.falta)+'</td><td><span class="financeiro-badge '+cls+'">'+status+'</span></td></tr>';
+ }).join('')+'</tbody></table></div>';
+}
 function renderPontoEquilibrio(gastosFixos, boletos, faturamento){
  const el = document.getElementById('resumoPontoEquilibrio');
  if(!el) return;
