@@ -1,3 +1,7 @@
+## v10.57 — 01/10/2026
+- A área de comparação passa a ser carregada automaticamente ao abrir a subaba Comparar.
+- Meses históricos, como Setembro, podem ser preparados para comparação sem alterar a planilha ativa.
+
 ## v10.56 — 01/10/2026
 - Meses históricos podem ser carregados em segundo plano para comparação sem trocar a planilha ativa.
 - Setembro 2026 ganha ação direta “↔ Comparar”.
