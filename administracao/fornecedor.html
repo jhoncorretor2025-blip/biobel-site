@@ -77,6 +77,21 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
 .supplier-history-list{display:flex;flex-direction:column;gap:7px}.supplier-history-item{display:flex;justify-content:space-between;gap:12px;padding:10px 12px;background:#081424;border:1px solid #1c2c42;border-radius:10px}.supplier-history-item>div:last-child{text-align:right}.supplier-history-item strong{display:block;font-size:11.5px}.supplier-history-item span{display:block;color:#93a3ba;font-size:10px;margin-top:3px}
 @media(max-width:800px){.supplier-summary-cards{grid-template-columns:1fr}.supplier-summary-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.supplier-smart-controls{display:block}.supplier-filter-chips{overflow:auto;padding-bottom:3px;flex-wrap:nowrap}.supplier-chip{white-space:nowrap}.supplier-summary-kpis{grid-template-columns:1fr 1fr}.supplier-history-item{flex-direction:column}.supplier-history-item>div:last-child{text-align:left}}
+.supplier-overview-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.supplier-overview-card{background:#081424;border:1px solid #1c2c42;border-radius:14px;padding:13px}
+.supplier-overview-title{display:flex;gap:9px;align-items:center;margin-bottom:10px}.supplier-overview-title>span{font-size:20px}.supplier-overview-title strong,.supplier-overview-title small{display:block}.supplier-overview-title strong{font-size:12px}.supplier-overview-title small{color:#93a3ba;font-size:10px;margin-top:2px}
+.supplier-payment-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.supplier-payment-kpis>div{background:#0b1728;border:1px solid #1c2c42;border-radius:9px;padding:9px}.supplier-payment-kpis small{display:block;color:#93a3ba;font-size:9px}.supplier-payment-kpis strong{display:block;font-size:13px;margin-top:3px}
+.supplier-alert-center{display:flex;flex-direction:column;gap:6px}.supplier-alert-center-item{padding:8px 10px;border-radius:9px;background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.2);color:#fcd34d;font-size:10.5px}.supplier-alert-center-ok{padding:10px;border-radius:9px;background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.18);color:#86efac;font-size:10.5px}
+.supplier-calendar-panel{margin-top:14px}.supplier-month-input{background:#07111f;border:1px solid #263a53;color:#dce5f2;border-radius:9px;padding:8px 10px}
+.supplier-calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}.supplier-calendar-head{color:#93a3ba;font-size:9px;text-align:center;font-weight:900;padding:4px}.supplier-calendar-day{min-height:72px;background:#081424;border:1px solid #1c2c42;border-radius:9px;padding:6px}.supplier-calendar-day.is-today{border-color:rgba(39,215,160,.55)}.supplier-calendar-day-number{font-size:10px;font-weight:900}.supplier-calendar-event{margin-top:4px;padding:3px 5px;border-radius:6px;background:rgba(14,169,122,.1);color:#86efac;font-size:8.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.supplier-calendar-event.pending{background:rgba(251,191,36,.1);color:#fcd34d}.supplier-calendar-event.overdue{background:rgba(251,113,133,.1);color:#fda4af}
+.supplier-month-chart{display:flex;align-items:flex-end;gap:8px;height:210px;overflow-x:auto;padding:12px 4px 4px}.supplier-month-col{min-width:62px;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:5px}.supplier-month-value{font-size:8.5px;color:#93a3ba;white-space:nowrap}.supplier-month-bar-wrap{height:145px;width:30px;display:flex;align-items:flex-end;background:#07111f;border-radius:7px;overflow:hidden}.supplier-month-bar{width:100%;background:linear-gradient(180deg,#27d7a0,#0ea97a);border-radius:7px 7px 0 0;min-height:2px}.supplier-month-label{font-size:8.5px;color:#93a3ba}
+.supplier-ranking{display:flex;flex-direction:column;gap:7px}.supplier-ranking-row{display:grid;grid-template-columns:34px 1fr auto;gap:9px;align-items:center;padding:10px;background:#081424;border:1px solid #1c2c42;border-radius:10px}.supplier-ranking-pos{width:28px;height:28px;border-radius:8px;background:#0b1728;display:grid;place-items:center;font-weight:900;font-size:11px}.supplier-ranking-main strong,.supplier-ranking-main span{display:block}.supplier-ranking-main strong{font-size:11.5px}.supplier-ranking-main span{font-size:9.5px;color:#93a3ba;margin-top:3px}.supplier-ranking-value{text-align:right}.supplier-ranking-value strong,.supplier-ranking-value span{display:block}.supplier-ranking-value strong{font-size:11px}.supplier-ranking-value span{font-size:9px;color:#93a3ba;margin-top:3px}
+.supplier-detail-modal{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:18px}.supplier-detail-modal.hidden{display:none!important}.supplier-detail-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(4px)}.supplier-detail-dialog{position:relative;width:min(980px,100%);max-height:90vh;overflow:auto;background:#07111f;border:1px solid #263a53;border-radius:18px;padding:16px;box-shadow:0 24px 70px rgba(0,0,0,.4)}.supplier-detail-dialog .top-actions{justify-content:flex-end}.supplier-detail-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}.supplier-detail-kpi{background:#0b1728;border:1px solid #1c2c42;border-radius:10px;padding:10px}.supplier-detail-kpi small{display:block;color:#93a3ba;font-size:9px}.supplier-detail-kpi strong{display:block;font-size:14px;margin-top:4px}.supplier-detail-table{width:100%;border-collapse:collapse;min-width:650px}.supplier-detail-table th,.supplier-detail-table td{padding:8px;border-bottom:1px solid #1c2c42;text-align:left;font-size:10.5px}.supplier-detail-table th{color:#93a3ba;font-size:9px;text-transform:uppercase}
+@media(max-width:800px){.supplier-overview-grid{grid-template-columns:1fr}.supplier-detail-kpis{grid-template-columns:1fr 1fr}.supplier-calendar-day{min-height:62px}}
+@media(max-width:520px){.supplier-payment-kpis{grid-template-columns:1fr}.supplier-calendar{gap:3px}.supplier-calendar-day{min-height:56px;padding:4px}.supplier-calendar-event{font-size:7.5px}.supplier-month-chart{height:180px}.supplier-month-bar-wrap{height:120px}.supplier-detail-dialog{padding:12px}.supplier-detail-dialog .top-actions{width:100%}.supplier-detail-dialog .top-actions .btn{flex:1}.supplier-detail-kpis{grid-template-columns:1fr 1fr}}
+
+
+@media print{body{background:#fff!important;color:#111!important}.supplier-detail-backdrop{display:none!important}.supplier-detail-modal{position:static!important;padding:0!important}.supplier-detail-dialog{box-shadow:none!important;border:0!important;max-height:none!important;width:100%!important;background:#fff!important;color:#111!important}.supplier-detail-dialog .top-actions{display:none!important}.supplier-detail-table th,.supplier-detail-table td{color:#111!important;border-color:#ddd!important}.supplier-detail-kpi{background:#fff!important;border-color:#ddd!important}.supplier-detail-kpi small{color:#666!important}}
 </style>
 </head>
 <body data-biobel-page="fornecedores" data-biobel-root="../">
@@ -292,10 +307,59 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
           <button type="button" class="supplier-chip" data-filter="maiores" onclick="selecionarFiltroFornecedor('maiores')">💰 Maiores gastos</button>
         </div>
       </div>
+      <div class="supplier-overview-grid">
+        <div class="supplier-overview-card">
+          <div class="supplier-overview-title"><span>💳</span><div><strong>Resumo financeiro</strong><small>Pagamentos dos fornecedores</small></div></div>
+          <div id="resumoPagamentosFornecedores" class="supplier-payment-kpis"></div>
+        </div>
+        <div class="supplier-overview-card">
+          <div class="supplier-overview-title"><span>🚨</span><div><strong>Central de alertas</strong><small>Pendências que merecem atenção</small></div></div>
+          <div id="centralAlertasFornecedores" class="supplier-alert-center"></div>
+        </div>
+      </div>
+
+      <div class="panel supplier-calendar-panel">
+        <div class="section-head">
+          <div><h2>📅 Calendário de compras</h2><p class="sub">Veja compras e vencimentos por mês.</p></div>
+          <input id="mesCalendarioFornecedor" class="supplier-month-input" type="month" onchange="renderCalendarioFornecedores()">
+        </div>
+        <div id="calendarioFornecedores" class="supplier-calendar"></div>
+      </div>
+
+      <div class="panel">
+        <div class="section-head">
+          <div><h2>📈 Evolução mensal dos gastos</h2><p class="sub">Comparação objetiva do valor dos boletos por mês.</p></div>
+          <span class="flow-badge">Últimos 12 meses</span>
+        </div>
+        <div id="evolucaoMensalFornecedores" class="supplier-month-chart"></div>
+      </div>
+
+      <div class="panel">
+        <div class="section-head">
+          <div><h2>🏆 Ranking de fornecedores</h2><p class="sub">Ordenado por valor total comprado, com quantidade e valor médio por compra.</p></div>
+        </div>
+        <div id="rankingFornecedores" class="supplier-ranking"></div>
+      </div>
+
       <div id="resumoFornecedoresCards" class="supplier-summary-cards"></div>
     </div>
     <div class="panel" id="historicoDetalhadoFornecedor" style="display:none;"></div>
   </section>
+
+  <div id="modalDetalhesFornecedor" class="supplier-detail-modal hidden" role="dialog" aria-modal="true" aria-labelledby="tituloDetalhesFornecedor">
+    <div class="supplier-detail-backdrop" onclick="fecharDetalhesFornecedor()"></div>
+    <div class="supplier-detail-dialog">
+      <div class="section-head">
+        <div><h2 id="tituloDetalhesFornecedor">🏪 Fornecedor</h2><p id="subtituloDetalhesFornecedor" class="sub"></p></div>
+        <div class="top-actions">
+          <button type="button" class="btn" onclick="imprimirDetalhesFornecedor()">🖨️ PDF</button>
+          <button type="button" class="btn primary" onclick="compartilharDetalhesFornecedor()">📲 WhatsApp</button>
+          <button type="button" class="btn" onclick="fecharDetalhesFornecedor()">✕ Fechar</button>
+        </div>
+      </div>
+      <div id="conteudoDetalhesFornecedor"></div>
+    </div>
+  </div>
 
   <section id="abaHistorico" class="hidden">
     <div class="panel">
@@ -355,7 +419,7 @@ function mostrarAbaFornecedor(aba){
     document.getElementById('tab'+x.charAt(0).toUpperCase()+x.slice(1)).classList.toggle('active',x===aba);
   });
   if(aba==='historico')renderHistoricoFornecedores();
-  if(aba==='resumoFornecedor')renderVisaoFornecedores();
+  if(aba==='resumoFornecedor')atualizarVisaoCompletaFornecedores();
   atualizarResumoGastosVariaveisFornecedores();
   if(aba==='conferencia')renderConferenciaPagina();
   if(aba==='analise'){renderAnaliseTiposProdutos();renderAnaliseFornecedores();}
@@ -582,6 +646,94 @@ function renderAnaliseTiposProdutos(){
   }
 }
 
+function renderResumoPagamentosFornecedores(){
+  const boletos=typeof getBoletos==='function'?getBoletos():[];
+  const total=boletos.reduce((s,b)=>s+(Number(b.valor)||0),0);
+  const pago=boletos.filter(b=>b.pago).reduce((s,b)=>s+(Number(b.valor)||0),0);
+  const pendente=total-pago;
+  const pct=total?Math.round(pago/total*100):0;
+  const el=document.getElementById('resumoPagamentosFornecedores');
+  if(el)el.innerHTML='<div><small>Total</small><strong>'+money(total)+'</strong></div><div><small>Pago</small><strong>'+money(pago)+'</strong></div><div><small>Pendente</small><strong>'+money(pendente)+'</strong></div><div><small>% pago</small><strong>'+pct+'%</strong></div>';
+}
+function renderCentralAlertasFornecedores(){
+  const boletos=typeof getBoletos==='function'?getBoletos():[];
+  const hoje=new Date();hoje.setHours(0,0,0,0);
+  const vencidos=boletos.filter(b=>!b.pago&&b.vencimento&&new Date(b.vencimento+'T00:00:00')<hoje);
+  const proximos=boletos.filter(b=>!b.pago&&b.vencimento&&((new Date(b.vencimento+'T00:00:00')-hoje)/86400000)>=0&&((new Date(b.vencimento+'T00:00:00')-hoje)/86400000)<=7);
+  const semFornecedor=boletos.filter(b=>!String(b.fornecedor||'').trim());
+  const semValor=boletos.filter(b=>!(Number(b.valor)>0));
+  const alertas=[];
+  if(vencidos.length)alertas.push('⏰ '+vencidos.length+' boleto(s) vencido(s) e ainda pendente(s).');
+  if(proximos.length)alertas.push('📆 '+proximos.length+' boleto(s) vencem nos próximos 7 dias.');
+  if(semFornecedor.length)alertas.push('🧩 '+semFornecedor.length+' boleto(s) estão sem fornecedor.');
+  if(semValor.length)alertas.push('💰 '+semValor.length+' boleto(s) estão sem valor válido.');
+  const el=document.getElementById('centralAlertasFornecedores');
+  if(el)el.innerHTML=alertas.length?alertas.slice(0,6).map(a=>'<div class="supplier-alert-center-item">'+a+'</div>').join(''):'<div class="supplier-alert-center-ok">✅ Nenhuma pendência crítica encontrada.</div>';
+}
+function renderCalendarioFornecedores(){
+  const el=document.getElementById('calendarioFornecedores'); if(!el)return;
+  const input=document.getElementById('mesCalendarioFornecedor');
+  const now=new Date();
+  const value=input?.value||now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  if(input&&!input.value)input.value=value;
+  const [ano,mes]=value.split('-').map(Number);
+  const boletos=typeof getBoletos==='function'?getBoletos():[];
+  const dias=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const primeiro=new Date(ano,mes-1,1), ultimo=new Date(ano,mes,0);
+  let html=dias.map(d=>'<div class="supplier-calendar-head">'+d+'</div>').join('');
+  for(let i=0;i<primeiro.getDay();i++)html+='<div></div>';
+  for(let d=1;d<=ultimo.getDate();d++){
+    const iso=ano+'-'+String(mes).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const dia=new Date(ano,mes-1,d); const hoje=new Date(); hoje.setHours(0,0,0,0);
+    const eventos=boletos.filter(b=>String(b.vencimento||'')===iso);
+    html+='<div class="supplier-calendar-day '+(dia.toDateString()===hoje.toDateString()?'is-today':'')+'"><div class="supplier-calendar-day-number">'+d+'</div>'+
+      eventos.slice(0,3).map(b=>'<div class="supplier-calendar-event '+(b.pago?'':(dia<hoje?'overdue':'pending'))+'">'+esc(b.fornecedor||'Sem fornecedor')+' · '+money(Number(b.valor)||0)+'</div>').join('')+
+      (eventos.length>3?'<div class="supplier-calendar-event">+'+(eventos.length-3)+' compra(s)</div>':'')+'</div>';
+  }
+  el.innerHTML=html;
+}
+function renderEvolucaoMensalFornecedores(){
+  const el=document.getElementById('evolucaoMensalFornecedores'); if(!el)return;
+  const boletos=typeof getBoletos==='function'?getBoletos():[];
+  const hoje=new Date(); const meses=[];
+  for(let i=11;i>=0;i--){const d=new Date(hoje.getFullYear(),hoje.getMonth()-i,1);meses.push({ano:d.getFullYear(),mes:d.getMonth()+1,total:0});}
+  boletos.forEach(b=>{if(!b.vencimento)return;const d=new Date(b.vencimento+'T00:00:00');const m=meses.find(x=>x.ano===d.getFullYear()&&x.mes===d.getMonth()+1);if(m)m.total+=Number(b.valor)||0;});
+  const max=Math.max(...meses.map(m=>m.total),0);
+  el.innerHTML=meses.map(m=>{const h=max?Math.max(2,(m.total/max)*100):2;const label=String(m.mes).padStart(2,'0')+'/'+String(m.ano).slice(2);return '<div class="supplier-month-col"><div class="supplier-month-value">'+money(m.total)+'</div><div class="supplier-month-bar-wrap"><div class="supplier-month-bar" style="height:'+h+'%"></div></div><div class="supplier-month-label">'+label+'</div></div>';}).join('');
+}
+function renderRankingFornecedores(){
+  const el=document.getElementById('rankingFornecedores'); if(!el)return;
+  const boletos=typeof getBoletos==='function'?getBoletos():[]; const grupos={};
+  boletos.forEach(b=>{const nome=String(b.fornecedor||'').trim();if(!nome)return;const k=nome.toLowerCase();if(!grupos[k])grupos[k]={nome,total:0,qtd:0,pago:0};grupos[k].qtd++;grupos[k].total+=Number(b.valor)||0;if(b.pago)grupos[k].pago+=Number(b.valor)||0;});
+  const arr=Object.values(grupos).sort((a,b)=>b.total-a.total);
+  el.innerHTML=arr.length?arr.map((g,i)=>'<div class="supplier-ranking-row"><div class="supplier-ranking-pos">'+(i+1)+'</div><div class="supplier-ranking-main"><strong>'+esc(g.nome)+'</strong><span>'+g.qtd+' compra(s) · média '+money(g.total/g.qtd)+'</span></div><div class="supplier-ranking-value"><strong>'+money(g.total)+'</strong><span>'+Math.round((g.pago/g.total)*100)+'% pago</span></div></div>').join(''):'<div class="empty">Ainda não há fornecedores com compras registradas.</div>';
+}
+function abrirDetalhesFornecedor(nome){
+  const boletos=typeof getBoletos==='function'?getBoletos():[];
+  const encontrados=boletos.filter(b=>String(b.fornecedor||'').trim().toLowerCase()===String(nome||'').trim().toLowerCase()).sort((a,b)=>String(b.vencimento||'').localeCompare(String(a.vencimento||'')));
+  const modal=document.getElementById('modalDetalhesFornecedor'), box=document.getElementById('conteudoDetalhesFornecedor'), titulo=document.getElementById('tituloDetalhesFornecedor'), sub=document.getElementById('subtituloDetalhesFornecedor');
+  if(!modal||!box)return;
+  const total=encontrados.reduce((s,b)=>s+(Number(b.valor)||0),0), pago=encontrados.filter(b=>b.pago).reduce((s,b)=>s+(Number(b.valor)||0),0), pendente=total-pago;
+  window._fornecedorDetalheAtual=nome;
+  titulo.textContent='🏪 '+nome; sub.textContent=encontrados.length+' compra(s) · '+money(total)+' em compras';
+  box.innerHTML='<div class="supplier-detail-kpis"><div class="supplier-detail-kpi"><small>Total comprado</small><strong>'+money(total)+'</strong></div><div class="supplier-detail-kpi"><small>Pago</small><strong>'+money(pago)+'</strong></div><div class="supplier-detail-kpi"><small>Pendente</small><strong>'+money(pendente)+'</strong></div><div class="supplier-detail-kpi"><small>Compras</small><strong>'+encontrados.length+'</strong></div></div>'+
+    '<div class="table-wrap"><table class="supplier-detail-table"><thead><tr><th>Data/vencimento</th><th>Marca</th><th>Tipo</th><th>Valor</th><th>Status</th><th>Observação</th></tr></thead><tbody>'+
+    (encontrados.length?encontrados.map(b=>'<tr><td>'+esc(b.vencimento||'—')+'</td><td>'+esc(b.marca||'—')+'</td><td>'+esc(b.tipoProduto||'—')+'</td><td>'+money(Number(b.valor)||0)+'</td><td>'+(b.pago?'<span class="badge ok">Pago</span>':'<span class="badge warn">Pendente</span>')+'</td><td>'+esc(b.observacoes||b.obs||'—')+'</td></tr>').join(''):'<tr><td colspan="6">Nenhuma compra encontrada.</td></tr>')+
+    '</tbody></table></div>';
+  modal.classList.remove('hidden'); document.body.style.overflow='hidden';
+}
+function fecharDetalhesFornecedor(){const m=document.getElementById('modalDetalhesFornecedor');if(m)m.classList.add('hidden');document.body.style.overflow='';}
+function imprimirDetalhesFornecedor(){window.print();}
+function compartilharDetalhesFornecedor(){
+  const nome=window._fornecedorDetalheAtual||'Fornecedor';
+  const boletos=(typeof getBoletos==='function'?getBoletos():[]).filter(b=>String(b.fornecedor||'').trim().toLowerCase()===String(nome).trim().toLowerCase());
+  const total=boletos.reduce((s,b)=>s+(Number(b.valor)||0),0), pago=boletos.filter(b=>b.pago).reduce((s,b)=>s+(Number(b.valor)||0),0);
+  const texto='Biobel — Resumo do fornecedor '+nome+'%0ACompras: '+boletos.length+'%0ATotal: '+encodeURIComponent(money(total))+'%0APago: '+encodeURIComponent(money(pago))+'%0APendente: '+encodeURIComponent(money(total-pago));
+  window.open('https://wa.me/?text='+texto,'_blank');
+}
+function atualizarVisaoCompletaFornecedores(){
+  renderVisaoFornecedores(); renderResumoPagamentosFornecedores(); renderCentralAlertasFornecedores(); renderCalendarioFornecedores(); renderEvolucaoMensalFornecedores(); renderRankingFornecedores();
+}
 function renderAnaliseFornecedores(){
   const boletos=typeof getBoletos==='function'?getBoletos():[];
   const grupos={};
@@ -632,9 +784,9 @@ window.addEventListener('DOMContentLoaded',()=>{
     renderPaginaFornecedores();
     renderAnaliseTiposProdutos();
     renderAnaliseFornecedores();
-    renderVisaoFornecedores();
+    atualizarVisaoCompletaFornecedores();
   }
-});
+}); 
 </script>
 
 <script>
