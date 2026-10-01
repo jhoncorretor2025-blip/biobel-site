@@ -1,4 +1,4 @@
-/* Biobel — shell compartilhado. v10.85 */
+/* Biobel — shell compartilhado. v10.86 */
 (function(){
 "use strict";
 const PAGES={dashboard:"dashboard.html",central:"central.html",caixa:"operacao.html",equipe:"equipe.html",campanhas:"vendas.html",info:"analises.html",alertas:"alertas.html",config:"config.html",adm:"administracao.html",backup:"backup.html"};
@@ -13,7 +13,7 @@ function montar(){
  '<div class="biobel-search-wrap"><input id="inputBuscaGlobal" type="text" placeholder="🔍 Buscar (ex: aluguel, meta...)" autocomplete="off" oninput="renderResultadosBuscaGlobal&&renderResultadosBuscaGlobal()" onfocus="renderResultadosBuscaGlobal&&renderResultadosBuscaGlobal()" style="width:100%;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:7px 10px;font-size:12px;color:#dce5f2;outline:none;"><div id="resultadosBuscaGlobal" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border:1px solid #1e2c42;border-radius:10px;margin-top:4px;max-height:320px;overflow-y:auto;z-index:200;"></div></div>'+
  '<span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;">📲 App</span>'+
  '<button id="btnInstalarApp" onclick="instalarAppBiobel()" class="no-print" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:7px 10px;color:#cbd5e1;font-size:11px;"><a href="'+PAGES.backup+'" class="no-print" title="Abrir Backup" style="display:inline-flex;align-items:center;gap:5px;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:7px 10px;color:#cbd5e1;font-size:11px;text-decoration:none;font-weight:800;">💾 Backup</a>📲 Instalar app</button>'+
- '<span id="versaoSistema" class="no-print" onclick="mostrarToast(\'📅 Sistema atualizado em 01/10/2026 — versão v10.85\')" style="font-size:12px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 9px;cursor:pointer;" title="Atualizado em 01/10/2026 — planejamento semanal atualizado com média de referência e quatro blocos de semanas visíveis." >v10.85</span>'+
+ '<span id="versaoSistema" class="no-print" onclick="mostrarToast(\'📅 Sistema atualizado em 01/10/2026 — versão v10.86\')" style="font-size:12px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 9px;cursor:pointer;" title="Atualizado em 01/10/2026 — histórico de fornecedores ganhou ações diretas de editar e excluir cadastro." >v10.86</span>'+
  '<span id="indicadorUltimoSalvamento" class="no-print" style="font-size:11px;color:#27d7a0;font-weight:700;display:none;white-space:nowrap;"></span>'+
  '<span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>'+
  '<span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>'+
