@@ -3563,6 +3563,9 @@ function mostrarConteudoAdm(){
  initModoTravadoGastos();
  renderGastosFixos();
  renderBoletos();
+ if(document.getElementById('novoBoletoVencimento') && typeof selecionarQuantasVezesBoleto==='function' && boletoEditandoId===null){
+  selecionarQuantasVezesBoleto(1);
+ }
  renderComissoes();
  renderNiveisComissao();
  renderHoraExtra();
@@ -4478,6 +4481,7 @@ function selecionarQuantasVezesBoleto(n){
   diasSugeridos = padroesGenericos[n] || [30];
  }
 
+ // Em um novo boleto, 1x recebe como padrão o vencimento de 30 dias após o cadastro; uma data já escolhida pelo usuário não é sobrescrita.
  const inputVencimentoPrincipal = document.getElementById('novoBoletoVencimento');
  if(inputVencimentoPrincipal && !inputVencimentoPrincipal.value){
   inputVencimentoPrincipal.value = somarDias(diasSugeridos[0]);
@@ -6326,6 +6330,18 @@ function renderHistoricoComissoes(){
    BIOBEL — ZONA: DADOS / BACKUP E METAS
    ============================================================ */
 /* ===== Backup automático (roda sozinho 1x por semana, guardado dentro do próprio navegador) ===== */
+function incluirDadosCriticosNoBackup(backup){
+ const chavesCriticas=['biobel_dados_fornecedores','biobel_adm_boletos','biobel_padroes_parcelado_fornecedor'];
+ backup.verificacaoDados={
+  fornecedores:localStorage.getItem('biobel_dados_fornecedores')!==null,
+  boletos:localStorage.getItem('biobel_adm_boletos')!==null,
+  padroesParcelamento:localStorage.getItem('biobel_padroes_parcelado_fornecedor')!==null
+ };
+ chavesCriticas.forEach(function(chave){
+  if(localStorage.getItem(chave)!==null) backup.dados[chave]=localStorage.getItem(chave);
+ });
+ return backup;
+}
 function verificarBackupAutomatico(){
  const ultimoBackupAuto = localStorage.getItem('biobel_ultimo_backup_automatico');
  const agora = Date.now();
@@ -6339,7 +6355,8 @@ function verificarBackupAutomatico(){
     snapshot[chave] = localStorage.getItem(chave);
    }
   }
-  localStorage.setItem('biobel_snapshot_automatico', JSON.stringify({ data: new Date().toISOString(), dados: snapshot }));
+  const backupAuto = incluirDadosCriticosNoBackup({geradoEm:new Date().toISOString(), sistema:'Biobel — Backup automático', dados:snapshot});
+  localStorage.setItem('biobel_snapshot_automatico', JSON.stringify({ data: backupAuto.geradoEm, dados: backupAuto.dados, verificacaoDados: backupAuto.verificacaoDados }));
   localStorage.setItem('biobel_ultimo_backup_automatico', String(agora));
  }catch(e){
   // Se o navegador estiver com pouco espaço de armazenamento, só ignora — o backup manual
@@ -6386,6 +6403,7 @@ function baixarBackupCompleto(){
    backup.dados[chave] = localStorage.getItem(chave);
   }
  }
+ incluirDadosCriticosNoBackup(backup);
  const blob = new Blob([JSON.stringify(backup, null, 2)], {type:'application/json;charset=utf-8'});
  const url = URL.createObjectURL(blob);
  const a = document.createElement('a');
@@ -13597,5 +13615,5 @@ let promptDeInstalacaoGuardado=null;
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();promptDeInstalacaoGuardado=e;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='inline-block';});
 function instalarAppBiobel(){if(!promptDeInstalacaoGuardado)return;promptDeInstalacaoGuardado.prompt();promptDeInstalacaoGuardado.userChoice.then(function(){promptDeInstalacaoGuardado=null;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';});}
 window.addEventListener('appinstalled',function(){const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';try{mostrarToast('✅ Biobel instalado!');}catch(e){}});
-if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=10.61',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
+if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=10.62',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
 window.addEventListener('load',initPaginaAtiva,{once:true});
