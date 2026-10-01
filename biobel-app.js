@@ -1941,6 +1941,7 @@ function getBoletosFiltradosAtual(){
   lista = lista.filter(b=>
    String(b.fornecedor||'').toLowerCase().includes(termoBusca) ||
    String(b.marca||'').toLowerCase().includes(termoBusca) ||
+   String(b.tipoProduto||'').toLowerCase().includes(termoBusca) ||
    String(b.obs||'').toLowerCase().includes(termoBusca)
   );
  }
@@ -1949,10 +1950,10 @@ function getBoletosFiltradosAtual(){
 function exportarBoletosCSV(){
  const lista = getBoletosFiltradosAtual();
  if(lista.length===0){ mostrarToast('⚠️ Não tem nenhum boleto pra exportar com esse filtro.'); return; }
- const linhas = [['Fornecedor','Marca','Categoria','Valor','Vencimento','Pago?','Pago Por','Observação']];
+ const linhas = [['Fornecedor','Marca','Tipo de Produto','Categoria','Valor','Vencimento','Pago?','Pago Por','Observação']];
  lista.forEach(b=>{
   linhas.push([
-   b.fornecedor||'', b.marca||'', b.categoria||'',
+   b.fornecedor||'', b.marca||'', b.tipoProduto||'', b.categoria||'',
    money(Number(b.valor)||0),
    b.vencimento ? new Date(b.vencimento+'T00:00:00').toLocaleDateString('pt-BR') : '',
    b.pago ? 'Sim' : 'Não',
@@ -4538,6 +4539,7 @@ function limparFormularioBoleto(){
  document.getElementById('novoBoletoMarcaSelect').value = '';
  document.getElementById('novoBoletoMarca').style.display = 'none';
  document.getElementById('novoBoletoCategoria').value = 'Produto';
+ document.getElementById('novoBoletoTipoProduto').value = '';
  document.getElementById('novoBoletoRecorrente').checked = false;
  selecionarQuantasVezesBoleto(1);
  removerComprovanteAnexado();
@@ -4550,6 +4552,7 @@ async function adicionarBoleto(){
  const valor = parseValorSimples(document.getElementById('novoBoletoValor').value);
  const vencimento = document.getElementById('novoBoletoVencimento').value; // yyyy-mm-dd (input type=date)
  const categoria = document.getElementById('novoBoletoCategoria').value;
+ const tipoProduto = document.getElementById('novoBoletoTipoProduto').value;
  const pagoPor = document.getElementById('novoBoletoPagoPor').value.trim();
  const recorrente = document.getElementById('novoBoletoRecorrente').checked;
  const obs = document.getElementById('novoBoletoObs').value.trim();
@@ -4576,7 +4579,7 @@ async function adicionarBoleto(){
   for(let i=0;i<n;i++){
    lista.unshift({
     id: Date.now()+i, fornecedor, marca, quantidade, validade,
-    valor: i===n-1?valorUltima:valorParcela, vencimento: datas[i], categoria, pagoPor, recorrente,
+    valor: i===n-1?valorUltima:valorParcela, vencimento: datas[i], categoria, tipoProduto, pagoPor, recorrente,
     obs: obs || ('Parcela '+(i+1)+'/'+n+' de uma compra parcelada'), comprovante, pago:false,
     criadoEm: new Date().toISOString(), compraId, parcelaAtual: i+1, parcelaTotal: n
    });
@@ -4615,14 +4618,14 @@ async function adicionarBoleto(){
  if(boletoEditandoId!==null){
   const idx = lista.findIndex(b=>b.id===boletoEditandoId);
   if(idx>=0){
-   lista[idx] = { ...lista[idx], fornecedor, marca, quantidade, validade, valor, vencimento, categoria, pagoPor, recorrente, obs, comprovante };
+   lista[idx] = { ...lista[idx], fornecedor, marca, quantidade, validade, valor, vencimento, categoria, tipoProduto, pagoPor, recorrente, obs, comprovante };
    salvarBoletos(lista);
    mostrarToast('✅ Boleto atualizado!');
    registrarAlteracao('Boleto de "'+fornecedor+'" editado');
   }
   cancelarEdicaoBoleto();
  } else {
-  lista.unshift({ id: Date.now(), fornecedor, marca, quantidade, validade, valor, vencimento, categoria, pagoPor, recorrente, obs, comprovante, pago:false, criadoEm: new Date().toISOString() });
+  lista.unshift({ id: Date.now(), fornecedor, marca, quantidade, validade, valor, vencimento, categoria, tipoProduto, pagoPor, recorrente, obs, comprovante, pago:false, criadoEm: new Date().toISOString() });
   salvarBoletos(lista);
   mostrarToast('✅ Boleto adicionado!');
   registrarAlteracao('Boleto de "'+fornecedor+'" adicionado ('+money(valor)+')');
@@ -4668,6 +4671,7 @@ function editarBoleto(id){
  document.getElementById('novoBoletoValor').value = b.valor!==null&&b.valor!==undefined ? String(b.valor).replace('.',',') : '';
  document.getElementById('novoBoletoVencimento').value = b.vencimento||'';
  document.getElementById('novoBoletoCategoria').value = b.categoria||'Produto';
+ document.getElementById('novoBoletoTipoProduto').value = b.tipoProduto||'';
  document.getElementById('novoBoletoPagoPor').value = b.pagoPor||'';
  document.getElementById('novoBoletoRecorrente').checked = !!b.recorrente;
  document.getElementById('novoBoletoObs').value = b.obs||'';
@@ -4695,6 +4699,7 @@ function duplicarBoleto(id){
  document.getElementById('novoBoletoValidade').value = b.validade||'';
  document.getElementById('novoBoletoValor').value = b.valor!==null&&b.valor!==undefined ? String(b.valor).replace('.',',') : '';
  document.getElementById('novoBoletoCategoria').value = b.categoria||'Produto';
+ document.getElementById('novoBoletoTipoProduto').value = b.tipoProduto||'';
  document.getElementById('novoBoletoPagoPor').value = b.pagoPor||'';
  document.getElementById('novoBoletoRecorrente').checked = !!b.recorrente;
  document.getElementById('novoBoletoFornecedor').scrollIntoView({behavior:'smooth', block:'center'});
@@ -5092,6 +5097,7 @@ function renderBoletos(){
   lista = lista.filter(b=>
    String(b.fornecedor||'').toLowerCase().includes(termoBusca) ||
    String(b.marca||'').toLowerCase().includes(termoBusca) ||
+   String(b.tipoProduto||'').toLowerCase().includes(termoBusca) ||
    String(b.obs||'').toLowerCase().includes(termoBusca)
   );
  }
@@ -5151,6 +5157,7 @@ function renderBoletos(){
      </div>
      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:11.5px;color:#93a3ba;">
       ${b.quantidade?`<span>📦 Qtd: ${b.quantidade}</span>`:''}
+      ${b.tipoProduto?`<span>🏷️ Tipo: ${b.tipoProduto}</span>`:''}
       ${b.validade?`<span>⏳ Validade: ${b.validade}</span>`:''}
       ${vencimentoTexto?`<span>📅 Vencimento: ${vencimentoTexto}</span>`:''}
       ${b.pagoPor?`<span>👤 Pago por: ${b.pagoPor}</span>`:''}
