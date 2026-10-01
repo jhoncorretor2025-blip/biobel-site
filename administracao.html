@@ -128,7 +128,49 @@
  .adm-section-banner{margin-top:14px}
 }
 @media(max-width:430px){.adm-kpi-grid,.adm-kpi-grid.resultado{grid-template-columns:1fr}.adm-kpi-grid .adv-kpi .value{font-size:20px}.adm-health-head{align-items:flex-start;flex-direction:column;gap:3px}}
-</style></head><body data-biobel-page="adm" class="min-h-screen bg-slate-950 text-slate-100">
+</style><style>
+/* v10.95 — modo claro final */
+body.light-mode .adm-hero{background:linear-gradient(135deg,#ffffff,#f8fafc)!important;color:#172033!important;border-color:#cfe6dc!important}
+body.light-mode .adm-health,body.light-mode #painelGastosSemanais,body.light-mode #painelFinanceiroMensal,body.light-mode #graficoGastosMensaisWrap,
+body.light-mode .funcionarios-ativos-resumo,body.light-mode .financeiro-mensal-card,body.light-mode .financeiro-mensal-grid>div,
+body.light-mode .gasto-semanal-resumo-card,body.light-mode .gasto-semanal-card,body.light-mode .gasto-semanal-box{
+  background:#fff!important;color:#334155!important;border-color:#d7e0ea!important;
+}
+body.light-mode .funcionarios-subtab,
+body.light-mode .funcionario-ativo-item,
+body.light-mode .funcionario-ativo-acoes button,
+body.light-mode .planejamento-semanal-controles select,
+body.light-mode .gastos-semanais-sem-data-pill{
+  background:#fff!important;color:#334155!important;border-color:#cbd5e1!important;
+}
+body.light-mode .funcionarios-subtab:hover{background:#f1f5f9!important;color:#0f172a!important}
+body.light-mode .funcionario-ativo-item .nome,
+body.light-mode .financeiro-mensal-card-head strong,
+body.light-mode .financeiro-mensal-grid strong,
+body.light-mode .gasto-semanal-resumo-card strong,
+body.light-mode .gasto-semanal-title,
+body.light-mode .gasto-semanal-box strong,
+body.light-mode .gasto-semanal-item .valor,
+body.light-mode .adm-health-head strong,
+body.light-mode .adm-section-banner,
+body.light-mode .grupo-adm-header h2,
+body.light-mode .grupo-adm-header h3{
+  color:#1e293b!important;
+}
+body.light-mode [style*="background:#0b1728"],
+body.light-mode [style*="background:#07111f"],
+body.light-mode [style*="background:#081424"],
+body.light-mode [style*="background:#101f34"],
+body.light-mode [style*="background:#1c2c42"]{
+  background:#fff!important;color:#334155!important;border-color:#d7e0ea!important;
+}
+body.light-mode [style*="color:#dce5f2"],
+body.light-mode [style*="color:#eef4fb"],
+body.light-mode [style*="color:#f6f9fd"],
+body.light-mode [style*="color:#cbd5e1"],
+body.light-mode [style*="color:#93a3ba"]{color:#334155!important}
+</style>
+</head><body data-biobel-page="adm" class="min-h-screen bg-slate-950 text-slate-100">
 <div id="faixaMensagemProgramada" style="display:none;"></div>
 <div id="tourGuiadoOverlay" style="display:none;"></div>
 <div id="dicaDoDiaOverlay" style="display:none;"></div>
