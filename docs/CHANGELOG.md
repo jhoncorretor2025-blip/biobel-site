@@ -1,3 +1,9 @@
+## v10.60 — 01/10/2026
+- Central Operacional passa a informar explicitamente a fonte dos dados e o período exibido.
+- Novo bloco “Como entender” explica de onde vêm faturamento, atingimento, atendimentos e média por venda.
+- Novo bloco “O que a Central está dizendo” traduz os indicadores em linguagem simples.
+- Reforçada a separação visual entre dados atuais e histórico/comparações.
+
 ## v10.59 — 01/10/2026
 - Central Operacional reorganizada em três níveis: Agora, Gestão e Administração.
 - Novo bloco "Precisa da sua atenção" para pendências operacionais.
