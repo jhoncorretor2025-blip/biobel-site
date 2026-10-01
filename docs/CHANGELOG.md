@@ -1,3 +1,12 @@
+## v10.74 — 01/10/2026
+- Criado **Planejamento Financeiro — Mês a Mês** na Administração.
+- Mostra gastos fixos mensais, boletos/variáveis por mês, outros custos mensais cadastrados e gasto previsto.
+- Calcula **faturamento mínimo** para cobrir os gastos cadastrados.
+- Permite definir uma **meta de lucro mensal** e calcula o faturamento necessário para atingir essa meta.
+- Mostra o faturamento já registrado no mês atual e quanto ainda falta faturar.
+- Os boletos são distribuídos no mês pelo vencimento; quando não há vencimento, usa-se a data de criação como referência.
+- Mantida a observação de que comissões sobre vendas e taxas de cartão podem aumentar o faturamento real necessário.
+
 ## v10.73 — 01/10/2026
 - Boletos cadastrados na área exclusiva de Fornecedores continuam sendo a fonte do **Gasto Variável** da Biobel.
 - O resumo financeiro da página de Fornecedores passa a mostrar total dos boletos, pendentes, pagos e quantidade de registros.
