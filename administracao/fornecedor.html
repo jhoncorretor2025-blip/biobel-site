@@ -92,6 +92,11 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
 
 
 @media print{body{background:#fff!important;color:#111!important}.supplier-detail-backdrop{display:none!important}.supplier-detail-modal{position:static!important;padding:0!important}.supplier-detail-dialog{box-shadow:none!important;border:0!important;max-height:none!important;width:100%!important;background:#fff!important;color:#111!important}.supplier-detail-dialog .top-actions{display:none!important}.supplier-detail-table th,.supplier-detail-table td{color:#111!important;border-color:#ddd!important}.supplier-detail-kpi{background:#fff!important;border-color:#ddd!important}.supplier-detail-kpi small{color:#666!important}}
+
+/* Aviso de armazenamento local — cadastro de boletos */
+.boleto-storage-notice{display:flex;gap:10px;align-items:flex-start;margin:10px 0 14px;padding:11px 12px;border-radius:12px;background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.28);color:#dce5f2;font-size:11px;line-height:1.5}
+.boleto-storage-notice .icon{width:28px;height:28px;flex:0 0 28px;background:rgba(251,191,36,.12);font-size:15px}
+.boleto-storage-notice strong{color:#fbbf24}.boleto-storage-notice span{display:block;color:#aebbd0;margin-top:2px}.boleto-storage-notice em{color:#dce5f2;font-style:normal;font-weight:800}
 </style>
 </head>
 <body data-biobel-page="fornecedores" data-biobel-root="../">
@@ -157,6 +162,14 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
    </div>
 <div id="formWrapperBoleto" class="boleto-form-wrapper">
     <div id="tituloFormBoleto" class="boleto-form-title">➕ Adicionar novo boleto</div>
+    <div class="boleto-storage-notice" role="note" aria-label="Informação sobre onde os dados dos boletos são armazenados">
+      <div class="icon">💾</div>
+      <div>
+       <strong>Importante: os dados deste cadastro ficam salvos neste navegador.</strong>
+       <span>Os boletos cadastrados aqui são armazenados localmente no dispositivo e <em>não são enviados automaticamente para a nuvem</em>. Se você limpar os dados do navegador, trocar de navegador ou de aparelho, esses dados podem não aparecer. Faça um backup antes de trocar de dispositivo.</span>
+      </div>
+    </div>
+
     <div class="boleto-form-grid">
      <input id="novoBoletoFornecedor" type="text" required aria-required="true" placeholder="Fornecedor" list="listaFornecedoresConhecidos" onblur="aplicarPadraoParceladoFornecedor()" class="boleto-input">
      <datalist id="listaFornecedoresConhecidos"></datalist>
