@@ -225,7 +225,7 @@
    <div class="boleto-filters" role="group" aria-label="Filtrar boletos">
     <button type="button" id="btnFiltroBoletoTodos" onclick="filtrarBoletos('todos')" class="boleto-filter-btn is-active">Todos</button>
     <button type="button" id="btnFiltroBoletoPendentes" onclick="filtrarBoletos('pendentes')" class="boleto-filter-btn">Pendentes</button>
-    <button type="button" id="btnFiltroBoletoPagos" onclick="filtrarBoletos('pagos')" style="border:0;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer;background:transparent;color:#93a3ba;">Pagos</button>
+    <button type="button" id="btnFiltroBoletoPagos" onclick="filtrarBoletos('pagos')" class="boleto-filter-btn">Pagos</button>
    </div>
    <input id="buscaBoletoInput" type="search" placeholder="🔎 Buscar por fornecedor, marca ou observação..." oninput="renderBoletos()" class="boleto-search-input">
    <div class="boleto-export-actions">
@@ -267,12 +267,12 @@
       </select>
      </div>
      <div>
-      <label style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Quantos boletos?</label>
+      <label class="boleto-field-label" for="btnQuantasVezesBoleto1">Quantos boletos?</label>
       <div style="display:flex;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;overflow:hidden;height:38px;">
-       <button type="button" id="btnQuantasVezesBoleto1" onclick="selecionarQuantasVezesBoleto(1)" style="flex:1;border:none;background:#0ea97a;color:#04241a;font-weight:800;font-size:13px;cursor:pointer;">1x</button>
-       <button type="button" id="btnQuantasVezesBoleto2" onclick="selecionarQuantasVezesBoleto(2)" style="flex:1;border:none;border-left:1px solid #1e2c42;background:transparent;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;">2x</button>
-       <button type="button" id="btnQuantasVezesBoleto3" onclick="selecionarQuantasVezesBoleto(3)" style="flex:1;border:none;border-left:1px solid #1e2c42;background:transparent;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;">3x</button>
-       <button type="button" id="btnQuantasVezesBoleto4" onclick="selecionarQuantasVezesBoleto(4)" aria-pressed="false" style="flex:1;border:none;border-left:1px solid #1e2c42;background:transparent;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;">4x</button>
+       <button type="button" id="btnQuantasVezesBoleto1" aria-label="1 parcelas" onclick="selecionarQuantasVezesBoleto(1)" style="flex:1;border:none;background:#0ea97a;color:#04241a;font-weight:800;font-size:13px;cursor:pointer;">1x</button>
+       <button type="button" id="btnQuantasVezesBoleto2" aria-label="2 parcelas" onclick="selecionarQuantasVezesBoleto(2)" style="flex:1;border:none;border-left:1px solid #1e2c42;background:transparent;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;">2x</button>
+       <button type="button" id="btnQuantasVezesBoleto3" aria-label="3 parcelas" onclick="selecionarQuantasVezesBoleto(3)" style="flex:1;border:none;border-left:1px solid #1e2c42;background:transparent;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;">3x</button>
+       <button type="button" id="btnQuantasVezesBoleto4" aria-label="4 parcelas" onclick="selecionarQuantasVezesBoleto(4)" aria-pressed="false" style="flex:1;border:none;border-left:1px solid #1e2c42;background:transparent;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;">4x</button>
       </div>
      </div>
      <div>
@@ -292,7 +292,7 @@
     <textarea id="novoBoletoObs" rows="2" placeholder="Observações (opcional)" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;resize:vertical;margin-bottom:8px;"></textarea>
     <label for="novoBoletoComprovante" style="font-size:11px;color:#93a3ba;display:block;margin-bottom:4px;">📎 Comprovante / boleto / nota fiscal (opcional)</label>
     <input id="novoBoletoComprovante" type="file" accept="application/pdf,image/png,image/jpeg" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:8px 12px;color:#93a3ba;font-size:12px;margin-bottom:10px;">
-    <div id="previewComprovanteBoleto" style="display:none;margin-bottom:10px;">
+    <div id="previewComprovanteBoleto" class="boleto-attachment-preview" style="display:none;">
      <img id="imgPreviewComprovanteBoleto" style="max-width:120px;max-height:120px;border-radius:8px;border:1px solid #1e2c42;">
      <button type="button" onclick="removerComprovanteAnexado()" style="display:block;margin-top:4px;background:none;border:none;color:#fb7185;font-size:11px;cursor:pointer;">✕ Remover comprovante</button>
     </div>
