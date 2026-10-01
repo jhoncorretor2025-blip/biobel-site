@@ -125,6 +125,58 @@ body.light-mode #btnVoltarTopo{box-shadow:0 5px 16px rgba(15,23,42,.18)}
 /* Contraste do shell compartilhado quando a página de fornecedores estiver em modo claro. */
 body.light-mode #biobel-shell .biobel-header,body.light-mode #biobel-shell .biobel-topbar{color:#172033}
 body.light-mode #biobel-shell button,body.light-mode #biobel-shell a{ }
+
+/* v10.99 — correção dos últimos elementos escuros no modo claro */
+body.light-mode .boleto-management-card,
+body.light-mode .boleto-form-wrapper{color:#172033!important}
+body.light-mode .boleto-form-title,
+body.light-mode .boleto-list-separator{color:#1e293b!important;border-color:#d7e0ea!important}
+body.light-mode .boleto-field-label,
+body.light-mode #labelNovoBoletoVencimento,
+body.light-mode .boleto-form-wrapper label[for="novoBoletoPagoPor"],
+body.light-mode .boleto-form-wrapper label[for="novoBoletoComprovante"]{color:#475569!important}
+body.light-mode .boleto-form-wrapper input[type="date"],
+body.light-mode .boleto-form-wrapper input[type="text"],
+body.light-mode .boleto-form-wrapper input[type="file"],
+body.light-mode .boleto-form-wrapper select,
+body.light-mode .boleto-form-wrapper textarea,
+body.light-mode #novoBoletoVencimento,
+body.light-mode #novoBoletoCategoria,
+body.light-mode #novoBoletoPagoPor,
+body.light-mode #novoBoletoComprovante,
+body.light-mode #novoBoletoObs{background:#fff!important;color:#172033!important;border-color:#cbd5e1!important}
+body.light-mode #novoBoletoComprovante{color:#475569!important}
+body.light-mode #novoBoletoComprovante::file-selector-button{background:#e8edf3!important;color:#1e293b!important;border:1px solid #cbd5e1!important;border-radius:7px!important;padding:5px 9px!important;margin-right:8px!important;cursor:pointer}
+body.light-mode .boleto-form-wrapper input::placeholder,
+body.light-mode .boleto-form-wrapper textarea::placeholder{color:#94a3b8!important;opacity:1}
+body.light-mode .boleto-form-wrapper select option{background:#fff!important;color:#172033!important}
+body.light-mode .boleto-form-wrapper>label:has(#novoBoletoRecorrente){color:#334155!important}
+body.light-mode #novoBoletoRecorrente{accent-color:#0ea97a}
+body.light-mode .boleto-attachment-preview{background:#f8fafc!important;border:1px solid #d7e0ea!important;border-radius:10px!important;padding:10px!important}
+body.light-mode .boleto-attachment-preview img{border-color:#cbd5e1!important}
+body.light-mode .boleto-attachment-preview button{color:#dc2626!important}
+body.light-mode .boleto-export-actions{background:transparent!important}
+body.light-mode .boleto-export-btn{background:#fff!important;border-color:#cbd5e1!important}
+body.light-mode .boleto-export-btn.purple{background:#f5f3ff!important;border-color:#c4b5fd!important;color:#6d28d9!important}
+body.light-mode .boleto-export-btn.green{background:#ecfdf5!important;border-color:#9bdcc5!important;color:#087f5b!important}
+body.light-mode .boleto-filter-btn{background:#fff!important;color:#475569!important;border-color:#cbd5e1!important}
+body.light-mode .boleto-filter-btn.is-active{background:#27d7a0!important;color:#04241a!important;border-color:#27d7a0!important}
+body.light-mode .boleto-search-input{background:#fff!important;color:#172033!important;border-color:#cbd5e1!important}
+body.light-mode .boleto-search-input::placeholder{color:#94a3b8!important}
+body.light-mode .boleto-summary-grid>article,
+body.light-mode .boleto-installments-panel,
+body.light-mode .boleto-installment-dates>div,
+body.light-mode .boleto-summary-card{background:#f8fafc!important;border-color:#d7e0ea!important;color:#172033!important}
+body.light-mode .boleto-summary-grid strong,
+body.light-mode .boleto-summary-grid b{color:#172033!important}
+body.light-mode .boleto-summary-grid span,
+body.light-mode .boleto-summary-grid small{color:#64748b!important}
+body.light-mode #parcelasExtrasBoletoContainer{background:#f8fafc!important;border-color:#d7e0ea!important}
+body.light-mode #valorDivididoBoletoTexto{color:#334155!important}
+body.light-mode #datasExtrasBoletoContainer input{background:#fff!important;color:#172033!important;border-color:#cbd5e1!important}
+body.light-mode .boleto-product-guide{background:#f8fafc!important;border-color:#d7e0ea!important;color:#334155!important}
+body.light-mode .boleto-product-guide strong{color:#1e293b!important}
+body.light-mode .boleto-product-guide span{color:#64748b!important}
 </style>
 </head>
 <body data-biobel-page="fornecedores" data-biobel-root="../">
