@@ -1,3 +1,8 @@
+## v10.56 — 01/10/2026
+- Meses históricos podem ser carregados em segundo plano para comparação sem trocar a planilha ativa.
+- Setembro 2026 ganha ação direta “↔ Comparar”.
+- Interface diferencia claramente mês em uso de mês histórico.
+
 ## v10.55 — 01/10/2026
 - Redesign da área de planilhas mensais com cartões mais claros e indicação da planilha em uso.
 - Remoção automática de duplicatas da mesma planilha na lista.
