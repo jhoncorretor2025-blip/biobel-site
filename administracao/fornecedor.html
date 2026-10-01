@@ -97,6 +97,34 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
 .boleto-storage-notice{display:flex;gap:10px;align-items:flex-start;margin:10px 0 14px;padding:11px 12px;border-radius:12px;background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.28);color:#dce5f2;font-size:11px;line-height:1.5}
 .boleto-storage-notice .icon{width:28px;height:28px;flex:0 0 28px;background:rgba(251,191,36,.12);font-size:15px}
 .boleto-storage-notice strong{color:#fbbf24}.boleto-storage-notice span{display:block;color:#aebbd0;margin-top:2px}.boleto-storage-notice em{color:#dce5f2;font-style:normal;font-weight:800}
+
+/* v10.98 — modo claro com contraste completo na área de fornecedores */
+body.light-mode{background:#f3f6fa!important;color:#172033!important}
+body.light-mode .supplier-page{color:#172033}
+body.light-mode .panel,body.light-mode .adv-card{background:#fff!important;border-color:#d7e0ea!important;box-shadow:0 8px 24px rgba(15,23,42,.07)!important}
+body.light-mode .brand h1,body.light-mode .panel h2,body.light-mode .panel h3,body.light-mode .adv-card-title h3,body.light-mode .main strong,body.light-mode .supplier-summary-card strong,body.light-mode .supplier-detail-kpi strong{color:#172033!important}
+body.light-mode .brand p,body.light-mode .panel .sub,body.light-mode .boleto-card-subtitle,body.light-mode .supplier-summary-card span,body.light-mode .supplier-history-item span,body.light-mode .supplier-detail-kpi small,body.light-mode .tipo-analise-card small,body.light-mode .tipo-analise-card span,body.light-mode .tipo-analise-values{color:#5b6b80!important}
+body.light-mode .nav-tabs{background:rgba(243,246,250,.94);border-color:#d7e0ea}
+body.light-mode .nav-tabs button,body.light-mode .btn,body.light-mode .actions button,body.light-mode .supplier-chip{background:#fff!important;color:#334155!important;border-color:#cbd5e1!important}
+body.light-mode .nav-tabs button.active,body.light-mode .supplier-chip.is-active{background:#e8f8f2!important;border-color:#8bd8bd!important;color:#087f5b!important}
+body.light-mode .kpi,body.light-mode .supplier-summary-card,body.light-mode .supplier-history-item,body.light-mode .supplier-overview-card,body.light-mode .supplier-detail-kpi,body.light-mode .tipo-analise-card,body.light-mode .tipo-analise-item,body.light-mode .supplier-ranking-row{background:#f8fafc!important;border-color:#d7e0ea!important}
+body.light-mode .field input,body.light-mode .search,body.light-mode .supplier-month-input,body.light-mode .boleto-input,body.light-mode #novoBoletoVencimento,body.light-mode #novoBoletoCategoria{background:#fff!important;color:#172033!important;border-color:#cbd5e1!important}
+body.light-mode .field label,body.light-mode .supplier-calendar-head,body.light-mode .supplier-month-label,body.light-mode .supplier-ranking-main span,body.light-mode .supplier-ranking-value span{color:#64748b!important}
+body.light-mode .flow-badge,body.light-mode .counter-badge{background:#e8f8f2!important;border-color:#9bdcc5!important;color:#087f5b!important}
+body.light-mode .boleto-storage-notice{background:#fff8e6!important;border-color:#f0cf75!important;color:#334155!important}
+body.light-mode .boleto-storage-notice span{color:#5b6b80!important}body.light-mode .boleto-storage-notice strong{color:#a16207!important}
+body.light-mode .supplier-calendar-day,body.light-mode .supplier-month-bar-wrap{background:#f8fafc!important;border-color:#d7e0ea!important}
+body.light-mode .supplier-detail-dialog{background:#fff!important;color:#172033!important;border-color:#cbd5e1!important}
+body.light-mode .supplier-detail-table th,body.light-mode .supplier-detail-table td,body.light-mode .table th,body.light-mode .table td{color:#334155!important;border-color:#d7e0ea!important}
+body.light-mode .empty{border-color:#cbd5e1!important;color:#64748b!important}
+body.light-mode .tipo-analise-bar,body.light-mode .supplier-progress,body.light-mode .supplier-month-bar-wrap{background:#e8edf3!important}
+body.light-mode .supplier-alert-item,body.light-mode .supplier-alert-center-item{background:#fff8e6!important;border-color:#f0cf75!important;color:#92400e!important}
+body.light-mode .supplier-alert-ok,body.light-mode .supplier-alert-center-ok{background:#ecfdf5!important;border-color:#a7e5c9!important;color:#166534!important}
+body.light-mode .supplier-detail-table{background:#fff!important}
+body.light-mode #btnVoltarTopo{box-shadow:0 5px 16px rgba(15,23,42,.18)}
+/* Contraste do shell compartilhado quando a página de fornecedores estiver em modo claro. */
+body.light-mode #biobel-shell .biobel-header,body.light-mode #biobel-shell .biobel-topbar{color:#172033}
+body.light-mode #biobel-shell button,body.light-mode #biobel-shell a{ }
 </style>
 </head>
 <body data-biobel-page="fornecedores" data-biobel-root="../">
