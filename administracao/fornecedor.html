@@ -27,6 +27,15 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
 .panel h2{font-size:16px;margin:0}.panel .sub{color:#93a3ba;font-size:11.5px;margin:4px 0 14px}
 .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
 .kpi{background:#081424;border:1px solid #1c2c42;border-radius:12px;padding:12px}.kpi small{display:block;color:#93a3ba;font-size:10px}.kpi strong{display:block;font-size:21px;margin-top:4px}.kpi span{display:block;color:#93a3ba;font-size:10px;margin-top:2px}
+.variavel-bar-wrap{margin-top:14px}
+.variavel-bar{height:14px;border-radius:999px;background:#fbbf24;overflow:hidden;display:flex}
+.variavel-bar-pago{height:100%;background:#27d7a0;border-radius:999px 0 0 999px;transition:width .3s}
+.variavel-bar-legenda{display:flex;justify-content:space-between;gap:10px;margin-top:8px;font-size:11.5px;color:#93a3ba}
+.variavel-bar-legenda strong{color:#dce5f2;font-weight:800}
+.variavel-bar-legenda .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.variavel-bar-legenda .dot-pago{background:#27d7a0}
+.variavel-bar-legenda .dot-pendente{background:#fbbf24}
+.boleto-list-separator{font-size:13px;font-weight:800;color:#dce5f2;margin:18px 0 10px;padding-top:14px;border-top:1px solid #1e2c42}
 .form-grid{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:9px;align-items:end}
 .field label{display:block;color:#93a3ba;font-size:10.5px;font-weight:800;margin-bottom:4px}.field input{width:100%;background:#07111f;border:1px solid #263a53;border-radius:10px;color:#dce5f2;padding:10px 11px;outline:none}.field input:focus{border-color:#0ea97a}
 .search{width:100%;background:#07111f;border:1px solid #263a53;border-radius:10px;color:#dce5f2;padding:10px 12px;margin:12px 0}
@@ -81,6 +90,13 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
         <div class="kpi"><small>✅ Pagos</small><strong id="fornecedorTotalPago">R$ 0,00</strong><span>marcados como pagos</span></div>
         <div class="kpi"><small>🧾 Boletos</small><strong id="fornecedorQtdBoletos">0</strong><span>registros cadastrados</span></div>
       </div>
+      <div class="variavel-bar-wrap" id="variavelBarWrap" style="display:none;">
+        <div class="variavel-bar"><div class="variavel-bar-pago" id="variavelBarPago"></div></div>
+        <div class="variavel-bar-legenda">
+          <span><i class="dot dot-pago"></i>Pago <strong id="variavelBarPagoPct">0%</strong></span>
+          <span><i class="dot dot-pendente"></i>Pendente <strong id="variavelBarPendentePct">0%</strong></span>
+        </div>
+      </div>
     </section>
 
 <div class="adv-card boleto-management-card" data-fornecedor-view="boletos">
@@ -89,19 +105,7 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
     <div><h3>📦 Boletos de Fornecedores</h3><p class="boleto-card-subtitle">Controle de compras, parcelas, vencimentos e pagamentos.</p></div>
     <span>gastos variáveis</span>
    </div>
-   <div class="boleto-filters" role="group" aria-label="Filtrar boletos">
-    <button type="button" id="btnFiltroBoletoTodos" onclick="filtrarBoletos('todos')" class="boleto-filter-btn is-active">Todos</button>
-    <button type="button" id="btnFiltroBoletoPendentes" onclick="filtrarBoletos('pendentes')" class="boleto-filter-btn">Pendentes</button>
-    <button type="button" id="btnFiltroBoletoPagos" onclick="filtrarBoletos('pagos')" class="boleto-filter-btn">Pagos</button>
-   </div>
-   <input id="buscaBoletoInput" type="search" placeholder="🔎 Buscar por fornecedor, marca ou observação..." oninput="renderBoletos()" class="boleto-search-input">
-   <div class="boleto-export-actions">
-    <button onclick="exportarBoletosPDF()" class="no-print boleto-export-btn purple">📑 Exportar PDF</button>
-    <button onclick="exportarBoletosCSV()" class="no-print boleto-export-btn green">📊 Exportar Excel</button>
-   </div>
-   <div id="boletoResumoCards" class="boleto-summary-grid" aria-live="polite"></div>
-   <div id="listaBoletos" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;"></div>
-   <div id="formWrapperBoleto" class="boleto-form-wrapper">
+<div id="formWrapperBoleto" class="boleto-form-wrapper">
     <div id="tituloFormBoleto" class="boleto-form-title">➕ Adicionar novo boleto</div>
     <div class="boleto-form-grid">
      <input id="novoBoletoFornecedor" type="text" placeholder="Fornecedor" list="listaFornecedoresConhecidos" onblur="aplicarPadraoParceladoFornecedor()" class="boleto-input">
@@ -174,7 +178,20 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
     <button id="btnAdicionarBoleto" onclick="adicionarBoleto()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">➕ Adicionar boleto</button>
     <button id="btnCancelarEdicaoBoleto" onclick="cancelarEdicaoBoleto()" style="display:none;margin-top:8px;background:none;border:none;color:#93a3ba;font-size:12px;text-decoration:underline;cursor:pointer;width:100%;">✕ Cancelar edição</button>
    </div>
-  </div>
+   <div class="boleto-list-separator">📋 Boletos cadastrados</div>
+   <div class="boleto-filters" role="group" aria-label="Filtrar boletos">
+    <button type="button" id="btnFiltroBoletoTodos" onclick="filtrarBoletos('todos')" class="boleto-filter-btn is-active">Todos</button>
+    <button type="button" id="btnFiltroBoletoPendentes" onclick="filtrarBoletos('pendentes')" class="boleto-filter-btn">Pendentes</button>
+    <button type="button" id="btnFiltroBoletoPagos" onclick="filtrarBoletos('pagos')" class="boleto-filter-btn">Pagos</button>
+   </div>
+   <input id="buscaBoletoInput" type="search" placeholder="🔎 Buscar por fornecedor, marca ou observação..." oninput="renderBoletos()" class="boleto-search-input">
+   <div class="boleto-export-actions">
+    <button onclick="exportarBoletosPDF()" class="no-print boleto-export-btn purple">📑 Exportar PDF</button>
+    <button onclick="exportarBoletosCSV()" class="no-print boleto-export-btn green">📊 Exportar Excel</button>
+   </div>
+   <div id="boletoResumoCards" class="boleto-summary-grid" aria-live="polite"></div>
+   <div id="listaBoletos" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;"></div>
+     </div>
 
   
 
@@ -270,6 +287,23 @@ function atualizarResumoGastosVariaveisFornecedores(){
   if(elPendente)elPendente.textContent=money(pendente);
   if(elPago)elPago.textContent=money(pago);
   if(elQtd)elQtd.textContent=String(boletos.length);
+  // Gráfico simples (barra): mostra de relance a proporção já paga vs. ainda pendente —
+  // só aparece quando já existe algum boleto cadastrado, pra não mostrar uma barra vazia.
+  const wrap=document.getElementById('variavelBarWrap');
+  if(wrap){
+    if(total>0){
+      const pctPago=Math.round((pago/total)*100);
+      wrap.style.display='block';
+      const barPago=document.getElementById('variavelBarPago');
+      if(barPago)barPago.style.width=pctPago+'%';
+      const txtPago=document.getElementById('variavelBarPagoPct');
+      if(txtPago)txtPago.textContent=pctPago+'%';
+      const txtPendente=document.getElementById('variavelBarPendentePct');
+      if(txtPendente)txtPendente.textContent=(100-pctPago)+'%';
+    } else {
+      wrap.style.display='none';
+    }
+  }
 }
 
 function renderHistoricoFornecedores(){
