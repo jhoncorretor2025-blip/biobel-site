@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07111f">
+<meta name="description" content="Backup e restauração dos dados locais do Biobel">
+<title>Biobel — Backup</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="biobel-app.css">
+<link rel="stylesheet" href="biobel-design-system.css">
+<link rel="stylesheet" href="biobel-ux-refinement.css">
+<style>
+:root{color-scheme:dark}
+body{background:#07111f!important;color:#dce5f2}
+.backup-page{width:min(calc(100% - 40px),1180px);margin:0 auto;padding:26px 0 80px}
+.backup-hero{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:22px 24px;border:1px solid #263b57;border-radius:22px;background:linear-gradient(135deg,#0d1d31,#091524);box-shadow:0 18px 44px rgba(0,0,0,.16);position:relative;overflow:hidden}
+.backup-hero:after{content:"💾";position:absolute;right:24px;bottom:-20px;font-size:100px;opacity:.05}
+.backup-kicker{display:block;color:#27d7a0;font-size:10px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+.backup-hero h1{margin:6px 0 5px;font-size:26px;line-height:1.1;color:#f6f9fd;font-weight:900;letter-spacing:-.03em}
+.backup-hero p{margin:0;max-width:700px;color:#8093ab;font-size:12px;line-height:1.55}
+.backup-status{position:relative;z-index:1;display:inline-flex;align-items:center;gap:7px;padding:9px 11px;border-radius:999px;border:1px solid rgba(39,215,160,.2);background:rgba(39,215,160,.06);color:#27d7a0;font-size:10px;font-weight:900;white-space:nowrap}
+.backup-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+.backup-card{padding:18px;border:1px solid #1e3047;border-radius:18px;background:#0b1728;box-shadow:0 10px 28px rgba(0,0,0,.09)}
+.backup-card.primary{border-color:rgba(39,215,160,.22);background:linear-gradient(145deg,rgba(39,215,160,.055),#0b1728)}
+.backup-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.backup-card-icon{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:#091524;border:1px solid #263b57;font-size:18px;flex:0 0 38px}
+.backup-card h2{margin:0;color:#eef4fb;font-size:14px;font-weight:900}
+.backup-card p{margin:4px 0 0;color:#71839a;font-size:10.5px;line-height:1.45}
+.backup-btn{width:100%;min-height:46px;border-radius:12px;border:1px solid #29415e;padding:11px 14px;font-size:11px;font-weight:900;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center;gap:8px}
+.backup-btn:hover{transform:translateY(-1px);filter:brightness(1.05)}
+.backup-btn.primary{background:linear-gradient(135deg,#12aa7c,#079565);color:#04241a;border-color:#18bd8e;box-shadow:0 10px 22px rgba(39,215,160,.1)}
+.backup-btn.secondary{background:rgba(79,156,255,.08);color:#75b5ff;border-color:rgba(79,156,255,.25)}
+.backup-btn.neutral{background:#091524;color:#cbd5e1}
+.backup-card+.backup-card{}
+.backup-info{margin-top:12px;padding:11px 12px;border-radius:12px;background:#091524;border:1px solid #1b2d46;color:#8093ab;font-size:10px;line-height:1.5}
+.backup-info strong{color:#cbd5e1}
+.backup-file{display:none}
+.backup-status-box{margin-top:12px;padding:12px;border-radius:12px;border:1px solid #1e3047;background:#091524;color:#93a3ba;font-size:10.5px;line-height:1.5;min-height:20px}
+.backup-protection{margin-top:14px;display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.backup-protect-item{padding:11px;border-radius:12px;background:#091524;border:1px solid #1b2d46}
+.backup-protect-item b{display:block;color:#e4ebf4;font-size:10.5px}
+.backup-protect-item span{display:block;margin-top:4px;color:#71839a;font-size:9.5px;line-height:1.4}
+.backup-list{margin:12px 0 0;padding-left:17px;color:#7f90a7;font-size:10.5px;line-height:1.75}
+.backup-list strong{color:#cbd5e1}
+.backup-warning{margin-top:14px;padding:11px 12px;border-radius:12px;background:rgba(251,191,36,.055);border:1px solid rgba(251,191,36,.17);color:#9aa6b7;font-size:10px;line-height:1.5}
+.backup-warning strong{color:#fbbf24}
+.backup-actions-row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.backup-small{color:#60748d;font-size:9.5px;margin-top:8px;line-height:1.4}
+.backup-top-actions{display:flex;gap:8px;flex-wrap:wrap;position:relative;z-index:2}
+.backup-link-btn{border:1px solid #29415e;background:#091524;color:#cbd5e1;border-radius:10px;padding:9px 11px;font-size:10.5px;font-weight:800;text-decoration:none}
+.backup-link-btn:hover{border-color:#3a5676}
+@media(max-width:800px){
+ .backup-page{width:calc(100% - 28px);padding:16px 0 90px}
+ .backup-hero{display:block;padding:18px}
+ .backup-status{margin-top:13px;width:100%;justify-content:center;box-sizing:border-box}
+ .backup-top-actions{margin-top:12px}
+ .backup-grid{grid-template-columns:1fr}
+ .backup-protection{grid-template-columns:1fr}
+ .backup-hero h1{font-size:22px}
+ .backup-btn{min-height:48px;font-size:12px}
+}
+</style>
+</head>
+<body data-biobel-page="backup">
+<div id="biobel-shell"></div>
+<main class="backup-page">
+ <section class="backup-hero">
+  <div>
+   <span class="backup-kicker">SEGURANÇA DOS DADOS</span>
+   <h1>💾 Backup e restauração</h1>
+   <p>Faça uma cópia dos dados salvos neste aparelho e restaure tudo quando precisar trocar de computador, limpar o navegador ou recuperar informações.</p>
+   <div class="backup-top-actions">
+    <a href="config.html" class="backup-link-btn">⚙️ Configuração</a>
+    <a href="administracao.html" class="backup-link-btn">🤝 Fornecedores</a>
+   </div>
+  </div>
+  <div id="backupStatusPill" class="backup-status">🟢 Backup disponível</div>
+ </section>
+
+ <section class="backup-grid">
+  <article class="backup-card primary">
+   <div class="backup-card-head"><div><div class="backup-card-icon">⬇️</div></div><div><h2>Baixar backup completo</h2><p>Cria um arquivo .JSON com os dados locais protegidos.</p></div></div>
+   <button type="button" class="backup-btn primary" onclick="baixarBackupCompleto()">💾 Baixar backup completo (.json)</button>
+   <div class="backup-info">✅ Inclui <strong>fornecedores, telefone/CNPJ, boletos, parcelas, padrões de parcelamento, metas, planilhas salvas, histórico, tarefas, agenda, estoque e demais dados locais</strong> do navegador.</div>
+  </article>
+
+  <article class="backup-card">
+   <div class="backup-card-head"><div><div class="backup-card-icon">⬆️</div></div><div><h2>Restaurar um backup</h2><p>Escolha um arquivo .JSON criado pelo Biobel.</p></div></div>
+   <input id="inputArquivoBackupPagina" class="backup-file" type="file" accept=".json,application/json">
+   <button type="button" class="backup-btn secondary" onclick="document.getElementById('inputArquivoBackupPagina').click()">📂 Escolher arquivo e restaurar</button>
+   <div id="backupArquivoStatus" class="backup-status-box">Nenhum arquivo escolhido.</div>
+   <div class="backup-warning"><strong>⚠️ Atenção:</strong> restaurar substitui os dados atuais deste aparelho pelos dados presentes no backup.</div>
+  </article>
+
+  <article class="backup-card">
+   <div class="backup-card-head"><div><div class="backup-card-icon">🔄</div></div><div><h2>Backup automático</h2><p>O Biobel cria uma cópia interna de segurança semanalmente.</p></div></div>
+   <div id="statusBackupAutomaticoPagina" class="backup-status-box">Verificando último backup automático...</div>
+   <button type="button" class="backup-btn neutral" onclick="restaurarBackupAutomatico()">↺ Restaurar backup automático</button>
+   <div class="backup-small">Esse backup fica dentro deste navegador. Para uma cópia fora do aparelho, use o botão de download.</div>
+  </article>
+
+  <article class="backup-card">
+   <div class="backup-card-head"><div><div class="backup-card-icon">🛡️</div></div><div><h2>O que está protegido?</h2><p>Resumo rápido dos principais dados locais.</p></div></div>
+   <div class="backup-protection">
+    <div class="backup-protect-item"><b>🤝 Fornecedores</b><span>telefone, CNPJ e dados de contato.</span></div>
+    <div class="backup-protect-item"><b>📦 Compras</b><span>boletos, parcelas, vencimentos e comprovantes.</span></div>
+    <div class="backup-protect-item"><b>📊 Configurações</b><span>metas, planilhas salvas e históricos locais.</span></div>
+   </div>
+   <ul class="backup-list">
+    <li><strong>Boletos:</strong> ficam no backup local.</li>
+    <li><strong>Parcelamento:</strong> padrões por fornecedor também são preservados.</li>
+    <li><strong>Vendas:</strong> continuam tendo o Google Sheets como fonte principal.</li>
+   </ul>
+  </article>
+ </section>
+</main>
+<script src="biobel-app.js"></script>
+<script src="biobel-shell.js"></script>
+<script>
+(function(){
+ const input=document.getElementById('inputArquivoBackupPagina');
+ const status=document.getElementById('backupArquivoStatus');
+ if(input) input.addEventListener('change',function(){
+  if(!this.files||!this.files[0]) return;
+  status.textContent='📂 '+this.files[0].name+' selecionado. Clique novamente no arquivo para restaurar, ou aguarde a confirmação.';
+  importarBackupCompleto(this.files[0]);
+ });
+ try{
+  if(typeof renderStatusBackupAutomatico==='function'){
+   const old=document.getElementById('statusBackupAutomatico');
+   if(old) renderStatusBackupAutomatico();
+   const local=document.getElementById('statusBackupAutomaticoPagina');
+   if(local){
+    const raw=localStorage.getItem('biobel_snapshot_automatico');
+    if(raw){
+     const snap=JSON.parse(raw);
+     const quando=new Date(snap.data).toLocaleString('pt-BR');
+     const checks=snap.verificacaoDados;
+     const protegidos=checks ? Object.values(checks).filter(Boolean).length : 0;
+     local.innerHTML='✅ Último backup automático: <strong style="color:#27d7a0">'+quando+'</strong><br><span style="color:#71839a">Dados críticos presentes: '+protegidos+'/3</span>';
+    }else local.textContent='Ainda não existe backup automático neste navegador.';
+   }
+  }
+ }catch(e){}
+ if(typeof verificarBackupAutomatico==='function') verificarBackupAutomatico();
+})();
+</script>
+</body>
+</html>
