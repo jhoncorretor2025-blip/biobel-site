@@ -6729,11 +6729,12 @@ function renderHistoricoComissoes(){
    ============================================================ */
 /* ===== Backup automático (roda sozinho 1x por semana, guardado dentro do próprio navegador) ===== */
 function incluirDadosCriticosNoBackup(backup){
- const chavesCriticas=['biobel_dados_fornecedores','biobel_adm_boletos','biobel_padroes_parcelado_fornecedor'];
+ const chavesCriticas=['biobel_dados_fornecedores','biobel_adm_boletos','biobel_padroes_parcelado_fornecedor','biobel_adm_gastos_fixos'];
  backup.verificacaoDados={
   fornecedores:localStorage.getItem('biobel_dados_fornecedores')!==null,
   boletos:localStorage.getItem('biobel_adm_boletos')!==null,
-  padroesParcelamento:localStorage.getItem('biobel_padroes_parcelado_fornecedor')!==null
+  padroesParcelamento:localStorage.getItem('biobel_padroes_parcelado_fornecedor')!==null,
+  gastosFixos:localStorage.getItem('biobel_adm_gastos_fixos')!==null
  };
  chavesCriticas.forEach(function(chave){
   if(localStorage.getItem(chave)!==null) backup.dados[chave]=localStorage.getItem(chave);
