@@ -216,9 +216,7 @@
    </div>
   </div>
   <div id="conteudoGrupo-fornecedores" style="display:none;">
-
-  <div class="adv-card boleto-management-card">
-     <div id="admAncoraCadastros"></div>
+  <  <div id="admAncoraCadastros"></div>
   <section class="adv-card cadastro-master-card" id="cardCadastrosMarcasFornecedores">
    <div class="adv-card-title cadastro-master-title">
     <div>
@@ -273,6 +271,17 @@
     <div><strong>Como funciona:</strong> os cadastros são salvos neste aparelho. Ao cadastrar um novo fornecedor ou marca, eles passam a aparecer automaticamente no formulário de boletos.</div>
    </div>
   </section>
+
+
+nav class="fornecedor-subtabs" role="tablist" aria-label="Seções de fornecedores">
+   <button type="button" class="fornecedor-subtab is-active" role="tab" aria-selected="true" onclick="abrirAbaFornecedores('boletos')">📦 Boletos</button>
+   <button type="button" class="fornecedor-subtab" role="tab" aria-selected="false" onclick="abrirAbaFornecedores('cadastros')">🏷️ Cadastros</button>
+   <button type="button" class="fornecedor-subtab" role="tab" aria-selected="false" onclick="abrirAbaFornecedores('conferencia')">✅ Conferência</button>
+   <button type="button" class="fornecedor-subtab" role="tab" aria-selected="false" onclick="abrirAbaFornecedores('historico')">📚 Histórico</button>
+  </nav>
+
+
+  <div class="adv-card boleto-management-card" data-fornecedor-view="boletos">
 
 <div class="adv-card-title boleto-card-title">
     <div><h3>📦 Boletos de Fornecedores</h3><p class="boleto-card-subtitle">Controle de compras, parcelas, vencimentos e pagamentos.</p></div>
@@ -365,7 +374,7 @@
    </div>
   </div>
 
-  <div class="adv-card">
+  <div class="adv-card" data-fornecedor-view="historico">
    <div class="adv-card-title">
     <h3>📈 Histórico de Preços por Fornecedor</h3>
     <span>veja se um fornecedor está cobrando mais caro ao longo do tempo</span>
@@ -376,7 +385,7 @@
    <div id="conteudoHistoricoPrecoFornecedor"></div>
   </div>
 
-  <div class="adv-card">
+  <div class="adv-card" data-fornecedor-view="cadastros">
    <div class="adv-card-title">
     <h3>📇 Dados dos Fornecedores</h3>
     <span>telefone e CNPJ de cada um — útil pra ligar rápido ou conferir dado fiscal</span>
@@ -390,7 +399,7 @@
    <div id="listaDadosFornecedores" style="display:flex;flex-direction:column;gap:8px;"></div>
   </div>
 
-  <div class="adv-card">
+  <div class="adv-card" data-fornecedor-view="conferencia">
    <div class="adv-card-title">
     <h3>🏆 Ranking de Fornecedores</h3>
     <span>quem mais pesa no seu bolso — útil pra saber quem vale a pena negociar melhor</span>
@@ -398,12 +407,18 @@
    <div id="rankingFornecedores" style="display:flex;flex-direction:column;gap:8px;"></div>
   </div>
 
-  <div class="adv-card">
+  <div class="adv-card" data-fornecedor-view="conferencia">
    <div class="adv-card-title">
     <h3>🏷️ Gastos por Marca</h3>
     <span>quanto você já comprou de cada marca, somando todos os fornecedores</span>
    </div>
-   <div id="gastosPorMarca" style="display:flex;flex-direction:column;gap:8px;"></div>
+   <div id="gastosPorMarca" style="display:flex;flex-direction:column;gap:8px;"></div>  <section class="adv-card fornecedor-conferencia-card" data-fornecedor-view="conferencia" id="cardConferenciaFornecedores">
+   <div class="adv-card-title">
+    <div><h3>✅ Conferência dos Fornecedores</h3><span>verifique rapidamente boletos, cadastros e pendências</span></div>
+   </div>
+   <div id="conteudoConferenciaFornecedores"></div>
+  </section>
+
   </div>
 
   </div>
