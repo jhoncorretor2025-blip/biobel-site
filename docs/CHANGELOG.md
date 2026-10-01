@@ -1,3 +1,8 @@
+## v10.63 — 01/10/2026
+- Cadastro de boletos passa a explicar claramente o significado de **Quantidade do produto** e **Validade do produto**.
+- Orientação fixa adicionada ao formulário para evitar dúvidas no preenchimento.
+- Campos de quantidade e validade receberam exemplos e descrições acessíveis.
+
 ## v10.62 — 01/10/2026
 - Backup completo e automático passam a registrar explicitamente a presença de dados de fornecedores, boletos e padrões de parcelamento.
 - Tela de Backup atualizada para informar que dados de fornecedores também são preservados.
