@@ -6562,31 +6562,46 @@ function renderPlanejamentoFinanceiroMensal(){
   const vendido=getFaturamentoPorMesFinanceiro(ano,mes);
   const falta=Math.max(0,alvo-vendido);
   const atual=(ano===anoBase&&mes===mesBase);
-  rows.push({ano,mes,variavel,base,alvo,vendido,falta,atual});
+  let status='Planejado',cls='financeiro-warn';
+  if(atual){
+   if(vendido>=alvo){status='Meta atingida';cls='financeiro-ok';}
+   else if(vendido>=base){status='Custos cobertos';cls='financeiro-ok';}
+   else if(vendido>0){status='Falta faturar';cls='financeiro-danger';}
+   else {status='Aguardando vendas';cls='financeiro-warn';}
+  }
+  const progresso=alvo>0?Math.min(100,(vendido/alvo)*100):0;
+  rows.push({ano,mes,variavel,base,alvo,vendido,falta,atual,status,cls,progresso});
  }
- const totalBase=rows.reduce((s,r)=>s+r.base,0);
  const rAtual=rows[0];
  const resumo=document.getElementById('resumoMetaLucroMensal');
  if(resumo){
   resumo.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:9px;">'+
    '<div class="adv-kpi blue"><div class="label">🏠 Fixo mensal</div><div class="value">'+money(gastosFixos)+'</div><div class="sub">contas recorrentes cadastradas</div></div>'+
-   '<div class="adv-kpi gold"><div class="label">🧾 Variável do mês</div><div class="value">'+money(rAtual.variavel)+'</div><div class="sub">boletos com vencimento no mês</div></div>'+
+   '<div class="adv-kpi gold"><div class="label">🧾 Variável do mês</div><div class="value">'+money(rAtual.variavel)+'</div><div class="sub">parcelas com vencimento no mês</div></div>'+
    '<div class="adv-kpi green"><div class="label">🎯 Faturamento mínimo</div><div class="value">'+money(rAtual.base)+'</div><div class="sub">para cobrir os custos cadastrados</div></div>'+
-   '<div class="adv-kpi purple"><div class="label">🚀 Com lucro desejado</div><div class="value">'+money(rAtual.alvo)+'</div><div class="sub">gastos + meta de lucro</div></div>'+
+   '<div class="adv-kpi purple"><div class="label">🚀 Com lucro desejado</div><div class="value">'+money(rAtual.alvo)+'</div><div class="sub">custos + lucro desejado</div></div>'+
   '</div>';
  }
- el.innerHTML='<div class="financeiro-mensal-table-wrap"><table class="financeiro-mensal-table"><thead><tr><th>Mês</th><th>Gastos fixos</th><th>Variáveis</th><th>Outros</th><th>Gasto previsto</th><th>Faturamento mínimo</th><th>Meta com lucro</th><th>Faturado</th><th>Falta</th><th>Status</th></tr></thead><tbody>'+
- rows.map(r=>{
-  const outros=mensalExtras;
-  let status='Planejado',cls='financeiro-warn';
-  if(r.atual){
-    if(r.vendido>=r.alvo){status='Meta atingida';cls='financeiro-ok';}
-    else if(r.vendido>=r.base){status='Custos cobertos';cls='financeiro-ok';}
-    else if(r.vendido>0){status='Faltam '+money(r.falta);cls='financeiro-danger';}
-    else {status='Aguardando vendas';cls='financeiro-warn';}
-  }
-  return '<tr class="'+(r.atual?'financeiro-mensal-current':'')+'"><td><strong>'+meses[r.mes-1]+'/'+r.ano+'</strong>'+(r.atual?' <span class="financeiro-badge financeiro-ok">ATUAL</span>':'')+'</td><td>'+money(gastosFixos)+'</td><td>'+money(r.variavel)+'</td><td>'+money(outros)+'</td><td><strong>'+money(r.base)+'</strong></td><td>'+money(r.base)+'</td><td><strong>'+money(r.alvo)+'</strong></td><td>'+money(r.vendido)+'</td><td>'+money(r.falta)+'</td><td><span class="financeiro-badge '+cls+'">'+status+'</span></td></tr>';
- }).join('')+'</tbody></table></div>';
+ el.innerHTML='<div class="financeiro-mensal-cards">'+rows.map(r=>{
+  const destaque=r.atual?'border-color:rgba(39,215,160,.38);box-shadow:0 0 0 1px rgba(39,215,160,.06);':'';
+  const progressColor=r.progresso>=100?'#27d7a0':r.progresso>0?'#4f9cff':'#334155';
+  return '<article class="financeiro-mensal-card" style="'+destaque+'">'+
+   '<div class="financeiro-mensal-card-head"><div><strong>'+meses[r.mes-1]+'/'+r.ano+'</strong>'+(r.atual?'<span class="financeiro-badge financeiro-ok" style="margin-left:7px;">ATUAL</span>':'')+'</div><span class="financeiro-badge '+r.cls+'">'+r.status+'</span></div>'+
+   '<div class="financeiro-mensal-section"><div class="financeiro-mensal-section-title">💰 Custos</div><div class="financeiro-mensal-grid">'+
+    '<div><small>🏠 Fixos</small><strong>'+money(gastosFixos)+'</strong></div>'+
+    '<div><small>🧾 Parcelas / boletos</small><strong>'+money(r.variavel)+'</strong></div>'+
+    '<div><small>📌 Outros</small><strong>'+money(mensalExtras)+'</strong></div>'+
+    '<div><small>💸 Gasto previsto</small><strong>'+money(r.base)+'</strong></div>'+
+   '</div></div>'+
+   '<div class="financeiro-mensal-section"><div class="financeiro-mensal-section-title">🎯 Faturamento</div><div class="financeiro-mensal-grid">'+
+    '<div><small>💵 Mínimo</small><strong>'+money(r.base)+'</strong></div>'+
+    '<div><small>🚀 Com lucro</small><strong>'+money(r.alvo)+'</strong></div>'+
+    '<div><small>📈 Faturado</small><strong>'+money(r.vendido)+'</strong></div>'+
+    '<div><small>⚠️ Falta</small><strong>'+money(r.falta)+'</strong></div>'+
+   '</div>'+
+   '<div class="financeiro-progresso" aria-label="Progresso do faturamento de '+meses[r.mes-1]+' '+r.ano+'"><div class="financeiro-progresso-bar"><span style="width:'+r.progresso.toFixed(1)+'%;background:'+progressColor+';"></span></div><small>'+r.progresso.toFixed(0)+'% da meta de faturamento</small></div></div>'+
+   '</article>';
+ }).join('')+'</div>';
 }
 function renderPontoEquilibrio(gastosFixos, boletos, faturamento){
  const el = document.getElementById('resumoPontoEquilibrio');
