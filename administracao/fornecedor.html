@@ -46,7 +46,7 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
 .login{max-width:390px;margin:12vh auto}.login .panel{text-align:left}.hidden{display:none!important}
 @media(max-width:800px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.form-grid{grid-template-columns:1fr 1fr}.form-grid .wide{grid-column:1/-1}.supplier-card{grid-template-columns:auto 1fr}.actions{grid-column:2}.topbar{align-items:flex-start}}
 @media(max-width:520px){.supplier-page{padding:12px}.grid{grid-template-columns:1fr 1fr}.form-grid{grid-template-columns:1fr}.form-grid .wide{grid-column:auto}.btn{padding:9px 11px}.panel{padding:13px}}
-.flow-badge,.counter-badge{display:inline-flex;align-items:center;white-space:nowrap;border-radius:999px;padding:5px 9px;font-size:10px;font-weight:800;border:1px solid rgba(14,169,122,.3);background:rgba(14,169,122,.08);color:#4ade80}.supplier-section-intro{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}.cadastro-simple-card{margin-top:14px}.marca-grid{grid-template-columns:1fr auto}.fornecedor-grid{grid-template-columns:2fr 1fr 1fr auto}.cadastro-simple-card .search{margin:12px 0}.cadastro-simple-card .list{margin-top:8px}@media(max-width:800px){.fornecedor-grid{grid-template-columns:1fr 1fr}.fornecedor-grid .wide{grid-column:1/-1}.marca-grid{grid-template-columns:1fr}}@media(max-width:520px){.fornecedor-grid{grid-template-columns:1fr}.fornecedor-grid .wide{grid-column:auto}}</style>
+.flow-badge,.counter-badge{display:inline-flex;align-items:center;white-space:nowrap;border-radius:999px;padding:5px 9px;font-size:10px;font-weight:800;border:1px solid rgba(14,169,122,.3);background:rgba(14,169,122,.08);color:#4ade80}.supplier-section-intro{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}.cadastro-simple-card{margin-top:14px}.tipo-analise-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px}.tipo-analise-card{background:#081424;border:1px solid #1c2c42;border-radius:12px;padding:12px}.tipo-analise-card small{display:block;color:#93a3ba;font-size:10px}.tipo-analise-card strong{display:block;font-size:20px;margin-top:4px}.tipo-analise-card span{display:block;color:#93a3ba;font-size:10.5px;margin-top:3px}.tipo-analise-list{display:flex;flex-direction:column;gap:10px}.tipo-analise-item{background:#081424;border:1px solid #1c2c42;border-radius:12px;padding:11px 12px}.tipo-analise-top{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}.tipo-analise-name{font-size:12.5px;font-weight:800;color:#dce5f2}.tipo-analise-values{font-size:11px;color:#93a3ba}.tipo-analise-bar{height:8px;background:#07111f;border-radius:999px;overflow:hidden;margin-top:8px}.tipo-analise-bar-fill{height:100%;background:linear-gradient(90deg,#0ea97a,#27d7a0);border-radius:999px;min-width:0}.tipo-analise-zero{border-color:rgba(251,191,36,.22);background:rgba(251,191,36,.04)}.tipo-analise-zero-list{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}.tipo-analise-zero-pill{border:1px dashed rgba(251,191,36,.35);background:rgba(251,191,36,.06);color:#fbbf24;border-radius:999px;padding:6px 9px;font-size:10.5px;font-weight:700}.tipo-analise-note{margin-top:12px;color:#93a3ba;font-size:10.5px;line-height:1.55}@media(max-width:800px){.tipo-analise-grid{grid-template-columns:1fr 1fr}}@media(max-width:520px){.tipo-analise-grid{grid-template-columns:1fr}}.marca-grid{grid-template-columns:1fr auto}.fornecedor-grid{grid-template-columns:2fr 1fr 1fr auto}.cadastro-simple-card .search{margin:12px 0}.cadastro-simple-card .list{margin-top:8px}@media(max-width:800px){.fornecedor-grid{grid-template-columns:1fr 1fr}.fornecedor-grid .wide{grid-column:1/-1}.marca-grid{grid-template-columns:1fr}}@media(max-width:520px){.fornecedor-grid{grid-template-columns:1fr}.fornecedor-grid .wide{grid-column:auto}}</style>
 </head>
 <body data-biobel-page="fornecedores">
 <div id="biobelFornecedorLogin" class="login">
@@ -71,6 +71,7 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
     <button id="tabCadastro" class="active" onclick="mostrarAbaFornecedor('cadastro')">🤝 Cadastro</button>
     <button id="tabHistorico" onclick="mostrarAbaFornecedor('historico')">🧾 Compras e boletos</button>
     <button id="tabConferencia" onclick="mostrarAbaFornecedor('conferencia')">🔎 Conferência</button>
+    <button id="tabAnalise" onclick="mostrarAbaFornecedor('analise')">📊 Análise por tipo</button>
   </nav>
 
   <section id="abaCadastro">
@@ -249,6 +250,28 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
     </div>
   </section>
 
+  <section id="abaAnalise" class="hidden">
+    <div class="panel">
+      <div class="section-head">
+        <div><h2>📊 Onde a Biobel está comprando mais?</h2><p class="sub">Mostra em quais tipos de produto os boletos estão concentrando mais dinheiro e quais tipos ainda não têm nenhuma compra registrada.</p></div>
+        <span class="flow-badge">📌 Base: boletos cadastrados</span>
+      </div>
+      <div id="resumoAnaliseTiposProdutos" class="tipo-analise-grid"></div>
+
+      <div class="section-head" style="margin-top:4px;">
+        <div><h3 style="margin:0;font-size:13px;">💰 Gastos por tipo de produto</h3><p class="sub" style="margin-bottom:0;">Quanto já foi registrado em cada tipo. A barra representa a participação dentro dos tipos com classificação.</p></div>
+      </div>
+      <div id="listaAnaliseTiposProdutos" class="tipo-analise-list"></div>
+
+      <div class="panel tipo-analise-zero" style="margin-top:14px;padding:12px 14px;">
+        <div style="font-size:12px;font-weight:800;color:#fbbf24;">🟡 Tipos sem compra registrada</div>
+        <div id="tiposSemCompraProdutos" class="tipo-analise-zero-list"></div>
+      </div>
+
+      <div class="tipo-analise-note">💡 **Geral** é para quando o boleto tiver produtos misturados. Boletos antigos que ainda não têm tipo informado continuam separados como “Não informado” para não inventar uma classificação.</div>
+    </div>
+  </section>
+
   <section id="abaConferencia" class="hidden">
     <div class="panel">
       <h2>🔎 Conferência dos dados</h2>
@@ -264,19 +287,21 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
 <script>
 function entrarFornecedores(){ location.href='../administracao.html'; }
 function mostrarAbaFornecedor(aba){
-  ['cadastro','historico','conferencia'].forEach(x=>{
+  ['cadastro','historico','conferencia','analise'].forEach(x=>{
     document.getElementById('aba'+x.charAt(0).toUpperCase()+x.slice(1)).classList.toggle('hidden',x!==aba);
     document.getElementById('tab'+x.charAt(0).toUpperCase()+x.slice(1)).classList.toggle('active',x===aba);
   });
   if(aba==='historico')renderHistoricoFornecedores();
   atualizarResumoGastosVariaveisFornecedores();
   if(aba==='conferencia')renderConferenciaPagina();
+  if(aba==='analise')renderAnaliseTiposProdutos();
 }
 function renderPaginaFornecedores(){
   if(typeof seedCadastrosAdm!=='function')return;
   const dados=seedCadastrosAdm();
   if(typeof renderBoletos==='function')renderBoletos();
   atualizarResumoGastosVariaveisFornecedores();
+  renderAnaliseTiposProdutos();
   const busca=(document.getElementById('buscaFornecedorCadastro')?.value||'').trim().toLowerCase();
   const lista=dados.fornecedores.filter(f=>!busca||[f.nome,f.telefone,f.cnpj].some(v=>String(v||'').toLowerCase().includes(busca)));
   const cf=document.getElementById('cadastroContadorFornecedores');if(cf)cf.textContent=dados.fornecedores.length+(dados.fornecedores.length===1?' fornecedor':' fornecedores');
@@ -341,6 +366,71 @@ function renderHistoricoFornecedores(){
   rows.map(g=>'<tr><td><strong>'+esc(g.nome)+'</strong></td><td>'+g.qtd+'</td><td>'+money(g.total)+'</td><td><span class="badge '+(g.pendentes?'warn':'ok')+'">'+g.pendentes+'</span></td><td>'+esc(g.ult||'—')+'</td><td>'+esc([...g.marcas].join(', ')||'—')+'</td></tr>').join('')+
   '</tbody></table>':'<div class="empty">Nenhum boleto com fornecedor identificado.</div>';
 }
+function renderAnaliseTiposProdutos(){
+  const boletos=typeof getBoletos==='function'?getBoletos():[];
+  const tipos=[
+    'cabelo / Creme e shapoo e etc',
+    'Cabelo/acessorios',
+    'shampoo',
+    'Creme',
+    'Coloração/Tinta',
+    'Perfume',
+    'Unha',
+    'maquiagem',
+    'shampoo e cond',
+    'Geral'
+  ];
+  const porTipo={};
+  tipos.forEach(t=>porTipo[t]={total:0,qtd:0,fornecedores:new Set()});
+  let naoInformados=0,totalClassificado=0,valorClassificado=0;
+  boletos.forEach(b=>{
+    const tipo=String(b.tipoProduto||'').trim();
+    if(!tipo){naoInformados++;return;}
+    const chave=tipos.find(t=>t.toLowerCase()===tipo.toLowerCase());
+    if(!chave){
+      naoInformados++;
+      return;
+    }
+    const valor=Number(b.valor)||0;
+    porTipo[chave].qtd++;
+    porTipo[chave].total+=valor;
+    if(b.fornecedor)porTipo[chave].fornecedores.add(String(b.fornecedor).trim());
+    totalClassificado++;
+    valorClassificado+=valor;
+  });
+  const comCompra=tipos.filter(t=>porTipo[t].qtd>0);
+  const semCompra=tipos.filter(t=>porTipo[t].qtd===0);
+  const maiorValor=comCompra.length?Math.max(...comCompra.map(t=>porTipo[t].total)):0;
+
+  const resumo=document.getElementById('resumoAnaliseTiposProdutos');
+  if(resumo){
+    resumo.innerHTML=
+      '<div class="tipo-analise-card"><small>💰 Total classificado</small><strong>'+money(valorClassificado)+'</strong><span>valor dos boletos com tipo</span></div>'+
+      '<div class="tipo-analise-card"><small>🛒 Tipos com compra</small><strong>'+comCompra.length+'</strong><span>de '+tipos.length+' tipos cadastrados</span></div>'+
+      '<div class="tipo-analise-card"><small>🟡 Sem compra</small><strong>'+semCompra.length+'</strong><span>tipos ainda sem registro</span></div>'+
+      '<div class="tipo-analise-card"><small>🧾 Boletos classificados</small><strong>'+totalClassificado+'</strong><span>registros com tipo</span></div>'+
+      '<div class="tipo-analise-card"><small>🏪 Fornecedores envolvidos</small><strong>'+new Set(comCompra.flatMap(t=>[...porTipo[t].fornecedores])).size+'</strong><span>nos tipos classificados</span></div>'+
+      '<div class="tipo-analise-card"><small>⚠️ Sem tipo informado</small><strong>'+naoInformados+'</strong><span>boletos antigos ou sem classificação</span></div>';
+  }
+
+  const lista=document.getElementById('listaAnaliseTiposProdutos');
+  if(lista){
+    lista.innerHTML=comCompra.length ? comCompra.slice().sort((a,b)=>porTipo[b].total-porTipo[a].total).map((t)=>{
+      const info=porTipo[t];
+      const pct=maiorValor>0?(info.total/maiorValor)*100:0;
+      return '<article class="tipo-analise-item">'+
+       '<div class="tipo-analise-top"><span class="tipo-analise-name">🏷️ '+esc(t)+'</span><span class="tipo-analise-values"><strong style="color:#dce5f2;">'+money(info.total)+'</strong> · '+info.qtd+' boleto'+(info.qtd===1?'':'s')+' · '+info.fornecedores.size+' fornecedor'+(info.fornecedores.size===1?'':'es')+'</span></div>'+
+       '<div class="tipo-analise-bar" aria-label="'+esc(t)+': '+pct.toFixed(0)+'% do maior gasto"><div class="tipo-analise-bar-fill" style="width:'+pct.toFixed(1)+'%"></div></div>'+
+      '</article>';
+    }).join(''):'<div class="empty">Ainda não há boletos classificados por tipo de produto.</div>';
+  }
+
+  const sem=document.getElementById('tiposSemCompraProdutos');
+  if(sem){
+    sem.innerHTML=semCompra.length?semCompra.map(t=>'<span class="tipo-analise-zero-pill">'+esc(t)+'</span>').join(''):'<span style="color:#4ade80;font-size:11px;">✅ Todos os tipos já têm pelo menos uma compra registrada.</span>';
+  }
+}
+
 function renderConferenciaPagina(){
   const boletos=typeof getBoletos==='function'?getBoletos():[];
   const hoje=new Date();hoje.setHours(0,0,0,0);
@@ -370,6 +460,7 @@ window.addEventListener('DOMContentLoaded',()=>{
     document.getElementById('biobelFornecedorLogin').classList.add('hidden');
     document.getElementById('fornecedorApp').classList.remove('hidden');
     renderPaginaFornecedores();
+    renderAnaliseTiposProdutos();
   }
 });
 </script>
