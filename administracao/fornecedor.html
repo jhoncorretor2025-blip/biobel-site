@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0ea97a">
+<title>Biobel — Fornecedores</title>
+<link rel="icon" type="image/png" href="../logo_biobel_gravatai.png">
+<link rel="stylesheet" href="../biobel-design-system.css">
+<link rel="stylesheet" href="../biobel-ux-refinement.css">
+<link rel="stylesheet" href="../biobel-app.css">
+<style>
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.supplier-page{max-width:1180px;margin:0 auto;padding:18px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.brand h1{margin:0;font-size:22px;font-weight:900}.brand p{margin:4px 0 0;color:#93a3ba;font-size:12px}
+.top-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid #263a53;background:#0c1a2d;color:#dce5f2;border-radius:10px;padding:9px 13px;font-weight:800;font-size:12px;cursor:pointer;text-decoration:none}
+.btn.primary{background:#0ea97a;border-color:#0ea97a;color:#04241a}.btn.danger{color:#fda4af;border-color:rgba(251,113,133,.35)}
+.nav-tabs{display:flex;gap:8px;overflow:auto;padding:4px;margin-bottom:14px;position:sticky;top:8px;z-index:10;background:rgba(7,17,31,.92);backdrop-filter:blur(10px)}
+.nav-tabs button{white-space:nowrap;border:1px solid #1c2c42;background:#0b1728;color:#93a3ba;border-radius:999px;padding:8px 13px;font-weight:800;font-size:12px;cursor:pointer}
+.nav-tabs button.active{background:rgba(14,169,122,.14);border-color:rgba(14,169,122,.45);color:#4ade80}
+.panel{background:#0b1728;border:1px solid #1c2c42;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 12px 35px rgba(0,0,0,.16)}
+.panel h2{font-size:16px;margin:0}.panel .sub{color:#93a3ba;font-size:11.5px;margin:4px 0 14px}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.kpi{background:#081424;border:1px solid #1c2c42;border-radius:12px;padding:12px}.kpi small{display:block;color:#93a3ba;font-size:10px}.kpi strong{display:block;font-size:21px;margin-top:4px}.kpi span{display:block;color:#93a3ba;font-size:10px;margin-top:2px}
+.form-grid{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:9px;align-items:end}
+.field label{display:block;color:#93a3ba;font-size:10.5px;font-weight:800;margin-bottom:4px}.field input{width:100%;background:#07111f;border:1px solid #263a53;border-radius:10px;color:#dce5f2;padding:10px 11px;outline:none}.field input:focus{border-color:#0ea97a}
+.search{width:100%;background:#07111f;border:1px solid #263a53;border-radius:10px;color:#dce5f2;padding:10px 12px;margin:12px 0}
+.list{display:flex;flex-direction:column;gap:8px}.supplier-card{display:grid;grid-template-columns:auto 1fr auto;gap:11px;align-items:center;background:#081424;border:1px solid #1c2c42;border-radius:12px;padding:11px 12px}.icon{width:36px;height:36px;border-radius:10px;background:rgba(251,191,36,.1);display:grid;place-items:center;font-size:18px}.main strong{display:block;font-size:13px}.main span{display:block;color:#93a3ba;font-size:11px;margin-top:3px}.actions{display:flex;gap:5px}.actions button{border:1px solid #263a53;background:#0c1a2d;color:#dce5f2;border-radius:8px;padding:7px 9px;cursor:pointer}
+.empty{padding:20px;text-align:center;color:#93a3ba;font-size:12px;border:1px dashed #263a53;border-radius:12px}
+.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse;min-width:720px}.table th,.table td{padding:9px 8px;border-bottom:1px solid #1c2c42;text-align:left;font-size:11.5px}.table th{color:#93a3ba;font-size:10px;text-transform:uppercase}.badge{display:inline-block;border-radius:999px;padding:3px 8px;font-size:10px;font-weight:800}.ok{color:#4ade80;background:rgba(74,222,128,.1)}.warn{color:#fbbf24;background:rgba(251,191,36,.1)}.bad{color:#fb7185;background:rgba(251,113,133,.1)}
+.note{margin-top:12px;padding:10px 12px;border-radius:10px;background:rgba(79,156,255,.08);border:1px solid rgba(79,156,255,.2);color:#b9c9dc;font-size:11px;line-height:1.5}
+.login{max-width:390px;margin:12vh auto}.login .panel{text-align:left}.hidden{display:none!important}
+@media(max-width:800px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.form-grid{grid-template-columns:1fr 1fr}.form-grid .wide{grid-column:1/-1}.supplier-card{grid-template-columns:auto 1fr}.actions{grid-column:2}.topbar{align-items:flex-start}}
+@media(max-width:520px){.supplier-page{padding:12px}.grid{grid-template-columns:1fr 1fr}.form-grid{grid-template-columns:1fr}.form-grid .wide{grid-column:auto}.btn{padding:9px 11px}.panel{padding:13px}}
+</style>
+</head>
+<body data-biobel-page="fornecedores">
+<div id="biobelFornecedorLogin" class="login">
+  <div class="panel">
+    <div style="font-size:34px">🤝</div>
+    <h2 style="margin-top:5px">Fornecedores Biobel</h2>
+    <p class="sub">Área administrativa separada para cadastro, compras e conferência.</p>
+    <div class="field"><label for="fornUser">Usuário</label><input id="fornUser" autocomplete="username"></div>
+    <div class="field" style="margin-top:10px"><label for="fornPass">Senha</label><input id="fornPass" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')entrarFornecedores()"></div>
+    <button class="btn primary" style="width:100%;margin-top:12px" onclick="entrarFornecedores()">Entrar</button>
+    <div id="fornLoginErro" style="color:#fb7185;font-size:11px;min-height:18px;text-align:center;margin-top:8px"></div>
+  </div>
+</div>
+
+<main id="fornecedorApp" class="supplier-page hidden">
+  <header class="topbar">
+    <div class="brand"><h1>🤝 Fornecedores</h1><p>Cadastro e controle dos fornecedores da Biobel — dados compartilhados com Administração e Boletos.</p></div>
+    <div class="top-actions">
+      <a class="btn" href="../administracao.html">← Administração</a>
+      <button class="btn" onclick="location.reload()">↻ Atualizar</button>
+    </div>
+  </header>
+
+  <nav class="nav-tabs" aria-label="Áreas de fornecedores">
+    <button id="tabCadastro" class="active" onclick="mostrarAbaFornecedor('cadastro')">🤝 Cadastro</button>
+    <button id="tabHistorico" onclick="mostrarAbaFornecedor('historico')">🧾 Compras e boletos</button>
+    <button id="tabConferencia" onclick="mostrarAbaFornecedor('conferencia')">🔎 Conferência</button>
+  </nav>
+
+  <section id="abaCadastro">
+    <div class="grid" id="kpisFornecedores"></div>
+    <div class="panel">
+      <h2>➕ Cadastrar fornecedor</h2>
+      <p class="sub">Um cadastro único. Telefone e CNPJ ficam sincronizados com a base antiga de contatos.</p>
+      <div class="form-grid">
+        <div class="field wide"><label for="novoFornecedorCadastroNome">Fornecedor</label><input id="novoFornecedorCadastroNome" placeholder="Ex.: Distribuidora XYZ"></div>
+        <div class="field"><label for="novoFornecedorCadastroTelefone">Telefone</label><input id="novoFornecedorCadastroTelefone" placeholder="(51) 99999-9999" inputmode="tel"></div>
+        <div class="field"><label for="novoFornecedorCadastroCnpj">CNPJ</label><input id="novoFornecedorCadastroCnpj" placeholder="00.000.000/0000-00"></div>
+        <button class="btn primary" onclick="salvarFornecedorCadastro();renderPaginaFornecedores()">💾 Salvar</button>
+      </div>
+      <div class="note">💡 Fornecedores que já aparecem em boletos ou em padrões de parcelamento são recuperados automaticamente. Isso evita criar registros duplicados.</div>
+    </div>
+    <div class="panel">
+      <h2>📋 Fornecedores cadastrados</h2>
+      <p class="sub">Edite ou remova somente o cadastro do fornecedor. Boletos antigos não são apagados.</p>
+      <input id="buscaFornecedorCadastro" class="search" type="search" placeholder="🔎 Buscar por nome, telefone ou CNPJ..." oninput="renderPaginaFornecedores()">
+      <div id="listaFornecedoresCadastro" class="list"></div>
+    </div>
+  </section>
+
+  <section id="abaHistorico" class="hidden">
+    <div class="panel">
+      <h2>🧾 Compras e boletos por fornecedor</h2>
+      <p class="sub">Histórico construído a partir dos boletos já registrados no sistema.</p>
+      <input id="buscaHistoricoFornecedor" class="search" type="search" placeholder="🔎 Filtrar fornecedor..." oninput="renderHistoricoFornecedores()">
+      <div id="historicoFornecedores" class="table-wrap"></div>
+    </div>
+  </section>
+
+  <section id="abaConferencia" class="hidden">
+    <div class="panel">
+      <h2>🔎 Conferência dos dados</h2>
+      <p class="sub">Aponta registros que merecem revisão sem apagar ou alterar boletos.</p>
+      <div class="grid" id="kpisConferencia"></div>
+      <div id="listaConferencia" style="margin-top:12px"></div>
+      <div class="note">💡 A conferência usa os dados locais já registrados. Ela não inventa fornecedores nem altera compras automaticamente.</div>
+    </div>
+  </section>
+</main>
+
+<script src="../biobel-app.js"></script>
+<script>
+function entrarFornecedores(){
+  const u=(document.getElementById('fornUser').value||'').trim().toLowerCase();
+  const p=document.getElementById('fornPass').value||'';
+  const valido=Array.isArray(window.ADM_USUARIOS_VALIDOS)?window.ADM_USUARIOS_VALIDOS.find(x=>x.usuario===u&&x.senha===p):null;
+  const erro=document.getElementById('fornLoginErro');
+  if(!valido){erro.textContent='Usuário ou senha incorretos.';return;}
+  sessionStorage.setItem('biobel_adm_autenticado','yes');
+  sessionStorage.setItem('biobel_adm_usuario_logado',valido.nomeExibicao);
+  document.getElementById('biobelFornecedorLogin').classList.add('hidden');
+  document.getElementById('fornecedorApp').classList.remove('hidden');
+  renderPaginaFornecedores();
+}
+function mostrarAbaFornecedor(aba){
+  ['cadastro','historico','conferencia'].forEach(x=>{
+    document.getElementById('aba'+x.charAt(0).toUpperCase()+x.slice(1)).classList.toggle('hidden',x!==aba);
+    document.getElementById('tab'+x.charAt(0).toUpperCase()+x.slice(1)).classList.toggle('active',x===aba);
+  });
+  if(aba==='historico')renderHistoricoFornecedores();
+  if(aba==='conferencia')renderConferenciaPagina();
+}
+function renderPaginaFornecedores(){
+  if(typeof seedCadastrosAdm!=='function')return;
+  const dados=seedCadastrosAdm();
+  const busca=(document.getElementById('buscaFornecedorCadastro')?.value||'').trim().toLowerCase();
+  const lista=dados.fornecedores.filter(f=>!busca||[f.nome,f.telefone,f.cnpj].some(v=>String(v||'').toLowerCase().includes(busca)));
+  const boletos=typeof getBoletos==='function'?getBoletos():[];
+  const comContato=dados.fornecedores.filter(f=>f.telefone||f.cnpj).length;
+  document.getElementById('kpisFornecedores').innerHTML=[
+    ['🤝','Fornecedores',dados.fornecedores.length,'cadastros'],
+    ['📞','Com contato',comContato,'telefone ou CNPJ'],
+    ['🧾','Com compras',new Set(boletos.map(b=>String(b.fornecedor||'').trim().toLowerCase()).filter(Boolean)).size,'fornecedores com boleto'],
+    ['⚠️','Sem contato',Math.max(0,dados.fornecedores.length-comContato),'revisar cadastro']
+  ].map(x=>'<div class="kpi"><small>'+x[0]+' '+x[1]+'</small><strong>'+x[2]+'</strong><span>'+x[3]+'</span></div>').join('');
+  document.getElementById('listaFornecedoresCadastro').innerHTML=lista.length?lista.map(f=>{
+    const contato=(f.telefone?'📞 '+esc(f.telefone):'')+(f.telefone&&f.cnpj?' · ':'')+(f.cnpj?'🏢 '+esc(f.cnpj):'');
+    return '<article class="supplier-card"><div class="icon">🤝</div><div class="main"><strong>'+esc(f.nome)+'</strong><span>'+ (contato||'⚠️ Sem telefone/CNPJ cadastrado') +'</span></div><div class="actions"><button onclick="editarFornecedorCadastro('+f.id+');setTimeout(renderPaginaFornecedores,50)">✏️</button><button onclick="removerFornecedorCadastro('+f.id+');setTimeout(renderPaginaFornecedores,50)">🗑️</button></div></article>';
+  }).join(''):'<div class="empty">Nenhum fornecedor encontrado.</div>';
+}
+function renderHistoricoFornecedores(){
+  const boletos=typeof getBoletos==='function'?getBoletos():[];
+  const busca=(document.getElementById('buscaHistoricoFornecedor')?.value||'').trim().toLowerCase();
+  const grupos={};
+  boletos.forEach(b=>{
+    const nome=String(b.fornecedor||'').trim();
+    if(!nome)return;
+    if(busca&&!nome.toLowerCase().includes(busca))return;
+    const k=nome.toLowerCase();
+    if(!grupos[k])grupos[k]={nome,total:0,qtd:0,pendentes:0,ult:'',marcas:new Set()};
+    grupos[k].qtd++; grupos[k].total+=Number(b.valor)||0; if(!b.pago)grupos[k].pendentes++;
+    if(b.vencimento&&(!grupos[k].ult||b.vencimento>grupos[k].ult))grupos[k].ult=b.vencimento;
+    if(b.marca)grupos[k].marcas.add(b.marca);
+  });
+  const rows=Object.values(grupos).sort((a,b)=>b.total-a.total);
+  document.getElementById('historicoFornecedores').innerHTML=rows.length?
+  '<table class="table"><thead><tr><th>Fornecedor</th><th>Boletos</th><th>Total</th><th>Pendentes</th><th>Último vencimento</th><th>Marcas</th></tr></thead><tbody>'+
+  rows.map(g=>'<tr><td><strong>'+esc(g.nome)+'</strong></td><td>'+g.qtd+'</td><td>'+money(g.total)+'</td><td><span class="badge '+(g.pendentes?'warn':'ok')+'">'+g.pendentes+'</span></td><td>'+esc(g.ult||'—')+'</td><td>'+esc([...g.marcas].join(', ')||'—')+'</td></tr>').join('')+
+  '</tbody></table>':'<div class="empty">Nenhum boleto com fornecedor identificado.</div>';
+}
+function renderConferenciaPagina(){
+  const boletos=typeof getBoletos==='function'?getBoletos():[];
+  const hoje=new Date();hoje.setHours(0,0,0,0);
+  const semFornecedor=boletos.filter(b=>!String(b.fornecedor||'').trim());
+  const semValor=boletos.filter(b=>!(Number(b.valor)>0));
+  const vencidos=boletos.filter(b=>!b.pago&&b.vencimento&&new Date(b.vencimento+'T00:00:00')<hoje);
+  const nomes=new Set();
+  boletos.forEach(b=>{const n=String(b.fornecedor||'').trim().toLowerCase();if(n)nomes.add(n)});
+  const cad=typeof seedCadastrosAdm==='function'?seedCadastrosAdm():{fornecedores:[]};
+  const semCadastro=[...nomes].filter(n=>!cad.fornecedores.some(f=>String(f.nome||'').trim().toLowerCase()===n));
+  const duplicados={};boletos.forEach(b=>{const k=[String(b.fornecedor||'').trim().toLowerCase(),Number(b.valor)||0,b.vencimento||''].join('|');if(k!=='|0|')duplicados[k]=(duplicados[k]||0)+1});
+  const possiveis=Object.values(duplicados).filter(n=>n>1).reduce((a,n)=>a+n,0);
+  const itens=[['🚨','Sem fornecedor',semFornecedor.length],['💰','Sem valor',semValor.length],['⏰','Vencidos',vencidos.length],['🧩','Sem cadastro',semCadastro.length],['🔁','Possíveis duplicados',possiveis],['📋','Boletos analisados',boletos.length]];
+  document.getElementById('kpisConferencia').innerHTML=itens.map(x=>'<div class="kpi"><small>'+x[0]+' '+x[1]+'</small><strong>'+x[2]+'</strong><span>'+((x[2]>0&&x[1]!=='Boletos analisados')?'precisa revisar':'sem apontamentos')+'</span></div>').join('');
+  const alertas=[];
+  if(semFornecedor.length)alertas.push('Existem '+semFornecedor.length+' boleto(s) sem fornecedor identificado.');
+  if(semValor.length)alertas.push('Existem '+semValor.length+' boleto(s) sem valor preenchido.');
+  if(vencidos.length)alertas.push('Existem '+vencidos.length+' boleto(s) pendente(s) com vencimento passado.');
+  if(semCadastro.length)alertas.push('Existem '+semCadastro.length+' fornecedor(es) usados em boletos que ainda não têm cadastro próprio.');
+  if(possiveis)alertas.push('Há '+possiveis+' registro(s) em grupos com fornecedor, valor e vencimento iguais.');
+  document.getElementById('listaConferencia').innerHTML=alertas.length?alertas.map(a=>'<div style="padding:10px 12px;border:1px solid rgba(251,191,36,.25);background:rgba(251,191,36,.07);border-radius:10px;margin-bottom:7px;font-size:11.5px">⚠️ '+esc(a)+'</div>').join(''):'<div style="padding:12px;border:1px solid rgba(74,222,128,.25);background:rgba(74,222,128,.07);border-radius:10px;font-size:11.5px">✅ Nenhuma inconsistência básica encontrada.</div>';
+}
+function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function money(v){return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
+window.addEventListener('DOMContentLoaded',()=>{
+  if(sessionStorage.getItem('biobel_logged_in')!=='yes'){
+    document.getElementById('fornLoginErro').textContent='Abra primeiro o login principal da Biobel.';
+    return;
+  }
+  if(sessionStorage.getItem('biobel_adm_autenticado')==='yes'){
+    document.getElementById('biobelFornecedorLogin').classList.add('hidden');
+    document.getElementById('fornecedorApp').classList.remove('hidden');
+    renderPaginaFornecedores();
+  }
+});
+</script>
+</body>
+</html>
