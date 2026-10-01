@@ -53,7 +53,7 @@ var listaVendResumo=nomesVendResumo.length ? nomesVendResumo.map(function(nome){
 var labelResumo=diaHoje?"Hoje":"Último dia lançado";
 var qtdTurnosValidos=(Number(manhaResumo.qtd)||0)+(Number(meioResumo.qtd)||0)+(Number(tardeResumo.qtd)||0);
 
-b.innerHTML=\`
+b.innerHTML=`
 <div class="co12hero co12-hero-new">
  <div class="co12-hero-copy">
   <span class="co12-eyebrow">🧭 CENTRAL OPERACIONAL</span>
