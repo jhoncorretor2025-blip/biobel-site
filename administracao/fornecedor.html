@@ -133,6 +133,21 @@ body{margin:0;background:#07111f;color:#dce5f2;font-family:Inter,system-ui,-appl
      <input id="novoBoletoValidade" type="text" placeholder="Ex.: 12/2027" title="Informe a validade do produto no formato MM/AAAA. Se não houver validade, deixe em branco." aria-label="Validade do produto" aria-describedby="guiaValidadeProduto" class="boleto-input">
      <input id="novoBoletoValor" type="text" inputmode="decimal" placeholder="Valor R$" oninput="atualizarPreviewParcelasBoletoInline()" class="boleto-input">
      <div>
+      <label for="novoBoletoTipoProduto" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Tipo de produto</label>
+      <select id="novoBoletoTipoProduto" class="boleto-input" aria-label="Tipo de produto">
+       <option value="">Tipo de produto</option>
+       <option value="cabelo / Creme e shapoo e etc">cabelo / Creme e shapoo e etc</option>
+       <option value="Cabelo/acessorios">Cabelo/acessorios</option>
+       <option value="shampoo">shampoo</option>
+       <option value="Creme">Creme</option>
+       <option value="Coloração/Tinta">Coloração/Tinta</option>
+       <option value="Perfume">Perfume</option>
+       <option value="Unha">Unha</option>
+       <option value="maquiagem">maquiagem</option>
+       <option value="shampoo e cond">shampoo e cond</option>
+      </select>
+     </div>
+     <div>
       <label id="labelNovoBoletoVencimento" for="novoBoletoVencimento" style="font-size:10px;color:#93a3ba;display:block;margin-bottom:3px;">Data de vencimento</label>
       <input id="novoBoletoVencimento" type="date" onchange="atualizarPreviewParcelasBoletoInline()" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
      </div>
