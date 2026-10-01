@@ -4291,7 +4291,14 @@ function verComprovanteBoleto(id){
  const b = getBoletos().find(x=>x.id===id);
  if(!b || !b.comprovante) return;
  const win = window.open('', '_blank');
- if(win) win.document.write('<title>Comprovante — '+b.fornecedor+'</title><body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="'+b.comprovante+'" style="max-width:100%;max-height:100vh;"></body>');
+ if(!win) return;
+ const ehPdf = String(b.comprovante).startsWith('data:application/pdf');
+ if(ehPdf){
+  win.document.write('<title>Comprovante — '+b.fornecedor+'</title><body style="margin:0;background:#111;min-height:100vh;"><iframe src="'+b.comprovante+'" title="Comprovante PDF" style="width:100%;height:100vh;border:0;"></iframe></body>');
+ }else{
+  win.document.write('<title>Comprovante — '+b.fornecedor+'</title><body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="'+b.comprovante+'" alt="Comprovante de '+b.fornecedor+'" style="max-width:100%;max-height:100vh;object-fit:contain;"></body>');
+ }
+ win.document.close();
 }
 
 /* ===== Padrão de parcelamento por fornecedor — lembra o jeito que cada um costuma parcelar ===== */
