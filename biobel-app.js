@@ -5122,19 +5122,44 @@ function renderBoletos(){
  const hoje = obterAgoraBrasilia();
  const hojeMs = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate()).getTime();
 
+ // Datas de boletos podem vir de versões antigas/importações com ano de 2 dígitos.
+ // Normaliza esses valores para evitar datas como ano 0026, que geravam "730401 dias".
+ function normalizarDataBoleto(valor){
+  const s=String(valor||'').trim();
+  if(!s) return null;
+  let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if(m){
+   let ano=Number(m[1]), mes=Number(m[2]), dia=Number(m[3]);
+   if(ano<100) ano+=2000;
+   const d=new Date(ano,mes-1,dia);
+   if(d.getFullYear()===ano&&d.getMonth()===mes-1&&d.getDate()===dia)return d;
+   return null;
+  }
+  m=s.match(/^(\d{1,2})[\\/.-](\d{1,2})[\\/.-](\d{2}|\d{4})$/);
+  if(m){
+   const dia=Number(m[1]), mes=Number(m[2]); let ano=Number(m[3]);
+   if(ano<100) ano+=2000;
+   const d=new Date(ano,mes-1,dia);
+   if(d.getFullYear()===ano&&d.getMonth()===mes-1&&d.getDate()===dia)return d;
+  }
+  const d=new Date(s);
+  return isNaN(d.getTime())?null:d;
+ }
+
  el.innerHTML = Object.entries(grupos).map(([mes, boletosDoMes])=>{
   const totalDoMes = boletosDoMes.reduce((s,b)=>s+(Number(b.valor)||0),0);
   const itensHtml = boletosDoMes.map(b=>{
    let avisoVencimento = '';
    if(b.vencimento && !b.pago){
-    const dataVenc = new Date(b.vencimento+'T00:00:00');
-    if(!isNaN(dataVenc.getTime())){
+    const dataVenc = normalizarDataBoleto(b.vencimento);
+    if(dataVenc){
      const diasRestantes = Math.round((dataVenc.getTime()-hojeMs)/86400000);
      if(diasRestantes<0) avisoVencimento = `<span style="color:#fb7185;font-weight:800;">🔴 Venceu há ${Math.abs(diasRestantes)} dia${Math.abs(diasRestantes)===1?'':'s'}</span>`;
      else if(diasRestantes<=5) avisoVencimento = `<span style="color:#fbbf24;font-weight:800;">🟡 Vence em ${diasRestantes} dia${diasRestantes===1?'':'s'}</span>`;
     }
    }
-   const vencimentoTexto = b.vencimento ? new Date(b.vencimento+'T00:00:00').toLocaleDateString('pt-BR') : '';
+   const dataVencTexto = normalizarDataBoleto(b.vencimento);
+   const vencimentoTexto = dataVencTexto ? dataVencTexto.toLocaleDateString('pt-BR') : '';
    const coresCategoria = {'Produto':'#4f9cff','Manutenção':'#fbbf24','Marketing':'#a78bfa','Outros':'#93a3ba'};
    const emojiCategoria = {'Produto':'📦','Manutenção':'🔧','Marketing':'📣','Outros':'📋'};
    const corCat = coresCategoria[b.categoria] || '#93a3ba';
