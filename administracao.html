@@ -17,6 +17,12 @@
 .funcionario-ativo-acoes{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
 .funcionario-ativo-acoes button{border:1px solid #1c2c42;background:#101f34;color:#cbd5e1;border-radius:8px;padding:6px 8px;font-size:10px;font-weight:800;cursor:pointer}
 @media(max-width:640px){.funcionarios-ativos-lista{grid-template-columns:1fr}.funcionarios-subtab{flex:1 1 auto}}
+</style><style>
+.adm-resumo-financeiro{display:flex;flex-direction:column;gap:12px}
+.adm-resumo-grupo{background:rgba(13,26,44,.72);border:1px solid #1c2c42;border-radius:16px;padding:12px}
+.adm-resumo-grupo-titulo{font-size:10px;font-weight:900;color:#71839c;text-transform:uppercase;letter-spacing:.08em;margin:2px 2px 10px}
+.adm-resumo-resultado{border-color:rgba(39,215,160,.18);background:rgba(39,215,160,.025)}
+@media(max-width:640px){.adm-resumo-grupo{padding:10px}.adm-resumo-grupo-titulo{margin-bottom:8px}}
 </style></head><body data-biobel-page="adm" class="min-h-screen bg-slate-950 text-slate-100">
 <div id="faixaMensagemProgramada" style="display:none;"></div>
 <div id="tourGuiadoOverlay" style="display:none;"></div>
@@ -96,26 +102,43 @@
    <div id="conteudoChavesPixAdm"></div>
   </div>
 
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">
-   <div class="adv-kpi red" id="admKpiGastosFixos">
-    <div class="label">🏠 Gastos Fixos (mensal)</div>
-    <div class="value" id="admTotalGastosFixos">R$ 0,00</div>
-    <div class="sub">aluguel, água, luz, internet...</div>
+  <div class="adm-resumo-financeiro">
+   <div class="adm-resumo-grupo">
+    <div class="adm-resumo-grupo-titulo">💰 Custos previstos do mês</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">
+     <div class="adv-kpi red" id="admKpiGastosFixos">
+      <div class="label">🏠 Gastos Fixos</div>
+      <div class="value" id="admTotalGastosFixos">R$ 0,00</div>
+      <div class="sub">contas recorrentes mensais</div>
+     </div>
+     <div class="adv-kpi blue">
+      <div class="label">🧾 Boletos / Parcelas do Mês</div>
+      <div class="value" id="admTotalGastosVariaveis">R$ 0,00</div>
+      <div class="sub" id="admTotalGastosVariaveisSub">boletos com vencimento neste mês</div>
+      <div id="admQtdBoletosMes" style="font-size:9.5px;color:#71839c;margin-top:5px;"></div>
+     </div>
+     <div class="adv-kpi gold" id="admKpiTotalGastos">
+      <div class="label">💸 Total de Custos do Mês</div>
+      <div class="value" id="admTotalGastosGeral">R$ 0,00</div>
+      <div class="sub" id="admTotalGastosGeralSub">fixos + boletos/parcelas do mês</div>
+     </div>
+    </div>
    </div>
-   <div class="adv-kpi blue">
-    <div class="label">📦 Gastos Variáveis</div>
-    <div class="value" id="admTotalGastosVariaveis">R$ 0,00</div>
-    <div class="sub">boletos de fornecedores atuais</div>
-   </div>
-   <div class="adv-kpi gold" id="admKpiTotalGastos">
-    <div class="label">💸 Total de Gastos</div>
-    <div class="value" id="admTotalGastosGeral">R$ 0,00</div>
-    <div class="sub" id="admTotalGastosGeralSub">fixos + variáveis</div>
-   </div>
-   <div class="adv-kpi green">
-    <div class="label">📈 Lucro Líquido Estimado</div>
-    <div class="value" id="admLucroEstimado">R$ 0,00</div>
-    <div class="sub" id="admLucroEstimadoSub" style="font-size:10px;">faturamento − gastos − comissões</div>
+   <div class="adm-resumo-grupo adm-resumo-resultado">
+    <div class="adm-resumo-grupo-titulo">📈 Resultado do mês</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;">
+     <div class="adv-kpi green">
+      <div class="label">💵 Faturamento do Período</div>
+      <div class="value" id="admFaturamentoResumo">R$ 0,00</div>
+      <div class="sub">vendas registradas na planilha</div>
+     </div>
+     <div class="adv-kpi green">
+      <div class="label">📈 Lucro Líquido Estimado</div>
+      <div class="value" id="admLucroEstimado">R$ 0,00</div>
+      <div class="sub" id="admLucroEstimadoSub" style="font-size:10px;">faturamento − custos − comissões</div>
+     </div>
+    </div>
+    <div id="admUltimoSalvo" style="font-size:10.5px;color:#93a3ba;text-align:right;margin-top:8px;"></div>
    </div>
   </div>
   <div id="admUltimoSalvo" style="font-size:10.5px;color:#93a3ba;text-align:right;margin-top:-6px;"></div>
