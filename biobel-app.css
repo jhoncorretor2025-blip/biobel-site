@@ -1069,3 +1069,118 @@ body.light-mode main textarea[style*="background:#07111f"]{
 }
 body.light-mode main input::placeholder,
 body.light-mode main textarea::placeholder{color:#94a3b8!important;opacity:1}
+
+
+/* v10.95 — auditoria final do modo claro
+   Última camada para componentes antigos que ainda possuíam tema escuro próprio. */
+body.light-mode{
+  color-scheme:light;
+  background:#f4f6f9!important;
+  color:#172033!important;
+}
+body.light-mode .biobel-tools-menu,
+body.light-mode .biobel-nav-dropdown,
+body.light-mode .biobel-mobile-more-menu,
+body.light-mode .biobel-mobile-more-panel{
+  background:#fff!important;
+  color:#172033!important;
+  border-color:#d7e0ea!important;
+}
+body.light-mode .biobel-nav-search,
+body.light-mode .biobel-context-header .biobel-context-action,
+body.light-mode .biobel-periodo-resumo .item,
+body.light-mode .biobel-gap-kpi,
+body.light-mode .biobel-gap-row,
+body.light-mode .biobel-inteligencia-box,
+body.light-mode .meta-resumo-hoje-item,
+body.light-mode .caixa-resumo-sec-grid>div,
+body.light-mode .biobel-summary-card{
+  background:#fff!important;
+  color:#334155!important;
+  border-color:#d7e0ea!important;
+}
+body.light-mode .biobel-breadcrumb{
+  background:#f8fafc!important;
+  color:#64748b!important;
+  border-color:#dce4ec!important;
+}
+body.light-mode .biobel-gap-table{
+  background:#fff!important;
+  color:#334155!important;
+  border-color:#d7e0ea!important;
+}
+body.light-mode .biobel-gap-table th{
+  background:#f8fafc!important;
+  color:#64748b!important;
+  border-color:#dce4ec!important;
+}
+body.light-mode .biobel-gap-table td{
+  color:#334155!important;
+  border-color:#e2e8f0!important;
+}
+body.light-mode .biobel-attention-intro,
+body.light-mode .biobel-attention-item,
+body.light-mode .biobel-card-system,
+body.light-mode .biobel-detail-section,
+body.light-mode .info-resumo-rapido,
+body.light-mode .card-dia-semana,
+body.light-mode .hall-fama-item{
+  background:#fff!important;
+  color:#334155!important;
+  border-color:#d7e0ea!important;
+}
+body.light-mode .card-analise-avancada{
+  background:linear-gradient(180deg,#faf7ff,#fff)!important;
+  border-color:#ddd0ee!important;
+}
+body.light-mode .biobel-detail-section>summary:hover,
+body.light-mode .biobel-nav-dropdown button:hover,
+body.light-mode .biobel-mobile-more-menu button:hover,
+body.light-mode .biobel-tools-menu button:hover{
+  background:#f1f5f9!important;
+  color:#0f172a!important;
+}
+body.light-mode .biobel-periodo-resumo .item,
+body.light-mode .biobel-gap-kpi,
+body.light-mode .biobel-gap-row,
+body.light-mode .biobel-summary-card{
+  box-shadow:0 4px 14px rgba(15,23,42,.05)!important;
+}
+body.light-mode .mobile-action-bar{
+  background:#fff!important;
+  border-top-color:#dce4ec!important;
+  color:#334155!important;
+  box-shadow:0 -6px 16px rgba(15,23,42,.08)!important;
+}
+body.light-mode .adv-update{
+  background:#f8fafc!important;
+  color:#334155!important;
+  border-color:#dce4ec!important;
+}
+body.light-mode .config-chips{
+  background:#f4f6f9!important;
+}
+body.light-mode .config-chip{
+  background:#fff!important;
+  color:#475569!important;
+  border-color:#d7e0ea!important;
+}
+body.light-mode .config-chip:hover{
+  background:#f8fafc!important;
+  color:#0f172a!important;
+}
+body.light-mode .biobel-context-header .biobel-context-action{
+  background:#fff!important;
+  color:#334155!important;
+}
+body.light-mode .biobel-attention-item a,
+body.light-mode .biobel-attention-item button{
+  background:#f8fafc!important;
+  color:#334155!important;
+  border-color:#cbd5e1!important;
+}
+body.light-mode .biobel-attention-item a:hover,
+body.light-mode .biobel-attention-item button:hover{
+  background:#e8f8f2!important;
+  color:#087f5b!important;
+}
