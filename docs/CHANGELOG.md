@@ -1,3 +1,9 @@
+## v10.69 — 01/10/2026
+- Usuário **Alesandra** passa a ser perfil **Master** da Biobel.
+- Um único login da gerência agora autentica simultaneamente o painel normal e a área administrativa.
+- O perfil Master mantém acesso às áreas internas, incluindo Fornecedores, sem novo login.
+- Ao sair da gerência, a sessão integrada também é encerrada.
+
 ## v10.67 — 01/10/2026
 - Área de **Fornecedores** separada em página própria: `administracao/fornecedor.html`.
 - Cadastro, contatos, compras/boletos e conferência ficaram organizados em áreas independentes.
