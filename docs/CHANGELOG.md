@@ -1,3 +1,10 @@
+## v10.67 — 01/10/2026
+- Área de **Fornecedores** separada em página própria: `administracao/fornecedor.html`.
+- Cadastro, contatos, compras/boletos e conferência ficaram organizados em áreas independentes.
+- Administração ganhou acesso direto para abrir a nova página de fornecedores.
+- A nova página usa as mesmas bases locais existentes (`biobel_cadastros_adm` e `biobel_dados_fornecedores`), evitando duplicação de dados.
+- Service Worker atualizado para incluir a nova página.
+
 ## v10.66 — 01/10/2026
 - Área de Fornecedores separada em abas: **Boletos, Cadastros, Conferência e Histórico**.
 - Criada conferência automática de boletos para apontar vencidos, sem marca, sem fornecedor, sem valor e possíveis duplicidades.
