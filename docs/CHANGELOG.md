@@ -1,3 +1,8 @@
+## v10.62 — 01/10/2026
+- Backup completo e automático passam a registrar explicitamente a presença de dados de fornecedores, boletos e padrões de parcelamento.
+- Tela de Backup atualizada para informar que dados de fornecedores também são preservados.
+- Novo boleto em 1x recebe automaticamente vencimento sugerido para 30 dias após a data do cadastro quando o campo estiver vazio.
+
 ## v10.61 — 01/10/2026
 - Novo design da área de Boletos de Fornecedores, com resumo de total, pendentes, pagos e valor pendente.
 - Formulário de boletos reorganizado para facilitar o cadastro.
