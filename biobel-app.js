@@ -875,6 +875,7 @@ function alternarGrupoAdm(grupo){
  if(!estaAberto) fecharTodosGruposAdmExceto(grupo);
  conteudo.style.display = estaAberto ? 'none' : 'block';
  if(seta) seta.textContent = estaAberto ? '▸' : '▾';
+ if(!estaAberto && grupo==='fornecedores') { const abaSalva=localStorage.getItem('biobel_fornecedor_aba')||'boletos'; setTimeout(function(){abrirAbaFornecedores(abaSalva);},0); }
  localStorage.setItem('biobel_grupo_adm_'+grupo, estaAberto ? 'no' : 'yes');
  atualizarTextoBotaoTodosGrupos();
 }
@@ -4399,18 +4400,21 @@ function removerDadosFornecedor(chave){
  });
 }
 function renderDadosFornecedores(){
- const el = document.getElementById('listaDadosFornecedores');
- if(!el) return;
- const dados = Object.entries(getDadosFornecedores());
- if(dados.length===0){ el.innerHTML = '<p style="color:#93a3ba;font-size:12.5px;">Nenhum fornecedor com dados cadastrados ainda.</p>'; return; }
- el.innerHTML = dados.map(([chave,item])=>`
-   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 14px;">
-    <div>
-     <div style="color:#dce5f2;font-weight:800;font-size:13px;">${item.nomeOriginal}</div>
-     <div style="color:#93a3ba;font-size:11px;margin-top:2px;">${item.telefone?'📞 '+item.telefone:''}${item.telefone&&item.cnpj?' · ':''}${item.cnpj?'🏢 '+item.cnpj:''}${!item.telefone&&!item.cnpj?'Sem telefone/CNPJ cadastrado':''}</div>
-    </div>
-    <button onclick="removerDadosFornecedor('${chave}')" aria-label="Remover" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;flex-shrink:0;">🗑️</button>
-   </div>`).join('');
+ const el=document.getElementById('listaDadosFornecedores');
+ if(!el)return;
+ const dados=getDadosFornecedores();
+ const evidencias=obterChavesFornecedoresComEvidencia();
+ const pessoasEquipe=obterNomesEquipeConhecidos();
+ const lista=Object.entries(dados).filter(function([chave,item]){
+  return evidencias.has(chave)&&!pessoasEquipe.has(chave);
+ });
+ if(lista.length===0){
+  el.innerHTML='<p style="color:#93a3ba;font-size:11px;">Nenhum fornecedor com dados de contato vinculado a uma compra cadastrada.</p>';
+  return;
+ }
+ el.innerHTML=lista.map(function([chave,item]){
+  return '<div class="fornecedor-contact-row"><div><strong>'+esc(item.nomeOriginal||chave)+'</strong><span>'+((item.telefone?'📞 '+esc(item.telefone):'')+(item.telefone&&item.cnpj?' · ':'')+(item.cnpj?'🏢 '+esc(item.cnpj):'')||'Sem telefone/CNPJ cadastrado')+'</span></div><button onclick="removerDadosFornecedor(\''+chave+'\')" aria-label="Remover dados de '+esc(item.nomeOriginal||chave)+'">🗑️</button></div>';
+ }).join('');
 }
 
 function getPadroesParceladoFornecedores(){
@@ -4780,44 +4784,49 @@ function chaveCadastro(v){
 function seedCadastrosAdm(){
  const dados=getCadastrosAdm();
  let mudou=false;
- MARCAS_PADRAO_BIOBEL.forEach(nome=>{
-  if(!dados.marcas.some(m=>chaveCadastro(m)===chaveCadastro(nome))){
-   dados.marcas.push(nome); mudou=true;
-  }
+ MARCAS_PADRAO_BIOBEL.forEach(function(nome){
+  if(!dados.marcas.some(function(m){return chaveCadastro(m)===chaveCadastro(nome)})){dados.marcas.push(nome);mudou=true;}
  });
- // Aproveita fornecedores que já existem em boletos, dados de contato ou memória de parcelamento.
+ const evidencias=obterChavesFornecedoresComEvidencia();
  const contatosExistentes=getDadosFornecedores();
- const existentes=[];
- getBoletos().forEach(b=>{
-  if(b.fornecedor) existentes.push(b.fornecedor);
-  if(b.marca) existentes.push('@@MARCA@@'+b.marca);
+ getBoletos().forEach(function(b){
+  const marca=normalizarNomeCadastro(b.marca);
+  if(marca&&!dados.marcas.some(function(m){return chaveCadastro(m)===chaveCadastro(marca)})){dados.marcas.push(marca);mudou=true;}
  });
- Object.values(contatosExistentes).forEach(d=>{if(d?.nomeOriginal) existentes.push(d.nomeOriginal);});
- Object.values(getPadroesParceladoFornecedores()).forEach(d=>{if(d?.nomeOriginal) existentes.push(d.nomeOriginal);});
-
- [...new Set(existentes.filter(Boolean))].forEach(item=>{
-  if(String(item).startsWith('@@MARCA@@')){
-   const nome=normalizarNomeCadastro(String(item).slice(10));
-   if(nome && !dados.marcas.some(m=>chaveCadastro(m)===chaveCadastro(nome))){dados.marcas.push(nome);mudou=true;}
-   return;
-  }
-  const nome=normalizarNomeCadastro(item);
+ Object.values(getPadroesParceladoFornecedores()).forEach(function(p){
+  const nome=normalizarNomeCadastro(p?.nomeOriginal);
   if(!nome)return;
   const chave=chaveCadastro(nome);
-  const contato=contatosExistentes[chave]||{};
-  const idx=dados.fornecedores.findIndex(f=>chaveCadastro(f.nome||f.nomeOriginal)===chave);
-  if(idx<0){
-   dados.fornecedores.push({id:Date.now()+Math.random(),nome,telefone:contato.telefone||'',cnpj:contato.cnpj||''});
+  if(!dados.fornecedores.some(function(f){return chaveCadastro(f.nome)===chave})){
+   const contato=contatosExistentes[chave]||{};
+   dados.fornecedores.push({id:Date.now()+Math.random(),nome,telefone:contato.telefone||'',cnpj:contato.cnpj||'',origem:'evidencia'});
    mudou=true;
-  }else{
-   const atual=dados.fornecedores[idx];
-   if(!atual.telefone && contato.telefone){atual.telefone=contato.telefone;mudou=true;}
-   if(!atual.cnpj && contato.cnpj){atual.cnpj=contato.cnpj;mudou=true;}
   }
  });
- if(mudou) salvarCadastrosAdm(dados);
+ getBoletos().forEach(function(b){
+  const nome=normalizarNomeCadastro(b.fornecedor);
+  if(!nome)return;
+  const chave=chaveCadastro(nome);
+  if(!dados.fornecedores.some(function(f){return chaveCadastro(f.nome)===chave})){
+   const contato=contatosExistentes[chave]||{};
+   dados.fornecedores.push({id:Date.now()+Math.random(),nome,telefone:contato.telefone||'',cnpj:contato.cnpj||'',origem:'evidencia'});
+   mudou=true;
+  }
+ });
+ // Limpa automaticamente apenas registros que foram criados pelo seed antigo e se parecem com pessoas da equipe.
+ const pessoasEquipe=obterNomesEquipeConhecidos();
+ const antes=dados.fornecedores.length;
+ dados.fornecedores=dados.fornecedores.filter(function(f){
+  if(f.origem==='evidencia')return true;
+  const chave=chaveCadastro(f.nome);
+  if(pessoasEquipe.has(chave)&&!evidencias.has(chave))return false;
+  return true;
+ });
+ if(dados.fornecedores.length!==antes)mudou=true;
+ if(mudou)salvarCadastrosAdm(dados);
  return dados;
 }
+
 function abrirAbaCadastro(aba){
  const marcas=document.getElementById('cadastroAbaMarcas');
  const fornecedores=document.getElementById('cadastroAbaFornecedores');
@@ -4960,6 +4969,82 @@ function sincronizarCadastrosNoBoleto(){
   const unicos=[...new Set([...fornecedores,...nomesBoletos,...nomesPadroes])].sort((a,b)=>a.localeCompare(b,'pt-BR'));
   datalist.innerHTML=unicos.map(n=>'<option value="'+esc(n)+'">').join('');
  }
+}
+function abrirAbaFornecedores(aba){
+ const container=document.getElementById('conteudoGrupo-fornecedores');
+ if(!container)return;
+ container.querySelectorAll('[data-fornecedor-view]').forEach(function(el){
+  el.style.display=el.getAttribute('data-fornecedor-view')===aba?'':'none';
+ });
+ container.querySelectorAll('.fornecedor-subtab').forEach(function(btn){
+  const ativa=btn.textContent.toLowerCase().includes(
+   aba==='boletos'?'boletos':aba==='cadastros'?'cadastros':aba==='conferencia'?'conferência':'histórico'
+  );
+  btn.classList.toggle('is-active',ativa);
+  btn.setAttribute('aria-selected',ativa?'true':'false');
+ });
+ if(aba==='conferencia') renderConferenciaFornecedores();
+ if(aba==='cadastros') renderCadastrosAdm();
+ if(aba==='historico') renderSeletorFornecedorHistorico();
+ try{ localStorage.setItem('biobel_fornecedor_aba',aba); }catch(e){}
+}
+function obterChavesFornecedoresComEvidencia(){
+ const chaves=new Set();
+ getBoletos().forEach(function(b){const n=normalizarNomeCadastro(b.fornecedor);if(n)chaves.add(chaveCadastro(n));});
+ Object.values(getPadroesParceladoFornecedores()).forEach(function(p){const n=normalizarNomeCadastro(p?.nomeOriginal);if(n)chaves.add(chaveCadastro(n));});
+ return chaves;
+}
+function obterNomesEquipeConhecidos(){
+ const nomes=new Set(['alessandra','gabriela','day','dayane','jennifer']);
+ try{
+  for(let i=0;i<localStorage.length;i++){
+   const k=localStorage.key(i)||'';
+   if(k.indexOf('biobel_dados_pessoais_')===0){
+    const d=JSON.parse(localStorage.getItem(k)||'{}');
+    if(d?.nomeCompleto) nomes.add(chaveCadastro(d.nomeCompleto));
+   }
+  }
+ }catch(e){}
+ return nomes;
+}
+function renderConferenciaFornecedores(){
+ const el=document.getElementById('conteudoConferenciaFornecedores');
+ if(!el)return;
+ const boletos=getBoletos();
+ const hoje=obterAgoraBrasilia();
+ const hojeMs=new Date(hoje.getFullYear(),hoje.getMonth(),hoje.getDate()).getTime();
+ const pendentes=boletos.filter(b=>!b.pago);
+ const pagos=boletos.filter(b=>!!b.pago);
+ const vencidos=pendentes.filter(b=>{
+  if(!b.vencimento)return false;
+  const d=new Date(b.vencimento+'T00:00:00');
+  return !isNaN(d)&&d.getTime()<hojeMs;
+ });
+ const semFornecedor=boletos.filter(b=>!String(b.fornecedor||'').trim());
+ const semMarca=boletos.filter(b=>!String(b.marca||'').trim() && String(b.categoria||'Produto')==='Produto');
+ const semValor=boletos.filter(b=>!(Number(b.valor)>0));
+ const grupos={};
+ boletos.forEach(b=>{
+  const k=chaveCadastro([b.fornecedor,b.valor,b.vencimento].join('|'));
+  if(!grupos[k])grupos[k]=[];
+  grupos[k].push(b);
+ });
+ const duplicados=Object.values(grupos).filter(g=>g.length>1).reduce((n,g)=>n+g.length,0);
+ const valorPendente=pendentes.reduce((n,b)=>n+(Number(b.valor)||0),0);
+ const itens=[
+  {icon:'📦',label:'Boletos cadastrados',value:boletos.length,sub:'total registrado'},
+  {icon:'⏳',label:'Pendentes',value:pendentes.length,sub:money(valorPendente)+' ainda pendente'},
+  {icon:'✅',label:'Pagos',value:pagos.length,sub:'marcados como pagos'},
+  {icon:'🚨',label:'Vencidos',value:vencidos.length,sub:'pendentes com vencimento passado'},
+  {icon:'🏷️',label:'Sem marca',value:semMarca.length,sub:'produtos sem marca informada'},
+  {icon:'⚠️',label:'Sem fornecedor',value:semFornecedor.length,sub:'precisam de identificação'},
+  {icon:'💰',label:'Sem valor',value:semValor.length,sub:'revisar antes de fechar'},
+  {icon:'🔁',label:'Possíveis duplicados',value:duplicados,sub:'mesmo fornecedor, valor e vencimento'}
+ ];
+ el.innerHTML='<div class="fornecedor-conferencia-grid">'+itens.map(function(x){
+  return '<article class="fornecedor-check-card '+(x.value>0&&['🚨','🏷️','⚠️','💰','🔁'].includes(x.icon)?'attention':'')+'"><div class="fornecedor-check-icon">'+x.icon+'</div><div><small>'+x.label+'</small><strong>'+x.value+'</strong><span>'+x.sub+'</span></div></article>';
+ }).join('')+'</div>'+
+ '<div class="fornecedor-check-note">💡 <strong>Como usar:</strong> esta conferência não altera os boletos. Ela apenas aponta o que pode precisar de revisão antes de você considerar as compras do período como conferidas.</div>';
 }
 function renderBoletos(){
  renderSeletorFornecedorHistorico();
@@ -13820,5 +13905,5 @@ let promptDeInstalacaoGuardado=null;
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();promptDeInstalacaoGuardado=e;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='inline-block';});
 function instalarAppBiobel(){if(!promptDeInstalacaoGuardado)return;promptDeInstalacaoGuardado.prompt();promptDeInstalacaoGuardado.userChoice.then(function(){promptDeInstalacaoGuardado=null;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';});}
 window.addEventListener('appinstalled',function(){const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';try{mostrarToast('✅ Biobel instalado!');}catch(e){}});
-if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=10.65',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
+if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=10.66',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
 window.addEventListener('load',initPaginaAtiva,{once:true});
