@@ -1184,3 +1184,24 @@ body.light-mode .biobel-attention-item button:hover{
   background:#e8f8f2!important;
   color:#087f5b!important;
 }
+
+/* ===== Polimento visual (pequenas melhorias gráficas) ===== */
+/* Sombra sutil também nos cards novos (.adv-card), que hoje ficavam "chapados" sem profundidade */
+.adv-card{box-shadow:0 10px 30px rgba(0,0,0,.18)}
+
+/* Transições suaves em botões e links — hover/toque deixa de ser seco e brusco */
+button,.btn,a.config-chip,.config-chip{transition:background-color .15s ease,border-color .15s ease,color .15s ease,filter .15s ease,opacity .15s ease}
+
+/* Barra de rolagem combinando com o tema escuro, em vez da cinza padrão do navegador */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:#0b1728}
+::-webkit-scrollbar-thumb{background:#1e2c42;border-radius:999px}
+::-webkit-scrollbar-thumb:hover{background:#27d7a0}
+*{scrollbar-width:thin;scrollbar-color:#1e2c42 #0b1728}
+body.light-mode ::-webkit-scrollbar-track{background:#f1f5f9}
+body.light-mode ::-webkit-scrollbar-thumb{background:#cbd5e1}
+body.light-mode *{scrollbar-color:#cbd5e1 #f1f5f9}
+
+/* Entrada suave dos cards quando a tela termina de carregar os dados da planilha */
+@keyframes biobelFadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.card,.adv-card{animation:biobelFadeIn .35s ease both}
