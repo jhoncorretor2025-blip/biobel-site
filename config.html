@@ -258,6 +258,19 @@
   <div id="horarioFuncionamentoStatus" class="mt-3 text-sm text-slate-400"></div>
  </div>
 
+ </div>
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6" style="border-color:rgba(251,191,36,.35);">
+  <div class="mb-5"><h2 class="text-xl font-bold">⚠️ Alerta de horário ausente na coluna L</h2><p class="text-sm text-slate-400 mt-1">Se uma venda de hoje estiver sem horário na coluna L da planilha, o Biobel avisa automaticamente para corrigir o lançamento.</p></div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:12px;">
+   <label style="display:flex;align-items:center;gap:10px;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px;cursor:pointer;"><input id="alertaHorarioAusenteAtivo" type="checkbox" style="width:18px;height:18px;"><span><strong style="display:block;color:#dce5f2;font-size:13px;">Ativar alerta</strong><small style="color:#93a3ba;">Verificar automaticamente</small></span></label>
+   <div><label for="alertaHorarioAusenteIntervalo" style="font-size:11px;color:#93a3ba;display:block;margin-bottom:4px;">Repetir a cada</label><select id="alertaHorarioAusenteIntervalo" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 12px;color:#dce5f2;font-size:13px;"><option value="15">15 minutos</option><option value="30">30 minutos</option><option value="60">1 hora</option><option value="120">2 horas</option></select></div>
+   <div><label for="alertaHorarioAusenteInicio" style="font-size:11px;color:#93a3ba;display:block;margin-bottom:4px;">Começar às</label><input id="alertaHorarioAusenteInicio" type="time" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 12px;color:#dce5f2;font-size:13px;"></div>
+   <div><label for="alertaHorarioAusenteFim" style="font-size:11px;color:#93a3ba;display:block;margin-bottom:4px;">Parar às</label><input id="alertaHorarioAusenteFim" type="time" style="width:100%;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:10px 12px;color:#dce5f2;font-size:13px;"></div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;"><button onclick="salvarConfigAlertaHorarioAusente()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-semibold text-sm">💾 Salvar alerta</button><button onclick="testarAlertaHorarioAusente()" class="bg-blue-600 hover:bg-blue-500 px-4 py-2.5 rounded-xl font-semibold text-sm">🧪 Testar agora</button><button onclick="solicitarNotificacaoHorarioAusente()" class="bg-slate-700 hover:bg-slate-600 px-4 py-2.5 rounded-xl font-semibold text-sm">🔔 Ativar notificação do navegador</button></div>
+  <div id="alertaHorarioAusenteStatus" class="mt-3 text-sm text-slate-400"></div><p class="text-xs text-slate-500 mt-3">Por padrão: ativo, a cada 30 minutos, das 09:00 às 18:00. O aviso funciona enquanto o painel estiver aberto.</p>
+ </div>
+
  <div id="configSecaoEmpresa" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6" style="display:none;">
   <div class="mb-4">
    <h2 class="text-xl font-bold">🏢 Dados da Empresa</h2>
@@ -577,4 +590,5 @@
   <button onclick="testarDicaDoDia()" class="w-full bg-blue-600 hover:bg-blue-500 px-4 py-2.5 rounded-xl font-semibold text-sm">👁️ Ver como fica (testar agora)</button>
  </div>
 </section>
+<script>document.addEventListener('DOMContentLoaded',()=>setTimeout(carregarConfigAlertaHorarioAusente,0));</script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js"></script><script src="biobel-app.js"></script></body></html>
