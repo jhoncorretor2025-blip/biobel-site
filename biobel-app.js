@@ -13612,6 +13612,55 @@ function testarAlertaHorarioAusente(){const info=obterAlertaHorarioAusenteHoje()
 window.addEventListener('biobel:data-updated',()=>setTimeout(verificarAlertaHorarioAusente,500));
 setInterval(verificarAlertaHorarioAusente,60000);
 
+/* ===== Reconhecimento de vendas acima de R$ 400 ===== */
+function mostrarParabensVendaAlta(venda){
+ const valor=Number(venda?.valor)||0;
+ if(valor<=400)return;
+ const nome=String(venda?.vendedora||'Vendedora').trim();
+ const valorFmt=typeof money==='function'?money(valor):('R$ '+valor.toFixed(2).replace('.',','));
+ const msg='🎉 PARABÉNS, '+nome+'! Você acaba de fazer uma venda de '+valorFmt+'! 🔥\n\nExcelente atendimento e ótimo trabalho! Continue assim — cada venda dessas mostra o seu potencial! 💚✨';
+ let el=document.getElementById('celebracaoVendaAltaBiobel');
+ if(!el){
+  el=document.createElement('div');
+  el.id='celebracaoVendaAltaBiobel';
+  el.style.cssText='position:fixed;top:88px;left:50%;transform:translateX(-50%);width:min(560px,calc(100vw - 28px));background:linear-gradient(145deg,#063d2d,#0b6b4d);color:#fff;border:2px solid #27d7a0;border-radius:18px;padding:22px 48px 20px 20px;box-shadow:0 18px 50px rgba(0,0,0,.38);z-index:10060;text-align:center;';
+  const close=document.createElement('button');
+  close.type='button';close.textContent='×';close.setAttribute('aria-label','Fechar parabéns');
+  close.style.cssText='position:absolute;right:10px;top:8px;width:34px;height:34px;border:0;border-radius:9px;background:rgba(255,255,255,.12);color:#fff;font-size:26px;font-weight:900;cursor:pointer;';
+  close.onclick=()=>el.remove();
+  el.appendChild(close);
+  const icon=document.createElement('div');icon.textContent='🏆✨';icon.style.fontSize='34px';icon.style.marginBottom='5px';el.appendChild(icon);
+  const title=document.createElement('div');title.id='celebracaoVendaAltaTitulo';title.style.cssText='font-size:18px;font-weight:900;line-height:1.35;';el.appendChild(title);
+  const body=document.createElement('div');body.id='celebracaoVendaAltaTexto';body.style.cssText='margin-top:8px;font-size:13px;line-height:1.55;color:#d9fff2;white-space:pre-line;';el.appendChild(body);
+  document.body.appendChild(el);
+ }
+ const titulo=el.querySelector('#celebracaoVendaAltaTitulo');
+ const body=el.querySelector('#celebracaoVendaAltaTexto');
+ if(titulo)titulo.textContent='🎉 PARABÉNS, '+nome+'! Venda de '+valorFmt+'!';
+ if(body)body.textContent='Excelente trabalho! 💚\nEsse resultado mostra seu potencial. Continue atendendo com carinho, confiança e energia — a próxima grande venda pode ser ainda maior! 🚀';
+ el.style.display='block';
+}
+function verificarVendasAltas(){
+ const todas=[];
+ (Array.isArray(daysData)?daysData:[]).forEach(d=>(d.registrosVendas||[]).forEach((v,idx)=>{
+  if(Number(v?.valor)>400)todas.push({ ...v, dia:d.dia, _idx:idx });
+ }));
+ if(!todas.length)return;
+ const assinaturas=todas.map(v=>[v.dia,v._idx,v.vendedora||'',Number(v.valor).toFixed(2),v.hora||''].join('|'));
+ let vistas=[];
+ try{vistas=JSON.parse(localStorage.getItem('biobel_vendas_altas_v1')||'[]');if(!Array.isArray(vistas))vistas=[];}catch(e){vistas=[];}
+ const novas=todas.filter(v=>!vistas.includes([v.dia,v._idx,v.vendedora||'',Number(v.valor).toFixed(2),v.hora||''].join('|')));
+ if(vistas.length===0){
+  const destaque=todas.slice().sort((a,b)=>Number(b.valor)-Number(a.valor))[0];
+  mostrarParabensVendaAlta(destaque);
+ }else if(novas.length){
+  novas.slice().sort((a,b)=>Number(b.valor)-Number(a.valor)).forEach((v,i)=>setTimeout(()=>mostrarParabensVendaAlta(v),i*900));
+ }
+ try{localStorage.setItem('biobel_vendas_altas_v1',JSON.stringify(assinaturas.slice(-300)));}catch(e){}
+}
+window.addEventListener('biobel:data-updated',()=>setTimeout(verificarVendasAltas,700));
+setTimeout(verificarVendasAltas,1800);
+
 function startGoogleAutoRefresh(){
  if(googleTimer) clearInterval(googleTimer);
  googleTimer=setInterval(loadGoogleSheet,60000);
