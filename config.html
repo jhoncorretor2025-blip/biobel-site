@@ -1,5 +1,22 @@
 <!DOCTYPE html>
-<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="theme-color" content="#0ea97a"><meta name="robots" content="noindex,nofollow"><link rel="icon" type="image/png" href="./logo_biobel_gravatai.png"><link rel="manifest" href="manifest.json"><title>Biobel — Configuração</title><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="biobel-design-system.css"><link rel="stylesheet" href="biobel-ux-refinement.css"><link rel="stylesheet" href="biobel-app.css"></head><body data-biobel-page="config" class="min-h-screen bg-slate-950 text-slate-100">
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="theme-color" content="#0ea97a"><meta name="robots" content="noindex,nofollow"><link rel="icon" type="image/png" href="./logo_biobel_gravatai.png"><link rel="manifest" href="manifest.json"><title>Biobel — Configuração</title><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="biobel-design-system.css"><link rel="stylesheet" href="biobel-ux-refinement.css"><link rel="stylesheet" href="biobel-app.css"><style>
+.dev-protected-gate{position:relative;margin:-2px 0 0;padding:34px 24px;border:1px solid rgba(79,156,255,.35);border-radius:16px;background:linear-gradient(145deg,#0b1728,#101e33);text-align:center;min-height:270px;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:8px;z-index:20}
+.dev-protected-gate .dev-gate-icon{font-size:34px}
+.dev-protected-gate h3{margin:0;color:#dce5f2;font-size:18px;font-weight:900}
+.dev-protected-gate p{margin:0;max-width:560px;color:#93a3ba;font-size:12.5px;line-height:1.5}
+.dev-gate-form{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;width:min(620px,100%);margin-top:10px}
+.dev-gate-form input{width:100%;background:#07111f;border:1px solid #2a3d58;border-radius:10px;padding:11px 12px;color:#dce5f2;font-size:13px;outline:none}
+.dev-gate-form input:focus{border-color:#4f9cff}
+.dev-gate-form button{border:0;border-radius:10px;padding:11px 16px;background:#0ea97a;color:#fff;font-weight:900;cursor:pointer;white-space:nowrap}
+.dev-gate-form button:hover{background:#0b8d68}
+.dev-gate-erro{min-height:18px;color:#fb7185;font-size:11.5px;font-weight:800}
+.dev-protected-gate small{color:#64748b;font-size:10.5px}
+body.light-mode .dev-protected-gate{background:#f8fafc;border-color:#cbd5e1}
+body.light-mode .dev-protected-gate h3{color:#172033}
+body.light-mode .dev-protected-gate p,body.light-mode .dev-protected-gate small{color:#64748b}
+body.light-mode .dev-gate-form input{background:#fff;color:#172033;border-color:#cbd5e1}
+@media(max-width:700px){.dev-gate-form{grid-template-columns:1fr}.dev-protected-gate{padding:28px 16px;min-height:320px}}
+</style></head><body data-biobel-page="config" class="min-h-screen bg-slate-950 text-slate-100">
 <div id="faixaMensagemProgramada" style="display:none;"></div>
 <div id="tourGuiadoOverlay" style="display:none;"></div>
 <div id="dicaDoDiaOverlay" style="display:none;"></div>
@@ -46,7 +63,18 @@
    </div>
   </div>
  </nav>
- <div id="configSecaoConexao" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7">
+ <div id="configSecaoConexao" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7"><div class="dev-protected-gate" data-dev-gate="conexao" style="display:none;">
+ <div class="dev-gate-icon">🔐</div>
+ <h3>Área protegida — DEV</h3>
+ <p>Os links e configurações das planilhas ficam protegidos para evitar acesso aos dados.</p>
+ <div class="dev-gate-form">
+  <input id="devLoginInput" type="text" autocomplete="username" placeholder="Usuário DEV">
+  <input id="devSenhaInput" type="password" autocomplete="current-password" placeholder="Senha DEV">
+  <button type="button" onclick="entrarAcessoDevPlanilhas()">🔓 Entrar</button>
+ </div>
+ <div id="devLoginErro" class="dev-gate-erro"></div>
+ <small>O acesso DEV permanece liberado somente nesta sessão do navegador.</small>
+</div>
   <div class="mb-6">
    <h2 class="text-xl font-bold">Configuração — Google Sheets</h2>
    <p class="text-sm text-slate-400 mt-1">Cole o link da sua planilha Google. O dashboard poderá atualizar os dados automaticamente.</p>
@@ -78,7 +106,18 @@
   </div>
  </div>
 
- <div id="configSecaoPlanilhas" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6" style="display:none;">
+ <div id="configSecaoPlanilhas" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6" style="display:none;"><div class="dev-protected-gate" data-dev-gate="planilhas" style="display:none;">
+ <div class="dev-gate-icon">🔐</div>
+ <h3>Área protegida — DEV</h3>
+ <p>Os links e configurações das planilhas ficam protegidos para evitar acesso aos dados.</p>
+ <div class="dev-gate-form">
+  <input id="devLoginInputPlanilhas" type="text" autocomplete="username" placeholder="Usuário DEV">
+  <input id="devSenhaInputPlanilhas" type="password" autocomplete="current-password" placeholder="Senha DEV">
+  <button type="button" onclick="entrarAcessoDevPlanilhas()">🔓 Entrar</button>
+ </div>
+ <div id="devLoginErroPlanilhas" class="dev-gate-erro"></div>
+ <small>O acesso DEV permanece liberado somente nesta sessão do navegador.</small>
+</div>
   <div class="biobel-planilhas-header">
    <div class="biobel-planilhas-title">
     <div class="biobel-planilhas-icon">📊</div>
@@ -591,4 +630,44 @@
  </div>
 </section>
 <script>document.addEventListener('DOMContentLoaded',()=>setTimeout(carregarConfigAlertaHorarioAusente,0));</script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js"></script><script src="biobel-app.js"></script></body></html>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js"></script><script src="biobel-app.js"></script><script>
+(function(){
+ const DEV_KEY='biobel_dev_planilhas_autenticado_v1';
+ const DEV_USER='Jhon';
+ const DEV_PASS='medaumaluz';
+ function devAutenticado(){try{return sessionStorage.getItem(DEV_KEY)==='yes';}catch(e){return false;}}
+ function aplicarProtecaoDevPlanilhas(){
+  ['configSecaoConexao','configSecaoPlanilhas'].forEach(id=>{
+   const sec=document.getElementById(id); if(!sec)return;
+   const gate=sec.querySelector('.dev-protected-gate'); if(!gate)return;
+   const unlocked=devAutenticado();
+   gate.style.display=unlocked?'none':'flex';
+   [...sec.children].forEach(ch=>{if(ch!==gate)ch.style.display=unlocked?'':'none';});
+   sec.classList.toggle('dev-planilhas-liberada',unlocked);
+  });
+ }
+ window.entrarAcessoDevPlanilhas=function(){
+  const u=document.getElementById('devLoginInput')||document.getElementById('devLoginInputPlanilhas');
+  const p=document.getElementById('devSenhaInput')||document.getElementById('devSenhaInputPlanilhas');
+  const erro=document.getElementById('devLoginErro')||document.getElementById('devLoginErroPlanilhas');
+  if(String(u?.value||'').trim()===DEV_USER && String(p?.value||'')===DEV_PASS){
+   try{sessionStorage.setItem(DEV_KEY,'yes');}catch(e){}
+   document.querySelectorAll('#devLoginInput,#devSenhaInput,#devLoginErro,#devLoginInputPlanilhas,#devSenhaInputPlanilhas,#devLoginErroPlanilhas').forEach(el=>{if(el)el.value='';});
+   aplicarProtecaoDevPlanilhas();
+   if(typeof mostrarToast==='function')mostrarToast('✅ Acesso DEV liberado para os dados das planilhas.');
+  }else{
+   if(erro)erro.textContent='❌ Usuário ou senha DEV incorretos.';
+  }
+ };
+ window.bloquearAcessoDevPlanilhas=function(){
+  try{sessionStorage.removeItem(DEV_KEY);}catch(e){}
+  aplicarProtecaoDevPlanilhas();
+ };
+ document.addEventListener('keydown',e=>{
+  if(e.key==='Enter' && (document.activeElement?.id==='devLoginInput'||document.activeElement?.id==='devSenhaInput'||document.activeElement?.id==='devLoginInputPlanilhas'||document.activeElement?.id==='devSenhaInputPlanilhas')){e.preventDefault();entrarAcessoDevPlanilhas();}
+ });
+ window.addEventListener('load',()=>setTimeout(aplicarProtecaoDevPlanilhas,50),{once:true});
+ const obs=new MutationObserver(()=>{if(!devAutenticado())aplicarProtecaoDevPlanilhas();});
+ obs.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['style','class']});
+})();
+</script></body></html>
