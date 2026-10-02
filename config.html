@@ -633,10 +633,13 @@ body.light-mode .dev-gate-form input{background:#fff;color:#172033;border-color:
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js"></script><script src="biobel-app.js"></script><script>
 (function(){
  const DEV_KEY='biobel_dev_planilhas_autenticado_v1';
+ let aplicando=false;
  const DEV_USER='Jhon';
  const DEV_PASS='medaumaluz';
  function devAutenticado(){try{return sessionStorage.getItem(DEV_KEY)==='yes';}catch(e){return false;}}
  function aplicarProtecaoDevPlanilhas(){
+  if(aplicando)return;
+  aplicando=true;
   ['configSecaoConexao','configSecaoPlanilhas'].forEach(id=>{
    const sec=document.getElementById(id); if(!sec)return;
    const gate=sec.querySelector('.dev-protected-gate'); if(!gate)return;
@@ -645,6 +648,7 @@ body.light-mode .dev-gate-form input{background:#fff;color:#172033;border-color:
    [...sec.children].forEach(ch=>{if(ch!==gate)ch.style.display=unlocked?'':'none';});
    sec.classList.toggle('dev-planilhas-liberada',unlocked);
   });
+  aplicando=false;
  }
  window.entrarAcessoDevPlanilhas=function(){
   const u=document.getElementById('devLoginInput')||document.getElementById('devLoginInputPlanilhas');
