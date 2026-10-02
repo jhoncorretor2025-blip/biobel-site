@@ -1205,3 +1205,15 @@ body.light-mode *{scrollbar-color:#cbd5e1 #f1f5f9}
 /* Entrada suave dos cards quando a tela termina de carregar os dados da planilha */
 @keyframes biobelFadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 .card,.adv-card{animation:biobelFadeIn .35s ease both}
+
+/* ===== Mais 2 melhorias visuais pequenas ===== */
+/* Números com largura fixa por dígito — evita o valor "deslizar" de lado quando atualiza
+   (ex: R$1.234 virando R$8.234 não empurra o resto do texto, já que todo dígito ocupa o
+   mesmo espaço). Aplicado nos lugares que mostram dinheiro/KPIs. */
+.card strong,.adv-card strong,.adv-kpi .value,.kpi strong{font-variant-numeric:tabular-nums}
+
+/* Texto de dica dentro dos campos (placeholder) com cor legível no tema escuro — antes só
+   tinha ajuste pro modo claro, no escuro ficava com a cor padrão do navegador, meio apagada
+   contra o fundo escuro dos campos. */
+input::placeholder,textarea::placeholder{color:#64748b;opacity:1}
+body.light-mode input::placeholder,body.light-mode textarea::placeholder{color:#94a3b8!important;opacity:1}
