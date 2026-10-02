@@ -13579,7 +13579,31 @@ function getConfigAlertaHorarioAusente(){try{const raw=localStorage.getItem(HORA
 function salvarConfigAlertaHorarioAusente(){const cfg={habilitado:!!document.getElementById('alertaHorarioAusenteAtivo')?.checked,intervaloMin:Math.max(5,Math.min(240,Number(document.getElementById('alertaHorarioAusenteIntervalo')?.value)||30)),inicio:document.getElementById('alertaHorarioAusenteInicio')?.value||'09:00',fim:document.getElementById('alertaHorarioAusenteFim')?.value||'18:00'};localStorage.setItem(HORARIO_AUSENTE_CFG_KEY,JSON.stringify(cfg));window.__biobelUltimoAlertaHorarioAusente=0;atualizarStatusConfigAlertaHorarioAusente('✅ Configuração salva. O alerta será verificado automaticamente.');}
 function dentroDaFaixaAlertaHorario(cfg){const agora=obterAgoraBrasilia();const hm=String(agora.getHours()).padStart(2,'0')+':'+String(agora.getMinutes()).padStart(2,'0');return cfg.inicio<=cfg.fim?(hm>=cfg.inicio&&hm<=cfg.fim):(hm>=cfg.inicio||hm<=cfg.fim);}
 function obterAlertaHorarioAusenteHoje(){const agora=obterAgoraBrasilia();const dia=String(agora.getDate()).padStart(2,'0')+'.'+String(agora.getMonth()+1).padStart(2,'0');const d=(Array.isArray(daysData)?daysData:[]).find(x=>String(x?.dia||'')===dia);return d?{dia,semDados:false,quantidade:Number(d.vendasSemHorario)||0}:{dia,semDados:true,quantidade:0};}
-function dispararAlertaHorarioAusente(forcar=false){const cfg=getConfigAlertaHorarioAusente(),info=obterAlertaHorarioAusenteHoje();if((!cfg.habilitado&&!forcar)||info.semDados||info.quantidade<=0)return false;if(!forcar&&!dentroDaFaixaAlertaHorario(cfg))return false;const agora=Date.now(),intervaloMs=Math.max(5,Number(cfg.intervaloMin)||30)*60000;if(!forcar&&window.__biobelUltimoAlertaHorarioAusente&&agora-window.__biobelUltimoAlertaHorarioAusente<intervaloMs)return false;window.__biobelUltimoAlertaHorarioAusente=agora;const msg='⚠️ Atenção: '+info.quantidade+' venda(s) de hoje estão sem horário na coluna L da planilha. Preencha o horário para manter os dados corretos.';try{mostrarToast(msg);}catch(e){}try{if('Notification'in window&&Notification.permission==='granted')new Notification('Biobel — horário ausente',{body:msg,tag:'biobel-horario-ausente'});}catch(e){}return true;}
+function mostrarAlertaHorarioAusentePersistente(msg){
+ let el=document.getElementById('alertaHorarioAusentePersistente');
+ if(!el){
+  el=document.createElement('div');
+  el.id='alertaHorarioAusentePersistente';
+  el.setAttribute('role','alert');
+  el.setAttribute('aria-live','assertive');
+  el.style.cssText='position:fixed;top:78px;right:20px;max-width:460px;width:calc(100vw - 40px);background:#fff7ed;color:#7c2d12;border:2px solid #fb923c;border-radius:14px;padding:15px 46px 15px 16px;box-shadow:0 12px 32px rgba(0,0,0,.28);z-index:10050;font-size:14px;font-weight:800;line-height:1.45;';
+  const close=document.createElement('button');
+  close.type='button';
+  close.setAttribute('aria-label','Fechar alerta de horário ausente');
+  close.textContent='×';
+  close.style.cssText='position:absolute;top:7px;right:10px;width:32px;height:32px;border:0;border-radius:8px;background:transparent;color:#7c2d12;font-size:25px;font-weight:900;line-height:28px;cursor:pointer;';
+  close.addEventListener('click',()=>{el.remove();});
+  el.appendChild(close);
+  const texto=document.createElement('div');
+  texto.id='alertaHorarioAusentePersistenteTexto';
+  el.appendChild(texto);
+  document.body.appendChild(el);
+ }
+ const texto=el.querySelector('#alertaHorarioAusentePersistenteTexto');
+ if(texto) texto.textContent=msg;
+ el.style.display='block';
+}
+function dispararAlertaHorarioAusente(forcar=false){const cfg=getConfigAlertaHorarioAusente(),info=obterAlertaHorarioAusenteHoje();if((!cfg.habilitado&&!forcar)||info.semDados||info.quantidade<=0)return false;if(!forcar&&!dentroDaFaixaAlertaHorario(cfg))return false;const agora=Date.now(),intervaloMs=Math.max(5,Number(cfg.intervaloMin)||30)*60000;if(!forcar&&window.__biobelUltimoAlertaHorarioAusente&&agora-window.__biobelUltimoAlertaHorarioAusente<intervaloMs)return false;window.__biobelUltimoAlertaHorarioAusente=agora;const msg='⚠️ Atenção: '+info.quantidade+' venda(s) de hoje estão sem horário na coluna L da planilha. Preencha o horário para manter os dados corretos.';try{mostrarAlertaHorarioAusentePersistente(msg);}catch(e){}try{if('Notification'in window&&Notification.permission==='granted')new Notification('Biobel — horário ausente',{body:msg,tag:'biobel-horario-ausente'});}catch(e){}return true;}
 function verificarAlertaHorarioAusente(){const cfg=getConfigAlertaHorarioAusente();if(!cfg.habilitado)return;const info=obterAlertaHorarioAusenteHoje();if(info.semDados||info.quantidade<=0){window.__biobelUltimoAlertaHorarioAusente=0;return;}dispararAlertaHorarioAusente(false);}
 function solicitarNotificacaoHorarioAusente(){if(!('Notification'in window)){atualizarStatusConfigAlertaHorarioAusente('⚠️ Este navegador não oferece notificações do sistema. O aviso dentro do Biobel continuará funcionando.');return;}Notification.requestPermission().then(p=>atualizarStatusConfigAlertaHorarioAusente(p==='granted'?'🔔 Notificações do navegador ativadas.':'ℹ️ Notificações não autorizadas. O aviso dentro do Biobel continua funcionando.')).catch(()=>atualizarStatusConfigAlertaHorarioAusente('⚠️ Não foi possível ativar a notificação do navegador.'));}
 function atualizarStatusConfigAlertaHorarioAusente(t){const el=document.getElementById('alertaHorarioAusenteStatus');if(el)el.textContent=t;}
