@@ -2522,6 +2522,28 @@ function alternarMostrarSenhaAdm(){
 const ADM_USUARIOS_VALIDOS = [
  { usuario:'alesandra', senha:'jhonmeulindo', nomeExibicao:'Alesandra', perfil:'master' }
 ];
+/* ===== Sessão administrativa — expiração automática em 2 horas ===== */
+const ADM_SESSAO_MAX_MS = 2 * 60 * 60 * 1000;
+function iniciarTemporizadorSessaoAdm(){
+ try{ sessionStorage.setItem('biobel_adm_login_ts', String(Date.now())); }catch(e){}
+}
+function sessaoAdmExpirada(){
+ const ts=Number(sessionStorage.getItem('biobel_adm_login_ts')||0);
+ return !ts || (Date.now()-ts)>=ADM_SESSAO_MAX_MS;
+}
+function encerrarSessaoAdmPorTempo(){
+ ['biobel_logged_in','biobel_adm_autenticado','biobel_adm_usuario_logado','biobel_perfil','biobel_acesso_total','biobel_adm_login_ts'].forEach(k=>sessionStorage.removeItem(k));
+ const login=document.getElementById('admLoginWrap'), app=document.getElementById('admConteudoWrap');
+ if(login)login.style.display='block';
+ if(app)app.style.display='none';
+ const erro=document.getElementById('admLoginErro');
+ if(erro)erro.textContent='🔒 Sua sessão administrativa expirou após 2 horas. Entre novamente para acessar os dados da empresa.';
+}
+function verificarSessaoAdm(){
+ if(document.getElementById('admConteudoWrap')?.style.display!=='none' && sessaoAdmExpirada()){
+  encerrarSessaoAdmPorTempo();
+ }
+}
 function fazerLoginAdm(){
  const usuario = (document.getElementById('admLoginUser').value||'').trim().toLowerCase();
  const senha = document.getElementById('admLoginPass').value||'';
@@ -2534,6 +2556,7 @@ function fazerLoginAdm(){
   sessionStorage.setItem('biobel_adm_usuario_logado', encontrado.nomeExibicao);
   sessionStorage.setItem('biobel_perfil', encontrado.perfil || 'admin');
   sessionStorage.setItem('biobel_acesso_total', encontrado.perfil === 'master' ? 'yes' : 'no');
+  iniciarTemporizadorSessaoAdm();
   document.getElementById('admLoginUser').value='';
   document.getElementById('admLoginPass').value='';
   if(erroEl) erroEl.textContent='';
@@ -2542,6 +2565,8 @@ function fazerLoginAdm(){
   if(erroEl) erroEl.textContent = 'Usuário ou senha incorretos.';
  }
 }
+setInterval(verificarSessaoAdm, 60 * 1000);
+
 function sairAdm(){
  confirmarBiobel('Sair da área da gerência?', ()=>{
   sessionStorage.removeItem('biobel_logged_in');
