@@ -40,6 +40,41 @@ body.light-mode .biobel-previsao-dia .dia{color:#334155}
 body.light-mode .biobel-previsao-dia .temp{color:#172033}
 @media(max-width:480px){.biobel-previsao-lista{gap:5px}.biobel-previsao-dia{padding:8px 2px}.biobel-previsao-dia .icone{font-size:19px}.biobel-previsao-dia .temp{font-size:12px}}
 body.light-mode .biobel-quick-titulo{color:#172033!important}
+/* ===== Dashboard compacto 2.0 ===== */
+.biobel-dashboard-compact{display:flex;flex-direction:column;gap:12px}
+.biobel-kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.biobel-kpi{min-width:0;background:linear-gradient(145deg,#101f34,#0b1728);border:1px solid #243b57;border-radius:14px;padding:13px 14px;box-shadow:0 4px 14px rgba(0,0,0,.10)}
+.biobel-kpi .kpi-label{font-size:10px;color:#8fa2ba;font-weight:900;text-transform:uppercase;letter-spacing:.05em}
+.biobel-kpi .kpi-value{font-size:22px;color:#eef5ff;font-weight:900;line-height:1.15;margin-top:5px}
+.biobel-kpi .kpi-sub{font-size:10.5px;color:#71849d;margin-top:5px;line-height:1.35}
+.biobel-kpi .kpi-accent{color:#27d7a0}
+.biobel-context{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:8px 10px;background:#0d1b2e;border:1px solid #223651;border-radius:12px}
+.biobel-context-label{font-size:10.5px;color:#93a3ba;font-weight:800}
+.biobel-context .biobel-mini-action{border:1px solid #29405b;background:#101f34;color:#cbd5e1;border-radius:999px;padding:5px 9px;font-size:10.5px;font-weight:800;cursor:pointer}
+.biobel-section-compact{background:#0d1b2e;border:1px solid #223651;border-radius:14px;overflow:hidden}
+.biobel-section-compact>summary{list-style:none;cursor:pointer;padding:11px 13px;display:flex;align-items:center;justify-content:space-between;gap:10px;color:#dce5f2;font-size:12px;font-weight:900}
+.biobel-section-compact>summary::-webkit-details-marker{display:none}
+.biobel-section-compact>summary::after{content:'＋';color:#7f93ad}
+.biobel-section-compact[open]>summary::after{content:'−'}
+.biobel-alert-table{width:100%;border-collapse:collapse;font-size:11px}
+.biobel-alert-table th,.biobel-alert-table td{padding:8px 10px;border-top:1px solid #1c2c42;text-align:left}
+.biobel-alert-table th{font-size:9px;text-transform:uppercase;color:#71849d}
+.biobel-alert-empty{padding:12px;color:#71849d;font-size:11px}
+.biobel-compare-table{width:100%;border-collapse:collapse;font-size:11px}
+.biobel-compare-table th,.biobel-compare-table td{padding:8px 10px;border-top:1px solid #1c2c42;text-align:right}
+.biobel-compare-table th:first-child,.biobel-compare-table td:first-child{text-align:left;color:#cbd5e1}
+.biobel-calendar-chips{display:flex;gap:7px;flex-wrap:wrap;padding:10px 12px}
+.biobel-calendar-chip{display:inline-flex;align-items:center;gap:5px;padding:7px 9px;border-radius:999px;background:#101f34;border:1px solid #243b57;color:#cbd5e1;font-size:10.5px}
+body.light-mode .biobel-kpi{background:linear-gradient(145deg,#fff,#f4f8fc);border-color:#d7e1ec}
+body.light-mode .biobel-kpi .kpi-value{color:#172033}
+body.light-mode .biobel-context,.light-mode .biobel-section-compact{background:#fff;border-color:#d7e1ec}
+body.light-mode .biobel-context .biobel-mini-action{background:#f8fafc;border-color:#d7e1ec;color:#334155}
+body.light-mode .biobel-section-compact>summary{color:#172033}
+body.light-mode .biobel-alert-table th,body.light-mode .biobel-alert-table td,body.light-mode .biobel-compare-table th,body.light-mode .biobel-compare-table td{border-color:#e2e8f0}
+body.light-mode .biobel-calendar-chip{background:#f8fafc;border-color:#d7e1ec;color:#334155}
+@media(max-width:900px){.biobel-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.biobel-kpi-grid{grid-template-columns:1fr 1fr;gap:7px}.biobel-kpi{padding:10px}.biobel-kpi .kpi-value{font-size:18px}.biobel-alert-table{min-width:560px}.biobel-alert-scroll,.biobel-compare-scroll{overflow-x:auto}}
+
 .biobel-atendimento-card{background:linear-gradient(135deg,#0d1b2e,#0b1728);border:1px solid #263b56;border-radius:18px;padding:16px 18px;margin-bottom:16px}.biobel-atendimento-grid{display:grid;grid-template-columns:1.1fr 1fr 1fr 1fr;gap:10px}.biobel-atendimento-kpi{background:rgba(255,255,255,.025);border:1px solid #20334d;border-radius:13px;padding:11px 13px}.biobel-atendimento-kpi small{display:block;color:#8fa2ba;font-size:10px;font-weight:800;text-transform:uppercase}.biobel-atendimento-kpi strong{display:block;color:#eef5ff;font-size:20px;margin-top:3px}.biobel-atendimento-status{font-size:12px;font-weight:900;margin-top:5px}.biobel-atendimento-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;background:rgba(39,215,160,.1);border:1px solid rgba(39,215,160,.22);color:#27d7a0;font-size:11px;font-weight:900}.biobel-atendimento-sub{font-size:10.5px;color:#71849d;margin-top:5px}@media(max-width:800px){.biobel-atendimento-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:480px){.biobel-atendimento-grid{grid-template-columns:1fr 1fr}.biobel-atendimento-kpi strong{font-size:17px}}body.light-mode .biobel-atendimento-card{background:linear-gradient(135deg,#fff,#f4f8fc);border-color:#d7e1ec}.light-mode .biobel-atendimento-kpi{background:#f8fafc;border-color:#e2e8f0}.light-mode .biobel-atendimento-kpi strong{color:#172033}.light-mode .biobel-atendimento-sub{color:#64748b}
 body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec!important;box-shadow:0 4px 14px rgba(15,23,42,.06)!important}
 @media(max-width:640px){.biobel-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.biobel-quick-action{grid-template-columns:auto 1fr!important}.biobel-quick-action small{display:block!important}.biobel-quick-action strong{font-size:12px!important}}
@@ -62,6 +97,35 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
   Essa área foi removida por decisão de UX. Não recriar, duplicar ou inserir variações desse painel no dashboard.
 -->
 <main id="dashboardTab" class="max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabDashboard">
+  <div class="biobel-dashboard-compact no-print">
+   <section class="biobel-kpi-grid" aria-label="Indicadores principais">
+    <article class="biobel-kpi"><div class="kpi-label">🎯 Meta do mês</div><div id="kpiMetaValor" class="kpi-value kpi-accent">R$ 0,00</div><div id="kpiMetaSub" class="kpi-sub">de R$ 0,00 · 0%</div><div id="kpiMetaExtra" class="kpi-sub">Calculando necessidade diária...</div></article>
+    <article class="biobel-kpi"><div class="kpi-label">🛍️ Venda hoje</div><div id="kpiVendaHoje" class="kpi-value kpi-accent">R$ 0,00</div><div id="kpiVendaHojeSub" class="kpi-sub">0 atendimentos · ticket R$ 0,00</div></article>
+    <article class="biobel-kpi"><div class="kpi-label">🏆 Líder do dia</div><div id="kpiLiderHoje" class="kpi-value">—</div><div id="kpiLiderHojeSub" class="kpi-sub">R$ 0,00</div></article>
+    <article class="biobel-kpi"><div class="kpi-label">💰 Status do caixa</div><div id="kpiCaixaStatus" class="kpi-value">Consultar</div><div id="kpiCaixaSub" class="kpi-sub">Abra Operação para conferir o fechamento.</div></article>
+   </section>
+   <div class="biobel-context">
+    <span class="biobel-context-label">🌦️ Clima</span><span id="kpiClimaTexto" class="biobel-context-label">—</span>
+    <span class="biobel-context-label" style="margin-left:4px;">⚡ Acesso rápido</span>
+    <button class="biobel-mini-action" onclick="showTab('caixa')">⚡ Fechar Caixa</button>
+    <button class="biobel-mini-action" onclick="showTab('equipe')">📋 Ponto</button>
+    <button class="biobel-mini-action" onclick="showTab('alertas')">🚨 Alertas</button>
+    <button class="biobel-mini-action" onclick="showTab('info')">📊 Análises</button>
+   </div>
+   <details class="biobel-section-compact" open>
+    <summary>🚨 Alertas e ações críticas <span id="kpiAlertasResumo" style="font-weight:700;color:#fbbf24;">verificando...</span></summary>
+    <div class="biobel-alert-scroll" style="overflow-x:auto;"><table class="biobel-alert-table"><thead><tr><th>Data</th><th>Problema</th><th>Impacto</th><th>Ação</th></tr></thead><tbody id="kpiAlertasBody"><tr><td colspan="4" class="biobel-alert-empty">Analisando os dados...</td></tr></tbody></table></div>
+   </details>
+   <details class="biobel-section-compact" open>
+    <summary>📈 Comparativo diário <span id="kpiComparativoResumo" style="font-weight:700;color:#93a3ba;">Hoje × ontem</span></summary>
+    <div class="biobel-compare-scroll" style="overflow-x:auto;"><table class="biobel-compare-table"><thead><tr><th>Métrica</th><th>Hoje</th><th>Ontem</th><th>Média anterior</th><th>Variação</th></tr></thead><tbody id="kpiComparativoBody"></tbody></table></div>
+   </details>
+   <details class="biobel-section-compact">
+    <summary>📅 Calendário comercial <span style="font-weight:700;color:#93a3ba;">próximos eventos</span></summary>
+    <div id="kpiCalendarioChips" class="biobel-calendar-chips"><span class="biobel-calendar-chip">Carregando...</span></div>
+   </details>
+  </div>
+
   <div id="indicadorClimaTopo" class="no-print" style="display:none;justify-content:flex-end;margin-bottom:4px;"></div>
 
   <section class="no-print" aria-label="Atalhos rápidos" style="margin-bottom:10px;">
@@ -91,7 +155,7 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
   <div id="avisoMesDivergente" class="no-print" style="display:none;"></div>
   <div id="bannerClimaChuva" class="no-print" style="display:none;"></div>
   <div id="checklistChuvaDashboard" class="no-print" style="display:none;"></div>
-  <div class="no-print biobel-clima-bar" style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;background:linear-gradient(180deg,#0d1b2e,#0b1728);border:1px solid #223651;border-radius:14px;padding:9px 12px;margin-bottom:6px;box-shadow:0 4px 16px rgba(0,0,0,.12);">
+  <div class="no-print biobel-clima-bar" style="display:none;" style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;background:linear-gradient(180deg,#0d1b2e,#0b1728);border:1px solid #223651;border-radius:14px;padding:9px 12px;margin-bottom:6px;box-shadow:0 4px 16px rgba(0,0,0,.12);">
    <span style="font-size:12px;color:#93a3ba;font-weight:700;">🌦️ Clima de hoje:</span>
    <button type="button" class="biobel-clima-chip" data-clima="Sol" onclick="marcarClimaHojeRapido('Sol')">☀️ Sol</button>
    <button type="button" class="biobel-clima-chip" data-clima="Nublado" onclick="marcarClimaHojeRapido('Nublado')">☁️ Nublado</button>
@@ -104,7 +168,7 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
   <div id="bannerClimaSol" class="no-print" style="display:none;"></div>
   <div id="avisoFimDeSemanaChuvoso" class="no-print" style="display:none;"></div>
   <div id="avisoProximaPlanilha" class="no-print" style="display:none;"></div>
-  <div id="metaDestaqueTopo" class="no-print" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid #1e2c42;border-radius:20px;padding:24px 28px;margin-bottom:16px;">
+  <div id="metaDestaqueTopo" class="no-print" style="display:none!important;" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid #1e2c42;border-radius:20px;padding:24px 28px;margin-bottom:16px;">
    <div style="font-size:11px;color:#93a3ba;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">🎯 Meta do mês</div>
    <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;">
     <span id="metaDestaqueValor" style="font-size:38px;font-weight:900;color:#27d7a0;line-height:1;">R$ 0,00</span>
@@ -138,7 +202,7 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
    <div id="bannerResumoSemanalEmail" style="display:none;margin-top:12px;"></div>
   </div>
 
-  <section id="painelAtendimentosHoje" class="no-print biobel-atendimento-card" aria-label="Referência de atendimentos">
+  <section id="painelAtendimentosHoje" class="no-print biobel-atendimento-card" style="display:none!important;" aria-label="Referência de atendimentos">
    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
     <div><div style="font-size:11px;color:#27d7a0;font-weight:900;text-transform:uppercase;letter-spacing:.08em;">👥 Movimento da loja</div><div style="font-size:17px;color:#eef5ff;font-weight:900;">Atendimentos de hoje</div></div>
     <span id="atendimentoStatusBadge" class="biobel-atendimento-badge">🟡 Calculando...</span>
@@ -151,15 +215,15 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
    </div>
   </section>
 
-  <div class="adv-card no-print" style="margin-bottom:16px;">
+  <div class="adv-card no-print" style="display:none!important;margin-bottom:16px;">
    <div class="adv-card-title">
-    <h3>📅 Calendário Comercial</h3>
+    <h3>📅 Calendário Comercial</h3
     <span>datas especiais que vêm por aí — bom pra todo mundo já ir se preparando</span>
    </div>
    <div id="listaDatasComerciaisDashboard" style="display:flex;flex-direction:column;gap:8px;"></div>
   </div>
 
-  <div id="centralInteligenciaBiobel" class="adv-card no-print" style="margin-bottom:16px;background:linear-gradient(135deg,rgba(13,26,44,.98),rgba(8,19,32,.98));border-color:rgba(39,215,160,.25);">
+  <div id="centralInteligenciaBiobel" class="adv-card no-print" style="display:none!important;" style="margin-bottom:16px;background:linear-gradient(135deg,rgba(13,26,44,.98),rgba(8,19,32,.98));border-color:rgba(39,215,160,.25);">
    <div class="adv-card-title">
     <h3>🧠 Central de Inteligência</h3>
     <span>lê a planilha e destaca o que merece atenção</span>
@@ -197,6 +261,49 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
 
 </main>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js"></script><script src="biobel-app.js"></script><script src="inteligencia-operacional.js"></script>
+<script>
+(function(){
+ function arrData(){try{return Array.isArray(daysData)?daysData:(Array.isArray(window.daysData)?window.daysData:[]);}catch(e){return Array.isArray(window.daysData)?window.daysData:[];}}
+ function moeda(v){return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(v)||0);}
+ function cfg(){const d={minimo:15,maximo:25,forte:26,muitoForte:36,recorde:51};try{return {...d,...JSON.parse(localStorage.getItem('biobel_atendimento_config_v1')||'{}')};}catch(e){return d;}}
+ function diaHoje(a){const ag=typeof window.obterAgoraBrasilia==='function'?window.obterAgoraBrasilia():new Date();const k=String(ag.getDate()).padStart(2,'0')+'.'+String(ag.getMonth()+1).padStart(2,'0');return a.find(x=>String(x?.dia||'')===k)||a[a.length-1];}
+ function nAt(d){return (d?.registrosVendas||[]).filter(v=>String(v?.vendedora||'').trim()).length;}
+ function val(d){return Number(d?.vendaP2)||Number(d?.sales)||0;}
+ function lider(d){const v=d?.vendedoras||{};return Object.keys(v).map(n=>({n,v:Number(v[n])||0})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v)[0];}
+ function renderCompact(){
+  try{
+   const a=arrData(), hoje=diaHoje(a), idx=a.indexOf(hoje), ontem=idx>0?a[idx-1]:null, anteriores=a.slice(Math.max(0,idx-4),idx).filter(Boolean);
+   const total=val(hoje), qtd=nAt(hoje), ticket=qtd?total/qtd:0, l=lider(hoje), x=cfg();
+   const metaTotal=Number(localStorage.getItem('biobel_sales_goal')||50000)||50000;
+   const acumulado=a.reduce((s,d)=>s+val(d),0), pct=metaTotal?(acumulado/metaTotal*100):0, falta=Math.max(0,metaTotal-acumulado);
+   const diasRest=Math.max(1,Number(document.getElementById('metaDiasRestantes')?.textContent)||1), necessidade=falta/diasRest;
+   document.getElementById('kpiMetaValor').textContent=moeda(acumulado);
+   document.getElementById('kpiMetaSub').textContent='de '+moeda(metaTotal)+' · '+pct.toFixed(0)+'%';
+   document.getElementById('kpiMetaExtra').textContent='Faltam '+moeda(falta)+' · '+moeda(necessidade)+'/dia';
+   document.getElementById('kpiVendaHoje').textContent=moeda(total);
+   document.getElementById('kpiVendaHojeSub').textContent=qtd+' atendimento'+(qtd===1?'':'s')+' · ticket '+moeda(ticket);
+   document.getElementById('kpiLiderHoje').textContent=l?l.n:'—';
+   document.getElementById('kpiLiderHojeSub').textContent=l?moeda(l.v):'Nenhuma venda registrada';
+   const ac=document.getElementById('kpiClimaTexto'), clima=document.getElementById('climaHojeMarcadoTexto');if(ac)ac.textContent=clima?.textContent||'clima não informado';
+   const comp=document.getElementById('kpiComparativoBody'), media=anteriores.length?anteriores.reduce((s,d)=>s+val(d),0)/anteriores.length:0;
+   const varPct=ontem&&val(ontem)?((total-val(ontem))/val(ontem))*100:0, qtdOnt=nAt(ontem);
+   comp.innerHTML='<tr><td>Faturamento</td><td>'+moeda(total)+'</td><td>'+moeda(val(ontem))+'</td><td>'+moeda(media)+'</td><td>'+((varPct>=0?'🟢 +':'🔻 ')+varPct.toFixed(1)+'%')+'</td></tr>'+
+    '<tr><td>Atendimentos</td><td>'+qtd+'</td><td>'+qtdOnt+'</td><td>—</td><td>'+(qtd>=x.minimo?'🟢 dentro/acima da faixa':'🔻 abaixo de '+x.minimo)+'</td></tr>'+
+    '<tr><td>Ticket médio</td><td>'+moeda(ticket)+'</td><td>'+moeda(qtdOnt?val(ontem)/qtdOnt:0)+'</td><td>—</td><td>—</td></tr>';
+   document.getElementById('kpiComparativoResumo').textContent=total>=media?'Hoje acima da média':'Hoje abaixo da média';
+   const body=document.getElementById('kpiAlertasBody'), alertas=[];
+   a.forEach(d=>{if(d?.vendasSemHorario>0)alertas.push([d.dia,'Horário ausente na coluna L',d.vendasSemHorario+' venda(s)','Conferir planilha']);});
+   if(qtd>0&&qtd<x.minimo)alertas.push([hoje?.dia||'Hoje','Atendimentos abaixo da referência',qtd+' atendimento(s)','Acompanhar movimento']);
+   body.innerHTML=alertas.length?alertas.slice(0,5).map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td>'+r[3]+'</td></tr>').join(''):'<tr><td colspan="4" class="biobel-alert-empty">✅ Nenhuma pendência crítica encontrada pelos indicadores rápidos.</td></tr>';
+   document.getElementById('kpiAlertasResumo').textContent=alertas.length?(alertas.length+' pendência(s)'):'Tudo certo';
+   document.getElementById('kpiCaixaSub').textContent='Os valores do fechamento detalhado ficam em Operação.';
+   const cal=document.getElementById('listaDatasComerciaisDashboard'), out=document.getElementById('kpiCalendarioChips');
+   if(cal&&cal.children.length){out.innerHTML=Array.from(cal.children).slice(0,5).map(el=>'<span class="biobel-calendar-chip">'+el.innerText.replace(/\s+/g,' ').trim()+'</span>').join('')||'<span class="biobel-calendar-chip">Nenhum evento próximo.</span>';}
+  }catch(e){console.warn('Dashboard compacto:',e);}
+ }
+ window.addEventListener('biobel:data-updated',()=>setTimeout(renderCompact,700));setTimeout(renderCompact,2200);setInterval(renderCompact,60000);
+})();
+</script>
 <script>
 (function(){
  const KEY='biobel_atendimento_config_v1';
