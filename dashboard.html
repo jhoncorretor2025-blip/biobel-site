@@ -42,6 +42,8 @@ body.light-mode .biobel-previsao-dia .temp{color:#172033}
 body.light-mode .biobel-quick-titulo{color:#172033!important}
 body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec!important;box-shadow:0 4px 14px rgba(15,23,42,.06)!important}
 @media(max-width:640px){.biobel-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.biobel-quick-action{grid-template-columns:auto 1fr!important}.biobel-quick-action small{display:block!important}.biobel-quick-action strong{font-size:12px!important}}
+</style><style>
+@media(max-width:640px){#resumoVendasHoje{grid-template-columns:1fr!important}.x{display:none}}
 </style></head><body data-biobel-page="dashboard" class="min-h-screen bg-slate-950 text-slate-100">
 <div id="faixaMensagemProgramada" style="display:none;"></div>
 <div id="tourGuiadoOverlay" style="display:none;"></div>
@@ -116,8 +118,19 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
    <div id="metaProjecaoTexto" style="font-size:12px;margin-top:6px;"></div>
    <div id="metaPorDiaTexto" style="font-size:12.5px;margin-top:8px;font-weight:700;"></div>
    <div id="metaResumoHoje" style="margin-top:14px;padding-top:13px;border-top:1px solid #1e2c42;"></div>
-   <div id="vendaHojeMini" class="no-print" style="display:inline-flex;align-items:center;gap:7px;margin-top:10px;background:rgba(39,215,160,.07);border:1px solid rgba(39,215,160,.18);border-radius:10px;padding:7px 10px;font-size:11px;color:#93a3ba;">
-    🛍️ <span>Vendido hoje:</span> <strong style="color:#27d7a0;font-size:13px;">R$ 0,00</strong>
+   <div id="resumoVendasHoje" class="no-print" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px;">
+    <div style="background:rgba(39,215,160,.06);border:1px solid rgba(39,215,160,.18);border-radius:12px;padding:10px 12px;">
+     <div style="font-size:10px;color:#93a3ba;font-weight:800;text-transform:uppercase;">🛍️ Vendido hoje</div>
+     <strong id="vendaHojeMini" style="display:block;color:#27d7a0;font-size:18px;margin-top:3px;">R$ 0,00</strong>
+    </div>
+    <div style="background:rgba(79,156,255,.06);border:1px solid rgba(79,156,255,.18);border-radius:12px;padding:10px 12px;">
+     <div style="font-size:10px;color:#93a3ba;font-weight:800;text-transform:uppercase;">🏆 Quem vendeu mais</div>
+     <strong id="vendedoraHojeMini" style="display:block;color:#dce5f2;font-size:14px;margin-top:5px;">—</strong>
+    </div>
+    <div style="background:rgba(169,124,255,.06);border:1px solid rgba(169,124,255,.18);border-radius:12px;padding:10px 12px;">
+     <div style="font-size:10px;color:#93a3ba;font-weight:800;text-transform:uppercase;">💰 Valor da líder</div>
+     <strong id="valorLiderHojeMini" style="display:block;color:#a97cff;font-size:18px;margin-top:3px;">R$ 0,00</strong>
+    </div>
    </div>
    <div id="metaPosicaoMes" style="margin-top:8px;"></div>
    <div id="bannerEmailMetaBatida" style="display:none;margin-top:12px;"></div>
@@ -179,8 +192,16 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
    var chave=String(agora.getDate()).padStart(2,"0")+"."+String(agora.getMonth()+1).padStart(2,"0");
    var dia=arr.find(function(x){return String(x?.dia||"")===chave;});
    var valor=Number(dia?.sales)||0;
-   var el=document.querySelector("#vendaHojeMini strong");
-   if(el)el.textContent=new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(valor);
+   var fmt=new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"});
+   var el=document.getElementById("vendaHojeMini");
+   if(el)el.textContent=fmt.format(valor);
+   var vEl=document.getElementById("vendedoraHojeMini");
+   var lEl=document.getElementById("valorLiderHojeMini");
+   var vend=dia?.vendedoras||{};
+   var ranking=Object.keys(vend).map(function(nome){return {nome:nome,valor:Number(vend[nome])||0};}).filter(function(x){return x.valor>0;}).sort(function(a,b){return b.valor-a.valor;});
+   var lider=ranking[0];
+   if(vEl)vEl.textContent=lider?lider.nome:"Nenhuma venda";
+   if(lEl)lEl.textContent=lider?fmt.format(lider.valor):"R$ 0,00";
   }catch(e){}
  }
  window.addEventListener("biobel:data-updated",function(){setTimeout(atualizarVendaHojeMini,300);});
