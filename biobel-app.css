@@ -1217,3 +1217,81 @@ body.light-mode *{scrollbar-color:#cbd5e1 #f1f5f9}
    contra o fundo escuro dos campos. */
 input::placeholder,textarea::placeholder{color:#64748b;opacity:1}
 body.light-mode input::placeholder,body.light-mode textarea::placeholder{color:#94a3b8!important;opacity:1}
+
+
+/* v11.09 — acabamento geral do Biobel: navegação, status, cards, acessibilidade e mobile */
+.biobel-system-status{
+ display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+ max-width:1400px;margin:0 auto;padding:7px 16px;
+ background:rgba(7,17,31,.92);border-bottom:1px solid rgba(32,51,78,.75);
+ color:#93a3ba;font-size:10.5px;line-height:1.3;
+}
+.biobel-system-status span{display:inline-flex;align-items:center;gap:4px}
+.biobel-system-status strong{color:#dce5f2}
+.biobel-system-status span:first-child strong{color:#27d7a0}
+.biobel-breadcrumb{
+ display:flex!important;align-items:center;gap:8px;flex-wrap:wrap;
+ min-height:30px!important;padding:7px 14px!important;
+ background:rgba(10,21,37,.72)!important;
+ border-bottom:1px solid #1e2c42!important;
+ color:#93a3ba!important;font-size:10.5px!important;
+}
+.biobel-breadcrumb a{color:#9fb5d0!important;text-decoration:none!important}
+.biobel-breadcrumb a:hover{color:#27d7a0!important}
+.biobel-breadcrumb strong{color:#dce5f2!important}
+.biobel-breadcrumb-back{
+ display:inline-flex!important;align-items:center;gap:4px;
+ background:#13243a;border:1px solid #29405b;border-radius:8px;
+ padding:4px 8px!important;font-weight:800;
+}
+.biobel-breadcrumb-sep{color:#425875}
+.biobel-nav-direct-inner a{transition:background .16s,border-color .16s,color .16s,transform .16s}
+.biobel-nav-direct-inner a.active{
+ position:relative;
+ box-shadow:inset 0 -2px 0 #27d7a0,0 3px 12px rgba(39,215,160,.08);
+}
+.biobel-nav-direct-inner a.active::after{
+ content:"";position:absolute;left:12px;right:12px;bottom:-1px;height:2px;
+ background:#27d7a0;border-radius:999px;
+}
+.biobel-search-wrap{position:relative;min-width:230px}
+.biobel-search-wrap input:focus{
+ border-color:#27d7a0!important;
+ box-shadow:0 0 0 3px rgba(39,215,160,.09);
+}
+.biobel-search-result{
+ display:flex;flex-direction:column;gap:3px;padding:10px 12px;
+ text-decoration:none;color:#dce5f2;border-bottom:1px solid #1e2c42;
+}
+.biobel-search-result:hover{background:#13243a}
+.biobel-search-result strong{font-size:12px}.biobel-search-result small{font-size:10.5px;color:#93a3ba}
+.biobel-search-current,.biobel-search-empty{padding:10px 12px;font-size:11px;color:#93a3ba}
+.biobel-search-current{background:rgba(39,215,160,.06);border-bottom:1px solid #1e2c42}
+.adv-card,.card{
+ transition:box-shadow .18s,border-color .18s,transform .18s;
+}
+.adv-card:hover{border-color:rgba(79,156,255,.22)}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+ outline:3px solid rgba(39,215,160,.24)!important;
+ outline-offset:2px;
+}
+body.light-mode .biobel-system-status{background:#f8fafc;border-color:#dbe4ee;color:#64748b}
+body.light-mode .biobel-system-status strong{color:#334155}
+body.light-mode .biobel-system-status span:first-child strong{color:#087f5b}
+body.light-mode .biobel-breadcrumb{background:#fff!important;border-color:#dbe4ee!important;color:#64748b!important}
+body.light-mode .biobel-breadcrumb strong{color:#172033!important}
+body.light-mode .biobel-breadcrumb a{color:#52657c!important}
+body.light-mode .biobel-breadcrumb-back{background:#f1f5f9;border-color:#d6e0ea}
+body.light-mode .biobel-search-result{color:#172033;border-color:#e5eaf0}
+body.light-mode .biobel-search-result:hover{background:#f5f8fb}
+body.light-mode .biobel-search-result small{color:#64748b}
+@media(max-width:760px){
+ .biobel-system-status{padding:6px 10px;font-size:9.5px;gap:5px}
+ .biobel-system-status span:nth-child(3){width:100%}
+ .biobel-search-wrap{min-width:150px}
+ .biobel-breadcrumb{padding:6px 10px!important}
+}
+@media(max-width:520px){
+ .biobel-system-status span:nth-child(2){width:100%}
+ .biobel-search-wrap{min-width:120px}
+}
