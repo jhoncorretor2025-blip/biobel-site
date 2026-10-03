@@ -13396,6 +13396,8 @@ function processarLinhasDoDia(sheetName, rows){
 
  const {dinheiro,debito,credito,pix}=pagamentos;
  const totalPagamentos=dinheiro+debito+credito+pix;
+ // P2 é a célula oficial usada pelo painel para o valor "Vendido hoje".
+ const vendaP2=valorPlanilhaPreenchido(rows[1]?.[15]) ? numeroPlanilha(rows[1][15]) : 0;
 
  // Fonte oficial da venda diária: soma dos totais de pagamento.
  // Isso evita que alterações de layout/fórmulas em "Entrada do dia" façam o
@@ -13447,6 +13449,8 @@ function processarLinhasDoDia(sheetName, rows){
   initialCelula:initialInfo.celula,
   sales,
   salesCelula,
+  vendaP2,
+
   withdrawals:retiradaInfo.valor,
   withdrawalsEncontrado:retiradaInfo.encontrado,
   withdrawalsCelula:retiradaInfo.celula,
