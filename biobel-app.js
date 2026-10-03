@@ -12359,7 +12359,7 @@ function extractSpreadsheetId(url){
  return m?m[1]:'';
 }
 function mostrarSecaoConfig(secao){
- const secoes = ['Conexao','Planilhas','Metas','Email','Horarios','Empresa','Log','Backup','Logo','SitePublico','Mensagens','Vagas','Dicas','Novidades'];
+ const secoes = ['Conexao','Planilhas','Metas','Atendimentos','Email','Horarios','Empresa','Log','Backup','Logo','SitePublico','Mensagens','Vagas','Dicas','Novidades'];
  secoes.forEach(s=>{
   const el = document.getElementById('configSecao'+s);
   const chip = document.getElementById('chip'+s);
