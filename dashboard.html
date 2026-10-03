@@ -187,11 +187,16 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
 (function(){
  function atualizarVendaHojeMini(){
   try{
-   var arr=Array.isArray(window.daysData)?window.daysData:[];
+   var arr=[];
+   try{
+    arr=Array.isArray(daysData)?daysData:(Array.isArray(window.daysData)?window.daysData:[]);
+   }catch(_e){
+    arr=Array.isArray(window.daysData)?window.daysData:[];
+   }
    var agora=typeof window.obterAgoraBrasilia==="function"?window.obterAgoraBrasilia():new Date();
    var chave=String(agora.getDate()).padStart(2,"0")+"."+String(agora.getMonth()+1).padStart(2,"0");
    var dia=arr.find(function(x){return String(x?.dia||"")===chave;});
-   var valor=Number(dia?.vendaP2)||0;
+   var valor=Number(dia?.vendaP2)||Number(dia?.sales)||0;
    var fmt=new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"});
    var el=document.getElementById("vendaHojeMini");
    if(el)el.textContent=fmt.format(valor);
