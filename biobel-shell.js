@@ -1,4 +1,4 @@
-/* Biobel — shell compartilhado. v11.09 */
+/* Biobel — shell compartilhado. v11.16 */
 (function(){
 "use strict";
 const PAGES={dashboard:"dashboard.html",caixa:"operacao.html",equipe:"equipe.html",campanhas:"vendas.html",info:"analises.html",alertas:"alertas.html",config:"config.html",adm:"administracao.html",backup:"backup.html"};
