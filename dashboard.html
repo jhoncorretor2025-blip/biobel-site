@@ -106,7 +106,7 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
     <article class="biobel-kpi"><div class="kpi-label">🎯 Meta do mês</div><div id="kpiMetaValor" class="kpi-value kpi-accent">R$ 0,00</div><div id="kpiMetaSub" class="kpi-sub">de R$ 0,00 · 0%</div><div id="kpiMetaExtra" class="kpi-sub">Calculando necessidade diária...</div></article>
     <article class="biobel-kpi"><div class="kpi-label">🛍️ Venda hoje</div><div id="kpiVendaHoje" class="kpi-value kpi-accent">R$ 0,00</div><div id="kpiVendaHojeSub" class="kpi-sub">0 atendimentos · ticket R$ 0,00</div></article>
     <article class="biobel-kpi"><div class="kpi-label">🏆 Líder do dia</div><div id="kpiLiderHoje" class="kpi-value">—</div><div id="kpiLiderHojeSub" class="kpi-sub">R$ 0,00</div></article>
-    <article class="biobel-kpi"><div class="kpi-label">💰 Status do caixa</div><div id="kpiCaixaStatus" class="kpi-value">Consultar</div><div id="kpiCaixaSub" class="kpi-sub">Abra Operação para conferir o fechamento.</div></article>
+    <article class="biobel-kpi"><div class="kpi-label">🌦️ Clima hoje</div><div id="kpiClimaCard" class="kpi-value">Carregando...</div><div id="kpiClimaCardSub" class="kpi-sub">Buscando previsão...</div></article>
    </section>
    <div class="biobel-context">
     <span class="biobel-context-label">🌦️ Clima</span><span id="kpiClimaTexto" class="biobel-context-label">—</span>
@@ -288,6 +288,9 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
    document.getElementById('kpiLiderHoje').textContent=l?l.n:'—';
    document.getElementById('kpiLiderHojeSub').textContent=l?moeda(l.v):'Nenhuma venda registrada';
    const ac=document.getElementById('kpiClimaTexto'), clima=document.getElementById('climaHojeMarcadoTexto');if(ac)ac.textContent=clima?.textContent||'clima não informado';
+   const climaCard=document.getElementById('kpiClimaCard'), climaSub=document.getElementById('kpiClimaCardSub');
+   if(climaCard){ const marcado=(clima?.textContent||'').replace(/^Marcado:\s*/i,'').trim(); climaCard.textContent=marcado||'—'; }
+   if(climaSub)climaSub.textContent='Hoje na loja · previsão de amanhã abaixo';
    const comp=document.getElementById('kpiComparativoBody'), media=anteriores.length?anteriores.reduce((s,d)=>s+val(d),0)/anteriores.length:0;
    const varPct=ontem&&val(ontem)?((total-val(ontem))/val(ontem))*100:0, qtdOnt=nAt(ontem);
    comp.innerHTML='<tr><td>Faturamento</td><td>'+moeda(total)+'</td><td>'+moeda(val(ontem))+'</td><td>'+moeda(media)+'</td><td>'+((varPct>=0?'🟢 +':'🔻 ')+varPct.toFixed(1)+'%')+'</td></tr>'+
@@ -305,6 +308,28 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
   }catch(e){console.warn('Dashboard compacto:',e);}
  }
  window.addEventListener('biobel:data-updated',()=>setTimeout(renderCompact,700));setTimeout(renderCompact,2200);setInterval(renderCompact,60000);
+ async function atualizarClimaKpiCompacto(){
+  try{
+   const el=document.getElementById('kpiClimaCard'), sub=document.getElementById('kpiClimaCardSub'); if(!el)return;
+   const emojis={Sol:'☀️',Nublado:'☁️',Chuva:'🌧️',Frio:'🥶'};
+   const hoje=typeof obterAgoraBrasilia==='function'?obterAgoraBrasilia():new Date();
+   const chave=String(hoje.getDate()).padStart(2,'0')+'.'+String(hoje.getMonth()+1).padStart(2,'0');
+   const marcado=(typeof getClimaDias==='function'?getClimaDias():{})[chave];
+   if(marcado){el.textContent=(emojis[marcado]||'🌦️')+' '+marcado;}
+   if(typeof getPrevisaoClimaFutura==='function'){
+    const prev=await getPrevisaoClimaFutura();
+    const hojeIso=hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-'+String(hoje.getDate()).padStart(2,'0');
+    const atual=prev.find(d=>d.data===hojeIso)||prev[0];
+    const amanha=new Date(hoje.getFullYear(),hoje.getMonth(),hoje.getDate()+1);
+    const amIso=amanha.getFullYear()+'-'+String(amanha.getMonth()+1).padStart(2,'0')+'-'+String(amanha.getDate()).padStart(2,'0');
+    const am=prev.find(d=>d.data===amIso);
+    if(atual){ el.textContent=(emojis[atual.categoria]||'🌦️')+' '+atual.categoria; sub.textContent=(Math.round(atual.tempMax)||0)+'° / '+(Math.round(atual.tempMin)||0)+'° · amanhã '+(am?(emojis[am.categoria]||'🌦️')+' '+am.categoria:'previsão disponível'); }
+    else if(marcado){sub.textContent='Marcado na loja · previsão atualizada';}
+   } else if(marcado){sub.textContent='Clima marcado para hoje';}
+  }catch(e){console.warn('KPI clima:',e);}
+ }
+ window.addEventListener('biobel:data-updated',()=>setTimeout(atualizarClimaKpiCompacto,500));
+ setTimeout(atualizarClimaKpiCompacto,1800); setInterval(atualizarClimaKpiCompacto,60000);
 })();
 </script>
 <script>
