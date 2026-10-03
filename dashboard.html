@@ -116,6 +116,9 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
    <div id="metaProjecaoTexto" style="font-size:12px;margin-top:6px;"></div>
    <div id="metaPorDiaTexto" style="font-size:12.5px;margin-top:8px;font-weight:700;"></div>
    <div id="metaResumoHoje" style="margin-top:14px;padding-top:13px;border-top:1px solid #1e2c42;"></div>
+   <div id="vendaHojeMini" class="no-print" style="display:inline-flex;align-items:center;gap:7px;margin-top:10px;background:rgba(39,215,160,.07);border:1px solid rgba(39,215,160,.18);border-radius:10px;padding:7px 10px;font-size:11px;color:#93a3ba;">
+    🛍️ <span>Vendido hoje:</span> <strong style="color:#27d7a0;font-size:13px;">R$ 0,00</strong>
+   </div>
    <div id="metaPosicaoMes" style="margin-top:8px;"></div>
    <div id="bannerEmailMetaBatida" style="display:none;margin-top:12px;"></div>
    <div id="bannerResumoSemanalEmail" style="display:none;margin-top:12px;"></div>
@@ -167,4 +170,22 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
 
 </main>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js"></script><script src="biobel-app.js"></script><script src="inteligencia-operacional.js"></script>
+<script>
+(function(){
+ function atualizarVendaHojeMini(){
+  try{
+   var arr=Array.isArray(window.daysData)?window.daysData:[];
+   var agora=typeof window.obterAgoraBrasilia==="function"?window.obterAgoraBrasilia():new Date();
+   var chave=String(agora.getDate()).padStart(2,"0")+"."+String(agora.getMonth()+1).padStart(2,"0");
+   var dia=arr.find(function(x){return String(x?.dia||"")===chave;});
+   var valor=Number(dia?.sales)||0;
+   var el=document.querySelector("#vendaHojeMini strong");
+   if(el)el.textContent=new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(valor);
+  }catch(e){}
+ }
+ window.addEventListener("biobel:data-updated",function(){setTimeout(atualizarVendaHojeMini,300);});
+ setTimeout(atualizarVendaHojeMini,1200);
+ setInterval(atualizarVendaHojeMini,60000);
+})();
+</script>
 </body></html>
