@@ -1,5 +1,20 @@
 <!DOCTYPE html>
-<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="theme-color" content="#0ea97a"><meta name="robots" content="noindex,nofollow"><link rel="icon" type="image/png" href="./favicon-32.png"><link rel="manifest" href="manifest.json"><title>Biobel — Visão Geral</title><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="biobel-design-system.css"><link rel="stylesheet" href="biobel-ux-refinement.css"><link rel="stylesheet" href="biobel-app.css"><style>:root{color-scheme:dark}body{background:#0f172a!important}</style></head><body data-biobel-page="dashboard" class="min-h-screen bg-slate-950 text-slate-100">
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="theme-color" content="#0ea97a"><meta name="robots" content="noindex,nofollow"><link rel="icon" type="image/png" href="./favicon-32.png"><link rel="manifest" href="manifest.json"><title>Biobel — Visão Geral</title><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="biobel-design-system.css"><link rel="stylesheet" href="biobel-ux-refinement.css"><link rel="stylesheet" href="biobel-app.css"><style>:root{color-scheme:dark}body{background:#0f172a!important}<style>
+.biobel-quick-action{min-width:0;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;text-align:left;background:linear-gradient(145deg,#101f34,#0b1728);border:1px solid #243b57;border-radius:15px;padding:12px 13px;color:#dce5f2;cursor:pointer;transition:transform .18s,border-color .18s,box-shadow .18s,background .18s;box-shadow:0 5px 16px rgba(0,0,0,.12)}
+.biobel-quick-action:hover{transform:translateY(-2px);border-color:var(--qa);box-shadow:0 8px 22px rgba(0,0,0,.22)}
+.biobel-quick-action:active{transform:translateY(0)}
+.biobel-quick-icon{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:color-mix(in srgb,var(--qa) 13%,#0b1728);border:1px solid color-mix(in srgb,var(--qa) 30%,transparent);font-size:18px}
+.biobel-quick-action strong{display:block;font-size:12.5px;color:#eef5ff;line-height:1.25}
+.biobel-quick-action small{display:block;font-size:10.5px;color:#8fa2ba;margin-top:3px}
+.biobel-quick-action b{font-size:22px;color:var(--qa);font-weight:400}
+body.light-mode .biobel-quick-action{background:linear-gradient(145deg,#fff,#f4f8fc);border-color:#d7e1ec;color:#1d2939;box-shadow:0 4px 14px rgba(15,23,42,.08)}
+body.light-mode .biobel-quick-action strong{color:#172033}
+body.light-mode .biobel-quick-action small{color:#66758a}
+body.light-mode .biobel-quick-icon{background:#f1f5f9}
+@media(max-width:900px){.biobel-quick-action{padding:10px}.biobel-quick-action small{display:none}}
+@media(max-width:640px){.biobel-quick-action{grid-template-columns:auto 1fr;}.biobel-quick-action b{display:none}.biobel-quick-icon{width:34px;height:34px}.biobel-quick-action strong{font-size:11.5px}}
+@media(max-width:480px){.biobel-quick-action{padding:9px 8px;gap:7px}.biobel-quick-icon{width:31px;height:31px;font-size:15px}.biobel-quick-action strong{font-size:10.5px}}
+</style></head><body data-biobel-page="dashboard" class="min-h-screen bg-slate-950 text-slate-100">
 <div id="faixaMensagemProgramada" style="display:none;"></div>
 <div id="tourGuiadoOverlay" style="display:none;"></div>
 <div id="dicaDoDiaOverlay" style="display:none;"></div>
@@ -16,25 +31,36 @@
   Essa área foi removida por decisão de UX. Não recriar, duplicar ou inserir variações desse painel no dashboard.
 -->
 <main id="dashboardTab" class="max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabDashboard">
-
-n>
-
   <div id="indicadorClimaTopo" class="no-print" style="display:none;justify-content:flex-end;margin-bottom:4px;"></div>
-  <div class="no-print" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:6px;">
-   <button onclick="showTab('caixa')" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(39,215,160,.35);border-radius:14px;padding:16px 10px;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;text-align:center;">⚡<br>Fechar Caixa</button>
-   <button onclick="showTab('equipe')" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(79,156,255,.35);border-radius:14px;padding:16px 10px;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;text-align:center;">📋<br>Folha de Ponto</button>
-   <button onclick="showTab('alertas')" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(251,191,36,.35);border-radius:14px;padding:16px 10px;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;text-align:center;">🚨<br>Ver Alertas</button>
-   <button onclick="showTab('info')" style="background:linear-gradient(135deg,#0d1a2c,#0a1525);border:1px solid rgba(139,92,246,.35);border-radius:14px;padding:16px 10px;color:#dce5f2;font-weight:800;font-size:13px;cursor:pointer;text-align:center;">📊<br>Como Estou Indo?</button>
-  </div>
 
-  <div class="no-print" style="display:flex;justify-content:flex-end;margin-bottom:-6px;">
-   <button id="btnAlternarModoDashboard" onclick="alternarModoDashboard()" style="background:#0b1728;border:1px solid #1e2c42;border-radius:999px;padding:6px 14px;font-size:12px;color:#93a3ba;cursor:pointer;font-weight:700;">🔍 Ver modo completo</button>
-  </div>
+  <section class="no-print" aria-label="Atalhos rápidos" style="margin-bottom:10px;">
+   <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px;">
+    <div>
+     <div style="font-size:11px;color:#27d7a0;font-weight:900;text-transform:uppercase;letter-spacing:.09em;">Acesso rápido</div>
+     <div style="font-size:18px;color:#eef5ff;font-weight:900;line-height:1.2;">O que você precisa fazer?</div>
+    </div>
+    <button id="btnAlternarModoDashboard" onclick="alternarModoDashboard()" style="background:#0b1728;border:1px solid #29405b;border-radius:999px;padding:7px 13px;font-size:11.5px;color:#b8c7da;cursor:pointer;font-weight:800;white-space:nowrap;">🔍 Modo completo</button>
+   </div>
+   <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;">
+    <button class="biobel-quick-action" onclick="showTab('caixa')" style="--qa:#27d7a0;">
+      <span class="biobel-quick-icon">⚡</span><span><strong>Fechar Caixa</strong><small>Conferir o dia</small></span><b>›</b>
+    </button>
+    <button class="biobel-quick-action" onclick="showTab('equipe')" style="--qa:#4f9cff;">
+      <span class="biobel-quick-icon">📋</span><span><strong>Folha de Ponto</strong><small>Registrar equipe</small></span><b>›</b>
+    </button>
+    <button class="biobel-quick-action" onclick="showTab('alertas')" style="--qa:#fbbf24;">
+      <span class="biobel-quick-icon">🚨</span><span><strong>Ver Alertas</strong><small>Checar pendências</small></span><b>›</b>
+    </button>
+    <button class="biobel-quick-action" onclick="showTab('info')" style="--qa:#8b5cf6;">
+      <span class="biobel-quick-icon">📊</span><span><strong>Como Estou Indo?</strong><small>Ver desempenho</small></span><b>›</b>
+    </button>
+   </div>
+  </section>
 
   <div id="avisoMesDivergente" class="no-print" style="display:none;"></div>
   <div id="bannerClimaChuva" class="no-print" style="display:none;"></div>
   <div id="checklistChuvaDashboard" class="no-print" style="display:none;"></div>
-  <div class="no-print" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:10px 14px;margin-bottom:6px;">
+  <div class="no-print" style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;background:linear-gradient(180deg,#0d1b2e,#0b1728);border:1px solid #223651;border-radius:14px;padding:9px 12px;margin-bottom:6px;box-shadow:0 4px 16px rgba(0,0,0,.12);">
    <span style="font-size:12px;color:#93a3ba;font-weight:700;">🌦️ Clima de hoje:</span>
    <button onclick="marcarClimaHojeRapido('Sol')" style="background:#1c2c42;border:none;color:#dce5f2;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;">☀️ Sol</button>
    <button onclick="marcarClimaHojeRapido('Nublado')" style="background:#1c2c42;border:none;color:#dce5f2;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;">☁️ Nublado</button>
