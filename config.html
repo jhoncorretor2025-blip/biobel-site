@@ -39,7 +39,7 @@ body.light-mode .dev-gate-form input{background:#fff;color:#172033;border-color:
   <div style="margin-bottom:10px;">
    <div style="font-size:10px;font-weight:800;color:#93a3ba;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">🎯 Operação</div>
    <div class="config-chips no-print" style="margin:0;">
-    <button type="button" id="chipMetas" onclick="mostrarSecaoConfig('Metas')" class="config-chip" role="tab" aria-selected="false">🎯 Metas</button>
+    <button type="button" id="chipMetas" onclick="mostrarSecaoConfig('Metas')" class="config-chip" role="tab" aria-selected="false">🎯 Metas</button><button type="button" id="chipAtendimentos" onclick="mostrarSecaoConfig('Atendimentos')" class="config-chip" role="tab" aria-selected="false">👥 Atendimentos</button>
     <button type="button" id="chipHorarios" onclick="mostrarSecaoConfig('Horarios')" class="config-chip" role="tab" aria-selected="false">🕘 Horários</button>
     <button type="button" id="chipEmpresa" onclick="mostrarSecaoConfig('Empresa')" class="config-chip" role="tab" aria-selected="false">🏢 Empresa</button>
    </div>
@@ -275,6 +275,44 @@ body.light-mode .dev-gate-form input{background:#fff;color:#172033;border-color:
   </div>
  </div>
 
+ 
+ <div id="configSecaoAtendimentos" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6" style="display:none;">
+  <div class="mb-6">
+   <h2 class="text-xl font-bold">👥 Referência de atendimentos</h2>
+   <p class="text-sm text-slate-400 mt-1">Defina como a Biobel deve interpretar o movimento diário. O sistema continua lendo os atendimentos da planilha e usa estes parâmetros apenas para classificar o movimento.</p>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+   <div>
+    <label class="block text-sm font-semibold mb-2" for="atendimentoMinimoInput">🔻 Mínimo esperado por dia</label>
+    <input id="atendimentoMinimoInput" type="number" min="0" step="1" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500" placeholder="15">
+    <p class="text-xs text-slate-500 mt-2">Abaixo desse número, o sistema considera movimento abaixo do esperado.</p>
+   </div>
+   <div>
+    <label class="block text-sm font-semibold mb-2" for="atendimentoMaximoInput">🟢 Máximo da faixa normal</label>
+    <input id="atendimentoMaximoInput" type="number" min="0" step="1" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500" placeholder="25">
+    <p class="text-xs text-slate-500 mt-2">Até este número, o movimento é classificado como normal.</p>
+   </div>
+   <div>
+    <label class="block text-sm font-semibold mb-2" for="atendimentoForteInput">🔵 Movimento forte a partir de</label>
+    <input id="atendimentoForteInput" type="number" min="0" step="1" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500" placeholder="26">
+   </div>
+   <div>
+    <label class="block text-sm font-semibold mb-2" for="atendimentoMuitoForteInput">🔥 Movimento muito forte a partir de</label>
+    <input id="atendimentoMuitoForteInput" type="number" min="0" step="1" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500" placeholder="36">
+   </div>
+   <div>
+    <label class="block text-sm font-semibold mb-2" for="atendimentoRecordeInput">🏆 Recorde histórico de referência</label>
+    <input id="atendimentoRecordeInput" type="number" min="0" step="1" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500" placeholder="51">
+    <p class="text-xs text-slate-500 mt-2">Referência histórica atual das planilhas analisadas. Pode ser alterada pela loja.</p>
+   </div>
+  </div>
+  <div class="mt-5 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
+   <div class="font-semibold text-slate-200 mb-1">📊 Referência encontrada nas planilhas</div>
+   <div class="text-sm text-slate-400">Histórico analisado: mínimo <strong class="text-slate-200">2</strong> atendimentos/dia, máximo <strong class="text-slate-200">51</strong> atendimentos/dia. O dia com 2 atendimentos foi um ponto fora da curva em setembro.</div>
+  </div>
+  <button onclick="salvarConfigAtendimentos()" class="mt-5 w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-xl font-semibold text-sm">💾 Salvar parâmetros de atendimento</button>
+  <div id="atendimentoConfigStatus" class="mt-3 text-sm text-slate-400"></div>
+ </div>
  <div id="configSecaoHorarios" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7 mt-6" style="display:none;">
   <div class="mb-6">
    <h2 class="text-xl font-bold">🕘 Horário de funcionamento</h2>
@@ -638,7 +676,29 @@ body.light-mode .dev-gate-form input{background:#fff;color:#172033;border-color:
   <button onclick="testarDicaDoDia()" class="w-full bg-blue-600 hover:bg-blue-500 px-4 py-2.5 rounded-xl font-semibold text-sm">👁️ Ver como fica (testar agora)</button>
  </div>
 </section>
-<script>document.addEventListener('DOMContentLoaded',()=>setTimeout(carregarConfigAlertaHorarioAusente,0));</script>
+<script>document.addEventListener('DOMContentLoaded',()=>setTimeout(carregarConfigAlertaHorarioAusente,0));</script><script>
+(function(){
+ const KEY='biobel_atendimento_config_v1';
+ const DEF={minimo:15,maximo:25,forte:26,muitoForte:36,recorde:51};
+ function ler(){try{const x=JSON.parse(localStorage.getItem(KEY)||'null');return {...DEF,...(x&&typeof x==='object'?x:{})};}catch(e){return {...DEF};}}
+ window.getConfigAtendimentos=function(){return ler();};
+ window.carregarConfigAtendimentos=function(){
+  const x=ler();
+  ['minimo','maximo','forte','muitoForte','recorde'].forEach(k=>{const el=document.getElementById('atendimento'+k.charAt(0).toUpperCase()+k.slice(1)+'Input');if(el)el.value=x[k];});
+ };
+ window.salvarConfigAtendimentos=function(){
+  const vals={minimo:Math.max(0,Number(document.getElementById('atendimentoMinimoInput')?.value)||0),maximo:Math.max(0,Number(document.getElementById('atendimentoMaximoInput')?.value)||0),forte:Math.max(0,Number(document.getElementById('atendimentoForteInput')?.value)||0),muitoForte:Math.max(0,Number(document.getElementById('atendimentoMuitoForteInput')?.value)||0),recorde:Math.max(0,Number(document.getElementById('atendimentoRecordeInput')?.value)||0)};
+  if(vals.maximo<vals.minimo)vals.maximo=vals.minimo;
+  if(vals.forte<vals.maximo+1)vals.forte=vals.maximo+1;
+  if(vals.muitoForte<vals.forte+1)vals.muitoForte=vals.forte+1;
+  try{localStorage.setItem(KEY,JSON.stringify(vals));}catch(e){}
+  carregarConfigAtendimentos();
+  const st=document.getElementById('atendimentoConfigStatus');if(st)st.textContent='✅ Parâmetros salvos neste navegador.';
+  try{window.dispatchEvent(new CustomEvent('biobel:atendimento-config-updated'));}catch(e){}
+ };
+ document.addEventListener('DOMContentLoaded',()=>setTimeout(carregarConfigAtendimentos,100));
+})();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js"></script><script src="biobel-app.js"></script><script>
 (function(){
  const DEV_KEY='biobel_dev_planilhas_autenticado_v1';
