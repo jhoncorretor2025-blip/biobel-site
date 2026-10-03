@@ -13322,6 +13322,22 @@ function colunaExcel(indiceZero){
  do{ s=String.fromCharCode(65+(n%26))+s; n=Math.floor(n/26)-1; }while(n>=0);
  return s;
 }
+function obterValorCelulaPlanilha(rows,r,c,profundidade){
+ if(profundidade>3) return 0;
+ const bruto=rows?.[r]?.[c];
+ if(typeof bruto==='number' && Number.isFinite(bruto)) return bruto;
+ if(bruto===null||bruto===undefined) return 0;
+ const texto=String(bruto).trim();
+ const ref=texto.match(/^=\$?([A-Z]{1,3})\$?(\d+)$/i);
+ if(ref){
+  const letras=ref[1].toUpperCase(), linha=Number(ref[2])-1;
+  let col=0;
+  for(let i=0;i<letras.length;i++) col=col*26+(letras.charCodeAt(i)-64);
+  return obterValorCelulaPlanilha(rows,linha,col-1,profundidade+1);
+ }
+ return numeroPlanilha(bruto);
+}
+
 function valorPlanilhaPreenchido(bruto){
  if(typeof bruto==='number') return Number.isFinite(bruto);
  if(bruto===null||bruto===undefined) return false;
@@ -13397,7 +13413,7 @@ function processarLinhasDoDia(sheetName, rows){
  const {dinheiro,debito,credito,pix}=pagamentos;
  const totalPagamentos=dinheiro+debito+credito+pix;
  // P2 é a célula oficial usada pelo painel para o valor "Vendido hoje".
- const vendaP2=valorPlanilhaPreenchido(rows[1]?.[15]) ? numeroPlanilha(rows[1][15]) : 0;
+ const vendaP2=obterValorCelulaPlanilha(rows,1,15,0);
 
  // Fonte oficial da venda diária: soma dos totais de pagamento.
  // Isso evita que alterações de layout/fórmulas em "Entrada do dia" façam o
