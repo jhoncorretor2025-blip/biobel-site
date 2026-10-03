@@ -1,3 +1,8 @@
+## v11.11 — 03/10/2026
+- **Corrigido bug na tela inicial:** o `<head>` do `dashboard.html` tinha um `<style>` aberto duas vezes (faltava um `</style>`). O navegador ignorava em silêncio a regra principal dos cartões de "Acesso rápido", que ficavam sem fundo, sem borda e com ícone/texto desalinhados. Agora um único bloco `<style>`.
+- Tela inicial: botões de clima com destaque do escolhido; previsão dos próximos dias em 5 cartões (data, máxima/mínima, chuva em azul); barra de progresso da meta visível no tema escuro; divisor vazio da meta escondido quando não há resumo de hoje; títulos da Central de Inteligência sem a numeração solta (2, 3, 5, 10); atalhos em 2×2 no celular; título e barra de clima legíveis no modo claro.
+- `tools/validar.js` ganhou a checagem nº 10: `<style>` aberto dentro de outro ou desbalanceado agora **reprova** (antes passava sem aviso).
+
 ## v10.87 — 01/10/2026
 - Navegação principal reforça visualmente a página atual e usa aria-current.
 - Página de Fornecedores passa a carregar o shell principal, com navegação completa e caminhos corretos para a pasta interna.

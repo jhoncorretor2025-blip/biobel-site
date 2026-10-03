@@ -8668,6 +8668,7 @@ function renderClimaHojeStatus(){
  const emojis = { Sol:'☀️', Nublado:'☁️', Chuva:'🌧️', Frio:'🥶' };
  if(el) el.textContent = climaHoje ? 'Marcado: '+(emojis[climaHoje]||'')+' '+climaHoje : '';
  try{ renderChecklistChuvaDashboard(); }catch(e){}
+ document.querySelectorAll('.biobel-clima-chip').forEach(b=>b.classList.toggle('ativo', b.dataset.clima===climaHoje));
 
  if(bannerChuva){
   if(climaHoje==='Chuva'){
@@ -8706,17 +8707,24 @@ async function renderPrevisaoProximosDias(){
  const proximosDias = dias.slice(1,6); // pula hoje (índice 0), mostra os 5 dias seguintes
  if(proximosDias.length===0) return;
  el.style.display = 'block';
- el.innerHTML = `<div style="display:flex;gap:8px;overflow-x:auto;background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:10px 14px;">
-   <span style="font-size:11px;color:#93a3ba;font-weight:700;white-space:nowrap;align-self:center;">📅 Próximos dias:</span>
+ // O visual (cartões lado a lado, destaque azul na chuva, modo claro) fica no <style> do dashboard.html
+ el.innerHTML = `<div class="biobel-previsao">
+   <div class="biobel-previsao-titulo">📅 Previsão dos próximos dias</div>
+   <div class="biobel-previsao-lista">
    ${proximosDias.map(d=>{
     const dataObj = new Date(d.data+'T00:00:00');
     const diaSemana = dataObj.toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','');
-    return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;min-width:52px;">
-      <span style="font-size:10px;color:#93a3ba;text-transform:capitalize;">${diaSemana}</span>
-      <span style="font-size:18px;">${emojis[d.categoria]||'☁️'}</span>
-      <span style="font-size:9.5px;color:#93a3ba;">${Math.round(d.tempMax)}°</span>
+    const dataCurta = String(dataObj.getDate()).padStart(2,'0')+'/'+String(dataObj.getMonth()+1).padStart(2,'0');
+    const maxT = Math.round(d.tempMax), minT = Math.round(d.tempMin);
+    const dicaAcessivel = diaSemana+' '+dataCurta+': '+d.categoria+', máxima '+maxT+' graus, mínima '+minT+' graus';
+    return `<div class="biobel-previsao-dia${d.categoria==='Chuva'?' chuva':''}" title="${dicaAcessivel}" aria-label="${dicaAcessivel}">
+      <span class="dia">${diaSemana}</span>
+      <span class="data">${dataCurta}</span>
+      <span class="icone" aria-hidden="true">${emojis[d.categoria]||'☁️'}</span>
+      <span class="temp">${maxT}°<small>${minT}°</small></span>
      </div>`;
    }).join('')}
+   </div>
   </div>`;
 }
 async function verificarFimDeSemanaChuvoso(){

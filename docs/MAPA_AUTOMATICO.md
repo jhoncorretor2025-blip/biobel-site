@@ -1,33 +1,32 @@
 # 🗺️ Mapa automático do sistema (gerado por `node tools/mapa.js`)
 
 > **Não edite à mão** — este arquivo é regenerado. Explicações humanas: [ESTRUTURA.md](ESTRUTURA.md).
-> Gerado a partir do estado real do repositório — painel na versão **v10.58** (01/10/2026), compartilhada por `biobel-shell.js` entre as 9 páginas.
+> Gerado a partir do estado real do repositório — painel na versão **v11.11** (03/10/2026), compartilhada por `biobel-shell.js` entre as 8 páginas.
 
-## Páginas do painel (9)
+## Páginas do painel (8)
 | Arquivo | data-biobel-page | id do conteúdo | Tamanho | IDs no HTML | Scripts locais próprios |
 |---|---|---|---|---|---|
-| `dashboard.html` | `dashboard` | `dashboardTab` | 16 KB | 65 | — |
-| `central.html` | `central` | `centralPage` | 2 KB | 8 | — |
+| `dashboard.html` | `dashboard` | `dashboardTab` | 14 KB | 39 | — |
 | `operacao.html` | `caixa` | `caixaTab` | 7 KB | 27 | — |
 | `equipe.html` | `equipe` | `equipeTab` | 23 KB | 70 | — |
 | `vendas.html` | `campanhas` | `campanhasTab` | 5 KB | 18 | — |
 | `analises.html` | `info` | `infoTab` | 33 KB | 145 | — |
 | `alertas.html` | `alertas` | `alertasTab` | 3 KB | 11 | — |
-| `config.html` | `config` | `configTab` | 49 KB | 111 | — |
-| `administracao.html` | `adm` | `admTab` | 63 KB | 187 | — |
+| `config.html` | `config` | `configTab` | 64 KB | 122 | — |
+| `administracao.html` | `adm` | `admTab` | 84 KB | 168 | — |
 
 ## Mapa de navegação (de `biobel-shell.js`)
 ```js
-const PAGES={dashboard:"dashboard.html",central:"central.html",caixa:"operacao.html",equipe:"equipe.html",campanhas:"vendas.html",info:"analises.html",alertas:"alertas.html",config:"config.html",adm:"administracao.html"}
+const PAGES={dashboard:"dashboard.html",caixa:"operacao.html",equipe:"equipe.html",campanhas:"vendas.html",info:"analises.html",alertas:"alertas.html",config:"config.html",adm:"administracao.html",backup:"backup.html"}
 ```
 ⚠️ Os nomes internos (`caixa`, `info`, `campanhas`) não batem sempre com os nomes de arquivo — confira sempre os dois lados.
 
 ## Arquivos JavaScript compartilhados
 | Arquivo | Tamanho | Funções (aprox.) | Usado em |
 |---|---|---|---|
-| `biobel-app.js` | 698 KB | 687 | todas as 9 páginas |
-| `biobel-shell.js` | 7 KB | 1 | todas as 9 páginas |
-| `central-operacional.js` | 23 KB | 16 | central.html |
+| `biobel-app.js` | 741 KB | 739 | todas as 8 páginas |
+| `biobel-shell.js` | 13 KB | 3 | todas as 8 páginas |
+| `central-operacional.js` | 43 KB | 16 |  |
 | `inteligencia-operacional.js` | 12 KB | 13 | dashboard.html |
 
 ## Outros arquivos
@@ -36,8 +35,8 @@ const PAGES={dashboard:"dashboard.html",central:"central.html",caixa:"operacao.h
 | index.html | 29 KB |
 | login.html | 5 KB |
 | biobel-design-system.css | 7 KB |
-| biobel-ux-refinement.css | 17 KB |
-| biobel-app.css | 54 KB |
+| biobel-ux-refinement.css | 41 KB |
+| biobel-app.css | 76 KB |
 | service-worker.js | 3 KB |
 
 ## Seções do código JavaScript em `biobel-app.js` (comentários `/* ===== Nome ===== */`)
@@ -69,6 +68,7 @@ Para achar uma: `grep -n "===== Nome" biobel-app.js`
 - Link "Trabalhe Conosco" (Google Forms) — aparece automaticamente no site público
 - BIOBEL — ZONA: ADMINISTRAÇÃO / ACESSO E DADOS DE GESTÃO
 - Área ADM/Gerência (login próprio, separado do login principal do painel)
+- Sessão administrativa — expiração automática em 2 horas
 - Chave PIX de cada funcionária (pra Alessandra saber como pagar)
 - Aviso antes de sair com algo digitado e não salvo
 - Textos de Vaga — prontos pra copiar e colar nas redes sociais
@@ -90,6 +90,7 @@ Para achar uma: `grep -n "===== Nome" biobel-app.js`
 - Ranking de Fornecedores e Gastos por Marca — quem/o que mais pesa no bolso
 - Dados dos Fornecedores — telefone e CNPJ, guardado por nome
 - Histórico de Preços por Fornecedor (item 7)
+- Cadastros de Marcas e Fornecedores — usados automaticamente no módulo de boletos
 - BIOBEL — ZONA: ADMINISTRAÇÃO / PESSOAS E COMISSÕES
 - Comissão por Níveis de Meta (Gabriela e Day, cada uma recebe o valor do nível atingido)
 - Hora extra fixa (Gabriela, 2h/semana)
@@ -161,6 +162,8 @@ Para achar uma: `grep -n "===== Nome" biobel-app.js`
    O fechamento da gaveta é o valor informado pela própria planilha.
    Nunca substituir esse valor por uma conta parcial. Se não for localizado,
    marcar como ausente e bloquear o fechamento/impressão.
+- ALERTA DE HORÁRIO AUSENTE — COLUNA L
+- Reconhecimento motivacional de vendas acima de R$ 200
 - BIOBEL — ZONA: RENDERIZAÇÃO / DASHBOARD AVANÇADO
 - BIOBEL — ZONA: INTELIGÊNCIA DA PLANILHA (v10.24)
    Quatro leituras automáticas sem cadastro de produtos/clientes:
@@ -171,10 +174,10 @@ Para achar uma: `grep -n "===== Nome" biobel-app.js`
 - https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js
 - https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js
 
-## Chaves de dados no navegador (localStorage): 127
+## Chaves de dados no navegador (localStorage): 136
 Prefixo comum `biobel_`. Agrupadas pelo 1º termo depois do prefixo:
 
-**adm** (33): `biobel_adm_autenticado`, `biobel_adm_boletos`, `biobel_adm_comissoes`, `biobel_adm_data_admissao_gabriela`, `biobel_adm_fechamentos_mensais`, `biobel_adm_gastos_fixos`, `biobel_adm_historico_comissoes`, `biobel_adm_historico_ferias_gabriela`, `biobel_adm_historico_recesso_day`, `biobel_adm_inicio_estagio_day`, `biobel_adm_inicio_informal_gabriela`, `biobel_adm_migracao_salarios_v2`, `biobel_adm_migracao_vencimentos_v1`, `biobel_adm_nascimento_`, `biobel_adm_nascimento_day`, `biobel_adm_nascimento_gabriela`, `biobel_adm_niveis_comissao`, `biobel_adm_pct_participacao_lucro`, `biobel_adm_renovacao_estagio_meses`, `biobel_adm_reunioes`, `biobel_adm_secao_isolada`, `biobel_adm_seed_dados_pessoais_v1`, `biobel_adm_taxa_credito`, `biobel_adm_taxa_debito`, `biobel_adm_tipo_imposto`, `biobel_adm_usuario_logado`, `biobel_adm_valor_estoque`, `biobel_adm_valor_estoque_data`, `biobel_adm_valor_hora_extra`, `biobel_adm_valor_hora_extra_definido_manualmente`, `biobel_adm_valor_imposto_mensal`, `biobel_adm_valor_reserva`, `biobel_adm_valor_reserva_data`
+**adm** (35): `biobel_adm_autenticado`, `biobel_adm_boletos`, `biobel_adm_comissoes`, `biobel_adm_data_admissao_gabriela`, `biobel_adm_fechamentos_mensais`, `biobel_adm_gastos_fixos`, `biobel_adm_historico_comissoes`, `biobel_adm_historico_ferias_gabriela`, `biobel_adm_historico_recesso_day`, `biobel_adm_inicio_estagio_day`, `biobel_adm_inicio_informal_gabriela`, `biobel_adm_login_ts`, `biobel_adm_meta_lucro_mensal`, `biobel_adm_migracao_salarios_v2`, `biobel_adm_migracao_vencimentos_v1`, `biobel_adm_nascimento_`, `biobel_adm_nascimento_day`, `biobel_adm_nascimento_gabriela`, `biobel_adm_niveis_comissao`, `biobel_adm_pct_participacao_lucro`, `biobel_adm_renovacao_estagio_meses`, `biobel_adm_reunioes`, `biobel_adm_secao_isolada`, `biobel_adm_seed_dados_pessoais_v1`, `biobel_adm_taxa_credito`, `biobel_adm_taxa_debito`, `biobel_adm_tipo_imposto`, `biobel_adm_usuario_logado`, `biobel_adm_valor_estoque`, `biobel_adm_valor_estoque_data`, `biobel_adm_valor_hora_extra`, `biobel_adm_valor_hora_extra_definido_manualmente`, `biobel_adm_valor_imposto_mensal`, `biobel_adm_valor_reserva`, `biobel_adm_valor_reserva_data`
 
 **equipe** (7): `biobel_equipe_assinatura_atual`, `biobel_equipe_assinaturas`, `biobel_equipe_dia_atual`, `biobel_equipe_diaria_`, `biobel_equipe_historico`, `biobel_equipe_rotina_custom`, `biobel_equipe_sub_aba`
 
@@ -200,6 +203,8 @@ Prefixo comum `biobel_`. Agrupadas pelo 1º termo depois do prefixo:
 
 **atividades** (2): `biobel_atividades_gerencia`, `biobel_atividades_sem_movimento`
 
+**central** (2): `biobel_central_v10_39`, `biobel_central_v10_59`
+
 **daily** (2): `biobel_daily_goal_manual`, `biobel_daily_sales_goal`
 
 **dashboard** (2): `biobel_dashboard_modo`, `biobel_dashboard_modo_migracao`
@@ -214,11 +219,15 @@ Prefixo comum `biobel_`. Agrupadas pelo 1º termo depois do prefixo:
 
 **abrir** (1): `biobel_abrir_assistente_desligamento_apos_login`
 
+**acesso** (1): `biobel_acesso_total`
+
+**alerta** (1): `biobel_alerta_horario_ausente_v1`
+
 **apps** (1): `biobel_apps_script_url`
 
-**card** (1): `biobel_card_colapsado_`
+**cadastros** (1): `biobel_cadastros_adm`
 
-**central** (1): `biobel_central_v10_39`
+**card** (1): `biobel_card_colapsado_`
 
 **clima** (1): `biobel_clima_dias`
 
@@ -239,6 +248,8 @@ Prefixo comum `biobel_`. Agrupadas pelo 1º termo depois do prefixo:
 **folha** (1): `biobel_folha_ponto`
 
 **font** (1): `biobel_font_pct`
+
+**fornecedor** (1): `biobel_fornecedor_aba`
 
 **google** (1): `biobel_google_sheet_url`
 
@@ -274,6 +285,8 @@ Prefixo comum `biobel_`. Agrupadas pelo 1º termo depois do prefixo:
 
 **pendente** (1): `biobel_pendente_horario_fechamento`
 
+**perfil** (1): `biobel_perfil`
+
 **planilhas** (1): `biobel_planilhas_salvas`
 
 **previsao** (1): `biobel_previsao_clima_cache`
@@ -295,5 +308,7 @@ Prefixo comum `biobel_`. Agrupadas pelo 1º termo depois do prefixo:
 **tour** (1): `biobel_tour_concluido`
 
 **ultima** (1): `biobel_ultima_sincronizacao_ok`
+
+**vendas** (1): `biobel_vendas_motivacionais_v2`
 
 **zoom** (1): `biobel_zoom_auto_sugerido`

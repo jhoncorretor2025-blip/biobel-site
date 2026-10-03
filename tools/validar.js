@@ -147,5 +147,20 @@ if (inlineCount > 0) aviso(`Há ${inlineCount} handler(s) inline (onclick/onchan
 // 11) resumo estrutural para facilitar auditoria futura.
 ok(`Resumo estrutural: ${idsHtml.length} IDs, ${definidas.size} funções detectadas, ${new Set(chavesStorage).size} chaves literais de localStorage, ${refsUnicas.length} referências locais`);
 
+// 10) <style> abertos/fechados corretamente. Um <style> aberto duas vezes (ou sem fechar) faz o navegador
+//     IGNORAR a primeira regra do bloco seguinte, sem dar erro nenhum — já quebrou os cards da tela
+//     inicial em silêncio. Aqui só olhamos o HTML (fora de <script>).
+(function(){
+  const semScripts = html.replace(/<script[\s\S]*?<\/script>/gi, '');
+  let nivel = 0, aninhado = false, abertos = 0, fechados = 0;
+  for (const m of semScripts.matchAll(/<style[^>]*>|<\/style>/gi)) {
+    if (m[0].startsWith('</')) { fechados++; nivel--; }
+    else { abertos++; nivel++; if (nivel > 1) aninhado = true; }
+  }
+  if (aninhado) erro('Há um <style> aberto dentro de outro <style> (falta um </style>). O CSS depois dele pode ser ignorado pelo navegador.');
+  else if (abertos !== fechados) erro(`<style> desbalanceados: ${abertos} abertos x ${fechados} fechados.`);
+  else ok(`<style> balanceados (${abertos})`);
+})();
+
 console.log(`\n${erros ? '🚫 REPROVADO' : '🟢 APROVADO'} — ${erros} erro(s), ${avisos} aviso(s)`);
 process.exit(erros ? 1 : 0);
