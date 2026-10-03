@@ -13413,7 +13413,10 @@ function processarLinhasDoDia(sheetName, rows){
  const {dinheiro,debito,credito,pix}=pagamentos;
  const totalPagamentos=dinheiro+debito+credito+pix;
  // P2 é a célula oficial usada pelo painel para o valor "Vendido hoje".
- const vendaP2=obterValorCelulaPlanilha(rows,1,15,0);
+ // Algumas leituras do Google/Apps Script não entregam o valor calculado da fórmula de P2.
+ // Por isso guardamos a leitura direta e, se ela vier vazia, usamos o total diário já calculado
+ // a partir dos pagamentos da mesma aba — que deve coincidir com P2.
+ let vendaP2=obterValorCelulaPlanilha(rows,1,15,0);
 
  // Fonte oficial da venda diária: soma dos totais de pagamento.
  // Isso evita que alterações de layout/fórmulas em "Entrada do dia" façam o
@@ -13423,6 +13426,9 @@ function processarLinhasDoDia(sheetName, rows){
 
  // Fallback somente quando a planilha não trouxe nenhum total de pagamento.
  // Nesse caso, tenta localizar "Entrada do dia" nos formatos antigos.
+ if(sales>0 && (!Number.isFinite(vendaP2) || vendaP2<=0)){
+  vendaP2=sales;
+ }
  if(sales<=0){
   sales=0;
   salesCelula=null;
