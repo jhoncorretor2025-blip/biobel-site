@@ -41,7 +41,7 @@ body.light-mode .biobel-previsao-dia .temp{color:#172033}
 @media(max-width:480px){.biobel-previsao-lista{gap:5px}.biobel-previsao-dia{padding:8px 2px}.biobel-previsao-dia .icone{font-size:19px}.biobel-previsao-dia .temp{font-size:12px}}
 body.light-mode .biobel-quick-titulo{color:#172033!important}
 /* ===== Dashboard compacto 2.0 ===== */
-.biobel-dashboard-compact{display:flex;flex-direction:column;gap:12px}
+.biobel-dashboard-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:2px 2px 4px;margin-bottom:2px}.biobel-dashboard-heading-title{font-size:18px;font-weight:900;color:#eef5ff;line-height:1.2}.biobel-dashboard-heading-sub{font-size:10.5px;color:#71849d;margin-top:3px}.biobel-dashboard-heading-weather{display:flex;justify-content:flex-end;align-items:center;gap:7px;min-width:0}.biobel-dashboard-heading-weather>span{white-space:nowrap}@media(max-width:700px){.biobel-dashboard-heading{align-items:flex-start;flex-direction:column;gap:7px}.biobel-dashboard-heading-weather{width:100%;justify-content:flex-start;overflow-x:auto;padding-bottom:2px}}body.light-mode .biobel-dashboard-heading-title{color:#172033}.biobel-dashboard-compact{display:flex;flex-direction:column;gap:12px}
 .biobel-kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
 .biobel-kpi{min-width:0;background:linear-gradient(145deg,#101f34,#0b1728);border:1px solid #243b57;border-radius:14px;padding:13px 14px;box-shadow:0 4px 14px rgba(0,0,0,.10)}
 .biobel-kpi .kpi-label{font-size:10px;color:#8fa2ba;font-weight:900;text-transform:uppercase;letter-spacing:.05em}
@@ -97,6 +97,10 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
   Essa área foi removida por decisão de UX. Não recriar, duplicar ou inserir variações desse painel no dashboard.
 -->
 <main id="dashboardTab" class="max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabDashboard">
+  <div class="biobel-dashboard-heading no-print" aria-label="Cabeçalho da Visão Geral">
+   <div><div class="biobel-dashboard-heading-title">Visão Geral</div><div class="biobel-dashboard-heading-sub">Resumo rápido da loja</div></div>
+   <div class="biobel-dashboard-heading-weather" aria-label="Clima de hoje e previsão de amanhã"><span style="font-size:10px;color:#71849d;font-weight:800;">🌦️ Clima</span><span id="indicadorClimaTopo" style="display:none;"></span></div>
+  </div>
   <div class="biobel-dashboard-compact no-print">
    <section class="biobel-kpi-grid" aria-label="Indicadores principais">
     <article class="biobel-kpi"><div class="kpi-label">🎯 Meta do mês</div><div id="kpiMetaValor" class="kpi-value kpi-accent">R$ 0,00</div><div id="kpiMetaSub" class="kpi-sub">de R$ 0,00 · 0%</div><div id="kpiMetaExtra" class="kpi-sub">Calculando necessidade diária...</div></article>
@@ -126,7 +130,6 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
    </details>
   </div>
 
-  <div id="indicadorClimaTopo" class="no-print" style="display:none;justify-content:flex-end;margin-bottom:4px;"></div>
 
   <section class="no-print" aria-label="Atalhos rápidos" style="margin-bottom:10px;">
    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px;">
