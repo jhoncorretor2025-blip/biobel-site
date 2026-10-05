@@ -181,6 +181,77 @@ function executarUltimoDesfazer(){
  mostrarToast('↩️ Desfeito!');
 }
 
+/* ===== Lembrete diário 09:30 — atividades de hoje =====
+   Funciona sem serviço pago: usa o próprio navegador/localStorage.
+   Enquanto o sistema estiver aberto, o lembrete aparece automaticamente às 09:30.
+   Se a página for aberta depois das 09:30, mostra uma vez no mesmo dia. */
+const BIOBEL_LEMBRETE_930_KEY='biobel_lembrete_atividades_930_v1';
+
+function atividadesDoDiaLembrete(){
+ try{
+  const agora=typeof obterAgoraBrasilia==='function'?obterAgoraBrasilia():new Date();
+  const nomes=['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
+  const chave=nomes[agora.getDay()];
+  const rotina=(typeof rotinaSemanalPadrao!=='undefined' && rotinaSemanalPadrao[chave])?rotinaSemanalPadrao[chave]:null;
+  if(!rotina) return [];
+  const itens=[];
+  (Array.isArray(rotina.gabi)?rotina.gabi:[]).forEach(x=>itens.push({texto:String(x),quem:'Gabi'}));
+  (Array.isArray(rotina.dai)?rotina.dai:[]).forEach(x=>itens.push({texto:String(x),quem:'Dai'}));
+  return itens;
+}
+
+function chaveDiaLembrete930(){
+ const agora=typeof obterAgoraBrasilia==='function'?obterAgoraBrasilia():new Date();
+ return String(agora.getFullYear())+'-'+String(agora.getMonth()+1).padStart(2,'0')+'-'+String(agora.getDate()).padStart(2,'0');
+}
+
+function fecharLembreteAtividades930(){
+ const el=document.getElementById('lembreteAtividades930');
+ if(el) el.remove();
+ try{localStorage.setItem(BIOBEL_LEMBRETE_930_KEY,chaveDiaLembrete930());}catch(e){}
+}
+
+function abrirLembreteAtividades930(){
+ const atividades=atividadesDoDiaLembrete();
+ if(!atividades.length) return;
+ fecharLembreteAtividades930();
+ const el=document.createElement('div');
+ el.id='lembreteAtividades930';
+ el.setAttribute('role','alertdialog');
+ el.setAttribute('aria-label','Atividades de hoje');
+ el.innerHTML=`
+  <div class="biobel-930-backdrop"></div>
+  <div class="biobel-930-card">
+   <button class="biobel-930-close" onclick="fecharLembreteAtividades930()" aria-label="Fechar">×</button>
+   <div class="biobel-930-pulse">⏰ 09:30 — HORA DE ORGANIZAR O DIA</div>
+   <h2>📋 Quais atividades você está fazendo hoje?</h2>
+   <p class="biobel-930-sub">Confira a rotina de hoje antes de continuar. Assim a equipe sabe o que precisa ser feito e evita perder tempo sem uma tarefa definida.</p>
+   <div class="biobel-930-list">
+    ${atividades.map((a,i)=>`<div class="biobel-930-item"><span class="biobel-930-check">□</span><div><strong>${a.texto.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</strong><small>👤 ${a.quem}</small></div></div>`).join('')}
+   </div>
+   <div class="biobel-930-footer">
+    <span>📌 ${atividades.length} atividades previstas para hoje</span>
+    <button onclick="fecharLembreteAtividades930()" class="biobel-930-ok">✅ Conferi minha rotina</button>
+   </div>
+  </div>`;
+ document.body.appendChild(el);
+}
+
+function verificarLembreteAtividades930(){
+ try{
+  const agora=typeof obterAgoraBrasilia==='function'?obterAgoraBrasilia():new Date();
+  const minutos=agora.getHours()*60+agora.getMinutes();
+  const chave=chaveDiaLembrete930();
+  const ultimo=localStorage.getItem(BIOBEL_LEMBRETE_930_KEY);
+  if(minutos>=570 && ultimo!==chave) abrirLembreteAtividades930();
+ }catch(e){console.warn('Lembrete 09:30:',e);}
+}
+
+(function iniciarLembreteAtividades930(){
+ setTimeout(verificarLembreteAtividades930,1800);
+ setInterval(verificarLembreteAtividades930,30000);
+})();
+
 /* ============================================================
    BIOBEL — ZONA: EQUIPE / ROTINAS E ATIVIDADES
    ============================================================ */
