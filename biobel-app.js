@@ -13628,6 +13628,70 @@ function atualizarAvisoErroPlanilha(mensagem){
  if(texto)texto.textContent='🔴 '+(mensagem||'Não foi possível atualizar a planilha.');
 }
 
+// ===== Recuperação de leitura Google Sheets (v11.25) =====
+function lerAbaGoogleGvizJSONP(spreadsheetId, sheetName, timeoutMs=9000){
+ return new Promise((resolve,reject)=>{
+  const cb='__biobelGviz_'+Date.now()+'_'+Math.random().toString(36).slice(2);
+  const script=document.createElement('script');
+  let finalizado=false;
+  const limpar=()=>{try{delete window[cb];}catch(e){window[cb]=undefined;}script.remove();clearTimeout(timer);};
+  const timer=setTimeout(()=>{if(finalizado)return;finalizado=true;limpar();reject(new Error('Tempo esgotado ao ler a aba '+sheetName+'.'));},timeoutMs);
+  window[cb]=(payload)=>{
+   if(finalizado)return;
+   finalizado=true;limpar();
+   if(payload?.status==='error' || !payload?.table){
+    reject(new Error(payload?.errors?.[0]?.detailed_message || payload?.errors?.[0]?.message || ('Aba '+sheetName+' não pôde ser lida.')));
+    return;
+   }
+   const cols=Array.isArray(payload.table.cols)?payload.table.cols:[];
+   const rows=Array.isArray(payload.table.rows)?payload.table.rows:[];
+   const matrix=rows.map(row=>{
+    const out=new Array(cols.length).fill(null);
+    (row?.c||[]).forEach((cell,idx)=>{
+     if(!cell)return;
+     // Para horário (coluna L), prioriza o valor formatado, que chega como HH:MM/HH:MM:SS.
+     // Nas demais colunas, prioriza o valor bruto para preservar números usados nos cálculos.
+     out[idx]=(idx===11 && cell.f!=null) ? cell.f : (cell.v!=null ? cell.v : (cell.f??null));
+    });
+    return out;
+   });
+   resolve(matrix);
+  };
+  script.onerror=()=>{if(finalizado)return;finalizado=true;limpar();reject(new Error('O Google não respondeu à aba '+sheetName+'.'));};
+  const tqx=encodeURIComponent('out:json;responseHandler:'+cb);
+  script.src='https://docs.google.com/spreadsheets/d/'+encodeURIComponent(spreadsheetId)+'/gviz/tq?tqx='+tqx+'&sheet='+encodeURIComponent(sheetName)+'&_biobel_cache_bust='+Date.now();
+  document.head.appendChild(script);
+ });
+}
+
+async function carregarMesAtualViaGviz(spreadsheetId){
+ const agora=typeof obterAgoraBrasilia==='function'?obterAgoraBrasilia():new Date();
+ const ano=agora.getFullYear(), mes=agora.getMonth()+1, diaAtual=agora.getDate();
+ const nomes=[];
+ for(let dia=1;dia<=diaAtual;dia++) nomes.push(String(dia).padStart(2,'0')+'.'+String(mes).padStart(2,'0'));
+ const resultados=[];
+ // No máximo 5 abas por lote para não saturar o navegador.
+ for(let i=0;i<nomes.length;i+=5){
+  const lote=nomes.slice(i,i+5);
+  const lidos=await Promise.all(lote.map(async sheetName=>{
+   try{
+    const rows=await lerAbaGoogleGvizJSONP(spreadsheetId,sheetName);
+    const dados=processarLinhasDoDia(sheetName,rows);
+    return {dados,ok:true};
+   }catch(err){
+    console.warn('Fallback Google Sheets — '+sheetName+':',err);
+    return null;
+   }
+  }));
+  lidos.filter(Boolean).forEach(x=>resultados.push(x.dados));
+ }
+ if(!resultados.length) throw new Error('O modo de recuperação não encontrou nenhuma aba diária legível.');
+ return resultados.sort((a,b)=>{
+  const [da,ma]=String(a.dia).split('.').map(Number),[db,mb]=String(b.dia).split('.').map(Number);
+  return (ma*100+da)-(mb*100+db);
+ });
+}
+
 let carregandoPlanilha = false; // evita duas leituras da planilha rodando ao mesmo tempo (ex: atualização automática + clique manual), que podiam misturar dados de meses diferentes
 async function loadGoogleSheet(){
  if(carregandoPlanilha){
@@ -13695,9 +13759,25 @@ async function loadGoogleSheet(){
   tentarEnviarHorarioFechamentoPendente();
  }catch(err){
   console.error(err);
-  atualizarAvisoErroPlanilha('Não consegui atualizar a planilha. Verifique a internet, o acesso de leitura e tente novamente.');
+  // Recuperação automática: se o download XLSX/ponte falhar, tenta ler as abas diárias
+  // pelo endpoint Google Visualization, sem depender de CORS do arquivo XLSX.
+  try{
+   const fallbackDias=await carregarMesAtualViaGviz(id);
+   if(fallbackDias.length){
+    daysData=fallbackDias;
+    render();
+    window.dispatchEvent(new CustomEvent('biobel:data-updated'));
+    setGoogleStatus('conectado pelo modo de recuperação. '+fallbackDias.length+' dia(s) atualizado(s).',true);
+    setPlanilhaLoading(false);
+    atualizarAvisoErroPlanilha('');
+    return;
+   }
+  }catch(fallbackErr){
+   console.warn('Recuperação Google Sheets falhou:',fallbackErr);
+  }
+  atualizarAvisoErroPlanilha('Não consegui atualizar a planilha. Verifique o acesso de leitura do Google Sheets e tente novamente.');
   setPlanilhaLoading(false);
-  setGoogleStatus('não foi possível ler a planilha. Verifique a internet, o acesso de leitura e tente novamente.',false,'error');
+  setGoogleStatus('não foi possível ler a planilha. Verifique o acesso de leitura e tente novamente.',false,'error');
  }finally{
   setPlanilhaLoading(false);
   setRefreshButtonsLoading(false);
