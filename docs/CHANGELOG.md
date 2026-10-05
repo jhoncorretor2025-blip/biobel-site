@@ -1,3 +1,11 @@
+## v11.40 — 05/10/2026
+- Unificada a conversão dos valores de pagamento das linhas de venda com `valorPagamentoDaLinha()`.
+- Extratores de vendedores, quantidade de vendas, vendas individuais e tipos de venda agora aceitam tanto números quanto valores em texto, inclusive formatos monetários como `R$ 450,00`.
+- O reconhecimento de vendas passa a receber a venda individual quando ela não vier como número nativo na leitura da planilha.
+- Quantidade de itens por venda também passou a usar a mesma conversão segura.
+- Nenhuma regra de limite do reconhecimento foi alterada: acima de R$ 200 e destaque acima de R$ 400 continuam iguais.
+- Cache PWA e versão do shell atualizados para v11.40.
+
 ## v11.39 — 05/10/2026
 - Carregamento dos módulos compartilhados passou a ser controlado por uma promessa de prontidão.
 - `loadGoogleSheet()` agora aguarda o carregamento de leitura, processamento e comparação antes de iniciar a atualização.
