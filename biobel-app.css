@@ -561,7 +561,8 @@ body.modo-compacto .space-y-4 > * + *{ margin-top:8px!important; }
   header > .max-w-7xl:first-child > *{flex-shrink:0}
   header > .max-w-7xl:first-child > div:first-child{order:10;max-width:none!important;flex:1!important}
   #inputBuscaGlobal{height:42px!important;font-size:16px!important;padding:8px 12px!important;border-radius:12px!important}
-  #versaoSistema,#indicadorUltimoSalvamento,#nomePlanilhaAtivaHeader,#themeToggleBtn,#btnModoCompacto,#btnColapsarTudo{display:none!important}
+  #indicadorUltimoSalvamento,#nomePlanilhaAtivaHeader,#themeToggleBtn,#btnModoCompacto,#btnColapsarTudo{display:none!important}
+  #versaoSistema{display:inline-flex!important;align-items:center;white-space:nowrap!important;font-size:10px!important;padding:5px 7px!important}
   #connBadge{font-size:10px!important;padding:6px 8px!important}
   #btnInstalarApp{display:none!important}
   header > .max-w-7xl:nth-of-type(2){padding:8px 12px 10px!important;gap:8px!important;align-items:center!important}
