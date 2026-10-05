@@ -1,5 +1,5 @@
-/* Biobel — shell compartilhado. v11.40 */
-const BIOBEL_VERSION="v11.40";
+/* Biobel — shell compartilhado. v11.41 */
+const BIOBEL_VERSION="v11.41";
 (function(){
 "use strict";
 const PAGES={dashboard:"dashboard.html",caixa:"operacao.html",equipe:"equipe.html",campanhas:"vendas.html",info:"analises.html",alertas:"alertas.html",config:"config.html",adm:"administracao.html",backup:"backup.html"};
@@ -116,10 +116,10 @@ function montar(){
 }
 (async function carregarModulosBiobel(){
  try{
-  await carregarModuloBiobel(ROOT+"biobel-recognition.js?v=11.31","recognition");
-  await carregarModuloBiobel(ROOT+"biobel-planilha-leitura.js?v=11.33","planilha-leitura");
-  await carregarModuloBiobel(ROOT+"biobel-planilha-processamento.js?v=11.34","planilha-processamento");
-  await carregarModuloBiobel(ROOT+"biobel-planilha-comparacao.js?v=11.32","planilha-comparacao");
+  await carregarModuloBiobel(ROOT+"biobel-recognition.js?v=11.41","recognition");
+  await carregarModuloBiobel(ROOT+"biobel-planilha-leitura.js?v=11.41","planilha-leitura");
+  await carregarModuloBiobel(ROOT+"biobel-planilha-processamento.js?v=11.41","planilha-processamento");
+  await carregarModuloBiobel(ROOT+"biobel-planilha-comparacao.js?v=11.41","planilha-comparacao");
   _resolveBiobelModulesReady();
  }catch(err){
   console.error("Biobel: falha ao carregar módulos compartilhados.",err);
