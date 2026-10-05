@@ -1,5 +1,5 @@
-/* Biobel — shell compartilhado. v11.26 */
-const BIOBEL_VERSION="v11.26";
+/* Biobel — shell compartilhado. v11.27 */
+const BIOBEL_VERSION="v11.27";
 (function(){
 "use strict";
 const PAGES={dashboard:"dashboard.html",caixa:"operacao.html",equipe:"equipe.html",campanhas:"vendas.html",info:"analises.html",alertas:"alertas.html",config:"config.html",adm:"administracao.html",backup:"backup.html"};
