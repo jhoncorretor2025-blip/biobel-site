@@ -1,3 +1,9 @@
+## v11.30 — 05/10/2026
+- Correção do leitor da planilha: a ponte do Apps Script não bloqueia mais a leitura direta quando estiver indisponível ou travada.
+- Adicionado tempo limite na ponte; ao falhar, o sistema retorna automaticamente ao leitor XLSX tradicional.
+- A rotina de dados foi restaurada para o comportamento anterior às últimas tentativas de correção, preservando os demais recursos.
+- Versão/cache atualizados para v11.30.
+
 ## v11.28 — 05/10/2026
 - Correção da leitura dos dados do Google Sheets usando o endpoint Google Visualization como caminho principal para as abas diárias DD.MM.
 - Mantidos os caminhos alternativos por XLSX e Apps Script, com proteção contra travamentos.
