@@ -1,3 +1,9 @@
+## v11.37 — 05/10/2026
+- Removido o bloco legado do lembrete 09:30, incluindo seus helpers e seu segundo timer.
+- Mantida a implementação atual do assistente operacional 09:30, que usa as atividades escolhidas e concluídas do dia.
+- Eliminada a execução periódica duplicada da verificação do popup.
+- Cache PWA e versão do shell atualizados para v11.37.
+
 ## v11.36 — 05/10/2026
 - Removidas declarações duplicadas antigas do núcleo `biobel-app.js`.
 - Mantida a versão efetivamente ativa das rotinas de lembrete 09:30, formatação de horários, atualização automática da planilha e próxima ação.
