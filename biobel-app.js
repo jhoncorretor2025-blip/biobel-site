@@ -14428,6 +14428,164 @@ document.addEventListener('keydown', e=>{
  }
 });
 
+/* ===== v11.24 — rotina operacional + escolha obrigatória às 09:30 ===== */
+const BIOBEL_ROTINA_ESCOLHIDA_KEY='biobel_rotina_escolhida_hoje_v1';
+const BIOBEL_ROTINA_CONCLUIDA_KEY='biobel_rotina_concluida_hoje_v1';
+
+function chaveHojeRotina(){
+ const a=typeof obterAgoraBrasilia==='function'?obterAgoraBrasilia():new Date();
+ return String(a.getFullYear())+'-'+String(a.getMonth()+1).padStart(2,'0')+'-'+String(a.getDate()).padStart(2,'0');
+}
+function chaveDiaSemanaRotina(){
+ const n=(typeof obterAgoraBrasilia==='function'?obterAgoraBrasilia():new Date()).getDay();
+ return ({1:'segunda',2:'terca',3:'quarta',4:'quinta',5:'sexta',6:'sabado'})[n]||null;
+}
+function obterAtividadesRotinaHoje(){
+ const dia=chaveDiaSemanaRotina();
+ if(!dia) return [];
+ try{
+  const fonte=(typeof rotinaSemanal!=='undefined' && rotinaSemanal[dia]) ? rotinaSemanal[dia] : rotinaSemanalPadrao[dia];
+  if(!fonte) return [];
+  const out=[];
+  (fonte.gabi||[]).forEach((texto,i)=>out.push({id:'gabi_'+i,text: String(texto),quem:'Gabi'}));
+  (fonte.dai||[]).forEach((texto,i)=>out.push({id:'dai_'+i,text: String(texto),quem:'Dai'}));
+  return out;
+ }catch(e){ console.warn('Rotina de hoje:',e); return []; }
+}
+function getRotinaEscolhidaHoje(){
+ try{
+  const x=JSON.parse(localStorage.getItem(BIOBEL_ROTINA_ESCOLHIDA_KEY)||'null');
+  return x?.data===chaveHojeRotina() && Array.isArray(x.ids) ? x.ids : [];
+ }catch(e){return [];}
+}
+function salvarRotinaEscolhidaHoje(ids){
+ localStorage.setItem(BIOBEL_ROTINA_ESCOLHIDA_KEY,JSON.stringify({data:chaveHojeRotina(),ids:Array.from(new Set(ids))}));
+}
+function getRotinaConcluidaHoje(){
+ try{
+  const x=JSON.parse(localStorage.getItem(BIOBEL_ROTINA_CONCLUIDA_KEY)||'null');
+  return x?.data===chaveHojeRotina() && Array.isArray(x.ids) ? x.ids : [];
+ }catch(e){return [];}
+}
+function salvarRotinaConcluidaHoje(ids){
+ localStorage.setItem(BIOBEL_ROTINA_CONCLUIDA_KEY,JSON.stringify({data:chaveHojeRotina(),ids:Array.from(new Set(ids))}));
+}
+
+function fecharLembreteAtividades930(){
+ const el=document.getElementById('lembreteAtividades930');
+ if(el) el.remove();
+}
+function confirmarRotina930(){
+ const checks=[...document.querySelectorAll('#lembreteAtividades930 input[data-rotina-id]:checked')];
+ if(!checks.length){
+  const aviso=document.getElementById('biobel930EscolhaAviso');
+  if(aviso) aviso.textContent='⚠️ Selecione pelo menos uma atividade que você vai fazer hoje.';
+  return;
+ }
+ salvarRotinaEscolhidaHoje(checks.map(x=>x.dataset.rotinaId));
+ fecharLembreteAtividades930();
+ renderAssistenteOperacionalHoje();
+ try{mostrarToast('✅ Rotina de hoje registrada. Agora siga a primeira atividade.');}catch(e){}
+}
+function abrirLembreteAtividades930(){
+ const atividades=obterAtividadesRotinaHoje();
+ if(!atividades.length) return;
+ const escolhidas=new Set(getRotinaEscolhidaHoje());
+ const elAnterior=document.getElementById('lembreteAtividades930'); if(elAnterior) elAnterior.remove();
+ const el=document.createElement('div');
+ el.id='lembreteAtividades930';
+ el.setAttribute('role','alertdialog');
+ el.setAttribute('aria-modal','true');
+ el.innerHTML=`
+  <div class="biobel-930-backdrop"></div>
+  <div class="biobel-930-card">
+   <div class="biobel-930-pulse">⏰ 09:30 — HORA DE ORGANIZAR O DIA</div>
+   <h2>📋 O que você vai fazer hoje?</h2>
+   <p class="biobel-930-sub">Antes de continuar usando o sistema, confira a rotina e escolha as atividades que você vai assumir hoje.</p>
+   <div class="biobel-930-list">
+    ${atividades.map(a=>`<label class="biobel-930-item biobel-930-choice">
+      <input type="checkbox" data-rotina-id="${a.id}" ${escolhidas.has(a.id)?'checked':''} onchange="atualizarEstadoRotina930()">
+      <span class="biobel-930-check">□</span>
+      <span><strong>${String(a.text).replace(/</g,'&lt;').replace(/>/g,'&gt;')}</strong><small>👤 ${a.quem}</small></span>
+    </label>`).join('')}
+   </div>
+   <div id="biobel930EscolhaAviso" class="biobel-930-choice-warning">⚠️ Selecione pelo menos uma atividade para continuar.</div>
+   <div class="biobel-930-footer">
+    <span>📌 ${atividades.length} atividades previstas para hoje</span>
+    <button id="biobel930Confirmar" onclick="confirmarRotina930()" class="biobel-930-ok" disabled>▶️ Começar meu dia</button>
+   </div>
+  </div>`;
+ document.body.appendChild(el);
+ atualizarEstadoRotina930();
+ const primeiro=el.querySelector('input[data-rotina-id]');
+ primeiro?.focus();
+}
+function atualizarEstadoRotina930(){
+ const el=document.getElementById('lembreteAtividades930');
+ if(!el) return;
+ const qtd=el.querySelectorAll('input[data-rotina-id]:checked').length;
+ const btn=document.getElementById('biobel930Confirmar');
+ if(btn){btn.disabled=qtd===0;btn.style.opacity=qtd?'1':'.45';}
+ const aviso=document.getElementById('biobel930EscolhaAviso');
+ if(aviso) aviso.textContent=qtd?'✅ Atividades selecionadas. Clique em “Começar meu dia”.':'⚠️ Selecione pelo menos uma atividade para continuar.';
+}
+function verificarLembreteAtividades930(){
+ try{
+  const agora=typeof obterAgoraBrasilia==='function'?obterAgoraBrasilia():new Date();
+  const minutos=agora.getHours()*60+agora.getMinutes();
+  if(minutos<570) return;
+  const atividades=obterAtividadesRotinaHoje();
+  if(!atividades.length) return;
+  if(getRotinaEscolhidaHoje().length===0 && !document.getElementById('lembreteAtividades930')) abrirLembreteAtividades930();
+ }catch(e){console.warn('Lembrete 09:30:',e);}
+}
+
+function concluirProximaAcao(){
+ const atividades=obterAtividadesRotinaHoje();
+ const escolhidas=new Set(getRotinaEscolhidaHoje());
+ const concluidas=new Set(getRotinaConcluidaHoje());
+ const proxima=atividades.find(a=>escolhidas.has(a.id)&&!concluidas.has(a.id));
+ if(!proxima) return abrirLembreteAtividades930();
+ concluidas.add(proxima.id);
+ salvarRotinaConcluidaHoje([...concluidas]);
+ renderAssistenteOperacionalHoje();
+ try{mostrarToast('✅ Atividade concluída: '+proxima.text);}
+ catch(e){}
+}
+function renderAssistenteOperacionalHoje(){
+ const titulo=document.getElementById('biobelProximaAcaoTitulo');
+ const meta=document.getElementById('biobelProximaAcaoMeta');
+ const btn=document.getElementById('biobelProximaAcaoBtn');
+ const relogio=document.getElementById('biobelProdHorario');
+ const atividades=obterAtividadesRotinaHoje();
+ const escolhidas=new Set(getRotinaEscolhidaHoje());
+ const concluidas=new Set(getRotinaConcluidaHoje());
+ const selecionadas=atividades.filter(a=>escolhidas.has(a.id));
+ const proxima=selecionadas.find(a=>!concluidas.has(a.id));
+ const agora=typeof obterAgoraBrasilia==='function'?obterAgoraBrasilia():new Date();
+ if(relogio) relogio.textContent=String(agora.getHours()).padStart(2,'0')+':'+String(agora.getMinutes()).padStart(2,'0');
+ if(titulo){
+  if(!selecionadas.length){titulo.textContent='Escolha sua rotina de hoje';}
+  else if(proxima){titulo.textContent=proxima.text; }
+  else {titulo.textContent='🎉 Todas as atividades escolhidas foram concluídas!';}
+ }
+ if(meta){
+  if(!selecionadas.length) meta.textContent=atividades.length+' atividades disponíveis hoje · escolha na rotina';
+  else meta.textContent='👤 '+(proxima?.quem||'Equipe')+' · '+concluidas.size+' de '+selecionadas.length+' concluídas';
+ }
+ if(btn) btn.style.display=proxima?'inline-flex':'none';
+ const resumo=document.getElementById('biobelResumoEquipeMini');
+ if(resumo){
+  resumo.textContent=selecionadas.length ? (concluidas.size+' de '+selecionadas.length+' atividades concluídas') : (atividades.length+' atividades programadas para hoje');
+ }
+}
+function iniciarAssistenteOperacionalHoje(){
+ renderAssistenteOperacionalHoje();
+ verificarLembreteAtividades930();
+}
+setTimeout(iniciarAssistenteOperacionalHoje,1200);
+setInterval(iniciarAssistenteOperacionalHoje,30000);
+
 function biobelPaginaAtual(){return document.body?.dataset?.biobelPage||'dashboard';}
 function initPaginaAtiva(){
  if(sessionStorage.getItem('biobel_logged_in')!=='yes'){window.location.href='login.html';return;}
