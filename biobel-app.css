@@ -1353,3 +1353,51 @@ body.light-mode .biobel-930-footer{border-color:#e2e8f0}
 @media(prefers-reduced-motion:reduce){
  .biobel-930-pulse,.biobel-930-card{animation:none}
 }
+
+
+/* v11.24 — assistente operacional da loja */
+.biobel-produtividade-hoje{margin:0 0 12px;border:1px solid #29425f;background:linear-gradient(180deg,#0d1b2e,#0a1728);border-radius:16px;padding:14px}
+.biobel-prod-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.biobel-prod-eyebrow,.biobel-prod-label{font-size:10px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;color:#27d7a0}
+.biobel-prod-head h2{margin:3px 0;font-size:17px;color:#eef5ff;font-weight:950}
+.biobel-prod-head p{margin:0;color:#71849d;font-size:10.5px}
+.biobel-prod-clock{font-size:12px;font-weight:900;color:#93a3ba;white-space:nowrap}
+.biobel-prod-grid{display:grid;grid-template-columns:1.35fr 1fr 1fr;gap:9px}
+.biobel-prod-grid article{border:1px solid #233a56;border-radius:13px;padding:13px;background:#0b1728;min-width:0}
+.biobel-prod-next{border-color:rgba(39,215,160,.35)!important}
+.biobel-prod-next-title{font-size:14px;line-height:1.35;color:#f3f7fc;font-weight:900;margin:8px 0 5px}
+.biobel-prod-next-meta,.biobel-prod-handoff-text,.biobel-prod-summary-text{font-size:10.5px;line-height:1.5;color:#93a3ba;min-height:34px}
+.biobel-prod-primary,.biobel-prod-secondary{border-radius:9px;padding:8px 11px;font-size:10.5px;font-weight:900;cursor:pointer;margin-top:9px}
+.biobel-prod-primary{border:1px solid rgba(39,215,160,.4);background:rgba(39,215,160,.12);color:#27d7a0}
+.biobel-prod-secondary{border:1px solid #29425f;background:#102139;color:#dce8f7}
+.biobel-prod-primary:disabled{opacity:.55;cursor:default}
+.biobel-prod-modal{position:fixed;inset:0;z-index:10040;display:flex;align-items:center;justify-content:center;padding:14px}
+.biobel-prod-modal-bg{position:absolute;inset:0;background:rgba(2,8,23,.78);backdrop-filter:blur(3px)}
+.biobel-prod-modal-card{position:relative;width:min(650px,100%);max-height:90vh;overflow:auto;background:#0d1a2c;border:1px solid #29425f;border-radius:18px;padding:20px;color:#eef5ff;box-shadow:0 24px 70px rgba(0,0,0,.55)}
+.biobel-prod-modal-card h2{font-size:20px;margin:5px 40px 5px 0;font-weight:950}
+.biobel-prod-modal-card>p{font-size:11px;color:#93a3ba;margin:0 0 14px}
+.biobel-prod-modal-close{position:absolute;right:12px;top:10px;width:32px;height:32px;border-radius:9px;border:1px solid #334a68;background:#14263e;color:#dce8f7;font-size:22px;cursor:pointer}
+.biobel-prod-modal-card label{display:block;font-size:10.5px;color:#93a3ba;font-weight:800;margin:8px 0}
+.biobel-prod-modal-card input,.biobel-prod-modal-card textarea{display:block;width:100%;box-sizing:border-box;margin-top:5px;background:#0b1728;border:1px solid #29425f;border-radius:9px;padding:9px;color:#dce8f7;font-size:12px;resize:vertical}
+.biobel-prod-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.biobel-prod-modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+.biobel-summary-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
+.biobel-summary-kpis>div{background:#0b1728;border:1px solid #233a56;border-radius:11px;padding:11px;text-align:center}
+.biobel-summary-kpis strong{display:block;font-size:17px;color:#27d7a0;font-weight:950}
+.biobel-summary-kpis span{display:block;margin-top:3px;font-size:9.5px;color:#71849d}
+.biobel-summary-person{display:flex;justify-content:space-between;gap:10px;padding:10px 12px;border-bottom:1px solid #233a56;font-size:11px}
+.biobel-summary-person span{color:#93a3ba}
+.biobel-summary-pending,.biobel-summary-ok{margin-top:12px;padding:10px 12px;border-radius:10px;font-size:11px;font-weight:800}
+.biobel-summary-pending{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);color:#fbbf24}
+.biobel-summary-ok{background:rgba(39,215,160,.08);border:1px solid rgba(39,215,160,.25);color:#27d7a0}
+body.light-mode .biobel-produtividade-hoje{background:#fff;border-color:#d9e1ea}
+body.light-mode .biobel-prod-head h2{color:#172033}
+body.light-mode .biobel-prod-grid article{background:#f7f9fb;border-color:#dce3eb}
+body.light-mode .biobel-prod-next-title{color:#172033}
+body.light-mode .biobel-prod-modal-card{background:#fff;color:#172033;border-color:#d9e1ea}
+body.light-mode .biobel-prod-modal-card h2{color:#172033}
+body.light-mode .biobel-prod-modal-card input,body.light-mode .biobel-prod-modal-card textarea{background:#fff;color:#172033;border-color:#cbd5e1}
+body.light-mode .biobel-prod-modal-close{background:#f1f4f7;color:#334155;border-color:#cbd5e1}
+body.light-mode .biobel-summary-kpis>div{background:#f7f9fb;border-color:#dce3eb}
+@media(max-width:900px){.biobel-prod-grid{grid-template-columns:1fr 1fr}.biobel-prod-next{grid-column:1/-1}}
+@media(max-width:620px){.biobel-prod-head{align-items:flex-start}.biobel-prod-clock{display:none}.biobel-prod-grid{grid-template-columns:1fr}.biobel-prod-form-grid{grid-template-columns:1fr}.biobel-summary-kpis{grid-template-columns:1fr 1fr}.biobel-prod-modal-card{padding:16px}}
