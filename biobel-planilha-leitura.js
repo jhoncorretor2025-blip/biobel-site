@@ -1,6 +1,6 @@
 /* ============================================================
    BIOBEL — LEITURA DE PLANILHAS
-   v11.33 — leitura principal e fallbacks preservados.
+   v11.41 — leitura principal e fallbacks preservados.
    As funções abaixo dependem de utilitários globais do núcleo
    (por exemplo: processarLinhasDoDia, normalizarNomeAba,
    obterAgoraBrasilia e fetchBiobelComTimeout).
