@@ -2167,7 +2167,7 @@ async function imprimirFolhaDePonto(){
 }
 
 function printEquipeWeek(){
- const el = document.getElementById('printReceipt');
+ const el = garantirAreaRecibo();
  const weekStart = document.getElementById('equipeWeekStart')?.value || '___';
  const weekEnd = document.getElementById('equipeWeekEnd')?.value || '___';
  const nomeGabi = document.getElementById('equipeNomeGabi')?.value || '________';
@@ -11484,7 +11484,7 @@ function exportarInfoComoTxt(){
 }
 
 function buildReceipt(type, day){
- const el=document.getElementById('printReceipt');
+ const el=garantirAreaRecibo();
  const now=new Date().toLocaleString('pt-BR');
  if(type==='daily-simple'){
   const d=daysData.find(x=>x.dia===day);
@@ -11660,27 +11660,36 @@ function registrarHorarioFechamentoNuvem(diaSelecionado){
  }
  tentarEnviarHorarioFechamentoPendente();
 }
-function startReceiptPrint(type){
- const receipt=document.getElementById('printReceipt');
- const parentOriginal=receipt?.parentElement||null;
- const nextOriginal=receipt?.nextSibling||null;
-
- // O recibo fica dentro do painel de Caixa. Para a impressão, ele precisa ficar
- // diretamente no body; assim o painel ocultado pelo CSS não esconde o recibo.
- if(receipt && receipt.parentElement!==document.body){
-  document.body.appendChild(receipt);
+/* ===== Impressão do recibo (fechamento diário/completo, mensal, semana da equipe) =====
+   REGRA ESTRUTURAL: o recibo (#printReceipt) tem que ser SEMPRE filho direto do <body>.
+   O CSS de impressão esconde todos os outros filhos diretos do body; se o recibo estivesse dentro
+   de um painel/section, esse painel seria escondido e o recibo sumiria junto = folha em branco.
+   garantirAreaRecibo() cria o elemento (nas páginas que não têm) ou o leva pro body (onde o HTML
+   o colocou dentro de um painel). É feito uma vez e fica assim — nada é movido de volta depois. */
+function garantirAreaRecibo(){
+ let receipt=document.getElementById('printReceipt');
+ if(!receipt){
+  receipt=document.createElement('div');
+  receipt.id='printReceipt';
+  receipt.className='print-receipt';
+  receipt.setAttribute('aria-hidden','true');
  }
+ if(receipt.parentElement!==document.body) document.body.appendChild(receipt);
+ return receipt;
+}
+let _finalizarImpressaoRecibo=null;
+function startReceiptPrint(type){
+ garantirAreaRecibo();
+ // O modo de impressão (classe receipt-printing) só tem efeito em @media print (ver biobel-app.css),
+ // mas mesmo assim a classe precisa sair ao terminar/cancelar, senão um Ctrl+P comum imprimiria o recibo.
+ if(_finalizarImpressaoRecibo) window.removeEventListener('afterprint',_finalizarImpressaoRecibo); // clique repetido não empilha ouvintes
  document.body.classList.add('receipt-printing');
-
- const finalizarImpressao=()=>{
+ _finalizarImpressaoRecibo=function(){
   document.body.classList.remove('receipt-printing');
-  if(receipt && parentOriginal){
-   if(nextOriginal && nextOriginal.parentNode===parentOriginal) parentOriginal.insertBefore(receipt,nextOriginal);
-   else parentOriginal.appendChild(receipt);
-  }
-  window.onafterprint=null;
+  window.removeEventListener('afterprint',_finalizarImpressaoRecibo);
+  _finalizarImpressaoRecibo=null;
  };
- window.onafterprint=finalizarImpressao;
+ window.addEventListener('afterprint',_finalizarImpressaoRecibo);
 
  // Só registra os botões de fechamento diário. Relatórios mensais/PDF não alteram O26.
  if(type==='daily-simple' || type==='daily-complete'){
@@ -11689,7 +11698,10 @@ function startReceiptPrint(type){
   registrarHorarioFechamentoNuvem(dia);
  }
 
- setTimeout(()=>window.print(),50);
+ setTimeout(()=>{
+  try{ window.print(); }
+  catch(e){ console.error('Não foi possível abrir a impressão:',e); if(_finalizarImpressaoRecibo) _finalizarImpressaoRecibo(); }
+ },50);
 }
 function printDaily(){
  const day=document.getElementById('daySelect').value;

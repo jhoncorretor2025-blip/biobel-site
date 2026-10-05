@@ -1,18 +1,18 @@
 # 🗺️ Mapa automático do sistema (gerado por `node tools/mapa.js`)
 
 > **Não edite à mão** — este arquivo é regenerado. Explicações humanas: [ESTRUTURA.md](ESTRUTURA.md).
-> Gerado a partir do estado real do repositório — painel na versão **v11.11** (03/10/2026), compartilhada por `biobel-shell.js` entre as 8 páginas.
+> Gerado a partir do estado real do repositório — painel na versão **v11.23** (05/10/2026), compartilhada por `biobel-shell.js` entre as 8 páginas.
 
 ## Páginas do painel (8)
 | Arquivo | data-biobel-page | id do conteúdo | Tamanho | IDs no HTML | Scripts locais próprios |
 |---|---|---|---|---|---|
-| `dashboard.html` | `dashboard` | `dashboardTab` | 14 KB | 39 | — |
+| `dashboard.html` | `dashboard` | `dashboardTab` | 37 KB | 67 | — |
 | `operacao.html` | `caixa` | `caixaTab` | 7 KB | 27 | — |
 | `equipe.html` | `equipe` | `equipeTab` | 23 KB | 70 | — |
 | `vendas.html` | `campanhas` | `campanhasTab` | 5 KB | 18 | — |
 | `analises.html` | `info` | `infoTab` | 33 KB | 145 | — |
 | `alertas.html` | `alertas` | `alertasTab` | 3 KB | 11 | — |
-| `config.html` | `config` | `configTab` | 64 KB | 122 | — |
+| `config.html` | `config` | `configTab` | 70 KB | 130 | — |
 | `administracao.html` | `adm` | `admTab` | 84 KB | 168 | — |
 
 ## Mapa de navegação (de `biobel-shell.js`)
@@ -24,7 +24,7 @@ const PAGES={dashboard:"dashboard.html",caixa:"operacao.html",equipe:"equipe.htm
 ## Arquivos JavaScript compartilhados
 | Arquivo | Tamanho | Funções (aprox.) | Usado em |
 |---|---|---|---|
-| `biobel-app.js` | 741 KB | 739 | todas as 8 páginas |
+| `biobel-app.js` | 744 KB | 741 | todas as 8 páginas |
 | `biobel-shell.js` | 13 KB | 3 | todas as 8 páginas |
 | `central-operacional.js` | 43 KB | 16 |  |
 | `inteligencia-operacional.js` | 12 KB | 13 | dashboard.html |
@@ -36,7 +36,7 @@ const PAGES={dashboard:"dashboard.html",caixa:"operacao.html",equipe:"equipe.htm
 | login.html | 5 KB |
 | biobel-design-system.css | 7 KB |
 | biobel-ux-refinement.css | 41 KB |
-| biobel-app.css | 76 KB |
+| biobel-app.css | 77 KB |
 | service-worker.js | 3 KB |
 
 ## Seções do código JavaScript em `biobel-app.js` (comentários `/* ===== Nome ===== */`)
