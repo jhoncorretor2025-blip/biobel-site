@@ -1401,3 +1401,13 @@ body.light-mode .biobel-prod-modal-close{background:#f1f4f7;color:#334155;border
 body.light-mode .biobel-summary-kpis>div{background:#f7f9fb;border-color:#dce3eb}
 @media(max-width:900px){.biobel-prod-grid{grid-template-columns:1fr 1fr}.biobel-prod-next{grid-column:1/-1}}
 @media(max-width:620px){.biobel-prod-head{align-items:flex-start}.biobel-prod-clock{display:none}.biobel-prod-grid{grid-template-columns:1fr}.biobel-prod-form-grid{grid-template-columns:1fr}.biobel-summary-kpis{grid-template-columns:1fr 1fr}.biobel-prod-modal-card{padding:16px}}
+
+
+/* v11.24 — seleção obrigatória da rotina */
+.biobel-930-choice{cursor:pointer;transition:.15s;border-color:#263d5b}
+.biobel-930-choice:hover{border-color:#3d5f86;background:#132640}
+.biobel-930-choice input{position:absolute;opacity:0;pointer-events:none}
+.biobel-930-choice:has(input:checked){border-color:#27d7a0;background:rgba(39,215,160,.09);box-shadow:0 0 0 1px rgba(39,215,160,.18)}
+.biobel-930-choice:has(input:checked) .biobel-930-check{color:#27d7a0}
+.biobel-930-choice-warning{margin-top:10px;font-size:11px;color:#fbbf24;font-weight:800}
+.biobel-930-ok:disabled{cursor:not-allowed;filter:grayscale(.25)}
