@@ -122,7 +122,7 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
    </details>
    <details class="biobel-section-compact" open>
     <summary>📈 Comparativo diário <span id="kpiComparativoResumo" style="font-weight:700;color:#93a3ba;">Hoje × ontem</span></summary>
-    <div class="biobel-compare-scroll" style="overflow-x:auto;"><table class="biobel-compare-table"><thead><tr><th>Métrica</th><th>Hoje</th><th>Ontem</th><th>Média anterior</th><th>Variação</th></tr></thead><tbody id="kpiComparativoBody"></tbody></table></div>
+    <div class="biobel-compare-scroll" style="overflow-x:auto;"><table class="biobel-compare-table"><thead><tr><th>Métrica</th><th>Hoje</th><th id="kpiComparativoAnteriorHeader">Dia útil anterior</th><th>Média anterior</th><th>Variação</th></tr></thead><tbody id="kpiComparativoBody"></tbody></table></div>
    </details>
    <details class="biobel-section-compact">
     <summary>📅 Calendário comercial <span style="font-weight:700;color:#93a3ba;">próximos eventos</span></summary>
@@ -330,7 +330,24 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
  function lider(d){const v=d?.vendedoras||{};return Object.keys(v).map(n=>({n,v:Number(v[n])||0})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v)[0];}
  function renderCompact(){
   try{
-   const a=arrData(), hoje=diaHoje(a), idx=a.indexOf(hoje), ontem=idx>0?a[idx-1]:null, anteriores=a.slice(Math.max(0,idx-4),idx).filter(Boolean);
+   const a=arrData(), hoje=diaHoje(a), idx=a.indexOf(hoje);
+   // REGRA COMERCIAL BIOBEL: domingos nunca entram em comparativos.
+   // Na segunda-feira, o "dia anterior" válido é sábado (ou o último dia não-domingo disponível).
+   const ehDomingo=(d)=>{
+    if(!d) return false;
+    const partes=String(d.dia||'').split('.');
+    if(partes.length!==2) return false;
+    const diaNum=Number(partes[0]), mesNum=Number(partes[1]);
+    if(!Number.isFinite(diaNum)||!Number.isFinite(mesNum)) return false;
+    const anoRef=new Date().getFullYear();
+    return new Date(anoRef,mesNum-1,diaNum).getDay()===0;
+   };
+   let idxAnterior=idx-1;
+   while(idxAnterior>=0 && ehDomingo(a[idxAnterior])) idxAnterior--;
+   const ontem=idxAnterior>=0?a[idxAnterior]:null;
+   const anteriores=a.slice(Math.max(0,idx-6),idx)
+    .filter(d=>d && !ehDomingo(d))
+    .slice(-4);
    const total=val(hoje), qtd=nAt(hoje), ticket=qtd?total/qtd:0, l=lider(hoje), x=cfg();
    const metaTotal=Number(localStorage.getItem('biobel_sales_goal')||50000)||50000;
    const acumulado=a.reduce((s,d)=>s+val(d),0), pct=metaTotal?(acumulado/metaTotal*100):0, falta=Math.max(0,metaTotal-acumulado);
@@ -352,6 +369,10 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
     '<tr><td>Atendimentos</td><td>'+qtd+'</td><td>'+qtdOnt+'</td><td>—</td><td>'+(qtd>=x.minimo?'🟢 dentro/acima da faixa':'🔻 abaixo de '+x.minimo)+'</td></tr>'+
     '<tr><td>Ticket médio</td><td>'+moeda(ticket)+'</td><td>'+moeda(qtdOnt?val(ontem)/qtdOnt:0)+'</td><td>—</td><td>—</td></tr>';
    document.getElementById('kpiComparativoResumo').textContent=total>=media?'Hoje acima da média':'Hoje abaixo da média';
+   const anteriorHeader=document.getElementById('kpiComparativoAnteriorHeader');
+   if(anteriorHeader){
+    anteriorHeader.textContent=ontem?.dia ? 'Anterior ('+String(ontem.dia)+')' : 'Dia útil anterior';
+   }
    const body=document.getElementById('kpiAlertasBody'), alertas=[];
    a.forEach(d=>{if(d?.vendasSemHorario>0)alertas.push([d.dia,'Horário ausente na coluna L',d.vendasSemHorario+' venda(s)','Conferir planilha']);});
    if(qtd>0&&qtd<x.minimo)alertas.push([hoje?.dia||'Hoje','Atendimentos abaixo da referência',qtd+' atendimento(s)','Acompanhar movimento']);
