@@ -1,3 +1,11 @@
+## v11.26 — 05/10/2026
+- **Correção de regressão na atualização da planilha.** A leitura direta do Google Sheets voltou a ser o caminho principal, preservando o comportamento que já funcionava antes das melhorias recentes.
+- A ponte do Google Apps Script agora é usada como segunda alternativa, e todas as chamadas externas possuem **tempo limite**, evitando que o cabeçalho permaneça indefinidamente em “Conectando...”.
+- O modo de recuperação por Google Visualization permanece como terceiro recurso.
+- O sistema guarda a **última leitura bem-sucedida** no navegador e a mantém visível quando uma atualização temporária falhar; uma falha de sincronização não transforma os indicadores em zero.
+- Atualização automática continua a cada 60 segundos e pode ser acionada manualmente pelo botão/atalho existente.
+- Cache do PWA renovado para **v11.26**.
+
 ## v11.25 — 05/10/2026
 - **Corrigida a leitura da planilha do Google no painel.** Quando o download direto do XLSX ou a ponte do Google Apps Script falhar, o sistema tenta automaticamente um modo de recuperação pelas abas diárias do Google Visualization.
 - A recuperação lê as abas do mês atual, reconstrói os dados usando o mesmo processador do sistema e só substitui os dados depois que a leitura encontra informações válidas.
