@@ -1,8 +1,10 @@
-/* Biobel — shell compartilhado. v11.38 */
-const BIOBEL_VERSION="v11.38";
+/* Biobel — shell compartilhado. v11.39 */
+const BIOBEL_VERSION="v11.39";
 (function(){
 "use strict";
 const PAGES={dashboard:"dashboard.html",caixa:"operacao.html",equipe:"equipe.html",campanhas:"vendas.html",info:"analises.html",alertas:"alertas.html",config:"config.html",adm:"administracao.html",backup:"backup.html"};
+let _resolveBiobelModulesReady,_rejectBiobelModulesReady;
+window.biobelModulesReady=new Promise((resolve,reject)=>{_resolveBiobelModulesReady=resolve;_rejectBiobelModulesReady=reject;});
 window.BIOBEL_PAGES=PAGES;
 const p=document.body&&document.body.dataset?document.body.dataset.biobelPage:"dashboard";
 const ROOT=(document.body&&document.body.dataset&&document.body.dataset.biobelRoot)||"./";
@@ -95,10 +97,35 @@ function montar(){
   const btn=document.getElementById("btnMobileMoreBiobel");if(btn)btn.setAttribute("aria-expanded",abrir?"true":"false");
  };
  configurarShellNavegacaoInterna();
- if(!document.querySelector('script[data-biobel-module="recognition"]')){ const s=document.createElement("script"); s.src=ROOT+"biobel-recognition.js?v=11.31"; s.dataset.biobelModule="recognition"; document.head.appendChild(s); }
- if(!document.querySelector('script[data-biobel-module="planilha-leitura"]')){ const s=document.createElement("script"); s.src=ROOT+"biobel-planilha-leitura.js?v=11.33"; s.dataset.biobelModule="planilha-leitura"; document.head.appendChild(s); }
- if(!document.querySelector('script[data-biobel-module="planilha-processamento"]')){ const s=document.createElement("script"); s.src=ROOT+"biobel-planilha-processamento.js?v=11.34"; s.dataset.biobelModule="planilha-processamento"; document.head.appendChild(s); }
- if(!document.querySelector('script[data-biobel-module="planilha-comparacao"]')){ const s=document.createElement("script"); s.src=ROOT+"biobel-planilha-comparacao.js?v=11.32"; s.dataset.biobelModule="planilha-comparacao"; document.head.appendChild(s); }
+ function carregarModuloBiobel(src,identificador){
+  return new Promise((resolve,reject)=>{
+   const existente=document.querySelector('script[data-biobel-module="'+identificador+'"]');
+   if(existente){
+    if(existente.dataset.loaded==="yes"){resolve();return;}
+    existente.addEventListener('load',()=>{existente.dataset.loaded="yes";resolve();},{once:true});
+    existente.addEventListener('error',()=>reject(new Error('Falha ao carregar '+identificador)),{once:true});
+    return;
+   }
+   const script=document.createElement("script");
+   script.src=src;
+   script.dataset.biobelModule=identificador;
+   script.onload=()=>{script.dataset.loaded="yes";resolve();};
+   script.onerror=()=>reject(new Error('Falha ao carregar '+identificador));
+   document.head.appendChild(script);
+  });
+}
+(async function carregarModulosBiobel(){
+ try{
+  await carregarModuloBiobel(ROOT+"biobel-recognition.js?v=11.31","recognition");
+  await carregarModuloBiobel(ROOT+"biobel-planilha-leitura.js?v=11.33","planilha-leitura");
+  await carregarModuloBiobel(ROOT+"biobel-planilha-processamento.js?v=11.34","planilha-processamento");
+  await carregarModuloBiobel(ROOT+"biobel-planilha-comparacao.js?v=11.32","planilha-comparacao");
+  _resolveBiobelModulesReady();
+ }catch(err){
+  console.error("Biobel: falha ao carregar módulos compartilhados.",err);
+  _rejectBiobelModulesReady(err);
+ }
+})();
  m.dataset.ready="yes";
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",montar,{once:true});else montar();
