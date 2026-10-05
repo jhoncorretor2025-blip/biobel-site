@@ -1,3 +1,9 @@
+## v11.32 — 05/10/2026
+- Modularização incremental da planilha: a rotina `lerDadosPlanilhaSemAtivar()`, usada para carregar meses históricos para comparação sem trocar a planilha ativa, foi movida para `biobel-planilha-comparacao.js`.
+- Mantidas as dependências e o processamento existente por `processarLinhasDoDia()`, incluindo os caminhos Apps Script e XLSX.
+- O carregamento principal da planilha, `loadGoogleSheet()`, não foi alterado nesta etapa.
+- Cache PWA atualizado para v11.32.
+
 ## v11.31 — 05/10/2026
 - Modularização segura: reconhecimento motivacional de vendas separado do núcleo `biobel-app.js` para `biobel-recognition.js`.
 - Mantidas as funções públicas `mostrarReconhecimentoVenda()` e `verificarVendasMotivacionais()` e a chave `biobel_vendas_motivacionais_v2`.
