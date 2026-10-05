@@ -1315,3 +1315,41 @@ body.light-mode .biobel-search-result small{color:#64748b}
 }
 
 
+
+
+/* v11.23 — lembrete fixo de rotina das 09:30 */
+#lembreteAtividades930{position:fixed;inset:0;z-index:10050;display:flex;align-items:center;justify-content:center;padding:18px;font-family:Inter,system-ui,sans-serif}
+.biobel-930-backdrop{position:absolute;inset:0;background:rgba(2,8,23,.78);backdrop-filter:blur(3px)}
+.biobel-930-card{position:relative;width:min(680px,100%);max-height:min(86vh,760px);overflow:auto;background:#0d1a2c;border:2px solid #f59e0b;border-radius:20px;box-shadow:0 24px 70px rgba(0,0,0,.55);padding:24px;color:#eef5ff;animation:biobel930CardIn .25s ease-out}
+.biobel-930-pulse{display:inline-flex;align-items:center;gap:7px;background:#f59e0b;color:#241300;border-radius:999px;padding:7px 12px;font-size:11px;font-weight:950;letter-spacing:.04em;animation:biobel930Blink 1s infinite}
+.biobel-930-card h2{font-size:23px;line-height:1.2;margin:15px 42px 7px 0;font-weight:950;color:#fff}
+.biobel-930-sub{font-size:12px;line-height:1.5;color:#a9bad0;margin:0 0 16px}
+.biobel-930-close{position:absolute;right:14px;top:12px;width:34px;height:34px;border:1px solid #334a68;background:#14263e;color:#dce8f7;border-radius:10px;font-size:24px;line-height:1;cursor:pointer}
+.biobel-930-list{display:grid;gap:8px}
+.biobel-930-item{display:flex;gap:11px;align-items:flex-start;padding:11px 12px;border:1px solid #263d5b;background:#102139;border-radius:12px}
+.biobel-930-item strong{display:block;font-size:12.5px;color:#f3f7fc;line-height:1.35}
+.biobel-930-item small{display:block;margin-top:4px;color:#7f94ad;font-size:10.5px}
+.biobel-930-check{font-size:22px;color:#27d7a0;line-height:1}
+.biobel-930-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:16px;padding-top:14px;border-top:1px solid #243951;color:#93a3ba;font-size:11px}
+.biobel-930-ok{border:0;background:#0ea97a;color:#fff;border-radius:11px;padding:10px 14px;font-weight:900;cursor:pointer;white-space:nowrap}
+@keyframes biobel930Blink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.48;transform:scale(.98)}}
+@keyframes biobel930CardIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+body.light-mode .biobel-930-backdrop{background:rgba(15,23,42,.42)}
+body.light-mode .biobel-930-card{background:#fff;border-color:#f59e0b;color:#0f172a}
+body.light-mode .biobel-930-card h2{color:#0f172a}
+body.light-mode .biobel-930-sub{color:#52657c}
+body.light-mode .biobel-930-item{background:#f7f9fb;border-color:#dce3eb}
+body.light-mode .biobel-930-item strong{color:#172033}
+body.light-mode .biobel-930-item small{color:#64748b}
+body.light-mode .biobel-930-close{background:#f1f4f7;border-color:#cbd5e1;color:#334155}
+body.light-mode .biobel-930-footer{border-color:#e2e8f0}
+@media(max-width:620px){
+ #lembreteAtividades930{padding:10px}
+ .biobel-930-card{padding:18px;border-radius:16px;max-height:92vh}
+ .biobel-930-card h2{font-size:19px}
+ .biobel-930-footer{flex-direction:column;align-items:stretch}
+ .biobel-930-ok{width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+ .biobel-930-pulse,.biobel-930-card{animation:none}
+}
