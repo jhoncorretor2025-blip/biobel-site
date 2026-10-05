@@ -1,3 +1,9 @@
+## v11.36 — 05/10/2026
+- Removidas declarações duplicadas antigas do núcleo `biobel-app.js`.
+- Mantida a versão efetivamente ativa das rotinas de lembrete 09:30, formatação de horários, atualização automática da planilha e próxima ação.
+- O comportamento executado pelo navegador permanece o da última declaração existente antes da limpeza.
+- Cache PWA e versão do shell atualizados para v11.36.
+
 ## v11.35 — 05/10/2026
 - Extratores de vendas, pagamentos, horários, turnos, produtos, gênero, vendedores e fechamento de caixa foram concentrados em `biobel-planilha-processamento.js`.
 - Utilitários específicos da transformação das linhas da planilha também saíram do núcleo, reduzindo o acoplamento do `biobel-app.js`.
