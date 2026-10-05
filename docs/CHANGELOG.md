@@ -1,3 +1,10 @@
+## v11.42 — 05/10/2026
+- Corrigido o selo de versão da Visão Geral, que estava fixo em v11.31 apesar do sistema já estar em v11.41.
+- O selo da página agora é sincronizado automaticamente com a versão central do shell.
+- Corrigido o fluxo de carregamento da planilha para que falhas no carregamento dos módulos não deixem o painel preso indefinidamente em “Conectando...”.
+- Adicionado limite de 12 segundos para carregamento de módulos compartilhados e tratamento seguro do erro.
+- Mantidos os dados, regras de negócio e fallbacks existentes da leitura da planilha.
+
 ## v11.41 — 05/10/2026
 - Auditoria estrutural final da modularização: não restam declarações duplicadas de funções no `biobel-app.js`.
 - O núcleo mantém somente a coordenação da aplicação; leitura, comparação, processamento e extratores da planilha ficam em módulos dedicados.

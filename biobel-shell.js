@@ -1,5 +1,5 @@
 /* Biobel — shell compartilhado. v11.41 */
-const BIOBEL_VERSION="v11.41";
+const BIOBEL_VERSION="v11.42";
 (function(){
 "use strict";
 const PAGES={dashboard:"dashboard.html",caixa:"operacao.html",equipe:"equipe.html",campanhas:"vendas.html",info:"analises.html",alertas:"alertas.html",config:"config.html",adm:"administracao.html",backup:"backup.html"};
@@ -97,20 +97,26 @@ function montar(){
   const btn=document.getElementById("btnMobileMoreBiobel");if(btn)btn.setAttribute("aria-expanded",abrir?"true":"false");
  };
  configurarShellNavegacaoInterna();
+ const versaoTela=document.getElementById("versaoSistemaTela");
+ if(versaoTela) versaoTela.textContent=BIOBEL_VERSION;
  function carregarModuloBiobel(src,identificador){
   return new Promise((resolve,reject)=>{
+   let finalizado=false;
+   const limite=setTimeout(()=>{if(finalizado)return;finalizado=true;reject(new Error('Tempo esgotado ao carregar '+identificador));},12000);
+   const concluir=()=>{if(finalizado)return;finalizado=true;clearTimeout(limite);resolve();};
+   const falhar=()=>{if(finalizado)return;finalizado=true;clearTimeout(limite);reject(new Error('Falha ao carregar '+identificador));};
    const existente=document.querySelector('script[data-biobel-module="'+identificador+'"]');
    if(existente){
-    if(existente.dataset.loaded==="yes"){resolve();return;}
-    existente.addEventListener('load',()=>{existente.dataset.loaded="yes";resolve();},{once:true});
-    existente.addEventListener('error',()=>reject(new Error('Falha ao carregar '+identificador)),{once:true});
+    if(existente.dataset.loaded==="yes"){concluir();return;}
+    existente.addEventListener('load',()=>{existente.dataset.loaded="yes";concluir();},{once:true});
+    existente.addEventListener('error',falhar,{once:true});
     return;
    }
    const script=document.createElement("script");
    script.src=src;
    script.dataset.biobelModule=identificador;
-   script.onload=()=>{script.dataset.loaded="yes";resolve();};
-   script.onerror=()=>reject(new Error('Falha ao carregar '+identificador));
+   script.onload=()=>{script.dataset.loaded="yes";concluir();};
+   script.onerror=falhar;
    document.head.appendChild(script);
   });
 }

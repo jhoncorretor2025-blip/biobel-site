@@ -13073,18 +13073,21 @@ async function loadGoogleSheet(){
   return;
  }
  carregandoPlanilha=true;
- if(window.biobelModulesReady&&typeof window.biobelModulesReady.then==='function') await window.biobelModulesReady;
- const url=getGoogleUrl();
- const id=extractSpreadsheetId(url);
- if(!id){
-  carregandoPlanilha=false;
-  return setGoogleStatus('link inválido.',false,'error');
- }
- setGoogleStatus('atualizando a planilha...',false,'connecting');
- setRefreshButtonsLoading(true);
-
  let ultimoErro=null;
  try{
+  if(window.biobelModulesReady&&typeof window.biobelModulesReady.then==='function'){
+   await Promise.race([
+    window.biobelModulesReady,
+    new Promise((_,reject)=>setTimeout(()=>reject(new Error('Tempo esgotado ao carregar os módulos do Biobel.')),12000))
+   ]);
+  }
+  const url=getGoogleUrl();
+  const id=extractSpreadsheetId(url);
+  if(!id){
+   return setGoogleStatus('link inválido.',false,'error');
+  }
+  setGoogleStatus('atualizando a planilha...',false,'connecting');
+  setRefreshButtonsLoading(true);
   // 1) Ponte Apps Script, quando existir. Se falhar, preserva o fallback para XLSX.
   const proxyUrl=getAppsScriptProxyUrl();
   if(proxyUrl){
