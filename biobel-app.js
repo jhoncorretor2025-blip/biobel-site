@@ -205,47 +205,11 @@ function chaveDiaLembrete930(){
  return String(agora.getFullYear())+'-'+String(agora.getMonth()+1).padStart(2,'0')+'-'+String(agora.getDate()).padStart(2,'0');
 }
 
-function fecharLembreteAtividades930(){
- const el=document.getElementById('lembreteAtividades930');
- if(el) el.remove();
- try{localStorage.setItem(BIOBEL_LEMBRETE_930_KEY,chaveDiaLembrete930());}catch(e){}
-}
 
-function abrirLembreteAtividades930(){
- const atividades=atividadesDoDiaLembrete();
- if(!atividades.length) return;
- fecharLembreteAtividades930();
- const el=document.createElement('div');
- el.id='lembreteAtividades930';
- el.setAttribute('role','alertdialog');
- el.setAttribute('aria-label','Atividades de hoje');
- el.innerHTML=`
-  <div class="biobel-930-backdrop"></div>
-  <div class="biobel-930-card">
-   <button class="biobel-930-close" onclick="fecharLembreteAtividades930()" aria-label="Fechar">×</button>
-   <div class="biobel-930-pulse">⏰ 09:30 — HORA DE ORGANIZAR O DIA</div>
-   <h2>📋 Quais atividades você está fazendo hoje?</h2>
-   <p class="biobel-930-sub">Confira a rotina de hoje antes de continuar. Assim a equipe sabe o que precisa ser feito e evita perder tempo sem uma tarefa definida.</p>
-   <div class="biobel-930-list">
-    ${atividades.map((a,i)=>`<div class="biobel-930-item"><span class="biobel-930-check">□</span><div><strong>${a.texto.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</strong><small>👤 ${a.quem}</small></div></div>`).join('')}
-   </div>
-   <div class="biobel-930-footer">
-    <span>📌 ${atividades.length} atividades previstas para hoje</span>
-    <button onclick="fecharLembreteAtividades930()" class="biobel-930-ok">✅ Conferi minha rotina</button>
-   </div>
-  </div>`;
- document.body.appendChild(el);
-}
 
-function verificarLembreteAtividades930(){
- try{
-  const agora=typeof obterAgoraBrasilia==='function'?obterAgoraBrasilia():new Date();
-  const minutos=agora.getHours()*60+agora.getMinutes();
-  const chave=chaveDiaLembrete930();
-  const ultimo=localStorage.getItem(BIOBEL_LEMBRETE_930_KEY);
-  if(minutos>=570 && ultimo!==chave) abrirLembreteAtividades930();
- }catch(e){console.warn('Lembrete 09:30:',e);}
-}
+
+
+
 
 (function iniciarLembreteAtividades930(){
  setTimeout(verificarLembreteAtividades930,1800);
@@ -10369,15 +10333,8 @@ function renderVendasPorPeriodo(){
   }).join('');
  }
 }
-function minutosParaTexto(min){
- const m=Math.max(0,Math.round(min));
- const h=Math.floor(m/60),mm=m%60;
- return h>0?h+'h '+String(mm).padStart(2,'0')+'min':m+'min';
-}
-function formatarHoraMinutos(min){
- const h=Math.floor(min/60),m=min%60;
- return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
-}
+
+
 function minutosParaTexto(min){
  const m=Math.max(0,Math.round(min));
  const h=Math.floor(m/60),mm=m%60;
@@ -13212,10 +13169,7 @@ async function loadGoogleSheet(){
   atualizarNomePlanilhaAtiva();
  }
 }
-function startGoogleAutoRefresh(){
- if(googleTimer) clearInterval(googleTimer);
- googleTimer=setInterval(loadGoogleSheet,60000);
-}
+
 (function initGoogleConfig(){
  const saved=localStorage.getItem('biobel_google_sheet_url');
  const input=document.getElementById('googleSheetUrl');
@@ -13320,7 +13274,7 @@ function nomeDiaRotinaAtual(){const d=typeof obterAgoraBrasilia==='function'?obt
 function escaparHtmlBiobel(txt){return String(txt??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function obterProximaAcaoBiobel(){const dia=nomeDiaRotinaAtual(),a=[];(Array.isArray(rotinaDiariaBase)?rotinaDiariaBase:[]).forEach((x,i)=>{if(!isEquipeChecked('diaria',i))a.push({escopo:'diaria',index:i,text:x.texto,quem:x.quem||'Equipe'});});if(dia&&rotinaSemanal?.[dia])['gabi','dai'].forEach(q=>(rotinaSemanal[dia][q]||[]).forEach((x,i)=>{if(!isEquipeChecked(dia+'_'+q,i))a.push({escopo:dia+'_'+q,index:i,text:x,quem:q==='gabi'?'Gabi':'Day'});}));return a[0]||null;}
 function renderProximaAcaoBiobel(){const t=document.getElementById('biobelProximaAcaoTitulo'),m=document.getElementById('biobelProximaAcaoMeta'),b=document.getElementById('biobelProximaAcaoBtn');if(!t)return;const a=obterProximaAcaoBiobel();if(!a){t.textContent='🎉 Todas as tarefas previstas estão concluídas!';m.textContent='A rotina de hoje está em dia.';if(b){b.disabled=true;b.textContent='✅ Dia em dia';}return;}t.textContent=a.text;m.textContent='👤 '+a.quem+' · '+(a.escopo==='diaria'?'Rotina diária':'Rotina de '+nomeDiaRotinaAtual());if(b){b.disabled=false;b.textContent='✅ Concluí';}}
-function concluirProximaAcao(){const a=obterProximaAcaoBiobel();if(!a)return;localStorage.setItem(equipeCheckKey(a.escopo,a.index),'yes');registrarAssinatura(equipeCheckKey(a.escopo,a.index),true);renderProximaAcaoBiobel();if(typeof renderEquipeRotinaDiaria==='function')renderEquipeRotinaDiaria();if(typeof renderEquipeDia==='function'&&nomeDiaRotinaAtual())renderEquipeDia(nomeDiaRotinaAtual());mostrarToast('✅ Tarefa concluída! Próxima ação carregada.');}
+
 function obterPassagensTurno(){try{return JSON.parse(localStorage.getItem(BIOBEL_TURNO_KEY)||'[]');}catch(e){return [];}}
 function salvarPassagemTurno(){const g=id=>(document.getElementById(id)?.value||'').trim(),d={data:chaveDataBiobelOperacional(),quando:new Date().toISOString(),de:g('turnoPassaDe'),para:g('turnoPassaPara'),cliente:g('turnoCliente'),estoque:g('turnoEstoque'),pendencia:g('turnoPendencia'),observacao:g('turnoObservacao')};if(!Object.values(d).some((v,i)=>i>1&&v)){mostrarToast('⚠️ Preencha pelo menos uma informação da passagem.');return;}const l=obterPassagensTurno().filter(x=>x.data!==d.data);l.push(d);localStorage.setItem(BIOBEL_TURNO_KEY,JSON.stringify(l.slice(-30)));fecharPassagemTurno();renderPassagemTurno();mostrarToast('✅ Passagem de turno salva.');}
 function abrirPassagemTurno(){const e=document.getElementById('biobelPassagemTurnoModal');if(e)e.style.display='flex';const x=obterPassagensTurno().find(v=>v.data===chaveDataBiobelOperacional());if(x)['de','para','cliente','estoque','pendencia','observacao'].forEach(k=>{const el=document.getElementById('turno'+k.charAt(0).toUpperCase()+k.slice(1));if(el)el.value=x[k]||'';});}
