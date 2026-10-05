@@ -1,3 +1,11 @@
+## v11.33 — 05/10/2026
+- Leitura principal da planilha modularizada em `biobel-planilha-leitura.js`, retirando do núcleo as rotinas de Apps Script, XLSX e Google Visualization.
+- `loadGoogleSheet()` passa a atuar como orquestrador, preservando a ordem de fallback **Apps Script → XLSX**, o bloqueio de leituras simultâneas e os efeitos após atualização bem-sucedida.
+- Ajustado o timeout explícito da ponte principal para manter os 9 segundos usados antes da modularização.
+- Removida a declaração duplicada de `fetchBiobelComTimeout()`; chamadas de rede continuam com seus timeouts explícitos.
+- Nenhuma lógica de `processarLinhasDoDia()`, impressão, armazenamento de vendas ou interface de negócio foi alterada nesta etapa.
+- Cache PWA atualizado para v11.33.
+
 ## v11.32 — 05/10/2026
 - Modularização incremental da planilha: a rotina `lerDadosPlanilhaSemAtivar()`, usada para carregar meses históricos para comparação sem trocar a planilha ativa, foi movida para `biobel-planilha-comparacao.js`.
 - Mantidas as dependências e o processamento existente por `processarLinhasDoDia()`, incluindo os caminhos Apps Script e XLSX.
