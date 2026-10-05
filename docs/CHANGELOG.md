@@ -1,3 +1,9 @@
+## v11.25 — 05/10/2026
+- **Corrigida a leitura da planilha do Google no painel.** Quando o download direto do XLSX ou a ponte do Google Apps Script falhar, o sistema tenta automaticamente um modo de recuperação pelas abas diárias do Google Visualization.
+- A recuperação lê as abas do mês atual, reconstrói os dados usando o mesmo processador do sistema e só substitui os dados depois que a leitura encontra informações válidas.
+- O Service Worker recebeu novo identificador de cache para forçar a atualização dos arquivos da v11.25.
+- A versão **v11.25** passou a ser exibida de forma consistente no cabeçalho e na tela inicial.
+
 ## v11.23 — 05/10/2026
 - **Impressão do recibo refeita de forma estrutural.** Causa da folha em branco (reproduzida em teste nas versões anteriores a 05/10, em A4, Carta, térmica 80 mm e 58 mm): `body.receipt-printing > *:not(#printReceipt){display:none}` esconde todo filho direto do `<body>`, mas o `#printReceipt` ficava DENTRO de um painel — o painel era escondido e o recibo ia junto (um `display:none` no pai vence qualquer `display:block!important` no filho).
 - `garantirAreaRecibo()` (biobel-app.js): o recibo é sempre filho direto do `<body>`, criado na hora em páginas que não o têm. Isso também corrige **imprimir a semana da Equipe** e **Alt+P no Dashboard (mensal)**, que davam `Cannot set properties of null` desde a divisão em páginas (o `#printReceipt` só existia em `operacao.html`).
