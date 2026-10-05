@@ -11661,8 +11661,26 @@ function registrarHorarioFechamentoNuvem(diaSelecionado){
  tentarEnviarHorarioFechamentoPendente();
 }
 function startReceiptPrint(type){
+ const receipt=document.getElementById('printReceipt');
+ const parentOriginal=receipt?.parentElement||null;
+ const nextOriginal=receipt?.nextSibling||null;
+
+ // O recibo fica dentro do painel de Caixa. Para a impressão, ele precisa ficar
+ // diretamente no body; assim o painel ocultado pelo CSS não esconde o recibo.
+ if(receipt && receipt.parentElement!==document.body){
+  document.body.appendChild(receipt);
+ }
  document.body.classList.add('receipt-printing');
- window.onafterprint=()=>document.body.classList.remove('receipt-printing');
+
+ const finalizarImpressao=()=>{
+  document.body.classList.remove('receipt-printing');
+  if(receipt && parentOriginal){
+   if(nextOriginal && nextOriginal.parentNode===parentOriginal) parentOriginal.insertBefore(receipt,nextOriginal);
+   else parentOriginal.appendChild(receipt);
+  }
+  window.onafterprint=null;
+ };
+ window.onafterprint=finalizarImpressao;
 
  // Só registra os botões de fechamento diário. Relatórios mensais/PDF não alteram O26.
  if(type==='daily-simple' || type==='daily-complete'){
