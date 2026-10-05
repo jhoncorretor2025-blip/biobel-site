@@ -1,3 +1,9 @@
+## v11.27 — 05/10/2026
+- Correção de atualização do dashboard: os scripts compartilhados da tela inicial passaram a usar identificadores de versão na URL (?v=11.27), reduzindo o risco de o navegador/PWA executar JavaScript antigo.
+- Versão e cache do PWA atualizados para v11.27.
+- Mantida a leitura direta do Google Sheets como primeiro caminho, com ponte Apps Script e recuperação como alternativas.
+- Mantida a proteção para nunca substituir dados válidos por zeros quando uma sincronização falhar.
+
 ## v11.26 — 05/10/2026
 - **Correção de regressão na atualização da planilha.** A leitura direta do Google Sheets voltou a ser o caminho principal, preservando o comportamento que já funcionava antes das melhorias recentes.
 - A ponte do Google Apps Script agora é usada como segunda alternativa, e todas as chamadas externas possuem **tempo limite**, evitando que o cabeçalho permaneça indefinidamente em “Conectando...”.
