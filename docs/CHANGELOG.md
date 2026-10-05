@@ -1,3 +1,10 @@
+## v11.41 — 05/10/2026
+- Auditoria estrutural final da modularização: não restam declarações duplicadas de funções no `biobel-app.js`.
+- O núcleo mantém somente a coordenação da aplicação; leitura, comparação, processamento e extratores da planilha ficam em módulos dedicados.
+- Cache-busting final alinhado para v11.41 em todas as páginas e módulos compartilhados.
+- Registro do Service Worker e cache PWA alinhados para v11.41.
+- Mantidos os comportamentos de impressão, armazenamento, menus, formulários e regras de negócio existentes.
+
 ## v11.40 — 05/10/2026
 - Unificada a conversão dos valores de pagamento das linhas de venda com `valorPagamentoDaLinha()`.
 - Extratores de vendedores, quantidade de vendas, vendas individuais e tipos de venda agora aceitam tanto números quanto valores em texto, inclusive formatos monetários como `R$ 450,00`.
