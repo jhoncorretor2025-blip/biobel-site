@@ -1,3 +1,9 @@
+## v11.38 — 05/10/2026
+- Versões dos scripts compartilhados alinhadas nas páginas do painel para v11.38.
+- Registro do Service Worker deixou de apontar para a versão antiga v10.66 e passou a acompanhar o sistema atual.
+- Mantido o cache PWA em v11.38.
+- Nenhuma regra de negócio ou cálculo foi alterada nesta etapa.
+
 ## v11.37 — 05/10/2026
 - Removido o bloco legado do lembrete 09:30, incluindo seus helpers e seu segundo timer.
 - Mantida a implementação atual do assistente operacional 09:30, que usa as atividades escolhidas e concluídas do dia.
