@@ -1,3 +1,10 @@
+## v11.28 — 05/10/2026
+- Correção da leitura dos dados do Google Sheets usando o endpoint Google Visualization como caminho principal para as abas diárias DD.MM.
+- Mantidos os caminhos alternativos por XLSX e Apps Script, com proteção contra travamentos.
+- O dashboard continua preservando a última leitura válida quando uma sincronização falha.
+- A estrutura de cada aba diária continua sendo processada pela mesma função central processarLinhasDoDia usada nas demais leituras.
+- Versão/cache atualizados para v11.28.
+
 ## v11.27 — 05/10/2026
 - Correção de atualização do dashboard: os scripts compartilhados da tela inicial passaram a usar identificadores de versão na URL (?v=11.27), reduzindo o risco de o navegador/PWA executar JavaScript antigo.
 - Versão e cache do PWA atualizados para v11.27.
