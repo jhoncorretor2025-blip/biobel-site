@@ -13692,6 +13692,62 @@ async function carregarMesAtualViaGviz(spreadsheetId){
  });
 }
 
+function parseGoogleVisualizationJson(texto){
+ const bruto=String(texto||'').trim();
+ const inicio=bruto.indexOf('{');
+ const fim=bruto.lastIndexOf('}');
+ if(inicio<0||fim<=inicio) throw new Error('Resposta do Google Visualization inválida.');
+ const obj=JSON.parse(bruto.slice(inicio,fim+1));
+ if(obj.status==='error') throw new Error(obj.errors?.[0]?.detailed_message || obj.errors?.[0]?.message || 'Google Visualization retornou erro.');
+ const tabela=obj.table;
+ if(!tabela) throw new Error('Google Visualization não retornou tabela.');
+ const cols=Array.isArray(tabela.cols)?tabela.cols:[];
+ const rows=Array.isArray(tabela.rows)?tabela.rows:[];
+ return rows.map(row=>{
+  const out=new Array(cols.length).fill(null);
+  (row?.c||[]).forEach((cell,idx)=>{
+   if(!cell)return;
+   out[idx]=(idx===11 && cell.f!=null) ? cell.f : (cell.v!=null ? cell.v : (cell.f??null));
+  });
+  return out;
+ });
+}
+async function lerAbaGoogleVisualizationDireta(spreadsheetId,sheetName){
+ const url='https://docs.google.com/spreadsheets/d/'+encodeURIComponent(spreadsheetId)+'/gviz/tq?tqx=out:json&sheet='+encodeURIComponent(sheetName)+'&_biobel_cache_bust='+Date.now();
+ const resp=await fetchBiobelComTimeout(url,{cache:'no-store'},10000);
+ if(!resp.ok) throw new Error('Google Visualization HTTP '+resp.status);
+ const texto=await resp.text();
+ const rows=parseGoogleVisualizationJson(texto);
+ if(!rows.length) throw new Error('A aba '+sheetName+' está vazia ou não pode ser lida.');
+ return rows;
+}
+async function carregarPlanilhaViaGoogleVisualizationDireta(spreadsheetId){
+ const agora=typeof obterAgoraBrasilia==='function'?obterAgoraBrasilia():new Date();
+ const mes=String(agora.getMonth()+1).padStart(2,'0');
+ const diaAtual=agora.getDate();
+ const nomes=[];
+ for(let dia=1;dia<=diaAtual;dia++) nomes.push(String(dia).padStart(2,'0')+'.'+mes);
+ const resultados=[];
+ for(let i=0;i<nomes.length;i+=4){
+  const lote=nomes.slice(i,i+4);
+  const lidos=await Promise.all(lote.map(async nome=>{
+   try{
+    const rows=await lerAbaGoogleVisualizationDireta(spreadsheetId,nome);
+    return processarLinhasDoDia(nome,rows);
+   }catch(err){
+    console.warn('Google Visualization direto — '+nome+':',err);
+    return null;
+   }
+  }));
+  lidos.filter(Boolean).forEach(d=>resultados.push(d));
+ }
+ if(!resultados.length) throw new Error('Nenhuma aba diária foi lida diretamente pelo Google.');
+ return resultados.sort((a,b)=>{
+  const [da,ma]=String(a.dia).split('.').map(Number),[db,mb]=String(b.dia).split('.').map(Number);
+  return (ma*100+da)-(mb*100+db);
+ });
+}
+
 function fetchBiobelComTimeout(url, options={}, timeoutMs=12000){
  const controller=new AbortController();
  const timer=setTimeout(()=>controller.abort(),timeoutMs);
@@ -13770,7 +13826,10 @@ async function loadGoogleSheet(){
  carregandoPlanilha=true;
  const url=getGoogleUrl();
  const id=extractSpreadsheetId(url);
- if(!id){carregandoPlanilha=false;return setGoogleStatus('link inválido.',false,'error');}
+ if(!id){
+  carregandoPlanilha=false;
+  return setGoogleStatus('link inválido.',false,'error');
+ }
  setGoogleStatus('atualizando a planilha...',false,'connecting');
  atualizarAvisoErroPlanilha('Atualizando dados da planilha...');
  setPlanilhaLoading(true,'Buscando os dados da planilha...');
@@ -13778,24 +13837,42 @@ async function loadGoogleSheet(){
 
  let ultimoErro=null;
  try{
-  // 1) Caminho principal — mantém o mecanismo que já funcionava: exportação XLSX direta.
+  // 1) NOVO CAMINHO PRINCIPAL: Google Visualization direto.
+  // É específico para Google Sheets e lê as abas DD.MM sem depender do download XLSX.
+  try{
+   const dados=await carregarPlanilhaViaGoogleVisualizationDireta(id);
+   daysData=dados;
+   salvarUltimaLeituraPlanilha(id,dados);
+   render();
+   window.dispatchEvent(new CustomEvent('biobel:data-updated'));
+   setGoogleStatus('conectado ao Google Sheets. '+dados.length+' dia(s) lido(s) às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'.',true);
+   verificarEnvioEmailMensal();
+   sugerirProximaPlanilha();
+   tentarEnviarHorarioFechamentoPendente();
+   return;
+  }catch(errGvizDireto){
+   ultimoErro=errGvizDireto;
+   console.warn('Google Visualization direto falhou:',errGvizDireto);
+  }
+
+  // 2) Caminho já existente: exportação XLSX direta.
   try{
    const dados=await lerPlanilhaDiretaXlsx(id);
    daysData=dados;
    salvarUltimaLeituraPlanilha(id,dados);
    render();
    window.dispatchEvent(new CustomEvent('biobel:data-updated'));
-   setGoogleStatus('conectado. '+dados.length+' dia(s) atualizado(s) às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'.',true);
+   setGoogleStatus('conectado pela exportação da planilha. '+dados.length+' dia(s) atualizado(s).',true);
    verificarEnvioEmailMensal();
    sugerirProximaPlanilha();
    tentarEnviarHorarioFechamentoPendente();
    return;
   }catch(errDireta){
    ultimoErro=errDireta;
-   console.warn('Leitura direta da planilha falhou:',errDireta);
+   console.warn('Leitura XLSX direta falhou:',errDireta);
   }
 
-  // 2) Segunda opção — ponte Apps Script, quando configurada.
+  // 3) Ponte Apps Script, quando configurada.
   const proxyUrl=getAppsScriptProxyUrl();
   if(proxyUrl){
    try{
@@ -13815,7 +13892,7 @@ async function loadGoogleSheet(){
    }
   }
 
-  // 3) Último recurso — Google Visualization por aba, já com timeout individual.
+  // 4) Último recurso: modo JSONP legado.
   try{
    const dados=await carregarMesAtualViaGviz(id);
    daysData=dados;
@@ -13832,9 +13909,8 @@ async function loadGoogleSheet(){
    console.warn('Recuperação Google Sheets falhou:',errFallback);
   }
 
-  // Nunca zera os dados só porque uma atualização falhou.
   const temDados=Array.isArray(daysData)&&daysData.length>0;
-  atualizarAvisoErroPlanilha('Não consegui atualizar agora. Mantive os últimos dados disponíveis. Tente novamente em alguns segundos.');
+  atualizarAvisoErroPlanilha('Não consegui atualizar agora. Mantive os últimos dados disponíveis. Tente novamente.');
   if(temDados){
    setGoogleStatus('última leitura mantida; atualização falhou.',false,'error');
   }else{
