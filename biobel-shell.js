@@ -1,5 +1,5 @@
-/* Biobel — shell compartilhado. v11.31 */
-const BIOBEL_VERSION="v11.31";
+/* Biobel — shell compartilhado. v11.32 */
+const BIOBEL_VERSION="v11.32";
 (function(){
 "use strict";
 const PAGES={dashboard:"dashboard.html",caixa:"operacao.html",equipe:"equipe.html",campanhas:"vendas.html",info:"analises.html",alertas:"alertas.html",config:"config.html",adm:"administracao.html",backup:"backup.html"};
@@ -96,6 +96,7 @@ function montar(){
  };
  configurarShellNavegacaoInterna();
  if(!document.querySelector('script[data-biobel-module="recognition"]')){ const s=document.createElement("script"); s.src=ROOT+"biobel-recognition.js?v=11.31"; s.dataset.biobelModule="recognition"; document.head.appendChild(s); }
+ if(!document.querySelector('script[data-biobel-module="planilha-comparacao"]')){ const s=document.createElement("script"); s.src=ROOT+"biobel-planilha-comparacao.js?v=11.32"; s.dataset.biobelModule="planilha-comparacao"; document.head.appendChild(s); }
  m.dataset.ready="yes";
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",montar,{once:true});else montar();
