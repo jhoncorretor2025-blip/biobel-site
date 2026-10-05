@@ -1,3 +1,9 @@
+## v11.39 — 05/10/2026
+- Carregamento dos módulos compartilhados passou a ser controlado por uma promessa de prontidão.
+- `loadGoogleSheet()` agora aguarda o carregamento de leitura, processamento e comparação antes de iniciar a atualização.
+- Isso elimina uma condição de corrida em conexões lentas, sem mudar o fallback Apps Script → XLSX.
+- Cache PWA e registro do Service Worker atualizados para v11.39.
+
 ## v11.38 — 05/10/2026
 - Versões dos scripts compartilhados alinhadas nas páginas do painel para v11.38.
 - Registro do Service Worker deixou de apontar para a versão antiga v10.66 e passou a acompanhar o sistema atual.
