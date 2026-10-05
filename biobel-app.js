@@ -198,6 +198,10 @@ function atividadesDoDiaLembrete(){
   (Array.isArray(rotina.gabi)?rotina.gabi:[]).forEach(x=>itens.push({texto:String(x),quem:'Gabi'}));
   (Array.isArray(rotina.dai)?rotina.dai:[]).forEach(x=>itens.push({texto:String(x),quem:'Dai'}));
   return itens;
+ }catch(e){
+  console.warn('Atividades do dia para o lembrete 09:30:',e);
+  return [];
+ }
 }
 
 function chaveDiaLembrete930(){
@@ -14091,7 +14095,7 @@ function renderResumoEquipeDia(){const r=calcularResumoEquipeBiobel(),e=document
 function abrirResumoEquipeDia(){const r=calcularResumoEquipeBiobel(),e=document.getElementById('biobelResumoEquipeModal'),d=document.getElementById('biobelResumoEquipeDetalhado');if(!e||!d)return;const p=r.total-r.done;d.innerHTML='<div class="biobel-summary-kpis"><div><strong>'+r.done+'/'+r.total+'</strong><span>Tarefas concluídas</span></div><div><strong>'+r.pct.toFixed(0)+'%</strong><span>Rotina concluída</span></div><div><strong>'+new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(r.v||0)+'</strong><span>Vendas do dia</span></div><div><strong>'+r.atend+'</strong><span>Registros de venda</span></div></div><div class="biobel-summary-person"><b>💇‍♀️ Gabi</b><span>'+r.g.done+'/'+r.g.total+' tarefas</span></div><div class="biobel-summary-person"><b>✨ Day</b><span>'+r.dy.done+'/'+r.dy.total+' tarefas</span></div>'+(p?'<div class="biobel-summary-pending">🟡 '+p+' tarefa(s) pendente(s).</div>':'<div class="biobel-summary-ok">🎉 Rotina concluída!</div>');e.style.display='flex';}
 function fecharResumoEquipeDia(){const e=document.getElementById('biobelResumoEquipeModal');if(e)e.style.display='none';}
 function verificarResumoEquipe1715(){try{const d=typeof obterAgoraBrasilia==='function'?obterAgoraBrasilia():new Date(),min=d.getHours()*60+d.getMinutes(),k=chaveDataBiobelOperacional(),last=localStorage.getItem(BIOBEL_RESUMO_1715_KEY);if(min>=1035&&last!==k){localStorage.setItem(BIOBEL_RESUMO_1715_KEY,k);if(document.getElementById('biobelResumoEquipeModal'))abrirResumoEquipeDia();}}catch(e){}}
-(function iniciarAssistenteOperacional(){setTimeout(()=>{renderProximaAcaoBiobel();renderPassagemTurno();renderResumoEquipeDia();verificarResumoEquipe1715();},2200);setInterval(()=>{renderProximaAcaoBiobel();renderResumoEquipeDia();verificarResumoEquipe1715();},30000);window.addEventListener('biobel:data-updated',()=>setTimeout(()=>{renderProximaAcaoBiobel();renderResumoEquipeDia();},500));}
+(function iniciarAssistenteOperacional(){setTimeout(()=>{renderProximaAcaoBiobel();renderPassagemTurno();renderResumoEquipeDia();verificarResumoEquipe1715();},2200);setInterval(()=>{renderProximaAcaoBiobel();renderResumoEquipeDia();verificarResumoEquipe1715();},30000);window.addEventListener('biobel:data-updated',()=>setTimeout(()=>{renderProximaAcaoBiobel();renderResumoEquipeDia();},500));})();
 
 let advSummaryDonut = null;
 
