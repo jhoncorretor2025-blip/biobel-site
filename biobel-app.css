@@ -1295,3 +1295,37 @@ body.light-mode .biobel-search-result small{color:#64748b}
  .biobel-system-status span:nth-child(2){width:100%}
  .biobel-search-wrap{min-width:120px}
 }
+
+
+/* v11.21 — impressão do fechamento de caixa: força papel branco e texto preto.
+   Evita que o tema escuro/Tailwind ou estilos inline vazem para a prévia de impressão. */
+@media print{
+  @page{size:auto;margin:8mm}
+  html,html body{background:#fff!important;background-color:#fff!important;color:#000!important;}
+  body.receipt-printing{background:#fff!important;background-color:#fff!important;color:#000!important;}
+  body.receipt-printing > *:not(#printReceipt){display:none!important;visibility:hidden!important;}
+  body.receipt-printing > #printReceipt{
+    display:block!important;visibility:visible!important;
+    position:static!important;float:none!important;
+    width:100%!important;max-width:100%!important;
+    margin:0!important;padding:0!important;
+    background:#fff!important;background-color:#fff!important;
+    color:#000!important;
+    box-shadow:none!important;border:0!important;
+  }
+  body.receipt-printing #printReceipt *,
+  body.receipt-printing #printReceipt *::before,
+  body.receipt-printing #printReceipt *::after{
+    background:transparent!important;
+    background-color:transparent!important;
+    color:#000!important;
+    box-shadow:none!important;
+    text-shadow:none!important;
+  }
+  body.receipt-printing #printReceipt .receipt-line{
+    border-top:1px dashed #000!important;
+  }
+  body.receipt-printing #printReceipt .receipt-small{
+    color:#333!important;
+  }
+}
