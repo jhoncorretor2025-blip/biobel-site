@@ -1,3 +1,10 @@
+## v11.31 — 05/10/2026
+- Modularização segura: reconhecimento motivacional de vendas separado do núcleo `biobel-app.js` para `biobel-recognition.js`.
+- Mantidas as funções públicas `mostrarReconhecimentoVenda()` e `verificarVendasMotivacionais()` e a chave `biobel_vendas_motivacionais_v2`.
+- Preservados o evento `biobel:data-updated`, limite de R$ 200, destaque acima de R$ 400 e comportamento visual existente.
+- Nenhuma lógica de planilha, armazenamento, impressão, menus ou formulários foi alterada.
+- Cache PWA atualizado para v11.31.
+
 ## v11.30 — 05/10/2026
 - Correção do leitor da planilha: a ponte do Apps Script não bloqueia mais a leitura direta quando estiver indisponível ou travada.
 - Adicionado tempo limite na ponte; ao falhar, o sistema retorna automaticamente ao leitor XLSX tradicional.
