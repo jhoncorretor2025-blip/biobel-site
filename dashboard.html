@@ -260,16 +260,17 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
    <div id="bannerResumoSemanalEmail" style="display:none;margin-top:12px;"></div>
   </div>
 
-  <section id="painelAtendimentosHoje" class="no-print biobel-atendimento-card" style="display:none!important;" aria-label="Referência de atendimentos">
+  <section id="painelAtendimentosHoje" class="no-print biobel-atendimento-card" aria-label="Referência de atendimentos">
    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
     <div><div style="font-size:11px;color:#27d7a0;font-weight:900;text-transform:uppercase;letter-spacing:.08em;">👥 Movimento da loja</div><div style="font-size:17px;color:#eef5ff;font-weight:900;">Atendimentos de hoje</div></div>
     <span id="atendimentoStatusBadge" class="biobel-atendimento-badge">🟡 Calculando...</span>
    </div>
    <div class="biobel-atendimento-grid">
     <div class="biobel-atendimento-kpi"><small>Hoje</small><strong id="atendimentosHojeValor">0</strong><div id="atendimentosHojeStatus" class="biobel-atendimento-status">Aguardando dados...</div></div>
-    <div class="biobel-atendimento-kpi"><small>Faixa normal</small><strong id="atendimentosFaixaNormal">15–25</strong><div class="biobel-atendimento-sub">parâmetro configurável</div></div>
-    <div class="biobel-atendimento-kpi"><small>Mínimo histórico</small><strong id="atendimentosMinHistorico">—</strong><div id="atendimentosMinHistoricoDia" class="biobel-atendimento-sub"></div></div>
-    <div class="biobel-atendimento-kpi"><small>Máximo histórico</small><strong id="atendimentosMaxHistorico">—</strong><div id="atendimentosMaxHistoricoDia" class="biobel-atendimento-sub"></div></div>
+    <div class="biobel-atendimento-kpi"><small>🔻 Mínimo histórico</small><strong id="atendimentosMinHistorico">—</strong><div id="atendimentosMinHistoricoDia" class="biobel-atendimento-sub"></div></div>
+    <div class="biobel-atendimento-kpi"><small>📊 Média por dia</small><strong id="atendimentosMediaHistorico">—</strong><div id="atendimentosMediaHistoricoDias" class="biobel-atendimento-sub">dias úteis</div></div>
+    <div class="biobel-atendimento-kpi"><small>🔺 Máximo histórico</small><strong id="atendimentosMaxHistorico">—</strong><div id="atendimentosMaxHistoricoDia" class="biobel-atendimento-sub"></div></div>
+    <div class="biobel-atendimento-kpi"><small>🎯 Faixa normal</small><strong id="atendimentosFaixaNormal">15–25</strong><div class="biobel-atendimento-sub">parâmetro configurável</div></div>
    </div>
   </section>
 
@@ -413,7 +414,7 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
  const KEY='biobel_atendimento_config_v1';
  function cfg(){const d={minimo:15,maximo:25,forte:26,muitoForte:36,recorde:51};try{const x=JSON.parse(localStorage.getItem(KEY)||'null');return {...d,...(x&&typeof x==='object'?x:{})};}catch(e){return d;}}
  function contar(d){return (Array.isArray(d?.registrosVendas)?d.registrosVendas:[]).filter(v=>String(v?.vendedora||'').trim()).length;}
- function atualizarAtendimentosHoje(){
+ function ehDomingoAtendimento(d){if(!d)return false;var p=String(d.dia||"").split(".");if(p.length!==2)return false;var dia=Number(p[0]),mes=Number(p[1]);if(!Number.isFinite(dia)||!Number.isFinite(mes))return false;return new Date(new Date().getFullYear(),mes-1,dia).getDay()===0;} function atualizarAtendimentosHoje(){
   try{
    var arr=[];try{arr=Array.isArray(daysData)?daysData:(Array.isArray(window.daysData)?window.daysData:[]);}catch(e){arr=Array.isArray(window.daysData)?window.daysData:[];}
    var agora=typeof window.obterAgoraBrasilia==='function'?window.obterAgoraBrasilia():new Date();
@@ -428,10 +429,10 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
    else if(n>=x.minimo){status='Movimento normal';emoji='🟢';}
    var st=document.getElementById('atendimentosHojeStatus');if(st)st.textContent=emoji+' '+status;
    var badge=document.getElementById('atendimentoStatusBadge');if(badge)badge.textContent=emoji+' '+status;
-   var dias=arr.map(d=>({d,n:contar(d)})).filter(x=>x.n>0);
-   var min=dias.reduce((a,b)=>b.n<a.n?b:a,null), max=dias.reduce((a,b)=>b.n>a.n?b:a,null);
+   var dias=arr.map(d=>({d,n:contar(d)})).filter(x=>x.n>0 && !ehDomingoAtendimento(x.d));
+   var min=dias.reduce((a,b)=>b.n<a.n?b:a,null), max=dias.reduce((a,b)=>b.n>a.n?b:a,null), media=dias.length?dias.reduce((s,x)=>s+x.n,0)/dias.length:0;
    var mi=document.getElementById('atendimentosMinHistorico');if(mi)mi.textContent=min?min.n:'—';
-   var ma=document.getElementById('atendimentosMaxHistorico');if(ma)ma.textContent=max?max.n:'—';
+   var ma=document.getElementById('atendimentosMaxHistorico');if(ma)ma.textContent=max?max.n:'—'; var med=document.getElementById('atendimentosMediaHistorico');if(med)med.textContent=media?media.toFixed(1).replace('.',','):'—'; var medd=document.getElementById('atendimentosMediaHistoricoDias');if(medd)medd.textContent=media?(dias.length+' dias úteis'):'dias úteis';
    var mid=document.getElementById('atendimentosMinHistoricoDia');if(mid)mid.textContent=min?'dia '+min.d.d:'';
    var mad=document.getElementById('atendimentosMaxHistoricoDia');if(mad)mad.textContent=max?'dia '+max.d.d:'';
   }catch(e){}
