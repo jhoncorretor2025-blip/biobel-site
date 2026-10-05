@@ -122,10 +122,10 @@ function montar(){
 }
 (async function carregarModulosBiobel(){
  try{
-  await carregarModuloBiobel(ROOT+"biobel-recognition.js?v=11.41","recognition");
-  await carregarModuloBiobel(ROOT+"biobel-planilha-leitura.js?v=11.41","planilha-leitura");
-  await carregarModuloBiobel(ROOT+"biobel-planilha-processamento.js?v=11.41","planilha-processamento");
-  await carregarModuloBiobel(ROOT+"biobel-planilha-comparacao.js?v=11.41","planilha-comparacao");
+  await carregarModuloBiobel(ROOT+"biobel-recognition.js?v=11.42","recognition");
+  await carregarModuloBiobel(ROOT+"biobel-planilha-leitura.js?v=11.42","planilha-leitura");
+  await carregarModuloBiobel(ROOT+"biobel-planilha-processamento.js?v=11.42","planilha-processamento");
+  await carregarModuloBiobel(ROOT+"biobel-planilha-comparacao.js?v=11.42","planilha-comparacao");
   _resolveBiobelModulesReady();
  }catch(err){
   console.error("Biobel: falha ao carregar módulos compartilhados.",err);
