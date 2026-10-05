@@ -13817,113 +13817,97 @@ function restaurarUltimaLeituraPlanilha(spreadsheetId){
   return true;
  }catch(e){ return false; }
 }
-let carregandoPlanilha = false; // evita duas leituras simultâneas
+let carregandoPlanilha = false; // evita duas leituras da planilha rodando ao mesmo tempo (ex: atualização automática + clique manual), que podiam misturar dados de meses diferentes
 async function loadGoogleSheet(){
  if(carregandoPlanilha){
-  mostrarToast('⏳ Já tem uma atualização em andamento, aguarde ela terminar.');
+  mostrarToast('⏳ Já tem uma leitura em andamento, aguarde ela terminar.');
   return;
  }
- carregandoPlanilha=true;
+ carregandoPlanilha = true;
  const url=getGoogleUrl();
  const id=extractSpreadsheetId(url);
- if(!id){
-  carregandoPlanilha=false;
-  return setGoogleStatus('link inválido.',false,'error');
- }
- setGoogleStatus('atualizando a planilha...',false,'connecting');
- atualizarAvisoErroPlanilha('Atualizando dados da planilha...');
- setPlanilhaLoading(true,'Buscando os dados da planilha...');
+ if(!id){ carregandoPlanilha=false; return setGoogleStatus('link inválido.'); }
+ setGoogleStatus('conectando à planilha...', false, 'connecting');
  setRefreshButtonsLoading(true);
-
- let ultimoErro=null;
  try{
-  // 1) NOVO CAMINHO PRINCIPAL: Google Visualization direto.
-  // É específico para Google Sheets e lê as abas DD.MM sem depender do download XLSX.
-  try{
-   const dados=await carregarPlanilhaViaGoogleVisualizationDireta(id);
-   daysData=dados;
-   salvarUltimaLeituraPlanilha(id,dados);
-   render();
-   window.dispatchEvent(new CustomEvent('biobel:data-updated'));
-   setGoogleStatus('conectado ao Google Sheets. '+dados.length+' dia(s) lido(s) às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'.',true);
-   verificarEnvioEmailMensal();
-   sugerirProximaPlanilha();
-   tentarEnviarHorarioFechamentoPendente();
-   return;
-  }catch(errGvizDireto){
-   ultimoErro=errGvizDireto;
-   console.warn('Google Visualization direto falhou:',errGvizDireto);
-  }
+  const proxyUrl = getAppsScriptProxyUrl();
+  let found=0;
+  const novosDias=[]; // só substitui daysData depois que a leitura terminar com sucesso
 
-  // 2) Caminho já existente: exportação XLSX direta.
-  try{
-   const dados=await lerPlanilhaDiretaXlsx(id);
-   daysData=dados;
-   salvarUltimaLeituraPlanilha(id,dados);
-   render();
-   window.dispatchEvent(new CustomEvent('biobel:data-updated'));
-   setGoogleStatus('conectado pela exportação da planilha. '+dados.length+' dia(s) atualizado(s).',true);
-   verificarEnvioEmailMensal();
-   sugerirProximaPlanilha();
-   tentarEnviarHorarioFechamentoPendente();
-   return;
-  }catch(errDireta){
-   ultimoErro=errDireta;
-   console.warn('Leitura XLSX direta falhou:',errDireta);
-  }
-
-  // 3) Ponte Apps Script, quando configurada.
-  const proxyUrl=getAppsScriptProxyUrl();
   if(proxyUrl){
-   try{
-    const dados=await lerPlanilhaViaAppsScript(id,proxyUrl);
-    daysData=dados;
-    salvarUltimaLeituraPlanilha(id,dados);
-    render();
-    window.dispatchEvent(new CustomEvent('biobel:data-updated'));
-    setGoogleStatus('conectado pela ponte. '+dados.length+' dia(s) atualizado(s).',true);
-    verificarEnvioEmailMensal();
-    sugerirProximaPlanilha();
-    tentarEnviarHorarioFechamentoPendente();
-    return;
-   }catch(errProxy){
-    ultimoErro=errProxy;
-    console.warn('Ponte Apps Script falhou:',errProxy);
+   // Caminho novo: passa pela "ponte" do Google Apps Script — roda dentro do Google,
+   // não esbarra no bloqueio de navegador (CORS) que às vezes acontecia no caminho antigo.
+   const chamadaUrl = proxyUrl + (proxyUrl.includes('?')?'&':'?') + 'id=' + encodeURIComponent(id) + '&_t=' + Date.now();
+   const resp = await fetch(chamadaUrl, {cache:'no-store'});
+   if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
+   const data = await resp.json();
+   if(data.error) throw new Error(data.error);
+   for(const sheetName in (data.sheets||{})){
+    const nomeNormalizado = normalizarNomeAba(sheetName);
+    if(!nomeNormalizado) continue; // ignora abas que não são de um dia (ex: aba de resumo, config, etc.)
+    novosDias.push(processarLinhasDoDia(nomeNormalizado, data.sheets[sheetName]));
+    found++;
+   }
+  } else {
+   // Caminho antigo (ainda funciona, mas pode falhar por bloqueio de navegador às vezes):
+   // baixa o .xlsx direto do Google e lê com a biblioteca XLSX.js.
+   // Importante: o Google às vezes guarda uma cópia em cache desse link de exportação no
+   // próprio servidor dele, e demora pra atualizar (às vezes só no dia seguinte) — o "cache:no-store"
+   // sozinho não resolve isso, porque só afeta o cache do navegador, não o do lado do Google.
+   // Adicionar um parâmetro único a cada busca (a hora atual) força o Google a tratar como um
+   // pedido novo, sem usar a cópia antiga guardada.
+   const exportUrl=`https://docs.google.com/spreadsheets/d/${id}/export?format=xlsx&_biobel_cache_bust=${Date.now()}`;
+   const response=await fetch(exportUrl,{cache:'no-store'});
+   if(!response.ok) throw new Error(`HTTP ${response.status}`);
+   const buf=await response.arrayBuffer();
+   const wb=XLSX.read(buf,{type:'array'});
+   for(const sheetName of wb.SheetNames){
+    const nomeNormalizado = normalizarNomeAba(sheetName);
+    if(!nomeNormalizado) continue;
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{header:1,defval:null,raw:true});
+    novosDias.push(processarLinhasDoDia(nomeNormalizado, rows));
+    found++;
    }
   }
 
-  // 4) Último recurso: modo JSONP legado.
-  try{
-   const dados=await carregarMesAtualViaGviz(id);
-   daysData=dados;
-   salvarUltimaLeituraPlanilha(id,dados);
-   render();
-   window.dispatchEvent(new CustomEvent('biobel:data-updated'));
-   setGoogleStatus('conectado pelo modo de recuperação. '+dados.length+' dia(s) atualizado(s).',true);
-   verificarEnvioEmailMensal();
-   sugerirProximaPlanilha();
-   tentarEnviarHorarioFechamentoPendente();
-   return;
-  }catch(errFallback){
-   ultimoErro=errFallback;
-   console.warn('Recuperação Google Sheets falhou:',errFallback);
-  }
-
-  const temDados=Array.isArray(daysData)&&daysData.length>0;
-  atualizarAvisoErroPlanilha('Não consegui atualizar agora. Mantive os últimos dados disponíveis. Tente novamente.');
-  if(temDados){
-   setGoogleStatus('última leitura mantida; atualização falhou.',false,'error');
-  }else{
-   setGoogleStatus('não foi possível ler a planilha.',false,'error');
-  }
-  if(ultimoErro) console.warn('Falha final na atualização Google Sheets:',ultimoErro);
+  if(found===0 || novosDias.length===0) throw new Error('Nenhuma aba de dia válida foi encontrada na planilha.');
+  daysData=novosDias;
+  render();
+  window.dispatchEvent(new CustomEvent('biobel:data-updated'));
+  setGoogleStatus(`conectado. ${found} dia(s) atualizado(s) às ${new Date().toLocaleTimeString('pt-BR')}.`,true);
+  verificarEnvioEmailMensal();
+  sugerirProximaPlanilha();
+  // Se uma gravação ficou pendente durante uma queda/instabilidade, tenta agora novamente.
+  tentarEnviarHorarioFechamentoPendente();
+ }catch(err){
+  console.error(err);
+  setGoogleStatus('não foi possível ler a planilha. Verifique se ela está acessível para leitura sem login e se o navegador permite o acesso.');
  }finally{
-  setPlanilhaLoading(false);
   setRefreshButtonsLoading(false);
-  carregandoPlanilha=false;
+  carregandoPlanilha = false;
+  // Roda sempre, sucesso ou falha — o aviso de "mês virou" só depende de qual planilha está
+  // configurada (já salva no navegador), não precisa de conexão nenhuma pra funcionar.
   atualizarNomePlanilhaAtiva();
  }
 }
+function startGoogleAutoRefresh(){
+ if(googleTimer) clearInterval(googleTimer);
+ googleTimer=setInterval(loadGoogleSheet,60000);
+}
+(function initGoogleConfig(){
+ const saved=localStorage.getItem('biobel_google_sheet_url');
+ const input=document.getElementById('googleSheetUrl');
+ if(saved && input) input.value=saved;
+ // O aviso de "mês virou" já aparece na hora, mesmo antes da planilha terminar de carregar (ou
+ // mesmo se a conexão falhar) — ele só depende de saber qual planilha está configurada, que já
+ // está salva no navegador.
+ atualizarNomePlanilhaAtiva();
+ // Sempre busca a planilha ao abrir a página (usa o link salvo, ou o link padrão da loja),
+ // e sempre mantém a atualização automática ligada — mesmo em um computador novo.
+ startGoogleAutoRefresh();
+ setTimeout(loadGoogleSheet,800);
+})();
+
 /* ===== ALERTA DE HORÁRIO AUSENTE — COLUNA L ===== */
 const HORARIO_AUSENTE_CFG_KEY='biobel_alerta_horario_ausente_v1';
 const HORARIO_AUSENTE_DEFAULTS={habilitado:true,intervaloMin:30,inicio:'09:00',fim:'18:00'};
