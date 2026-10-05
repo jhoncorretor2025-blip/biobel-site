@@ -155,6 +155,61 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
    </div>
   </section>
 
+  <section id="biobelProdutividadeHoje" class="no-print biobel-produtividade-hoje" aria-label="Assistente operacional da loja">
+   <div class="biobel-prod-head">
+    <div><div class="biobel-prod-eyebrow">🧭 Assistente operacional</div><h2>O que fazer agora?</h2><p>O sistema organiza a próxima tarefa, registra a passagem de turno e prepara o resumo do dia.</p></div>
+    <div class="biobel-prod-clock" id="biobelProdHorario">—</div>
+   </div>
+   <div class="biobel-prod-grid">
+    <article class="biobel-prod-next">
+     <div class="biobel-prod-label">🎯 PRÓXIMA AÇÃO</div>
+     <div id="biobelProximaAcaoTitulo" class="biobel-prod-next-title">Carregando rotina...</div>
+     <div id="biobelProximaAcaoMeta" class="biobel-prod-next-meta">—</div>
+     <button id="biobelProximaAcaoBtn" class="biobel-prod-primary" onclick="concluirProximaAcao()">✅ Concluí</button>
+    </article>
+    <article class="biobel-prod-handoff">
+     <div class="biobel-prod-label">🔄 PASSAGEM DE TURNO</div>
+     <div id="biobelUltimaPassagemTurno" class="biobel-prod-handoff-text">Nenhuma passagem registrada hoje.</div>
+     <button class="biobel-prod-secondary" onclick="abrirPassagemTurno()">📝 Registrar passagem</button>
+    </article>
+    <article class="biobel-prod-summary">
+     <div class="biobel-prod-label">📊 RESUMO DO DIA</div>
+     <div id="biobelResumoEquipeMini" class="biobel-prod-summary-text">Calculando...</div>
+     <button class="biobel-prod-secondary" onclick="abrirResumoEquipeDia(true)">📋 Ver resumo completo</button>
+    </article>
+   </div>
+  </section>
+
+  <div id="biobelPassagemTurnoModal" class="biobel-prod-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="tituloPassagemTurno">
+   <div class="biobel-prod-modal-bg" onclick="fecharPassagemTurno()"></div>
+   <div class="biobel-prod-modal-card">
+    <button class="biobel-prod-modal-close" onclick="fecharPassagemTurno()">×</button>
+    <div class="biobel-prod-label">🔄 PASSAGEM DE TURNO</div>
+    <h2 id="tituloPassagemTurno">O que a próxima pessoa precisa saber?</h2>
+    <p>Registre só o que realmente precisa ser passado para evitar desencontro de informação.</p>
+    <div class="biobel-prod-form-grid">
+     <label>👤 Quem está passando<input id="turnoPassaDe" type="text" placeholder="Ex.: Day"></label>
+     <label>➡️ Para quem<input id="turnoPassaPara" type="text" placeholder="Ex.: Alessandra"></label>
+    </div>
+    <label>🧍 Cliente / pedido pendente<textarea id="turnoCliente" rows="2" placeholder="Ex.: Cliente pediu para separar um produto."></textarea></label>
+    <label>📦 Produto / estoque<textarea id="turnoEstoque" rows="2" placeholder="Ex.: Produto X acabou e precisa ser reposto."></textarea></label>
+    <label>⚠️ Pendência / problema<textarea id="turnoPendencia" rows="2" placeholder="Ex.: Aguardar retorno do fornecedor."></textarea></label>
+    <label>💬 Observação<textarea id="turnoObservacao" rows="2" placeholder="Outra informação importante..."></textarea></label>
+    <div class="biobel-prod-modal-actions"><button class="biobel-prod-secondary" onclick="fecharPassagemTurno()">Cancelar</button><button class="biobel-prod-primary" onclick="salvarPassagemTurno()">💾 Salvar passagem</button></div>
+   </div>
+  </div>
+
+  <div id="biobelResumoEquipeModal" class="biobel-prod-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="tituloResumoEquipe">
+   <div class="biobel-prod-modal-bg" onclick="fecharResumoEquipeDia()"></div>
+   <div class="biobel-prod-modal-card">
+    <button class="biobel-prod-modal-close" onclick="fecharResumoEquipeDia()">×</button>
+    <div class="biobel-prod-label">📊 RESUMO DO DIA</div>
+    <h2 id="tituloResumoEquipe">Como foi o dia?</h2>
+    <div id="biobelResumoEquipeDetalhado"></div>
+    <div class="biobel-prod-modal-actions"><button class="biobel-prod-primary" onclick="fecharResumoEquipeDia()">Fechar</button></div>
+   </div>
+  </div>
+
   <div id="avisoMesDivergente" class="no-print" style="display:none;"></div>
   <div id="bannerClimaChuva" class="no-print" style="display:none;"></div>
   <div id="checklistChuvaDashboard" class="no-print" style="display:none;"></div>
