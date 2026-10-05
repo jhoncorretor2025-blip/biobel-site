@@ -1,3 +1,10 @@
+## v11.35 — 05/10/2026
+- Extratores de vendas, pagamentos, horários, turnos, produtos, gênero, vendedores e fechamento de caixa foram concentrados em `biobel-planilha-processamento.js`.
+- Utilitários específicos da transformação das linhas da planilha também saíram do núcleo, reduzindo o acoplamento do `biobel-app.js`.
+- Funções de horário usadas por outras áreas e `normalizarNomeAba()` permaneceram no núcleo para preservar dependências existentes.
+- Nenhuma regra de cálculo dos extratores foi reescrita.
+- Versão e cache PWA atualizados para v11.35.
+
 ## v11.34 — 05/10/2026
 - Processamento diário da planilha modularizado em `biobel-planilha-processamento.js`.
 - A função `processarLinhasDoDia()` foi retirada do núcleo sem alterar sua lógica, campos retornados ou chamadas existentes.
