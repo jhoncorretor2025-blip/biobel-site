@@ -117,8 +117,6 @@ function findPaymentTotals(rows){
 }
 
 function extractSellerTotals(rows){
- // Cada linha de venda tem: nº (col A), Dinheiro/Débito/Crédito/Pix (col B-E), vendedora (col F).
- // Soma o valor da venda (uma das 4 colunas de pagamento) por vendedora, até achar a linha "total".
  const totals = {};
  for(let r=0;r<rows.length;r++){
   const rownum = rows[r]?.[0];
@@ -128,19 +126,13 @@ function extractSellerTotals(rows){
   const vendedora = rows[r]?.[5];
   if(!vendedora || typeof vendedora!=='string' || !vendedora.trim()) continue;
   const nome = normalizarNome(vendedora);
-  let valorVenda = 0;
-  for(const c of [1,2,3,4]){
-   const v = rows[r]?.[c];
-   if(typeof v==='number') valorVenda += v;
-  }
+  const valorVenda=valorPagamentoDaLinha(rows[r]);
   if(valorVenda>0) totals[nome] = (totals[nome]||0) + valorVenda;
  }
  return totals;
 }
 
 function extractSellerDetalhes(rows){
- // Igual extractSellerTotals, mas tambem conta quantas vendas cada vendedora fez, em qual forma
- // de pagamento (Dinheiro/Débito/Crédito/Pix) — tanto a QUANTIDADE quanto o VALOR em R$ de cada uma.
  const detalhes = {};
  const colunaParaForma = {1:'dinheiro',2:'debito',3:'credito',4:'pix'};
  for(let r=0;r<rows.length;r++){
@@ -153,8 +145,8 @@ function extractSellerDetalhes(rows){
   const nome = normalizarNome(vendedora);
   if(!detalhes[nome]) detalhes[nome]={total:0,qtd:0,dinheiro:0,debito:0,credito:0,pix:0,dinheiroValor:0,debitoValor:0,creditoValor:0,pixValor:0};
   for(const c of [1,2,3,4]){
-   const v = rows[r]?.[c];
-   if(typeof v==='number' && v>0){
+   const v=numeroPlanilha(rows[r]?.[c]);
+   if(v>0){
     detalhes[nome].total += v;
     detalhes[nome].qtd += 1;
     detalhes[nome][colunaParaForma[c]] += 1;
@@ -166,10 +158,6 @@ function extractSellerDetalhes(rows){
 }
 
 function extractTipoVendaTotais(rows){
- // Conta quantos atendimentos foram presenciais e quantos online, olhando a coluna "tipo de venda" (G),
- // e também soma o valor de cada venda (não só a quantidade), pra dar pra usar em filtros.
- // Importante: só conta se a venda teve valor de verdade (mesmo critério de countTransactions) —
- // sem essa checagem, linhas do molde com "presencial" pré-preenchido mas sem pagamento inflavam a contagem.
  const totais = {presencial:0, online:0, presencialValor:0, onlineValor:0};
  for(let r=0;r<rows.length;r++){
   const rownum = rows[r]?.[0];
@@ -180,11 +168,7 @@ function extractTipoVendaTotais(rows){
   if(!tipo || typeof tipo!=='string') continue;
   const t = tipo.trim().toLowerCase();
   if(t!=='presencial' && t!=='online') continue;
-  let valorVenda = 0;
-  for(const c of [1,2,3,4]){
-   const v = rows[r]?.[c];
-   if(typeof v==='number') valorVenda += v;
-  }
+  const valorVenda=valorPagamentoDaLinha(rows[r]);
   if(valorVenda<=0) continue;
   totais[t]++;
   totais[t+'Valor'] += valorVenda;
@@ -348,63 +332,46 @@ function extractProdutosVendidos(rows){
 }
 
 function countTransactions(rows){
- // Conta quantas linhas de venda existem (uma linha = um atendimento/venda), até achar a linha "total".
  let qtd = 0;
  for(let r=0;r<rows.length;r++){
   const rownum = rows[r]?.[0];
   const label = String(rownum??'').trim().toLowerCase();
   if(label==='total') break;
   if(typeof rownum!=='number') continue;
-  let valorVenda = 0;
-  for(const c of [1,2,3,4]){
-   const v = rows[r]?.[c];
-   if(typeof v==='number') valorVenda += v;
-  }
-  if(valorVenda>0) qtd++;
+  if(valorPagamentoDaLinha(rows[r])>0) qtd++;
  }
  return qtd;
 }
 
 function extractVendasIndividuais(rows){
- // Lista o valor de cada venda individual do dia (soma das colunas de pagamento por linha),
- // usada pra detectar vendas muito fora do padrão (possível erro de digitação).
  const valores = [];
  for(let r=0;r<rows.length;r++){
   const rownum = rows[r]?.[0];
   const label = String(rownum??'').trim().toLowerCase();
   if(label==='total') break;
   if(typeof rownum!=='number') continue;
-  let valorVenda = 0;
-  for(const c of [1,2,3,4]){
-   const v = rows[r]?.[c];
-   if(typeof v==='number') valorVenda += v;
-  }
+  const valorVenda=valorPagamentoDaLinha(rows[r]);
   if(valorVenda>0) valores.push(valorVenda);
  }
  return valores;
 }
 
 function extractRegistrosVendas(rows){
- // Igual extractVendasIndividuais, mas guarda o contexto completo de cada venda
- // (vendedora, turno, quantidade de itens) — usado no card de "Recordes de Vendas Individuais".
  const registros = [];
  for(let r=0;r<rows.length;r++){
   const rownum = rows[r]?.[0];
   const label = String(rownum??'').trim().toLowerCase();
   if(label==='total') break;
   if(typeof rownum!=='number') continue;
-  let valorVenda = 0;
-  for(const c of [1,2,3,4]){
-   const v = rows[r]?.[c];
-   if(typeof v==='number') valorVenda += v;
-  }
+  const valorVenda=valorPagamentoDaLinha(rows[r]);
   if(valorVenda<=0) continue;
   const vendedoraRaw = rows[r]?.[5];
   const vendedora = (vendedoraRaw && typeof vendedoraRaw==='string' && vendedoraRaw.trim()) ? normalizarNome(vendedoraRaw) : null;
   const turnoRaw = rows[r]?.[10];
   const turno = (turnoRaw && typeof turnoRaw==='string' && ['manhã','meio-dia','tarde'].includes(turnoRaw.trim())) ? turnoRaw.trim() : null;
   const qtdItensRaw = rows[r]?.[8];
-  const qtdItens = (typeof qtdItensRaw==='number' && qtdItensRaw>0) ? qtdItensRaw : null;
+  const qtdItensNumero = numeroPlanilha(qtdItensRaw);
+  const qtdItens = qtdItensNumero>0 ? qtdItensNumero : null;
   const horarioFrac = extrairFracaoTempo(rows[r]?.[11]);
   registros.push({ valor: valorVenda, vendedora, turno, qtdItens, horario: horarioFrac, hora: formatarHoraFracao(horarioFrac) });
  }
@@ -423,6 +390,13 @@ function numeroPlanilha(v){
  const n=Number(s);
  return Number.isFinite(n) ? n : 0;
 }
+
+function valorPagamentoDaLinha(row){
+ let total=0;
+ for(const c of [1,2,3,4]) total+=numeroPlanilha(row?.[c]);
+ return total;
+}
+
 
 function colunaExcel(indiceZero){
  let n=Number(indiceZero);
