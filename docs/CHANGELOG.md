@@ -1,3 +1,10 @@
+## v11.34 — 05/10/2026
+- Processamento diário da planilha modularizado em `biobel-planilha-processamento.js`.
+- A função `processarLinhasDoDia()` foi retirada do núcleo sem alterar sua lógica, campos retornados ou chamadas existentes.
+- Os extratores e utilitários usados pelo processamento permaneceram no `biobel-app.js` nesta etapa, evitando uma cadeia maior de dependências.
+- Leitura, comparação, armazenamento, impressão e interface de negócio não foram reescritos.
+- Cache PWA e versão do shell atualizados para v11.34.
+
 ## v11.33 — 05/10/2026
 - Leitura principal da planilha modularizada em `biobel-planilha-leitura.js`, retirando do núcleo as rotinas de Apps Script, XLSX e Google Visualization.
 - `loadGoogleSheet()` passa a atuar como orquestrador, preservando a ordem de fallback **Apps Script → XLSX**, o bloqueio de leituras simultâneas e os efeitos após atualização bem-sucedida.
