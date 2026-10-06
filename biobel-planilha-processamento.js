@@ -373,7 +373,10 @@ function extractRegistrosVendas(rows){
   const qtdItensNumero = numeroPlanilha(qtdItensRaw);
   const qtdItens = qtdItensNumero>0 ? qtdItensNumero : null;
   const horarioFrac = extrairFracaoTempo(rows[r]?.[11]);
-  registros.push({ valor: valorVenda, vendedora, turno, qtdItens, horario: horarioFrac, hora: formatarHoraFracao(horarioFrac) });
+  // Tipo da venda (coluna G): 'online' | 'presencial' | null (em branco/outro). Quem usa decide: online = 'online'; o resto conta como loja.
+  const tipoTxt = (typeof rows[r]?.[6]==='string') ? rows[r][6].trim().toLowerCase() : '';
+  const tipo = (tipoTxt==='online' || tipoTxt==='presencial') ? tipoTxt : null;
+  registros.push({ valor: valorVenda, vendedora, turno, qtdItens, horario: horarioFrac, hora: formatarHoraFracao(horarioFrac), tipo });
  }
  return registros;
 }
