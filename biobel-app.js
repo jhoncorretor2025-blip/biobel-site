@@ -8255,7 +8255,8 @@ function renderCentralDeAlertas(){
    if(!chave) return;
    if(!porFornecedor[chave] || (b.criadoEm||'')>(porFornecedor[chave]||'')) porFornecedor[chave] = b.criadoEm || '';
   });
-  const hojeMs = obterAgoraBrasilia().getTime();
+  // obterAgoraBrasilia() devolve um objeto com getFullYear/getDate/... mas SEM getTime(); este é o mesmo "agora" em milissegundos.
+  const hojeMs = Date.now() + offsetBrasiliaMs;
   Object.entries(porFornecedor).forEach(([fornecedor, ultimaData])=>{
    if(!ultimaData) return;
    const diasSemContato = Math.round((hojeMs-new Date(ultimaData).getTime())/86400000);
@@ -13254,7 +13255,7 @@ function renderResumoEquipeDia(){const r=calcularResumoEquipeBiobel(),e=document
 function abrirResumoEquipeDia(){const r=calcularResumoEquipeBiobel(),e=document.getElementById('biobelResumoEquipeModal'),d=document.getElementById('biobelResumoEquipeDetalhado');if(!e||!d)return;const p=r.total-r.done;d.innerHTML='<div class="biobel-summary-kpis"><div><strong>'+r.done+'/'+r.total+'</strong><span>Tarefas concluídas</span></div><div><strong>'+r.pct.toFixed(0)+'%</strong><span>Rotina concluída</span></div><div><strong>'+new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(r.v||0)+'</strong><span>Vendas do dia</span></div><div><strong>'+r.atend+'</strong><span>Registros de venda</span></div></div><div class="biobel-summary-person"><b>💇‍♀️ Gabi</b><span>'+r.g.done+'/'+r.g.total+' tarefas</span></div><div class="biobel-summary-person"><b>✨ Day</b><span>'+r.dy.done+'/'+r.dy.total+' tarefas</span></div>'+(p?'<div class="biobel-summary-pending">🟡 '+p+' tarefa(s) pendente(s).</div>':'<div class="biobel-summary-ok">🎉 Rotina concluída!</div>');e.style.display='flex';}
 function fecharResumoEquipeDia(){const e=document.getElementById('biobelResumoEquipeModal');if(e)e.style.display='none';}
 function verificarResumoEquipe1715(){try{const d=typeof obterAgoraBrasilia==='function'?obterAgoraBrasilia():new Date(),min=d.getHours()*60+d.getMinutes(),k=chaveDataBiobelOperacional(),last=localStorage.getItem(BIOBEL_RESUMO_1715_KEY);if(min>=1035&&last!==k){localStorage.setItem(BIOBEL_RESUMO_1715_KEY,k);if(document.getElementById('biobelResumoEquipeModal'))abrirResumoEquipeDia();}}catch(e){}}
-(function iniciarAssistenteOperacional(){setTimeout(()=>{renderProximaAcaoBiobel();renderPassagemTurno();renderResumoEquipeDia();verificarResumoEquipe1715();},2200);setInterval(()=>{renderProximaAcaoBiobel();renderResumoEquipeDia();verificarResumoEquipe1715();},30000);window.addEventListener('biobel:data-updated',()=>setTimeout(()=>{renderProximaAcaoBiobel();renderResumoEquipeDia();},500));}
+(function iniciarAssistenteOperacional(){setTimeout(()=>{renderProximaAcaoBiobel();renderPassagemTurno();renderResumoEquipeDia();verificarResumoEquipe1715();},2200);setInterval(()=>{renderProximaAcaoBiobel();renderResumoEquipeDia();verificarResumoEquipe1715();},30000);window.addEventListener('biobel:data-updated',()=>setTimeout(()=>{renderProximaAcaoBiobel();renderResumoEquipeDia();},500));})();
 
 let advSummaryDonut = null;
 
@@ -13991,5 +13992,8 @@ let promptDeInstalacaoGuardado=null;
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();promptDeInstalacaoGuardado=e;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='inline-block';});
 function instalarAppBiobel(){if(!promptDeInstalacaoGuardado)return;promptDeInstalacaoGuardado.prompt();promptDeInstalacaoGuardado.userChoice.then(function(){promptDeInstalacaoGuardado=null;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';});}
 window.addEventListener('appinstalled',function(){const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';try{mostrarToast('✅ Biobel instalado!');}catch(e){}});
-if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=11.42',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
+if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=11.43',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
 window.addEventListener('load',initPaginaAtiva,{once:true});
+
+/* Marca final: se esta linha não rodou, o shell avisa que o sistema não carregou (ver avisarFalhaCarregamento em biobel-shell.js). */
+window.__biobelAppCarregou=true;

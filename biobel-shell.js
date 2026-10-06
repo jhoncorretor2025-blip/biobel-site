@@ -1,10 +1,11 @@
-/* Biobel — shell compartilhado. v11.41 */
-const BIOBEL_VERSION="v11.42";
+/* Biobel — shell compartilhado. v11.43 */
+const BIOBEL_VERSION="v11.43";
 (function(){
 "use strict";
 const PAGES={dashboard:"dashboard.html",caixa:"operacao.html",equipe:"equipe.html",campanhas:"vendas.html",info:"analises.html",alertas:"alertas.html",config:"config.html",adm:"administracao.html",backup:"backup.html"};
-let _resolveBiobelModulesReady,_rejectBiobelModulesReady;
-window.biobelModulesReady=new Promise((resolve,reject)=>{_resolveBiobelModulesReady=resolve;_rejectBiobelModulesReady=reject;});
+// Os módulos (recognition, planilha-leitura, planilha-processamento, planilha-comparacao) são <script> no HTML,
+// ANTES do biobel-app.js — o navegador garante a ordem. Nada a esperar; mantido só por compatibilidade.
+window.biobelModulesReady=Promise.resolve();
 window.BIOBEL_PAGES=PAGES;
 const p=document.body&&document.body.dataset?document.body.dataset.biobelPage:"dashboard";
 const ROOT=(document.body&&document.body.dataset&&document.body.dataset.biobelRoot)||"./";
@@ -99,40 +100,22 @@ function montar(){
  configurarShellNavegacaoInterna();
  const versaoTela=document.getElementById("versaoSistemaTela");
  if(versaoTela) versaoTela.textContent=BIOBEL_VERSION;
- function carregarModuloBiobel(src,identificador){
-  return new Promise((resolve,reject)=>{
-   let finalizado=false;
-   const limite=setTimeout(()=>{if(finalizado)return;finalizado=true;reject(new Error('Tempo esgotado ao carregar '+identificador));},12000);
-   const concluir=()=>{if(finalizado)return;finalizado=true;clearTimeout(limite);resolve();};
-   const falhar=()=>{if(finalizado)return;finalizado=true;clearTimeout(limite);reject(new Error('Falha ao carregar '+identificador));};
-   const existente=document.querySelector('script[data-biobel-module="'+identificador+'"]');
-   if(existente){
-    if(existente.dataset.loaded==="yes"){concluir();return;}
-    existente.addEventListener('load',()=>{existente.dataset.loaded="yes";concluir();},{once:true});
-    existente.addEventListener('error',falhar,{once:true});
-    return;
-   }
-   const script=document.createElement("script");
-   script.src=src;
-   script.dataset.biobelModule=identificador;
-   script.onload=()=>{script.dataset.loaded="yes";concluir();};
-   script.onerror=falhar;
-   document.head.appendChild(script);
-  });
-}
-(async function carregarModulosBiobel(){
- try{
-  await carregarModuloBiobel(ROOT+"biobel-recognition.js?v=11.42","recognition");
-  await carregarModuloBiobel(ROOT+"biobel-planilha-leitura.js?v=11.42","planilha-leitura");
-  await carregarModuloBiobel(ROOT+"biobel-planilha-processamento.js?v=11.42","planilha-processamento");
-  await carregarModuloBiobel(ROOT+"biobel-planilha-comparacao.js?v=11.42","planilha-comparacao");
-  _resolveBiobelModulesReady();
- }catch(err){
-  console.error("Biobel: falha ao carregar módulos compartilhados.",err);
-  _rejectBiobelModulesReady(err);
- }
-})();
  m.dataset.ready="yes";
 }
+// Rede de proteção: se o biobel-app.js não terminar de carregar (erro de sintaxe, erro logo no início, arquivo
+// faltando...), o selo ficaria "Conectando..." pra sempre com tudo zerado — e parece que a planilha não está
+// sendo lida. Em vez disso, avisa com clareza. O biobel-app.js marca window.__biobelAppCarregou na última linha.
+function avisarFalhaCarregamento(){
+ if(window.__biobelAppCarregou) return;
+ const selo=document.getElementById("connBadge");
+ if(selo){selo.className="no-print conn-badge conn-error";selo.textContent="🔴 Sistema com erro";}
+ if(document.getElementById("biobelFalhaCarregamento")) return;
+ const faixa=document.createElement("div");
+ faixa.id="biobelFalhaCarregamento";faixa.className="no-print";faixa.setAttribute("role","alert");
+ faixa.style.cssText="position:sticky;top:0;z-index:9999;background:#7f1d1d;color:#fff;padding:10px 16px;font-size:13px;font-weight:700;text-align:center;border-bottom:2px solid #fb7185;";
+ faixa.innerHTML="⚠️ O sistema não terminou de carregar — os valores na tela <u>não são reais</u>. Aperte <b>Ctrl+Shift+R</b>. Se continuar assim, avise quem cuida do sistema (erro no arquivo principal).";
+ document.body.insertBefore(faixa,document.body.firstChild);
+}
+window.addEventListener("load",()=>setTimeout(avisarFalhaCarregamento,6000));
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",montar,{once:true});else montar();
 })();

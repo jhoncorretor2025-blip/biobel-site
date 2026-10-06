@@ -1,0 +1,40 @@
+# =====================================================================================
+# PARA ATIVAR: copie TODO este arquivo para  .github/workflows/validar.yml  usando o SITE do GitHub
+# (repositório > Add file > Create new file > nome: .github/workflows/validar.yml > colar > Commit).
+# As IAs não conseguem criar esse arquivo porque o token delas não tem a permissão "workflow".
+# =====================================================================================
+name: Validar sistema Biobel
+
+# Roda a cada envio (push) e em pull requests. Só LÊ o código: não altera nem publica nada.
+# Se este check ficar ❌ VERMELHO no commit, o sistema pode estar quebrado no ar — NÃO IGNORE.
+# (Em 05/10/2026 um erro de sintaxe no biobel-app.js deixou o painel parado em "Conectando..."
+#  por horas porque nada checava isso.)
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Checar sintaxe de todos os arquivos e ordem dos módulos
+        run: node tools/checar-sintaxe.js
+
+      - name: Validar cada página do painel
+        run: |
+          falhou=0
+          for f in $(grep -l 'biobel-app.js' *.html administracao/*.html); do
+            echo "=============== $f"
+            node tools/validar.js "$f" || falhou=1
+          done
+          exit $falhou

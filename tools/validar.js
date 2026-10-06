@@ -27,21 +27,30 @@ const aviso = m => { avisos++; console.log('⚠️  ' + m); };
 // Se aparecer um id NOVO fora desta lista, é bug — crie o elemento ou remova a chamada.
 const ORFAOS_CONHECIDOS = new Set(['avgClosing','avisoPoucosDadosGastos','bannerEnviarContadoraCompleto',
   'btnRefreshCompleto','btnToggleLegendCompleto','maxClosing','salesDays','selectedClosing','selectedDay',
-  'tableBody','toastBiobel','totalClosing','totalSales']);
+  'tableBody','toastBiobel','totalClosing','totalSales',
+  // criado pelo próprio código se faltar / usado só se existir (conferido em 05/10):
+  'admGabrielaHistoricoNote','statusBackupAutomatico']);
 
 // 1) sintaxe
 const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]);
 // Arquitetura de páginas separadas (desde v10.39): funções podem estar em arquivos .js
-// compartilhados, referenciados via <script src="arquivo.js">. Carrega o texto desses
-// arquivos locais (ignora CDN https://...) só para checar se handlers existem — não valida
-// a sintaxe deles aqui (isso já é validado quando o próprio arquivo roda pelo Node).
+// compartilhados, referenciados via <script src="arquivo.js?v=NN">. Carrega o texto desses
+// arquivos locais (ignora CDN https://...) para checar se handlers existem E para checar a SINTAXE
+// de cada um. (Antes este validador não olhava a sintaxe dos .js externos: um erro no biobel-app.js
+// deixava o sistema inteiro parado em "Conectando..." e o validador só acusava "funções inexistentes".)
 const srcsLocais = [...html.matchAll(/<script src="([^"]+)"/g)].map(m => m[1]).filter(s => !s.startsWith('http'));
+const limparSrc = s => s.split('?')[0].split('#')[0];   // tira o cache-busting (?v=11.43) antes de procurar o arquivo
 let codigoExterno = '';
 srcsLocais.forEach(src => {
-  const caminho = path.join(path.dirname(arquivo), src);
-  if (fs.existsSync(caminho)) codigoExterno += '\n' + fs.readFileSync(caminho, 'utf8');
+  const nomeArq = limparSrc(src);
+  const caminho = path.join(path.dirname(arquivo), nomeArq);
+  if (!fs.existsSync(caminho)) return;   // referência inexistente é tratada na checagem 8
+  const texto = fs.readFileSync(caminho, 'utf8');
+  codigoExterno += '\n' + texto;
+  try { new Function(texto); }
+  catch (e) { erro(`O arquivo ${nomeArq} TEM ERRO DE SINTAXE: ${e.message}. O navegador descarta o arquivo inteiro (nada dele roda). Rode: node --check ${nomeArq}`); }
 });
-if (srcsLocais.length) ok(`Lendo ${srcsLocais.length} script(s) local(is) referenciado(s): ${srcsLocais.join(', ')}`);
+if (srcsLocais.length) ok(`Lendo ${srcsLocais.length} script(s) local(is) referenciado(s): ${srcsLocais.map(limparSrc).join(', ')}`);
 let codigoTodo = codigoExterno;
 scripts.forEach((s, i) => {
   codigoTodo += '\n' + s;
@@ -79,6 +88,10 @@ dups.size ? aviso('IDs duplicados no HTML: ' + [...dups].join(', ')) : ok('Sem i
 const definidas = new Set();
 [...codigoTodo.matchAll(/(?:^|[\s;{}])(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\(/g)].forEach(m => definidas.add(m[1]));
 [...codigoTodo.matchAll(/(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*)?(?:function|\([^)]*\)\s*=>|[A-Za-z_$][\w$]*\s*=>)/g)].forEach(m => definidas.add(m[1]));
+// Definições por atribuição também contam (window.nome = ..., nome = function...): são usadas no painel
+// e antes davam alarme falso de "função inexistente".
+[...codigoTodo.matchAll(/window\.([A-Za-z_$][\w$]*)\s*=/g)].forEach(m => definidas.add(m[1]));
+[...codigoTodo.matchAll(/(?:^|[;\n{}])\s*([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*)?(?:function|\([^)]*\)\s*=>)/g)].forEach(m => definidas.add(m[1]));
 const NATIVAS = new Set(['alert','confirm','prompt','if','return','event','this','document','window','localStorage','sessionStorage','setTimeout','history','location','navigator','parseInt','parseFloat','Number','String','Math','Date','JSON','Array','Object','showTab']);
 const handlers = [...html.matchAll(/\bon(?:click|change|input|blur|focus|submit|keydown|keyup)="([^"]+)"/g)].map(m => m[1]);
 const faltando = new Set();
@@ -146,6 +159,21 @@ if (inlineCount > 0) aviso(`Há ${inlineCount} handler(s) inline (onclick/onchan
 
 // 11) resumo estrutural para facilitar auditoria futura.
 ok(`Resumo estrutural: ${idsHtml.length} IDs, ${definidas.size} funções detectadas, ${new Set(chavesStorage).size} chaves literais de localStorage, ${refsUnicas.length} referências locais`);
+
+// 11) ordem dos scripts: os módulos (biobel-recognition / biobel-planilha-*) precisam vir ANTES do biobel-app.js.
+//     O núcleo chama funções deles já no carregamento (ex.: restaurarUltimaLeituraPlanilha). Se o módulo carregar
+//     depois (ou por injeção dinâmica), dá "is not defined", o resto do núcleo para de rodar e a planilha não é lida.
+(function(){
+  const nomes = srcsLocais.map(limparSrc).map(s => path.basename(s));
+  const iApp = nomes.indexOf('biobel-app.js');
+  if (iApp < 0) return;
+  const OBRIGATORIOS = ['biobel-recognition.js','biobel-planilha-leitura.js','biobel-planilha-processamento.js','biobel-planilha-comparacao.js'];
+  const faltando = OBRIGATORIOS.filter(m => nomes.indexOf(m) < 0);
+  const depois = OBRIGATORIOS.filter(m => nomes.indexOf(m) > iApp);
+  if (faltando.length) erro(`Módulo(s) não carregado(s) nesta página: ${faltando.join(', ')} (precisam de <script src> antes do biobel-app.js).`);
+  else if (depois.length) erro(`Módulo(s) carregado(s) DEPOIS do biobel-app.js: ${depois.join(', ')} — mova para antes.`);
+  else ok('Módulos carregados antes do biobel-app.js (ordem correta)');
+})();
 
 // 10) <style> abertos/fechados corretamente. Um <style> aberto duas vezes (ou sem fechar) faz o navegador
 //     IGNORAR a primeira regra do bloco seguinte, sem dar erro nenhum — já quebrou os cards da tela

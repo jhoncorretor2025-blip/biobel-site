@@ -16,14 +16,15 @@ const PAGINAS_PAINEL = [
   'dashboard.html', 'central.html', 'operacao.html', 'equipe.html', 'vendas.html',
   'analises.html', 'alertas.html', 'config.html', 'administracao.html'
 ];
-const JS_COMPARTILHADOS = ['biobel-app.js', 'biobel-shell.js', 'central-operacional.js', 'inteligencia-operacional.js'];
+const JS_COMPARTILHADOS = ['biobel-app.js', 'biobel-shell.js', 'biobel-recognition.js', 'biobel-planilha-leitura.js',
+  'biobel-planilha-processamento.js', 'biobel-planilha-comparacao.js', 'central-operacional.js', 'inteligencia-operacional.js'];
 
 // ---- Levanta dados de cada página do painel ----
 const infoPaginas = PAGINAS_PAINEL.filter(existe).map(f => {
   const html = ler(f);
   const pageAttr = (html.match(/data-biobel-page="([a-z]+)"/) || [])[1] || '?';
   const mainId = (html.match(/<(?:main|section) id="([A-Za-z]+)"/) || [])[1] || '?';
-  const scriptsLocais = [...html.matchAll(/<script src="([^"]+)"/g)].map(m => m[1]).filter(s => !s.startsWith('http'));
+  const scriptsLocais = [...html.matchAll(/<script src="([^"]+)"/g)].map(m => m[1]).filter(s => !s.startsWith('http')).map(s => s.split('?')[0].split('#')[0]);   // tira o ?v=NN (cache-busting)
   const idsHtml = [...html.matchAll(/\bid="([^"$\{]+)"/g)].map(m => m[1]);
   return { arquivo: f, pageAttr, mainId, scriptsLocais, tamanho: kb(f), qtdIds: idsHtml.length };
 });

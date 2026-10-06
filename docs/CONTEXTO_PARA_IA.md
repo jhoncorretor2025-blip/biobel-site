@@ -1,6 +1,6 @@
 # CONTEXTO COMPLETO DO PROJETO BIOBEL (arquivo único para colar/anexar em uma IA)
 
-> Gerado automaticamente por `node tools/mapa.js` — NÃO edite à mão. Versão do sistema: v11.23.
+> Gerado automaticamente por `node tools/mapa.js` — NÃO edite à mão. Versão do sistema: v?.
 > Instrução para a IA: leia tudo abaixo antes de responder. Depois, o usuário vai enviar a(s) página(s) do painel (ex.: dashboard.html) e/ou os arquivos JS compartilhados (biobel-app.js, biobel-shell.js) e dizer o que quer mudar.
 > Responda em português simples, com emojis e negrito nas palavras-chave. Diga o que testou e o que não conseguiu testar.
 
@@ -29,7 +29,6 @@ Quem usa: a dona/gerente da loja e a equipe, principalmente **no celular**. **N�
 | Página (arquivo) | `data-biobel-page` | O que tem |
 |---|---|---|
 | `dashboard.html` | `dashboard` | Visão Geral — meta do mês, calendário comercial, central de inteligência, resumo do caixa |
-| `central.html` | `central` | Central Operacional — tarefas, agenda, contas, estoque, manutenção (renderizada 100% por JS) |
 | `operacao.html` | `caixa` | Fechamento de caixa do dia |
 | `equipe.html` | `equipe` | Folha de ponto, faltas, rotina semanal |
 | `vendas.html` | `campanhas` | Campanhas, textos de vaga, "Sem Movimento? Faça Isso!" |
@@ -37,13 +36,31 @@ Quem usa: a dona/gerente da loja e a equipe, principalmente **no celular**. **N�
 | `alertas.html` | `alertas` | Central de Alertas & Decisões |
 | `config.html` | `config` | Configuração (conexão, planilhas, metas, horários, backup...) |
 | `administracao.html` | `adm` | Login próprio — gastos fixos, boletos, comissões, RH |
+| `administracao/fornecedor.html` | — | Boletos e fornecedores (subpágina da Administração; scripts com prefixo `../`) |
+| `backup.html` | `backup` | Backup e restauração dos dados locais |
 
 Cada página HTML tem **só o conteúdo dela própria** (uma `<main>` ou `<section>` com um id como `dashboardTab`, `equipeTab`, `admTab`...). O JavaScript que faz tudo funcionar é **compartilhado**, carregado via `<script src="...">` em todas as páginas:
 
-- **`biobel-app.js`** (~680 KB) — o cérebro do sistema: todas as funções `get*`/`salvar*`/`render*`, regras de negócio, cálculos. Roda em **todas as 9 páginas**. No fim do arquivo tem um `if(p==='dashboard'){...} else if(p==='equipe'){...}...` que lê `document.body.dataset.biobelPage` pra saber em qual página está e inicializar só o que é dela.
+- **`biobel-app.js`** (~680 KB) — o cérebro do sistema: todas as funções `get*`/`salvar*`/`render*`, regras de negócio, cálculos. Roda em **todas as páginas do painel**. No fim do arquivo tem um `if(p==='dashboard'){...} else if(p==='equipe'){...}...` que lê `document.body.dataset.biobelPage` pra saber em qual página está e inicializar só o que é dela.
 - **`biobel-shell.js`** — monta o cabeçalho e o menu de navegação (compartilhado, injeta em `<div id="biobel-shell">`) em todas as páginas.
-- **`central-operacional.js`** — só roda em `central.html`; constrói TODO o conteúdo daquela página via JavaScript (o HTML da página em si fica praticamente vazio).
+- **`central-operacional.js`** — era da `central.html` (página removida); nenhuma página atual o carrega. Não mexa.
 - **`inteligencia-operacional.js`** — só roda em `dashboard.html`; alimenta o card "Central de Inteligência".
+
+### 🔒 Módulos (peças separadas do `biobel-app.js`) — onde mexer e onde NÃO mexer
+Para você (IA) não precisar abrir arquivo que já funciona: **leia só a linha da tabela que bate com o problema**.
+
+| Se o problema é… | Arquivo | Regra |
+|---|---|---|
+| a planilha **não carrega** / "Conectando..." / ponte Apps Script / leitura XLSX e fallbacks | `biobel-planilha-leitura.js` | 🔒 estável — só mexa se o defeito for DE LEITURA |
+| um **número do dia errado** (venda, pagamentos, vendedoras, turnos, fechamento, horários) | `biobel-planilha-processamento.js` | 🔒 estável — mexer aqui muda TODOS os números do sistema |
+| comparação entre meses | `biobel-planilha-comparacao.js` | 🔒 estável |
+| **avisos de venda alta** (> R$ 200 "Parabéns", > R$ 400 "MEGA PARABÉNS") | `biobel-recognition.js` | 🔒 auto-contido: só usa `daysData` e `money` |
+| cabeçalho, menu, versão, faixa "sistema não carregou" | `biobel-shell.js` | cuidado: vale pra todas as páginas |
+| todo o resto (telas, regras, cálculos) | `biobel-app.js` | enorme (~14 mil linhas): **use `grep -n`, não leia inteiro** |
+
+**Ordem dos scripts em TODA página do painel** (o validador reprova se estiver diferente):
+`biobel-shell.js` → os 4 módulos → `biobel-app.js`. **Nunca carregue módulo por JavaScript depois** (injeção dinâmica): o `biobel-app.js` chama funções dos módulos já no carregamento; se o módulo chegar depois dá `is not defined`, o resto do arquivo para de rodar e a planilha não é lida (foi exatamente o que aconteceu em 05/10). **Módulo novo:** `<script src>` nas páginas + lista `MODULOS_OBRIGATORIOS` em `tools/checar-sintaxe.js` e `tools/validar.js`.
+
 - **`biobel-design-system.css`**, **`biobel-ux-refinement.css`**, **`biobel-app.css`** — CSS compartilhado entre as 9 páginas.
 
 **Navegação entre páginas:** o menu (`biobel-shell.js`) usa `<a href="pagina.html">` normais — troca de página de verdade, não é uma SPA. A função `showTab(tab)` (em `biobel-app.js`) primeiro tenta achar a aba **na página atual**; se não achar, usa `window.BIOBEL_PAGES` pra redirecionar (`window.location.href`) pra a página certa.
@@ -66,6 +83,7 @@ Cada página HTML tem **só o conteúdo dela própria** (uma `<main>` ou `<secti
 ```bash
 git pull --rebase                 # um robô do GitHub também faz commits (ver docs/PUBLICACAO.md)
 # ...edite...
+node tools/checar-sintaxe.js            # 1 SEGUNDO. OBRIGATÓRIO antes de todo commit: pega erro que derruba o sistema inteiro
 node tools/validar.js arquivo.html    # rode PRA CADA página que você tocou (ou que usa a função/id que você mudou)
 node tools/mapa.js                    # atualiza docs/MAPA_AUTOMATICO.md e docs/CONTEXTO_PARA_IA.md
 # atualize versão+data+Novidades (dentro de biobel-shell.js) e docs/CHANGELOG.md
@@ -73,9 +91,12 @@ git add -A && git commit -m "vX.Y - resumo em português" && git push
 # espere o build do Pages ficar "built" (~40-100s) e confira a versão no site
 ```
 
-⚠️ **Se você mexeu em `biobel-app.js`, `biobel-shell.js`, `central-operacional.js` ou `inteligencia-operacional.js`, rode o validador nas 9 páginas do painel, não só numa.** Um erro nesses arquivos compartilhados afeta todas ao mesmo tempo — foi exatamente assim que os dois bugs mais sérios já encontrados aconteceram.
+⚠️ **Se você mexeu em `biobel-app.js`, `biobel-shell.js` ou em qualquer módulo `biobel-*.js`, rode o validador em TODAS as páginas do painel**, não só numa. Um erro nesses arquivos compartilhados afeta todas ao mesmo tempo. **Vigia automático:** `tools/github-validar.yml` é um workflow pronto que roda `checar-sintaxe` + `validar` sozinho a cada envio. Ele só passa a valer depois de copiado para `.github/workflows/validar.yml` **pelo site do GitHub** (o token das IAs não tem permissão de "workflow"). Com ele ativo: **commit com ❌ vermelho = sistema possivelmente quebrado no ar — corrija antes de qualquer outra coisa.** Sem ele, a única proteção é VOCÊ rodar `node tools/checar-sintaxe.js` antes de enviar.
 
 ## 5. Armadilhas já vividas (aprenda com elas)
+- **Sistema parado em "🟡 Conectando..." com tudo zerado = ERRO DE SINTAXE no `biobel-app.js` (ou em módulo), NÃO problema de planilha.** O navegador descarta o arquivo inteiro; nada roda; o selo "Conectando..." é só o texto inicial do HTML. Em 05/10 isso durou horas: ~17 commits "consertaram a leitura da planilha" (v11.25–v11.42) sem nunca rodar uma checagem de sintaxe. **Primeiro passo SEMPRE: `node tools/checar-sintaxe.js`. Só depois mexa em lógica de leitura.** Hoje, se o sistema principal não carregar, aparece uma faixa vermelha "O sistema não terminou de carregar".
+- **Aspa dupla-escapada** (`\\'` no lugar de `\'`) dentro de string JavaScript que gera HTML com `onclick="f(\'x\')"`: fecha a string cedo e o script inteiro da página morre sem aviso. Aconteceu no `administracao.html` de 01/10 até 05/10 (funcionários).
+- **Teste de verdade, não só leitura de código:** abra a página num Chromium headless (Playwright) com a planilha simulada e olhe o selo, os números e o console. Foi assim que os erros escondidos foram achados. Atenção: o selo "Conectando..." aparecendo NÃO prova que o código rodou.
 - **Impressão do recibo em branco:** o CSS de impressão esconde todo filho direto do `<body>` menos `#printReceipt`. Se o recibo estiver dentro de um painel, o painel é escondido e leva o recibo junto (um `display:none` no pai nunca é vencido pelo filho). Regra: **`#printReceipt` é sempre filho direto do `<body>`** — use `garantirAreaRecibo()`, nunca `document.getElementById('printReceipt')` solto (em várias páginas o elemento nem existe). O efeito do modo de impressão (`body.receipt-printing`) vale **só em `@media print`**. **Como testar sem impressora:** Chromium headless + `page.pdf()` em A4, 80 mm e 58 mm e leia o PDF (`pdftotext`/`pdftoppm`). Cuidado: o `afterprint` dispara depois de CADA `page.pdf()` e desfaz o modo de impressão — use uma página nova por tamanho de papel, senão você testa a tela normal sem perceber.
 - **Aba aberta há dias roda código velho:** o painel só procura versão nova ao carregar a página. Num computador que fica com o sistema aberto o dia todo (ex.: o da loja), uma correção publicada não chega até alguém recarregar (Ctrl+Shift+R). Antes de investigar "só no computador X", confira o número da versão no topo da tela dele.
 - **`<style>` aberto duas vezes no `<head>`** (faltou o `</style>` ao inserir um bloco de CSS): o navegador descarta em silêncio a primeira regra do bloco seguinte e o layout quebra sem nenhum erro no console. Ao inserir CSS no `<head>`, confira que cada `<style>` tem o seu `</style>` — o `tools/validar.js` agora reprova esse caso. **Dica:** o defeito só aparece olhando a tela; se puder, renderize a página num navegador headless (Playwright) antes de publicar.
