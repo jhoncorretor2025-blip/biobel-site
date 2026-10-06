@@ -98,7 +98,7 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
 -->
 <main id="dashboardTab" class="max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabDashboard">
   <div class="biobel-dashboard-heading no-print" aria-label="Cabeçalho da Visão Geral">
-   <div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><div class="biobel-dashboard-heading-title">Visão Geral</div><span id="versaoSistemaTela" style="display:inline-flex;align-items:center;padding:4px 8px;border:1px solid rgba(14,169,122,.35);border-radius:8px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:10px;font-weight:900;letter-spacing:.04em;">v11.51</span></div><div class="biobel-dashboard-heading-sub">Resumo rápido da loja</div></div>
+   <div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><div class="biobel-dashboard-heading-title">Visão Geral</div><span id="versaoSistemaTela" style="display:inline-flex;align-items:center;padding:4px 8px;border:1px solid rgba(14,169,122,.35);border-radius:8px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:10px;font-weight:900;letter-spacing:.04em;">v11.52</span></div><div class="biobel-dashboard-heading-sub">Resumo rápido da loja</div></div>
    <div class="biobel-dashboard-heading-weather" aria-label="Clima de hoje e previsão de amanhã"><span style="font-size:10px;color:#71849d;font-weight:800;">🌦️ Clima</span><span id="indicadorClimaTopo" style="display:none;"></span></div>
   </div>
   <div class="biobel-dashboard-compact no-print">
@@ -262,7 +262,7 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
 
   <section id="painelAtendimentosHoje" class="no-print biobel-atendimento-card" aria-label="Referência de atendimentos">
    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
-    <div><div style="font-size:11px;color:#27d7a0;font-weight:900;text-transform:uppercase;letter-spacing:.08em;">👥 Movimento da loja</div><div style="font-size:17px;color:#eef5ff;font-weight:900;">Atendimentos de hoje</div></div>
+    <div><div style="font-size:11px;color:#27d7a0;font-weight:900;text-transform:uppercase;letter-spacing:.08em;">👥 Movimento da loja <span id="atendimentosMesReferencia" style="color:#93a3ba;font-weight:800;letter-spacing:.04em;">— OUTUBRO/2026</span></div><div style="font-size:17px;color:#eef5ff;font-weight:900;">Atendimentos de hoje</div></div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
      <button id="atendimentosOnlineToggle" type="button" class="biobel-atendimento-badge" style="cursor:pointer;" aria-pressed="true" title="Escolha se os atendimentos ONLINE entram na conta do movimento da loja (hoje, mínimo, média, máximo e status).">💻 Online incluído</button>
      <span id="atendimentoStatusBadge" class="biobel-atendimento-badge">🟡 Calculando...</span>
@@ -322,10 +322,10 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
 -->
 
 </main>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js?v=11.51"></script>
-<script src="biobel-recognition.js?v=11.51"></script>
-<script src="biobel-planilha-leitura.js?v=11.51"></script>
-<script src="biobel-planilha-processamento.js?v=11.51"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js?v=11.52"></script>
+<script src="biobel-recognition.js?v=11.52"></script>
+<script src="biobel-planilha-leitura.js?v=11.52"></script>
+<script src="biobel-planilha-processamento.js?v=11.52"></script>
 <script src="biobel-planilha-comparacao.js?v=11.51"></script><script src="biobel-app.js?v=11.51"></script><script src="inteligencia-operacional.js?v=11.51"></script>
 <script>
 (function(){
@@ -548,6 +548,14 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
    var chave=String(agora.getDate()).padStart(2,'0')+'.'+String(agora.getMonth()+1).padStart(2,'0');
    var dia=arr.find(x=>String(x?.dia||'')===chave);
    var n=contar(dia), x=cfg(), incl=incluirOnline(), cHoje=contagem(dia);
+    var mesEl=document.getElementById('atendimentosMesReferencia');
+    if(mesEl){
+     var meses=['JANEIRO','FEVEREIRO','MARÇO','ABRIL','MAIO','JUNHO','JULHO','AGOSTO','SETEMBRO','OUTUBRO','NOVEMBRO','DEZEMBRO'];
+     var mesAtual=agora.getMonth()+1, temMesAtual=arr.some(function(d){return Number(String(d?.dia||'').split('.')[1])===mesAtual;});
+     var mesRef=mesAtual;
+     if(!temMesAtual){var candidatos=arr.map(function(d){return Number(String(d?.dia||'').split('.')[1]);}).filter(function(m){return m>=1&&m<=12;});if(candidatos.length)mesRef=candidatos[candidatos.length-1];}
+     mesEl.textContent='— '+meses[mesRef-1]+'/'+agora.getFullYear();
+    }
    var el=document.getElementById('atendimentosHojeValor');if(el)el.textContent=n;
    var spl=document.getElementById('atendimentosHojeSplit');if(spl)spl.textContent=dia?('🏬 '+cHoje.loja+' na loja · 💻 '+cHoje.online+' online'):'';
    var tg=document.getElementById('atendimentosOnlineToggle');if(tg){tg.textContent=incl?'💻 Online incluído':'🏬 Só loja';tg.setAttribute('aria-pressed',incl?'true':'false');}
