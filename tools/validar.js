@@ -29,7 +29,9 @@ const ORFAOS_CONHECIDOS = new Set(['avgClosing','avisoPoucosDadosGastos','banner
   'btnRefreshCompleto','btnToggleLegendCompleto','maxClosing','salesDays','selectedClosing','selectedDay',
   'tableBody','toastBiobel','totalClosing','totalSales',
   // criado pelo próprio código se faltar / usado só se existir (conferido em 05/10):
-  'admGabrielaHistoricoNote','statusBackupAutomatico']);
+  'admGabrielaHistoricoNote','statusBackupAutomatico',
+  // criado/removido pelo código do dashboard conforme o dia mostrado seja ou não hoje:
+  'kpiVendaHojeAviso']);
 
 // 1) sintaxe
 const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]);

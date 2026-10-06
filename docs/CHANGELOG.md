@@ -1,3 +1,10 @@
+## v11.44 — 06/10/2026
+- **Visão Geral mostra de que dia são os números.** Antes o cartão dizia "Venda hoje" mesmo quando a aba de hoje ainda não existia: `diaHoje()` cai no último dia lançado e a tela apresentava os números de ontem como se fossem de hoje (ex.: 06/10 às 8h mostrando as vendas de 05/10).
+- Cartões: "Venda de ontem · seg 05/10", "Líder de ontem · 05/10" (ou "Venda hoje · ter 06/10" quando é hoje; "Último dia lançado · sáb 03/10" quando há 3+ dias sem lançar). Quando os números não são de hoje aparece "⚠️ Hoje (06/10) ainda sem vendas lançadas". Meta do mês ganhou "· até 05/10".
+- Comparativo diário: a coluna e o resumo deixam de dizer "Hoje" quando não é hoje ("Ontem · 05/10", "Ontem (05/10) acima da média").
+- O bloco "Movimento da loja" já era correto (só conta a aba de hoje de verdade) e não foi alterado.
+- Testado com o relógio simulado em 06/10 08:17 (abas só até 05.10), com a aba de hoje já criada, e com 3 dias sem lançar.
+
 ## v11.43 — 05/10/2026
 - **Corrigido: sistema parado em "Conectando..." com tudo zerado (a planilha NÃO era o problema).** Causa: erro de sintaxe no `biobel-app.js` desde as 09:35 de hoje (commit "lembrete 09h30": `}` sobrando na linha 201; depois do v11.37, a função `iniciarAssistenteOperacional` ficou sem o `)();` final). O navegador descarta o arquivo inteiro, então nada rodava e a leitura da planilha nem era tentada. Os ~17 commits v11.25–v11.42 ("recuperação da leitura", modularização) tentaram corrigir o sintoma sem checar a sintaxe e não podiam funcionar.
 - **Corrigida uma corrida de carregamento escondida atrás do erro:** o núcleo chamava `restaurarUltimaLeituraPlanilha` (que mora num módulo) já no carregamento, mas o `biobel-shell.js` injetava os módulos por JavaScript *depois*. Resultado: `is not defined`, o resto do `biobel-app.js` parava e o `render` bom nunca era instalado. Agora os 4 módulos (`biobel-recognition`, `biobel-planilha-leitura`, `-processamento`, `-comparacao`) são `<script>` no HTML, **antes** do `biobel-app.js` (10 páginas). O carregador dinâmico foi removido do shell.

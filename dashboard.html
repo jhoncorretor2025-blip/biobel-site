@@ -98,14 +98,14 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
 -->
 <main id="dashboardTab" class="max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabDashboard">
   <div class="biobel-dashboard-heading no-print" aria-label="Cabeçalho da Visão Geral">
-   <div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><div class="biobel-dashboard-heading-title">Visão Geral</div><span id="versaoSistemaTela" style="display:inline-flex;align-items:center;padding:4px 8px;border:1px solid rgba(14,169,122,.35);border-radius:8px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:10px;font-weight:900;letter-spacing:.04em;">v11.43</span></div><div class="biobel-dashboard-heading-sub">Resumo rápido da loja</div></div>
+   <div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><div class="biobel-dashboard-heading-title">Visão Geral</div><span id="versaoSistemaTela" style="display:inline-flex;align-items:center;padding:4px 8px;border:1px solid rgba(14,169,122,.35);border-radius:8px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:10px;font-weight:900;letter-spacing:.04em;">v11.44</span></div><div class="biobel-dashboard-heading-sub">Resumo rápido da loja</div></div>
    <div class="biobel-dashboard-heading-weather" aria-label="Clima de hoje e previsão de amanhã"><span style="font-size:10px;color:#71849d;font-weight:800;">🌦️ Clima</span><span id="indicadorClimaTopo" style="display:none;"></span></div>
   </div>
   <div class="biobel-dashboard-compact no-print">
    <section class="biobel-kpi-grid" aria-label="Indicadores principais">
     <article class="biobel-kpi"><div class="kpi-label">🎯 Meta do mês</div><div id="kpiMetaValor" class="kpi-value kpi-accent">R$ 0,00</div><div id="kpiMetaSub" class="kpi-sub">de R$ 0,00 · 0%</div><div id="kpiMetaExtra" class="kpi-sub">Calculando necessidade diária...</div></article>
-    <article class="biobel-kpi"><div class="kpi-label">🛍️ Venda hoje</div><div id="kpiVendaHoje" class="kpi-value kpi-accent">R$ 0,00</div><div id="kpiVendaHojeSub" class="kpi-sub">0 atendimentos · ticket R$ 0,00</div></article>
-    <article class="biobel-kpi"><div class="kpi-label">🏆 Líder do dia</div><div id="kpiLiderHoje" class="kpi-value">—</div><div id="kpiLiderHojeSub" class="kpi-sub">R$ 0,00</div></article>
+    <article class="biobel-kpi"><div id="kpiVendaHojeLabel" class="kpi-label">🛍️ Venda hoje</div><div id="kpiVendaHoje" class="kpi-value kpi-accent">R$ 0,00</div><div id="kpiVendaHojeSub" class="kpi-sub">0 atendimentos · ticket R$ 0,00</div></article>
+    <article class="biobel-kpi"><div id="kpiLiderHojeLabel" class="kpi-label">🏆 Líder do dia</div><div id="kpiLiderHoje" class="kpi-value">—</div><div id="kpiLiderHojeSub" class="kpi-sub">R$ 0,00</div></article>
     <article class="biobel-kpi"><div class="kpi-label">🌦️ Clima hoje</div><div id="kpiClimaCard" class="kpi-value">Carregando...</div><div id="kpiClimaCardSub" class="kpi-sub">Buscando previsão...</div></article>
    </section>
    <div class="biobel-context">
@@ -122,7 +122,7 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
    </details>
    <details class="biobel-section-compact" open>
     <summary>📈 Comparativo diário <span id="kpiComparativoResumo" style="font-weight:700;color:#93a3ba;">Hoje × ontem</span></summary>
-    <div class="biobel-compare-scroll" style="overflow-x:auto;"><table class="biobel-compare-table"><thead><tr><th>Métrica</th><th>Hoje</th><th id="kpiComparativoAnteriorHeader">Dia útil anterior</th><th>Média anterior</th><th>Variação</th></tr></thead><tbody id="kpiComparativoBody"></tbody></table></div>
+    <div class="biobel-compare-scroll" style="overflow-x:auto;"><table class="biobel-compare-table"><thead><tr><th>Métrica</th><th id="kpiComparativoHojeHeader">Hoje</th><th id="kpiComparativoAnteriorHeader">Dia útil anterior</th><th>Média anterior</th><th>Variação</th></tr></thead><tbody id="kpiComparativoBody"></tbody></table></div>
    </details>
    <details class="biobel-section-compact">
     <summary>📅 Calendário comercial <span style="font-weight:700;color:#93a3ba;">próximos eventos</span></summary>
@@ -319,11 +319,11 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
 -->
 
 </main>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js?v=11.43"></script>
-<script src="biobel-recognition.js?v=11.43"></script>
-<script src="biobel-planilha-leitura.js?v=11.43"></script>
-<script src="biobel-planilha-processamento.js?v=11.43"></script>
-<script src="biobel-planilha-comparacao.js?v=11.43"></script><script src="biobel-app.js?v=11.43"></script><script src="inteligencia-operacional.js?v=11.43"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js?v=11.44"></script>
+<script src="biobel-recognition.js?v=11.44"></script>
+<script src="biobel-planilha-leitura.js?v=11.44"></script>
+<script src="biobel-planilha-processamento.js?v=11.44"></script>
+<script src="biobel-planilha-comparacao.js?v=11.44"></script><script src="biobel-app.js?v=11.44"></script><script src="inteligencia-operacional.js?v=11.44"></script>
 <script>
 (function(){
  function arrData(){try{return Array.isArray(daysData)?daysData:(Array.isArray(window.daysData)?window.daysData:[]);}catch(e){return Array.isArray(window.daysData)?window.daysData:[];}}
@@ -333,6 +333,28 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
  function nAt(d){return (d?.registrosVendas||[]).filter(v=>String(v?.vendedora||'').trim()).length;}
  function val(d){return Number(d?.vendaP2)||Number(d?.sales)||0;}
  function lider(d){const v=d?.vendedoras||{};return Object.keys(v).map(n=>({n,v:Number(v[n])||0})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v)[0];}
+ // De que dia são os números mostrados? diaHoje() cai no ÚLTIMO dia lançado quando a aba de hoje ainda não existe,
+ // então o cartão não pode dizer "hoje" sem conferir. Devolve {data:'05/10', semana:'seg', rel:'ontem', ehHoje:false}.
+ function infoDia(d){
+  if(!d) return null;
+  const p=String(d.dia||'').split('.'); if(p.length!==2) return null;
+  const dd=Number(p[0]), mm=Number(p[1]); if(!(dd>0&&mm>0)) return null;
+  const ag=typeof window.obterAgoraBrasilia==='function'?window.obterAgoraBrasilia():new Date();
+  const anoAtual=ag.getFullYear(), mesAtual=ag.getMonth()+1;
+  const ano=(mm>mesAtual)?anoAtual-1:anoAtual;                 // dia de dezembro visto em janeiro
+  const tDia=Date.UTC(ano,mm-1,dd), tHoje=Date.UTC(anoAtual,mesAtual-1,ag.getDate());
+  const dif=Math.round((tHoje-tDia)/86400000);
+  return {data:String(dd).padStart(2,'0')+'/'+String(mm).padStart(2,'0'),
+          semana:['dom','seg','ter','qua','qui','sex','sáb'][new Date(tDia).getUTCDay()],
+          rel:dif===0?'hoje':dif===1?'ontem':dif===2?'anteontem':'antes', dif, ehHoje:dif===0};
+ }
+ function rotuloDia(i){
+  if(!i) return {venda:'Venda hoje', lider:'Líder do dia'};
+  const quando={hoje:'de hoje',ontem:'de ontem',anteontem:'de anteontem'}[i.rel];
+  if(i.ehHoje) return {venda:'Venda hoje · '+i.semana+' '+i.data, lider:'Líder de hoje · '+i.data};
+  if(quando) return {venda:'Venda '+quando+' · '+i.semana+' '+i.data, lider:'Líder '+quando+' · '+i.data};
+  return {venda:'Último dia lançado · '+i.semana+' '+i.data, lider:'Líder de '+i.data};
+ }
  function renderCompact(){
   try{
    const a=arrData(), hoje=diaHoje(a), idx=a.indexOf(hoje);
@@ -364,6 +386,18 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
    document.getElementById('kpiVendaHojeSub').textContent=qtd+' atendimento'+(qtd===1?'':'s')+' · ticket '+moeda(ticket);
    document.getElementById('kpiLiderHoje').textContent=l?l.n:'—';
    document.getElementById('kpiLiderHojeSub').textContent=l?moeda(l.v):'Nenhuma venda registrada';
+   // Deixa CLARO de que dia são os números (e se hoje ainda não tem lançamento).
+   const infoMostrado=infoDia(hoje), infoUltimo=infoDia(a[a.length-1]), rot=rotuloDia(infoMostrado);
+   const eV=document.getElementById('kpiVendaHojeLabel'), eL=document.getElementById('kpiLiderHojeLabel');
+   if(eV) eV.textContent='🛍️ '+rot.venda;
+   if(eL) eL.textContent='🏆 '+rot.lider;
+   if(infoUltimo) document.getElementById('kpiMetaSub').textContent+=' · até '+infoUltimo.data;
+   const cardV=document.getElementById('kpiVendaHoje')?.parentElement; let aviso=document.getElementById('kpiVendaHojeAviso');
+   if(infoMostrado && !infoMostrado.ehHoje && cardV){
+    const ag=typeof window.obterAgoraBrasilia==='function'?window.obterAgoraBrasilia():new Date();
+    if(!aviso){aviso=document.createElement('div');aviso.id='kpiVendaHojeAviso';aviso.className='kpi-sub';aviso.style.cssText='color:#fbbf24;font-weight:700;margin-top:4px;';cardV.appendChild(aviso);}
+    aviso.textContent='⚠️ Hoje ('+String(ag.getDate()).padStart(2,'0')+'/'+String(ag.getMonth()+1).padStart(2,'0')+') ainda sem vendas lançadas';
+   } else if(aviso){ aviso.remove(); }
    const ac=document.getElementById('kpiClimaTexto'), clima=document.getElementById('climaHojeMarcadoTexto');if(ac)ac.textContent=clima?.textContent||'clima não informado';
    const climaCard=document.getElementById('kpiClimaCard'), climaSub=document.getElementById('kpiClimaCardSub');
    if(climaCard){ const marcado=(clima?.textContent||'').replace(/^Marcado:\s*/i,'').trim(); climaCard.textContent=marcado||'—'; }
@@ -373,7 +407,10 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
    comp.innerHTML='<tr><td>Faturamento</td><td>'+moeda(total)+'</td><td>'+moeda(val(ontem))+'</td><td>'+moeda(media)+'</td><td>'+((varPct>=0?'🟢 +':'🔻 ')+varPct.toFixed(1)+'%')+'</td></tr>'+
     '<tr><td>Atendimentos</td><td>'+qtd+'</td><td>'+qtdOnt+'</td><td>—</td><td>'+(qtd>=x.minimo?'🟢 dentro/acima da faixa':'🔻 abaixo de '+x.minimo)+'</td></tr>'+
     '<tr><td>Ticket médio</td><td>'+moeda(ticket)+'</td><td>'+moeda(qtdOnt?val(ontem)/qtdOnt:0)+'</td><td>—</td><td>—</td></tr>';
-   document.getElementById('kpiComparativoResumo').textContent=total>=media?'Hoje acima da média':'Hoje abaixo da média';
+   // Mesmo cuidado dos cartões: "Hoje" só se for hoje de verdade; senão diz "Ontem (05/10)" etc.
+   const quemComp=infoMostrado?({hoje:'Hoje',ontem:'Ontem',anteontem:'Anteontem'}[infoMostrado.rel]||('Dia '+infoMostrado.data)):'Hoje';
+   document.getElementById('kpiComparativoResumo').textContent=(infoMostrado&&!infoMostrado.ehHoje?quemComp+' ('+infoMostrado.data+') ':quemComp+' ')+(total>=media?'acima da média':'abaixo da média');
+   const hdrHoje=document.getElementById('kpiComparativoHojeHeader'); if(hdrHoje) hdrHoje.textContent=infoMostrado?(quemComp+' · '+infoMostrado.data):'Hoje';
    const anteriorHeader=document.getElementById('kpiComparativoAnteriorHeader');
    if(anteriorHeader){
     anteriorHeader.textContent=ontem?.dia ? 'Anterior ('+String(ontem.dia)+')' : 'Dia útil anterior';

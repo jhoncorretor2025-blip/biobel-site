@@ -6,13 +6,13 @@
 ## Páginas do painel (8)
 | Arquivo | data-biobel-page | id do conteúdo | Tamanho | IDs no HTML | Scripts locais próprios |
 |---|---|---|---|---|---|
-| `dashboard.html` | `dashboard` | `dashboardTab` | 43 KB | 89 | — |
+| `dashboard.html` | `dashboard` | `dashboardTab` | 46 KB | 92 | — |
 | `operacao.html` | `caixa` | `caixaTab` | 8 KB | 27 | — |
 | `equipe.html` | `equipe` | `equipeTab` | 23 KB | 70 | — |
 | `vendas.html` | `campanhas` | `campanhasTab` | 5 KB | 18 | — |
 | `analises.html` | `info` | `infoTab` | 33 KB | 145 | — |
 | `alertas.html` | `alertas` | `alertasTab` | 3 KB | 11 | — |
-| `config.html` | `config` | `configTab` | 71 KB | 130 | — |
+| `config.html` | `config` | `configTab` | 72 KB | 130 | — |
 | `administracao.html` | `adm` | `admTab` | 85 KB | 168 | — |
 
 ## Mapa de navegação (de `biobel-shell.js`)
