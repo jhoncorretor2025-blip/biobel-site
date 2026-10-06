@@ -1,3 +1,8 @@
+## v11.47 — 06/10/2026
+- **Cartão "Líder de hoje" ganhou o "Top 3 vendas do dia":** as três maiores **vendas individuais** do dia mostrado, com valor, vendedora e a hora lançada (🥇 R$ 450,00 · Alesandra · 10:20). É diferente do líder, que é quem **somou** mais no dia: ex. Clt lidera com R$ 460 (duas vendas) enquanto a maior venda foi da Alesandra (R$ 450).
+- Segue o dia mostrado: "Top 3 vendas do dia" (hoje), "de ontem", "de anteontem" ou "de 03/10". Com menos de 3 vendas mostra só as que existem ("Top 2 vendas"); sem vendas, a lista some. Empate no valor: a venda mais cedo vem primeiro; venda sem hora vai por último; venda sem vendedora aparece como "sem vendedora".
+- Dados já existiam (`registrosVendas`: valor, vendedora, hora); nenhum módulo foi alterado. Nomes da planilha entram só por `textContent` (testado com nome malicioso `<img onerror>`: aparece como texto, não executa). No celular o nome comprido quebra linha sem estourar o cartão.
+
 ## v11.46 — 06/10/2026
 - **Cartão "Venda hoje" ganhou o "Último atendimento".** Mostra a hora da última venda lançada na coluna L ("temp") da planilha e há quanto tempo foi: "🕘 Último atendimento: 14:12 · há 48 min" ("agora há pouco" nos primeiros 2 minutos, "há 4h18" depois de 1 hora). O dado já existia (`ultimaVenda` de cada dia); faltava mostrar.
 - Sem nenhuma venda lançada hoje: "🕘 Aguardando a primeira venda do dia". Se algumas vendas estão sem horário na coluna L: "· 2 sem horário" (avisa que o último pode estar mais tarde); se nenhuma tem horário: "horário não preenchido na planilha".

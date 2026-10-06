@@ -98,14 +98,14 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
 -->
 <main id="dashboardTab" class="max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabDashboard">
   <div class="biobel-dashboard-heading no-print" aria-label="Cabeçalho da Visão Geral">
-   <div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><div class="biobel-dashboard-heading-title">Visão Geral</div><span id="versaoSistemaTela" style="display:inline-flex;align-items:center;padding:4px 8px;border:1px solid rgba(14,169,122,.35);border-radius:8px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:10px;font-weight:900;letter-spacing:.04em;">v11.46</span></div><div class="biobel-dashboard-heading-sub">Resumo rápido da loja</div></div>
+   <div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><div class="biobel-dashboard-heading-title">Visão Geral</div><span id="versaoSistemaTela" style="display:inline-flex;align-items:center;padding:4px 8px;border:1px solid rgba(14,169,122,.35);border-radius:8px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:10px;font-weight:900;letter-spacing:.04em;">v11.47</span></div><div class="biobel-dashboard-heading-sub">Resumo rápido da loja</div></div>
    <div class="biobel-dashboard-heading-weather" aria-label="Clima de hoje e previsão de amanhã"><span style="font-size:10px;color:#71849d;font-weight:800;">🌦️ Clima</span><span id="indicadorClimaTopo" style="display:none;"></span></div>
   </div>
   <div class="biobel-dashboard-compact no-print">
    <section class="biobel-kpi-grid" aria-label="Indicadores principais">
     <article class="biobel-kpi"><div class="kpi-label">🎯 Meta do mês</div><div id="kpiMetaValor" class="kpi-value kpi-accent">R$ 0,00</div><div id="kpiMetaSub" class="kpi-sub">de R$ 0,00 · 0%</div><div id="kpiMetaExtra" class="kpi-sub">Calculando necessidade diária...</div></article>
     <article class="biobel-kpi"><div id="kpiVendaHojeLabel" class="kpi-label">🛍️ Venda hoje</div><div id="kpiVendaHoje" class="kpi-value kpi-accent">R$ 0,00</div><div id="kpiVendaHojeSub" class="kpi-sub">0 atendimentos · ticket R$ 0,00</div><div id="kpiVendaHojeUltimo" class="kpi-sub" style="margin-top:2px;"></div></article>
-    <article class="biobel-kpi"><div id="kpiLiderHojeLabel" class="kpi-label">🏆 Líder do dia</div><div id="kpiLiderHoje" class="kpi-value">—</div><div id="kpiLiderHojeSub" class="kpi-sub">R$ 0,00</div></article>
+    <article class="biobel-kpi"><div id="kpiLiderHojeLabel" class="kpi-label">🏆 Líder do dia</div><div id="kpiLiderHoje" class="kpi-value">—</div><div id="kpiLiderHojeSub" class="kpi-sub">R$ 0,00</div><div id="kpiLiderHojeTop" style="display:none;margin-top:8px;"></div></article>
     <article class="biobel-kpi"><div class="kpi-label">🌦️ Clima hoje</div><div id="kpiClimaCard" class="kpi-value">Carregando...</div><div id="kpiClimaCardSub" class="kpi-sub">Buscando previsão...</div></article>
    </section>
    <div class="biobel-context">
@@ -319,11 +319,11 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
 -->
 
 </main>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js?v=11.46"></script>
-<script src="biobel-recognition.js?v=11.46"></script>
-<script src="biobel-planilha-leitura.js?v=11.46"></script>
-<script src="biobel-planilha-processamento.js?v=11.46"></script>
-<script src="biobel-planilha-comparacao.js?v=11.46"></script><script src="biobel-app.js?v=11.46"></script><script src="inteligencia-operacional.js?v=11.46"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js?v=11.47"></script>
+<script src="biobel-recognition.js?v=11.47"></script>
+<script src="biobel-planilha-leitura.js?v=11.47"></script>
+<script src="biobel-planilha-processamento.js?v=11.47"></script>
+<script src="biobel-planilha-comparacao.js?v=11.47"></script><script src="biobel-app.js?v=11.47"></script><script src="inteligencia-operacional.js?v=11.47"></script>
 <script>
 (function(){
  function arrData(){try{return Array.isArray(daysData)?daysData:(Array.isArray(window.daysData)?window.daysData:[]);}catch(e){return Array.isArray(window.daysData)?window.daysData:[];}}
@@ -411,6 +411,28 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
      txt='🕘 Último atendimento: horário não preenchido na planilha';
     }
     ultEl.textContent=txt; ultEl.style.display=txt?'':'none';
+   }
+   // Top 3 MAIORES VENDAS INDIVIDUAIS do dia mostrado (valor, quem vendeu, hora lançada). Texto sempre via textContent
+   // (os nomes vêm da planilha). Empate no valor: a mais cedo primeiro; venda sem hora vai por último.
+   const topEl=document.getElementById('kpiLiderHojeTop');
+   if(topEl){
+    const top=(Array.isArray(hoje?.registrosVendas)?hoje.registrosVendas:[]).filter(v=>Number(v?.valor)>0)
+     .slice().sort((p,q)=>(Number(q.valor)-Number(p.valor))||((p.horario??9)-(q.horario??9))).slice(0,3);
+    topEl.textContent='';
+    if(top.length){
+     const quandoTop=infoMostrado?(infoMostrado.ehHoje?'do dia':infoMostrado.rel==='ontem'?'de ontem':infoMostrado.rel==='anteontem'?'de anteontem':'de '+infoMostrado.data):'do dia';
+     const cab=document.createElement('div');
+     cab.style.cssText='font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#93a3ba;margin-bottom:3px;';
+     cab.textContent='🏅 Top '+top.length+' venda'+(top.length===1?'':'s')+' '+quandoTop;
+     topEl.appendChild(cab);
+     top.forEach((v,i)=>{
+      const linha=document.createElement('div'); linha.className='kpi-sub'; linha.style.cssText='margin-top:1px;';
+      const forte=document.createElement('strong'); forte.style.color='#dce5f2'; forte.textContent=moeda(v.valor);
+      linha.append(['🥇','🥈','🥉'][i]+' ',forte,' · '+(v.vendedora||'sem vendedora')+(v.hora?' · '+v.hora:''));
+      topEl.appendChild(linha);
+     });
+     topEl.style.display='';
+    } else topEl.style.display='none';
    }
    if(infoUltimo) document.getElementById('kpiMetaSub').textContent+=' · até '+infoUltimo.data;
    const cardV=document.getElementById('kpiVendaHoje')?.parentElement; let aviso=document.getElementById('kpiVendaHojeAviso');
