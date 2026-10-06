@@ -408,6 +408,10 @@ body.light-mode .dev-gate-form input{background:#fff;color:#172033;border-color:
   </div>
   <div style="display:flex;flex-direction:column;gap:14px;">
    <div style="background:#0b1728;border:1px solid rgba(39,215,160,.35);border-radius:10px;padding:12px 14px;">
+    <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v11.51 — 06/10/2026</div>
+    <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">🕐 <strong>Resumo do dia no horário certo:</strong> agora abre <strong>20 minutos antes de a loja fechar</strong> (fecha 18h = resumo às 17h40; sábado fecha 16h = resumo às 15h40) e acompanha o horário de funcionamento da Configuração. Antes aparecia sempre às 17h15.</div>
+   </div>
+   <div style="background:#0b1728;border:1px solid rgba(39,215,160,.35);border-radius:10px;padding:12px 14px;">
     <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v11.50 — 06/10/2026</div>
     <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">💻 <strong>Movimento da loja agora separa loja e online:</strong> cada cartão mostra quantos atendimentos foram na loja e quantos foram online, e um botão (<strong>💻 Online incluído / 🏬 Só loja</strong>) escolhe se o online entra na conta do movimento. O padrão continua incluindo o online.</div>
    </div>
@@ -734,11 +738,11 @@ body.light-mode .dev-gate-form input{background:#fff;color:#172033;border-color:
  document.addEventListener('DOMContentLoaded',()=>setTimeout(carregarConfigAtendimentos,100));
 })();
 </script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js?v=11.50"></script>
-<script src="biobel-recognition.js?v=11.50"></script>
-<script src="biobel-planilha-leitura.js?v=11.50"></script>
-<script src="biobel-planilha-processamento.js?v=11.50"></script>
-<script src="biobel-planilha-comparacao.js?v=11.50"></script><script src="biobel-app.js?v=11.50"></script><script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js?v=11.51"></script>
+<script src="biobel-recognition.js?v=11.51"></script>
+<script src="biobel-planilha-leitura.js?v=11.51"></script>
+<script src="biobel-planilha-processamento.js?v=11.51"></script>
+<script src="biobel-planilha-comparacao.js?v=11.51"></script><script src="biobel-app.js?v=11.51"></script><script>
 (function(){
  const DEV_KEY='biobel_dev_planilhas_autenticado_v1';
  let aplicando=false;

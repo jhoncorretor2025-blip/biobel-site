@@ -13273,8 +13273,27 @@ function calcularResumoEquipeBiobel(){const dia=nomeDiaRotinaAtual();let total=0
 function renderResumoEquipeDia(){const r=calcularResumoEquipeBiobel(),e=document.getElementById('biobelResumoEquipeMini');if(e)e.innerHTML='<strong>'+r.done+'/'+r.total+'</strong> tarefas · <strong>'+r.pct.toFixed(0)+'%</strong> concluído · 💰 <strong>'+new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(r.v||0)+'</strong> em vendas';}
 function abrirResumoEquipeDia(){const r=calcularResumoEquipeBiobel(),e=document.getElementById('biobelResumoEquipeModal'),d=document.getElementById('biobelResumoEquipeDetalhado');if(!e||!d)return;const p=r.total-r.done;d.innerHTML='<div class="biobel-summary-kpis"><div><strong>'+r.done+'/'+r.total+'</strong><span>Tarefas concluídas</span></div><div><strong>'+r.pct.toFixed(0)+'%</strong><span>Rotina concluída</span></div><div><strong>'+new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(r.v||0)+'</strong><span>Vendas do dia</span></div><div><strong>'+r.atend+'</strong><span>Registros de venda</span></div></div><div class="biobel-summary-person"><b>💇‍♀️ Gabi</b><span>'+r.g.done+'/'+r.g.total+' tarefas</span></div><div class="biobel-summary-person"><b>✨ Day</b><span>'+r.dy.done+'/'+r.dy.total+' tarefas</span></div>'+(p?'<div class="biobel-summary-pending">🟡 '+p+' tarefa(s) pendente(s).</div>':'<div class="biobel-summary-ok">🎉 Rotina concluída!</div>');e.style.display='flex';}
 function fecharResumoEquipeDia(){const e=document.getElementById('biobelResumoEquipeModal');if(e)e.style.display='none';}
-function verificarResumoEquipe1715(){try{const d=typeof obterAgoraBrasilia==='function'?obterAgoraBrasilia():new Date(),min=d.getHours()*60+d.getMinutes(),k=chaveDataBiobelOperacional(),last=localStorage.getItem(BIOBEL_RESUMO_1715_KEY);if(min>=1035&&last!==k){localStorage.setItem(BIOBEL_RESUMO_1715_KEY,k);if(document.getElementById('biobelResumoEquipeModal'))abrirResumoEquipeDia();}}catch(e){}}
-(function iniciarAssistenteOperacional(){setTimeout(()=>{renderProximaAcaoBiobel();renderPassagemTurno();renderResumoEquipeDia();verificarResumoEquipe1715();},2200);setInterval(()=>{renderProximaAcaoBiobel();renderResumoEquipeDia();verificarResumoEquipe1715();},30000);window.addEventListener('biobel:data-updated',()=>setTimeout(()=>{renderProximaAcaoBiobel();renderResumoEquipeDia();},500));})();
+/* O resumo "Como foi o dia?" abre MINUTOS ANTES DE FECHAR a loja (padrão: 20 min -> fecha 18:00 = abre 17:40; sábado fecha 16:00 = abre 15:40),
+   usando o horário de funcionamento da Configuração. Antes era um horário FIXO (17:15) em todos os dias — inclusive no sábado, quando a loja
+   já fechou às 16h. Para mudar a antecedência, edite só BIOBEL_RESUMO_MIN_ANTES_DE_FECHAR. A chave de armazenamento mantém o nome antigo
+   (biobel_resumo_1715_v1) DE PROPÓSITO: trocá-la faria o resumo reaparecer no dia da mudança. */
+const BIOBEL_RESUMO_MIN_ANTES_DE_FECHAR=20;
+function minutoDoResumoDoDia(d){
+ const h=typeof getHorarioFuncionamento==='function'?getHorarioFuncionamento():{};
+ const fech=String((d.getDay()===6?h.fechamentoSabado:h.fechamentoSemana)||'18:00').split(':').map(Number);
+ const base=Number.isFinite(fech[0])?fech[0]*60+(fech[1]||0):18*60;
+ return base-BIOBEL_RESUMO_MIN_ANTES_DE_FECHAR;
+}
+function verificarResumoEquipeFimDoDia(){
+ try{
+  const d=typeof obterAgoraBrasilia==='function'?obterAgoraBrasilia():new Date(), min=d.getHours()*60+d.getMinutes(), k=chaveDataBiobelOperacional(), last=localStorage.getItem(BIOBEL_RESUMO_1715_KEY);
+  if(min>=minutoDoResumoDoDia(d) && last!==k){
+   localStorage.setItem(BIOBEL_RESUMO_1715_KEY,k);
+   if(document.getElementById('biobelResumoEquipeModal')) abrirResumoEquipeDia();
+  }
+ }catch(e){ console.warn('Resumo do dia:',e); }
+}
+(function iniciarAssistenteOperacional(){setTimeout(()=>{renderProximaAcaoBiobel();renderPassagemTurno();renderResumoEquipeDia();verificarResumoEquipeFimDoDia();},2200);setInterval(()=>{renderProximaAcaoBiobel();renderResumoEquipeDia();verificarResumoEquipeFimDoDia();},30000);window.addEventListener('biobel:data-updated',()=>setTimeout(()=>{renderProximaAcaoBiobel();renderResumoEquipeDia();},500));})();
 
 let advSummaryDonut = null;
 
@@ -14023,7 +14042,7 @@ let promptDeInstalacaoGuardado=null;
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();promptDeInstalacaoGuardado=e;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='inline-block';});
 function instalarAppBiobel(){if(!promptDeInstalacaoGuardado)return;promptDeInstalacaoGuardado.prompt();promptDeInstalacaoGuardado.userChoice.then(function(){promptDeInstalacaoGuardado=null;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';});}
 window.addEventListener('appinstalled',function(){const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';try{mostrarToast('✅ Biobel instalado!');}catch(e){}});
-if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=11.50',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
+if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=11.51',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
 window.addEventListener('load',initPaginaAtiva,{once:true});
 
 /* Marca final: se esta linha não rodou, o shell avisa que o sistema não carregou (ver avisarFalhaCarregamento em biobel-shell.js). */

@@ -1,3 +1,9 @@
+## v11.51 — 06/10/2026
+- **O resumo do dia ("Como foi o dia?") agora abre 20 minutos ANTES DE FECHAR a loja, e não mais às 17:15 fixo.** O código tinha `min>=1035` (= 17h15) para todos os dias — por isso o resumo apareceu às 17:17 na terça e, no sábado (loja fecha 16h), só às 17:15, mais de uma hora depois do fechamento. Agora usa o horário de funcionamento da Configuração: fecha 18:00 → resumo às **17:40**; sábado fecha 16:00 → **15:40**; se o fechamento for alterado na Configuração (ex.: 19:00), o resumo acompanha (18:40).
+- Continua abrindo uma vez por dia, e também se o sistema for aberto depois do horário (comportamento anterior). A antecedência (20 min) é a constante `BIOBEL_RESUMO_MIN_ANTES_DE_FECHAR` em `biobel-app.js`.
+- Função renomeada `verificarResumoEquipe1715` → `verificarResumoEquipeFimDoDia` (o nome antigo tinha o horário errado embutido). A chave de armazenamento `biobel_resumo_1715_v1` foi mantida de propósito (trocar faria o resumo reaparecer no dia da mudança).
+- Testado com o relógio simulado: terça 17:14/17:16/17:39 não abre, 17:40 e 17:41 abre; sábado 15:39 não, 15:41 abre; fechamento configurado para 19:00 (17:41 não, 18:41 abre); já mostrado hoje não repete; chave de ontem abre.
+
 ## v11.50 — 06/10/2026
 - **"Movimento da loja" separa atendimentos da LOJA e ONLINE.** Os atendimentos online (coluna G "tipo de venda" = Online) entravam na mesma contagem dos presenciais e inflavam o "movimento da loja" (a faixa 15–25 e o status são uma referência de movimento de loja). Agora:
   - cada venda guarda o `tipo` (`'online'` | `'presencial'` | `null`) no `registrosVendas` (módulo `biobel-planilha-processamento.js`); o painel considera **online = tipo "online"** e **todo o resto (presencial ou em branco) = loja**;

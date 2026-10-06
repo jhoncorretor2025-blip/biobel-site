@@ -12,7 +12,7 @@
 | `vendas.html` | `campanhas` | `campanhasTab` | 5 KB | 18 | — |
 | `analises.html` | `info` | `infoTab` | 33 KB | 145 | — |
 | `alertas.html` | `alertas` | `alertasTab` | 3 KB | 11 | — |
-| `config.html` | `config` | `configTab` | 75 KB | 130 | — |
+| `config.html` | `config` | `configTab` | 76 KB | 130 | — |
 | `administracao.html` | `adm` | `admTab` | 85 KB | 168 | — |
 
 ## Mapa de navegação (de `biobel-shell.js`)
@@ -24,7 +24,7 @@ const PAGES={dashboard:"dashboard.html",caixa:"operacao.html",equipe:"equipe.htm
 ## Arquivos JavaScript compartilhados
 | Arquivo | Tamanho | Funções (aprox.) | Usado em |
 |---|---|---|---|
-| `biobel-app.js` | 736 KB | 749 | todas as 8 páginas |
+| `biobel-app.js` | 737 KB | 750 | todas as 8 páginas |
 | `biobel-shell.js` | 15 KB | 4 | todas as 8 páginas |
 | `biobel-recognition.js` | 9 KB | 9 | todas as 8 páginas |
 | `biobel-planilha-leitura.js` | 9 KB | 10 | todas as 8 páginas |
