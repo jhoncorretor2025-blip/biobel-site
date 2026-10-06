@@ -98,7 +98,7 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
 -->
 <main id="dashboardTab" class="max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabDashboard">
   <div class="biobel-dashboard-heading no-print" aria-label="Cabeçalho da Visão Geral">
-   <div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><div class="biobel-dashboard-heading-title">Visão Geral</div><span id="versaoSistemaTela" style="display:inline-flex;align-items:center;padding:4px 8px;border:1px solid rgba(14,169,122,.35);border-radius:8px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:10px;font-weight:900;letter-spacing:.04em;">v11.44</span></div><div class="biobel-dashboard-heading-sub">Resumo rápido da loja</div></div>
+   <div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><div class="biobel-dashboard-heading-title">Visão Geral</div><span id="versaoSistemaTela" style="display:inline-flex;align-items:center;padding:4px 8px;border:1px solid rgba(14,169,122,.35);border-radius:8px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:10px;font-weight:900;letter-spacing:.04em;">v11.45</span></div><div class="biobel-dashboard-heading-sub">Resumo rápido da loja</div></div>
    <div class="biobel-dashboard-heading-weather" aria-label="Clima de hoje e previsão de amanhã"><span style="font-size:10px;color:#71849d;font-weight:800;">🌦️ Clima</span><span id="indicadorClimaTopo" style="display:none;"></span></div>
   </div>
   <div class="biobel-dashboard-compact no-print">
@@ -266,7 +266,7 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
     <span id="atendimentoStatusBadge" class="biobel-atendimento-badge">🟡 Calculando...</span>
    </div>
    <div class="biobel-atendimento-grid">
-    <div class="biobel-atendimento-kpi"><small>Hoje</small><strong id="atendimentosHojeValor">0</strong><div id="atendimentosHojeStatus" class="biobel-atendimento-status">Aguardando dados...</div></div>
+    <div class="biobel-atendimento-kpi"><small id="atendimentosHojeLabel">Hoje</small><strong id="atendimentosHojeValor">0</strong><div id="atendimentosHojeStatus" class="biobel-atendimento-status">Aguardando dados...</div></div>
     <div class="biobel-atendimento-kpi"><small>🔻 Mínimo histórico</small><strong id="atendimentosMinHistorico">—</strong><div id="atendimentosMinHistoricoDia" class="biobel-atendimento-sub"></div></div>
     <div class="biobel-atendimento-kpi"><small>📊 Média por dia</small><strong id="atendimentosMediaHistorico">—</strong><div id="atendimentosMediaHistoricoDias" class="biobel-atendimento-sub">dias úteis</div></div>
     <div class="biobel-atendimento-kpi"><small>🔺 Máximo histórico</small><strong id="atendimentosMaxHistorico">—</strong><div id="atendimentosMaxHistoricoDia" class="biobel-atendimento-sub"></div></div>
@@ -319,11 +319,11 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
 -->
 
 </main>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js?v=11.44"></script>
-<script src="biobel-recognition.js?v=11.44"></script>
-<script src="biobel-planilha-leitura.js?v=11.44"></script>
-<script src="biobel-planilha-processamento.js?v=11.44"></script>
-<script src="biobel-planilha-comparacao.js?v=11.44"></script><script src="biobel-app.js?v=11.44"></script><script src="inteligencia-operacional.js?v=11.44"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js?v=11.45"></script>
+<script src="biobel-recognition.js?v=11.45"></script>
+<script src="biobel-planilha-leitura.js?v=11.45"></script>
+<script src="biobel-planilha-processamento.js?v=11.45"></script>
+<script src="biobel-planilha-comparacao.js?v=11.45"></script><script src="biobel-app.js?v=11.45"></script><script src="inteligencia-operacional.js?v=11.45"></script>
 <script>
 (function(){
  function arrData(){try{return Array.isArray(daysData)?daysData:(Array.isArray(window.daysData)?window.daysData:[]);}catch(e){return Array.isArray(window.daysData)?window.daysData:[];}}
@@ -467,15 +467,22 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
    if(n>=x.muitoForte){status=n>=x.recorde&&x.recorde>0?'Recorde de referência 🔥':'Movimento muito forte';emoji='🔥';}
    else if(n>=x.forte){status='Movimento forte';emoji='🔵';}
    else if(n>=x.minimo){status='Movimento normal';emoji='🟢';}
+   if(!dia){status='Hoje ainda sem lançamentos';emoji='⏳';}   // sem aba de hoje na planilha: não é "movimento fraco", é falta de lançamento
+   var semanaHoje=['dom','seg','ter','qua','qui','sex','sáb'][new Date(Date.UTC(agora.getFullYear(),agora.getMonth(),agora.getDate())).getUTCDay()];
+   var labHoje=document.getElementById('atendimentosHojeLabel');if(labHoje)labHoje.textContent='Hoje · '+semanaHoje+' '+chave.replace('.','/');
    var st=document.getElementById('atendimentosHojeStatus');if(st)st.textContent=emoji+' '+status;
    var badge=document.getElementById('atendimentoStatusBadge');if(badge)badge.textContent=emoji+' '+status;
    var dias=arr.map(d=>({d,n:contar(d)})).filter(x=>x.n>0 && !ehDomingoAtendimento(x.d));
-   var min=dias.reduce((a,b)=>b.n<a.n?b:a,null), max=dias.reduce((a,b)=>b.n>a.n?b:a,null), media=dias.length?dias.reduce((s,x)=>s+x.n,0)/dias.length:0;
+   // Histórico de mínimo e média = só dias JÁ ENCERRADOS (hoje ainda está em andamento e distorceria os dois).
+   // O máximo inclui hoje: se hoje já bateu o recorde, vale mostrar.
+   // (Antes: reduce(...,null) dava TypeError ao ter qualquer dia com dados e o catch vazio escondia o erro.)
+   var encerrados=dias.filter(x=>String(x.d?.dia||'')!==chave);
+   var min=encerrados.reduce((a,b)=>(!a||b.n<a.n)?b:a,null), max=dias.reduce((a,b)=>(!a||b.n>a.n)?b:a,null), media=encerrados.length?encerrados.reduce((s,x)=>s+x.n,0)/encerrados.length:0;
    var mi=document.getElementById('atendimentosMinHistorico');if(mi)mi.textContent=min?min.n:'—';
-   var ma=document.getElementById('atendimentosMaxHistorico');if(ma)ma.textContent=max?max.n:'—'; var med=document.getElementById('atendimentosMediaHistorico');if(med)med.textContent=media?media.toFixed(1).replace('.',','):'—'; var medd=document.getElementById('atendimentosMediaHistoricoDias');if(medd)medd.textContent=media?(dias.length+' dias úteis'):'dias úteis';
-   var mid=document.getElementById('atendimentosMinHistoricoDia');if(mid)mid.textContent=min?'dia '+min.d.d:'';
-   var mad=document.getElementById('atendimentosMaxHistoricoDia');if(mad)mad.textContent=max?'dia '+max.d.d:'';
-  }catch(e){}
+   var ma=document.getElementById('atendimentosMaxHistorico');if(ma)ma.textContent=max?max.n:'—'; var med=document.getElementById('atendimentosMediaHistorico');if(med)med.textContent=media?media.toFixed(1).replace('.',','):'—'; var medd=document.getElementById('atendimentosMediaHistoricoDias');if(medd)medd.textContent=media?(encerrados.length+' dias úteis encerrados'):'dias úteis';
+   var mid=document.getElementById('atendimentosMinHistoricoDia');if(mid)mid.textContent=min?'dia '+min.d.dia:'';
+   var mad=document.getElementById('atendimentosMaxHistoricoDia');if(mad)mad.textContent=max?'dia '+max.d.dia:'';
+  }catch(e){console.warn('Movimento da loja:',e);}
  }
  window.addEventListener('biobel:data-updated',()=>setTimeout(atualizarAtendimentosHoje,350));
  window.addEventListener('storage',e=>{if(e.key===KEY)atualizarAtendimentosHoje();});

@@ -408,6 +408,10 @@ body.light-mode .dev-gate-form input{background:#fff;color:#172033;border-color:
   </div>
   <div style="display:flex;flex-direction:column;gap:14px;">
    <div style="background:#0b1728;border:1px solid rgba(39,215,160,.35);border-radius:10px;padding:12px 14px;">
+    <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v11.45 — 06/10/2026</div>
+    <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">👥 <strong>"Movimento da loja" voltou a mostrar o histórico da planilha:</strong> mínimo, média e máximo de atendimentos por dia (domingos fora; mínimo e média só com dias já encerrados). Antes ficavam em "—" por causa de um erro de conta escondido. Sem lançamentos de hoje, o painel agora diz "⏳ Hoje ainda sem lançamentos" em vez do alarme vermelho.</div>
+   </div>
+   <div style="background:#0b1728;border:1px solid rgba(39,215,160,.35);border-radius:10px;padding:12px 14px;">
     <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v11.44 — 06/10/2026</div>
     <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">📅 <strong>A Visão Geral agora mostra o dia dos números.</strong> Se a planilha de hoje ainda não tem vendas, o cartão avisa "Venda de ontem · seg 05/10" e "Hoje (06/10) ainda sem vendas lançadas", em vez de chamar os números de ontem de "hoje". O mesmo vale para o Líder do dia, a Meta do mês ("até 05/10") e o Comparativo diário.</div>
    </div>
@@ -710,11 +714,11 @@ body.light-mode .dev-gate-form input{background:#fff;color:#172033;border-color:
  document.addEventListener('DOMContentLoaded',()=>setTimeout(carregarConfigAtendimentos,100));
 })();
 </script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js?v=11.44"></script>
-<script src="biobel-recognition.js?v=11.44"></script>
-<script src="biobel-planilha-leitura.js?v=11.44"></script>
-<script src="biobel-planilha-processamento.js?v=11.44"></script>
-<script src="biobel-planilha-comparacao.js?v=11.44"></script><script src="biobel-app.js?v=11.44"></script><script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js?v=11.45"></script>
+<script src="biobel-recognition.js?v=11.45"></script>
+<script src="biobel-planilha-leitura.js?v=11.45"></script>
+<script src="biobel-planilha-processamento.js?v=11.45"></script>
+<script src="biobel-planilha-comparacao.js?v=11.45"></script><script src="biobel-app.js?v=11.45"></script><script>
 (function(){
  const DEV_KEY='biobel_dev_planilhas_autenticado_v1';
  let aplicando=false;

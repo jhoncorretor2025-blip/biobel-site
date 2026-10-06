@@ -1,3 +1,11 @@
+## v11.45 — 06/10/2026
+- **Corrigido: "Movimento da loja" (Visão Geral) não mostrava o histórico da planilha** (mínimo, média e máximo ficavam em "—" para sempre). Causa: `dias.reduce((a,b)=>b.n<a.n?b:a, null)` — o valor inicial `null` faz `a.n` dar `TypeError` assim que existe qualquer dia com dados, e o `catch(e){}` vazio engolia o erro sem deixar rastro.
+- Segundo defeito no mesmo trecho: os rótulos "dia ..." usavam `min.d.d` (campo inexistente; o certo é `.dia`).
+- **Mínimo e média agora contam só dias já encerrados** (hoje, em andamento, distorceria os dois: 3 atendimentos às 9h30 virariam o "mínimo histórico"); o máximo inclui hoje (um recorde de hoje aparece). Domingos continuam fora. O texto mostra "4 dias úteis encerrados".
+- Quando **não existe aba de hoje**, o status deixa de ser o alarme "🔴 Abaixo do esperado" e passa a "⏳ Hoje ainda sem lançamentos"; o rótulo mostra o dia ("Hoje · ter 06/10"). Com a aba de hoje criada, a classificação por faixa continua igual.
+- O `catch` agora registra `console.warn('Movimento da loja:', e)` em vez de calar.
+- Em v11.44 foi afirmado que esse bloco "já era correto": só a parte do "Hoje" havia sido conferida, não o histórico.
+
 ## v11.44 — 06/10/2026
 - **Visão Geral mostra de que dia são os números.** Antes o cartão dizia "Venda hoje" mesmo quando a aba de hoje ainda não existia: `diaHoje()` cai no último dia lançado e a tela apresentava os números de ontem como se fossem de hoje (ex.: 06/10 às 8h mostrando as vendas de 05/10).
 - Cartões: "Venda de ontem · seg 05/10", "Líder de ontem · 05/10" (ou "Venda hoje · ter 06/10" quando é hoje; "Último dia lançado · sáb 03/10" quando há 3+ dias sem lançar). Quando os números não são de hoje aparece "⚠️ Hoje (06/10) ainda sem vendas lançadas". Meta do mês ganhou "· até 05/10".

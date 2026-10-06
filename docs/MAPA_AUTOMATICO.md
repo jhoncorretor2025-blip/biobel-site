@@ -6,7 +6,7 @@
 ## Páginas do painel (8)
 | Arquivo | data-biobel-page | id do conteúdo | Tamanho | IDs no HTML | Scripts locais próprios |
 |---|---|---|---|---|---|
-| `dashboard.html` | `dashboard` | `dashboardTab` | 46 KB | 92 | — |
+| `dashboard.html` | `dashboard` | `dashboardTab` | 47 KB | 93 | — |
 | `operacao.html` | `caixa` | `caixaTab` | 8 KB | 27 | — |
 | `equipe.html` | `equipe` | `equipeTab` | 23 KB | 70 | — |
 | `vendas.html` | `campanhas` | `campanhasTab` | 5 KB | 18 | — |
