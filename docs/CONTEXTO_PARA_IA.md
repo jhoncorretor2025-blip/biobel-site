@@ -54,7 +54,7 @@ Para você (IA) não precisar abrir arquivo que já funciona: **leia só a linha
 | a planilha **não carrega** / "Conectando..." / ponte Apps Script / leitura XLSX e fallbacks | `biobel-planilha-leitura.js` | 🔒 estável — só mexa se o defeito for DE LEITURA |
 | um **número do dia errado** (venda, pagamentos, vendedoras, turnos, fechamento, horários) | `biobel-planilha-processamento.js` | 🔒 estável — mexer aqui muda TODOS os números do sistema |
 | comparação entre meses | `biobel-planilha-comparacao.js` | 🔒 estável |
-| **avisos de venda alta** (> R$ 200 "Parabéns", > R$ 400 "MEGA PARABÉNS") | `biobel-recognition.js` | 🔒 auto-contido: só usa `daysData` e `money` |
+| **avisos de venda** (> R$ 150 "Boa venda", > R$ 200 "Parabéns", > R$ 350 "SUPER VENDA") | `biobel-recognition.js` | 🔒 auto-contido. **Valores e textos: edite SÓ a lista `FAIXAS` no topo.** Regras (só vendas de hoje, fila, histórico v3, migração silenciosa) estão no comentário do cabeçalho |
 | cabeçalho, menu, versão, faixa "sistema não carregou" | `biobel-shell.js` | cuidado: vale pra todas as páginas |
 | todo o resto (telas, regras, cálculos) | `biobel-app.js` | enorme (~14 mil linhas): **use `grep -n`, não leia inteiro** |
 

@@ -1,3 +1,12 @@
+## v11.48 — 06/10/2026
+- **Novas faixas dos avisos de venda** (`biobel-recognition.js`): acima de **R$ 150** → "Boa venda" (aviso pequeno, some sozinho); acima de **R$ 200** → "PARABÉNS — venda acima da média"; acima de **R$ 350** → "SUPER VENDA" (mensagem grande, dourada, com brilho). Antes eram só 2 faixas (> R$ 200 e > R$ 400 "MEGA"). "Acima de" é estritamente maior (R$ 150,00 não avisa; R$ 150,01 sim).
+- **Valores e textos ficam todos na lista `FAIXAS` no topo do módulo** — para mudar um valor ou uma mensagem, edite só ali.
+- **Só vendas de HOJE avisam.** Antes qualquer venda nova de qualquer dia entrava: abrir um mês antigo para comparar, ou corrigir uma venda antiga, podia disparar uma enxurrada de comemorações. Vendas de outros dias são marcadas como vistas em silêncio.
+- **Fila de avisos:** vendas que chegam juntas aparecem uma de cada vez, **a maior primeiro** (antes se substituíam em menos de 1 segundo e a que sobrava na tela era a MENOR). Cada aviso fica um tempo mínimo (6 s / 8 s / 12 s); "Boa venda" some sozinha; "Parabéns" e "SUPER" ficam até fechar, a menos que haja outro esperando.
+- **Sem enxurrada ao atualizar:** o histórico passou para `biobel_vendas_motivacionais_v3` (guarda também as vendas de R$ 150–200 e é acumulativo, não substituído). Aparelho que já usava a versão anterior recebe migração silenciosa. Aparelho novo comemora apenas a maior venda de hoje (antes comemorava a maior do MÊS INTEIRO, mesmo antiga).
+- Só roda depois de uma leitura real da planilha (nunca com dados de exemplo). Nomes da planilha só por `textContent`. A hora saiu da assinatura da venda (preencher a hora depois não repete a comemoração).
+- Interface de teste/ajuste no console: `window.biobelReconhecimento` (`faixas`, `faixaDe(valor)`, `tamanhoFila()`, `fechar()`).
+
 ## v11.47 — 06/10/2026
 - **Cartão "Líder de hoje" ganhou o "Top 3 vendas do dia":** as três maiores **vendas individuais** do dia mostrado, com valor, vendedora e a hora lançada (🥇 R$ 450,00 · Alesandra · 10:20). É diferente do líder, que é quem **somou** mais no dia: ex. Clt lidera com R$ 460 (duas vendas) enquanto a maior venda foi da Alesandra (R$ 450).
 - Segue o dia mostrado: "Top 3 vendas do dia" (hoje), "de ontem", "de anteontem" ou "de 03/10". Com menos de 3 vendas mostra só as que existem ("Top 2 vendas"); sem vendas, a lista some. Empate no valor: a venda mais cedo vem primeiro; venda sem hora vai por último; venda sem vendedora aparece como "sem vendedora".
