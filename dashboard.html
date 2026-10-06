@@ -98,13 +98,13 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
 -->
 <main id="dashboardTab" class="max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabDashboard">
   <div class="biobel-dashboard-heading no-print" aria-label="Cabeçalho da Visão Geral">
-   <div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><div class="biobel-dashboard-heading-title">Visão Geral</div><span id="versaoSistemaTela" style="display:inline-flex;align-items:center;padding:4px 8px;border:1px solid rgba(14,169,122,.35);border-radius:8px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:10px;font-weight:900;letter-spacing:.04em;">v11.45</span></div><div class="biobel-dashboard-heading-sub">Resumo rápido da loja</div></div>
+   <div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><div class="biobel-dashboard-heading-title">Visão Geral</div><span id="versaoSistemaTela" style="display:inline-flex;align-items:center;padding:4px 8px;border:1px solid rgba(14,169,122,.35);border-radius:8px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:10px;font-weight:900;letter-spacing:.04em;">v11.46</span></div><div class="biobel-dashboard-heading-sub">Resumo rápido da loja</div></div>
    <div class="biobel-dashboard-heading-weather" aria-label="Clima de hoje e previsão de amanhã"><span style="font-size:10px;color:#71849d;font-weight:800;">🌦️ Clima</span><span id="indicadorClimaTopo" style="display:none;"></span></div>
   </div>
   <div class="biobel-dashboard-compact no-print">
    <section class="biobel-kpi-grid" aria-label="Indicadores principais">
     <article class="biobel-kpi"><div class="kpi-label">🎯 Meta do mês</div><div id="kpiMetaValor" class="kpi-value kpi-accent">R$ 0,00</div><div id="kpiMetaSub" class="kpi-sub">de R$ 0,00 · 0%</div><div id="kpiMetaExtra" class="kpi-sub">Calculando necessidade diária...</div></article>
-    <article class="biobel-kpi"><div id="kpiVendaHojeLabel" class="kpi-label">🛍️ Venda hoje</div><div id="kpiVendaHoje" class="kpi-value kpi-accent">R$ 0,00</div><div id="kpiVendaHojeSub" class="kpi-sub">0 atendimentos · ticket R$ 0,00</div></article>
+    <article class="biobel-kpi"><div id="kpiVendaHojeLabel" class="kpi-label">🛍️ Venda hoje</div><div id="kpiVendaHoje" class="kpi-value kpi-accent">R$ 0,00</div><div id="kpiVendaHojeSub" class="kpi-sub">0 atendimentos · ticket R$ 0,00</div><div id="kpiVendaHojeUltimo" class="kpi-sub" style="margin-top:2px;"></div></article>
     <article class="biobel-kpi"><div id="kpiLiderHojeLabel" class="kpi-label">🏆 Líder do dia</div><div id="kpiLiderHoje" class="kpi-value">—</div><div id="kpiLiderHojeSub" class="kpi-sub">R$ 0,00</div></article>
     <article class="biobel-kpi"><div class="kpi-label">🌦️ Clima hoje</div><div id="kpiClimaCard" class="kpi-value">Carregando...</div><div id="kpiClimaCardSub" class="kpi-sub">Buscando previsão...</div></article>
    </section>
@@ -319,11 +319,11 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
 -->
 
 </main>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js?v=11.45"></script>
-<script src="biobel-recognition.js?v=11.45"></script>
-<script src="biobel-planilha-leitura.js?v=11.45"></script>
-<script src="biobel-planilha-processamento.js?v=11.45"></script>
-<script src="biobel-planilha-comparacao.js?v=11.45"></script><script src="biobel-app.js?v=11.45"></script><script src="inteligencia-operacional.js?v=11.45"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js?v=11.46"></script>
+<script src="biobel-recognition.js?v=11.46"></script>
+<script src="biobel-planilha-leitura.js?v=11.46"></script>
+<script src="biobel-planilha-processamento.js?v=11.46"></script>
+<script src="biobel-planilha-comparacao.js?v=11.46"></script><script src="biobel-app.js?v=11.46"></script><script src="inteligencia-operacional.js?v=11.46"></script>
 <script>
 (function(){
  function arrData(){try{return Array.isArray(daysData)?daysData:(Array.isArray(window.daysData)?window.daysData:[]);}catch(e){return Array.isArray(window.daysData)?window.daysData:[];}}
@@ -391,6 +391,27 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
    const eV=document.getElementById('kpiVendaHojeLabel'), eL=document.getElementById('kpiLiderHojeLabel');
    if(eV) eV.textContent='🛍️ '+rot.venda;
    if(eL) eL.textContent='🏆 '+rot.lider;
+   // Último atendimento = hora da última venda lançada na coluna L ("temp") da planilha (hoje.ultimaVenda = "14:12").
+   const ultEl=document.getElementById('kpiVendaHojeUltimo');
+   if(ultEl){
+    const ultimaHora=hoje?.ultimaVenda, semHora=Number(hoje?.vendasSemHorario)||0;
+    let txt='';
+    if(!hoje || (qtd===0 && !ultimaHora)){
+     txt=(infoMostrado&&infoMostrado.ehHoje)?'🕘 Aguardando a primeira venda do dia':'';
+    } else if(ultimaHora){
+     txt='🕘 Último atendimento: '+ultimaHora;
+     if(infoMostrado&&infoMostrado.ehHoje){                       // "há quanto tempo" só faz sentido para o dia de hoje
+      const agH=typeof window.obterAgoraBrasilia==='function'?window.obterAgoraBrasilia():new Date();
+      const hm=String(ultimaHora).split(':').map(Number);
+      const dif=(agH.getHours()*60+agH.getMinutes())-(hm[0]*60+hm[1]);
+      if(Number.isFinite(dif)&&dif>=0) txt+=' · '+(dif<2?'agora há pouco':dif<60?'há '+dif+' min':'há '+Math.floor(dif/60)+'h'+String(dif%60).padStart(2,'0'));
+     }
+     if(semHora>0) txt+=' · '+semHora+' sem horário';
+    } else {
+     txt='🕘 Último atendimento: horário não preenchido na planilha';
+    }
+    ultEl.textContent=txt; ultEl.style.display=txt?'':'none';
+   }
    if(infoUltimo) document.getElementById('kpiMetaSub').textContent+=' · até '+infoUltimo.data;
    const cardV=document.getElementById('kpiVendaHoje')?.parentElement; let aviso=document.getElementById('kpiVendaHojeAviso');
    if(infoMostrado && !infoMostrado.ehHoje && cardV){

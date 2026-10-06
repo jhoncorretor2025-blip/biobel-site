@@ -1,3 +1,9 @@
+## v11.46 — 06/10/2026
+- **Cartão "Venda hoje" ganhou o "Último atendimento".** Mostra a hora da última venda lançada na coluna L ("temp") da planilha e há quanto tempo foi: "🕘 Último atendimento: 14:12 · há 48 min" ("agora há pouco" nos primeiros 2 minutos, "há 4h18" depois de 1 hora). O dado já existia (`ultimaVenda` de cada dia); faltava mostrar.
+- Sem nenhuma venda lançada hoje: "🕘 Aguardando a primeira venda do dia". Se algumas vendas estão sem horário na coluna L: "· 2 sem horário" (avisa que o último pode estar mais tarde); se nenhuma tem horário: "horário não preenchido na planilha".
+- Quando os números são de outro dia (ex.: ontem), mostra só a hora ("Último atendimento: 17:42"), sem o "há quanto tempo".
+- A hora exibida é a que está na coluna L: reflete a hora do lançamento na planilha, não necessariamente a hora real da venda se o lançamento for feito depois.
+
 ## v11.45 — 06/10/2026
 - **Corrigido: "Movimento da loja" (Visão Geral) não mostrava o histórico da planilha** (mínimo, média e máximo ficavam em "—" para sempre). Causa: `dias.reduce((a,b)=>b.n<a.n?b:a, null)` — o valor inicial `null` faz `a.n` dar `TypeError` assim que existe qualquer dia com dados, e o `catch(e){}` vazio engolia o erro sem deixar rastro.
 - Segundo defeito no mesmo trecho: os rótulos "dia ..." usavam `min.d.d` (campo inexistente; o certo é `.dia`).
