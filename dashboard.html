@@ -98,7 +98,7 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
 -->
 <main id="dashboardTab" class="max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabDashboard">
   <div class="biobel-dashboard-heading no-print" aria-label="Cabeçalho da Visão Geral">
-   <div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><div class="biobel-dashboard-heading-title">Visão Geral</div><span id="versaoSistemaTela" style="display:inline-flex;align-items:center;padding:4px 8px;border:1px solid rgba(14,169,122,.35);border-radius:8px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:10px;font-weight:900;letter-spacing:.04em;">v11.48</span></div><div class="biobel-dashboard-heading-sub">Resumo rápido da loja</div></div>
+   <div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><div class="biobel-dashboard-heading-title">Visão Geral</div><span id="versaoSistemaTela" style="display:inline-flex;align-items:center;padding:4px 8px;border:1px solid rgba(14,169,122,.35);border-radius:8px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:10px;font-weight:900;letter-spacing:.04em;">v11.49</span></div><div class="biobel-dashboard-heading-sub">Resumo rápido da loja</div></div>
    <div class="biobel-dashboard-heading-weather" aria-label="Clima de hoje e previsão de amanhã"><span style="font-size:10px;color:#71849d;font-weight:800;">🌦️ Clima</span><span id="indicadorClimaTopo" style="display:none;"></span></div>
   </div>
   <div class="biobel-dashboard-compact no-print">
@@ -319,11 +319,11 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
 -->
 
 </main>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js?v=11.48"></script>
-<script src="biobel-recognition.js?v=11.48"></script>
-<script src="biobel-planilha-leitura.js?v=11.48"></script>
-<script src="biobel-planilha-processamento.js?v=11.48"></script>
-<script src="biobel-planilha-comparacao.js?v=11.48"></script><script src="biobel-app.js?v=11.48"></script><script src="inteligencia-operacional.js?v=11.48"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js?v=11.49"></script>
+<script src="biobel-recognition.js?v=11.49"></script>
+<script src="biobel-planilha-leitura.js?v=11.49"></script>
+<script src="biobel-planilha-processamento.js?v=11.49"></script>
+<script src="biobel-planilha-comparacao.js?v=11.49"></script><script src="biobel-app.js?v=11.49"></script><script src="inteligencia-operacional.js?v=11.49"></script>
 <script>
 (function(){
  function arrData(){try{return Array.isArray(daysData)?daysData:(Array.isArray(window.daysData)?window.daysData:[]);}catch(e){return Array.isArray(window.daysData)?window.daysData:[];}}
@@ -378,10 +378,24 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
    const total=val(hoje), qtd=nAt(hoje), ticket=qtd?total/qtd:0, l=lider(hoje), x=cfg();
    const metaTotal=Number(localStorage.getItem('biobel_sales_goal')||50000)||50000;
    const acumulado=a.reduce((s,d)=>s+val(d),0), pct=metaTotal?(acumulado/metaTotal*100):0, falta=Math.max(0,metaTotal-acumulado);
-   const diasRest=Math.max(1,Number(document.getElementById('metaDiasRestantes')?.textContent)||1), necessidade=falta/diasRest;
+   // Quanto precisa vender por dia = o que falta ÷ (dias úteis DEPOIS de hoje + a fração de hoje que ainda resta).
+   // Mesma regra do núcleo (renderAdvancedDashboard): sem domingo e sem feriado marcado em "dias atípicos"; a fração de
+   // hoje vem do horário da loja. (Antes: lia o número de um elemento que contém uma FRASE -> NaN -> "1 dia" -> por dia = total.)
+   let diasUteisFuturos=0, fracaoHoje=0;
+   try{
+    const mesRef=Number(String(a[0]?.dia||'').split('.')[1]);
+    if(mesRef>0){
+     const agM=obterAgoraBrasilia(), ultimoDiaMes=new Date(agM.getFullYear(),mesRef,0).getDate(), mesmoMes=(agM.getMonth()+1===mesRef);
+     diasUteisFuturos=contarDiasUteisRestantes(mesRef, mesmoMes?agM.getDate():ultimoDiaMes, ultimoDiaMes);
+     fracaoHoje=mesmoMes?calcularFracaoHojeRestante():0;     // só conta "o resto de hoje" se a planilha aberta é do mês atual
+    }
+   }catch(e){ console.warn('Meta por dia:',e); }
+   const diasPrecisos=diasUteisFuturos+fracaoHoje, necessidade=diasPrecisos>0?falta/diasPrecisos:0;
    document.getElementById('kpiMetaValor').textContent=moeda(acumulado);
    document.getElementById('kpiMetaSub').textContent='de '+moeda(metaTotal)+' · '+pct.toFixed(0)+'%';
-   document.getElementById('kpiMetaExtra').textContent='Faltam '+moeda(falta)+' · '+moeda(necessidade)+'/dia';
+   const metaExtraEl=document.getElementById('kpiMetaExtra');
+   metaExtraEl.textContent = falta<=0 ? '🎉 Meta batida!' : diasPrecisos>0 ? 'Faltam '+moeda(falta)+' · '+moeda(necessidade)+'/dia' : 'Faltam '+moeda(falta)+' · sem dias úteis restantes';
+   metaExtraEl.title='Base da conta: '+diasUteisFuturos+' dia(s) útil(eis) depois de hoje + '+Math.round(fracaoHoje*100)+'% do expediente de hoje (sem domingos e sem feriados marcados em Análises).';
    document.getElementById('kpiVendaHoje').textContent=moeda(total);
    document.getElementById('kpiVendaHojeSub').textContent=qtd+' atendimento'+(qtd===1?'':'s')+' · ticket '+moeda(ticket);
    document.getElementById('kpiLiderHoje').textContent=l?l.n:'—';
@@ -442,9 +456,7 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
     aviso.textContent='⚠️ Hoje ('+String(ag.getDate()).padStart(2,'0')+'/'+String(ag.getMonth()+1).padStart(2,'0')+') ainda sem vendas lançadas';
    } else if(aviso){ aviso.remove(); }
    const ac=document.getElementById('kpiClimaTexto'), clima=document.getElementById('climaHojeMarcadoTexto');if(ac)ac.textContent=clima?.textContent||'clima não informado';
-   const climaCard=document.getElementById('kpiClimaCard'), climaSub=document.getElementById('kpiClimaCardSub');
-   if(climaCard){ const marcado=(clima?.textContent||'').replace(/^Marcado:\s*/i,'').trim(); climaCard.textContent=marcado||'—'; }
-   if(climaSub)climaSub.textContent='Hoje na loja · previsão de amanhã abaixo';
+   // O cartão "Clima hoje" é escrito SÓ por atualizarClimaKpiCompacto(). Antes este render (a cada 60 s) o reescrevia com "—", apagando a previsão.
    const comp=document.getElementById('kpiComparativoBody'), media=anteriores.length?anteriores.reduce((s,d)=>s+val(d),0)/anteriores.length:0;
    const varPct=ontem&&val(ontem)?((total-val(ontem))/val(ontem))*100:0, qtdOnt=nAt(ontem);
    comp.innerHTML='<tr><td>Faturamento</td><td>'+moeda(total)+'</td><td>'+moeda(val(ontem))+'</td><td>'+moeda(media)+'</td><td>'+((varPct>=0?'🟢 +':'🔻 ')+varPct.toFixed(1)+'%')+'</td></tr>'+
@@ -473,23 +485,41 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
    const el=document.getElementById('kpiClimaCard'), sub=document.getElementById('kpiClimaCardSub'); if(!el)return;
    const emojis={Sol:'☀️',Nublado:'☁️',Chuva:'🌧️',Frio:'🥶'};
    const hoje=typeof obterAgoraBrasilia==='function'?obterAgoraBrasilia():new Date();
-   const chave=String(hoje.getDate()).padStart(2,'0')+'.'+String(hoje.getMonth()+1).padStart(2,'0');
-   const marcado=(typeof getClimaDias==='function'?getClimaDias():{})[chave];
-   if(marcado){el.textContent=(emojis[marcado]||'🌦️')+' '+marcado;}
-   if(typeof getPrevisaoClimaFutura==='function'){
-    const prev=await getPrevisaoClimaFutura();
-    const hojeIso=hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-'+String(hoje.getDate()).padStart(2,'0');
-    const atual=prev.find(d=>d.data===hojeIso)||prev[0];
-    const amanha=new Date(hoje.getFullYear(),hoje.getMonth(),hoje.getDate()+1);
-    const amIso=amanha.getFullYear()+'-'+String(amanha.getMonth()+1).padStart(2,'0')+'-'+String(amanha.getDate()).padStart(2,'0');
-    const am=prev.find(d=>d.data===amIso);
-    if(atual){ el.textContent=(emojis[atual.categoria]||'🌦️')+' '+atual.categoria; sub.textContent=(Math.round(atual.tempMax)||0)+'° / '+(Math.round(atual.tempMin)||0)+'° · amanhã '+(am?(emojis[am.categoria]||'🌦️')+' '+am.categoria:'previsão disponível'); }
-    else if(marcado){sub.textContent='Marcado na loja · previsão atualizada';}
-   } else if(marcado){sub.textContent='Clima marcado para hoje';}
+   const dd=String(hoje.getDate()).padStart(2,'0'), mm=String(hoje.getMonth()+1).padStart(2,'0'), hojeIso=hoje.getFullYear()+'-'+mm+'-'+dd;
+   const amanha=new Date(hoje.getFullYear(),hoje.getMonth(),hoje.getDate()+1);
+   const amIso=amanha.getFullYear()+'-'+String(amanha.getMonth()+1).padStart(2,'0')+'-'+String(amanha.getDate()).padStart(2,'0');
+   const marcado=(typeof getClimaDias==='function'?getClimaDias():{})[dd+'.'+mm]||null;            // marcação da loja (manual ou automática)
+   let prev=[]; try{ if(typeof getPrevisaoClimaFutura==='function') prev=await getPrevisaoClimaFutura(); }catch(e){}
+   let agora=null; try{ if(typeof getClimaAtualLoja==='function') agora=await getClimaAtualLoja(); }catch(e){}   // temperatura e condição de AGORA
+   const prevHoje=prev.find(d=>d.data===hojeIso)||null, am=prev.find(d=>d.data===amIso)||null;
+   // Marcação MANUAL da loja manda (sempre foi a regra). Marcação AUTOMÁTICA (feita de manhã) cede para a leitura de agora:
+   // se o tempo virou, o cartão acompanha.
+   let autoMarca=null; try{ autoMarca=JSON.parse(localStorage.getItem('biobel_clima_auto_marca')||'null'); }catch(e){}
+   const marcaManual=!!marcado && !(autoMarca && autoMarca.chave===(dd+'.'+mm) && autoMarca.categoria===marcado);
+   const categoria=marcaManual?marcado:(agora?.categoria||marcado||prevHoje?.categoria||null);
+   if(!categoria){ el.textContent='—'; sub.textContent='Sem previsão agora (internet?) · marque o clima na linha abaixo'; return; }
+   const temp=(agora&&Number.isFinite(agora.temperatura))?Math.round(agora.temperatura):null;
+   el.textContent=(emojis[categoria]||'🌦️')+' '+categoria+(temp!==null?' · '+temp+'°':'');
+   const partes=[];
+   if(temp!==null&&agora.horaLeitura) partes.push('medido às '+agora.horaLeitura);
+   if(prevHoje) partes.push('máx '+Math.round(prevHoje.tempMax)+'° · mín '+Math.round(prevHoje.tempMin)+'°');
+   if(am) partes.push('amanhã '+(emojis[am.categoria]||'🌦️')+' '+am.categoria+' '+Math.round(am.tempMax)+'°');
+   if(marcaManual) partes.push('marcado na loja');
+   sub.textContent=partes.join(' · ')||'Hoje na loja';
   }catch(e){console.warn('KPI clima:',e);}
  }
  window.addEventListener('biobel:data-updated',()=>setTimeout(atualizarClimaKpiCompacto,500));
  setTimeout(atualizarClimaKpiCompacto,1800); setInterval(atualizarClimaKpiCompacto,60000);
+ // Detecção automática do clima de hoje (marca o dia em "biobel_clima_dias", usado na análise clima x vendas e no modo chuva).
+ // Estava SEM CHAMADA desde 29/09, quando o sistema foi dividido em páginas: a chamada original ficava no fim do arquivo único.
+ function detectarClimaDeHoje(){
+  try{ if(typeof buscarClimaAutomaticoHoje==='function') buscarClimaAutomaticoHoje().then(()=>{
+   try{renderClimaHojeStatus();}catch(e){} try{renderIndicadorClimaTopo();}catch(e){} setTimeout(atualizarClimaKpiCompacto,300);
+   const cTxt=document.getElementById('climaHojeMarcadoTexto'), linhaClima=document.getElementById('kpiClimaTexto');   // a linha pequena de baixo acompanha na hora
+   if(linhaClima&&cTxt&&cTxt.textContent) linhaClima.textContent=cTxt.textContent;
+  }); }catch(e){}
+ }
+ setTimeout(detectarClimaDeHoje,2500); setInterval(detectarClimaDeHoje,30*60*1000);   // a cada 30 min: vira o dia com a tela aberta e ela marca o dia novo
 })();
 </script>
 <script>

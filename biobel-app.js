@@ -8621,6 +8621,27 @@ async function getPrevisaoClimaFutura(){
  }
 }
 
+/* ===== Clima de AGORA na loja (temperatura + condição) — Open-Meteo, sem chave, coordenadas fixas de Gravataí.
+   Cache de 10 min (memória + localStorage) para não chamar a API a cada atualização da tela. Se a internet cair,
+   usa a última leitura de até 1 hora. Devolve {temperatura, categoria, horaLeitura, em} ou null. ===== */
+let climaAtualCache=null;
+async function getClimaAtualLoja(){
+ const agoraMs=Date.now(), DEZ_MIN=10*60*1000, UMA_HORA=60*60*1000;
+ try{ if(!climaAtualCache){ const sv=JSON.parse(localStorage.getItem('biobel_clima_atual_cache')||'null'); if(sv&&Number.isFinite(sv.em)&&Number.isFinite(sv.temperatura)) climaAtualCache=sv; } }catch(e){}
+ if(climaAtualCache && agoraMs-climaAtualCache.em<DEZ_MIN) return climaAtualCache;
+ const reserva=()=>(climaAtualCache && agoraMs-climaAtualCache.em<UMA_HORA)?climaAtualCache:null;
+ try{
+  const resposta=await fetch('https://api.open-meteo.com/v1/forecast?latitude=-29.94&longitude=-50.99&current_weather=true&timezone=America%2FSao_Paulo');
+  if(!resposta.ok) return reserva();
+  const dados=await resposta.json(), c=dados?.current_weather;
+  if(!c||!Number.isFinite(Number(c.temperature))) return reserva();
+  const temperatura=Number(c.temperature);
+  climaAtualCache={ em:agoraMs, temperatura, categoria:mapearCodigoClimaParaCategoria(c.weathercode,temperatura), horaLeitura:String(c.time||'').slice(11,16)||null };
+  try{ localStorage.setItem('biobel_clima_atual_cache',JSON.stringify(climaAtualCache)); }catch(e){}
+  return climaAtualCache;
+ }catch(e){ console.warn('Não foi possível ler o clima atual:',e); return reserva(); }
+}
+
 async function buscarClimaAutomaticoHoje(){
  const hoje = obterAgoraBrasilia();
  const chaveDia = String(hoje.getDate()).padStart(2,'0')+'.'+String(hoje.getMonth()+1).padStart(2,'0');
@@ -8630,15 +8651,13 @@ async function buscarClimaAutomaticoHoje(){
  // Coordenadas fixas de Gravataí/RS, onde fica a loja — evita precisar pedir permissão de
  // localização do aparelho, já que o endereço da loja não muda.
  try{
-  const resposta = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-29.94&longitude=-50.99&current_weather=true&timezone=America%2FSao_Paulo');
-  if(!resposta.ok) return;
-  const dados = await resposta.json();
-  const clima = dados?.current_weather;
-  if(!clima) return;
-  const categoria = mapearCodigoClimaParaCategoria(clima.weathercode, clima.temperature);
+  const climaAgora = await getClimaAtualLoja();
+  if(!climaAgora) return;
+  const categoria = climaAgora.categoria;
   const obj = getClimaDias();
   obj[chaveDia] = categoria;
   salvarClimaDias(obj);
+  try{ localStorage.setItem('biobel_clima_auto_marca',JSON.stringify({chave:chaveDia,categoria})); }catch(e){}   // lembra que ESTA marca foi automática (a manual da loja sempre tem prioridade)
   renderClimaHojeStatus();
   try{ renderCorrelacaoClima(); }catch(e){}
  }catch(e){
@@ -13773,7 +13792,19 @@ render = function(){
  else if(p==='campanhas'){try{initCampanhas();}catch(e){}}
  else if(p==='info'){try{renderInfoTab();}catch(e){}}
  else if(p==='alertas'){try{renderCentralDeAlertas();}catch(e){}}
- else if(p==='config'){try{initDailyGoalUI();renderListaMetasVendedoras();renderLogAlteracoes();renderDiasSemErroConexao();initNotificacoesUI();renderMensagensProgramadas();renderPlanilhasSalvas();initHorarioFuncionamentoUI();initDadosEmpresaUI();initAppsScriptUrlUI();}catch(e){}}
+ else if(p==='config'){
+  // Inicialização da aba Configuração = a mesma sequência do arquivo único (antes da divisão em páginas, 29/09).
+  // Cada passo é protegido EM SEPARADO: um erro não pode pular os demais. Estavam faltando (campos apareciam VAZIOS mesmo com tudo
+  // salvo): meta do mês, meta de atendimentos, metas de longo prazo, logo, link Trabalhe Conosco, e-mail da contadora e provedor de e-mail.
+  const passo=fn=>{ try{ fn(); }catch(e){ console.warn('Configuração:',e); } };
+  passo(()=>{ const g=document.getElementById('salesGoalInput'); if(g) g.value=money(getSalesGoal()); });
+  passo(initDailyGoalUI); passo(renderListaMetasVendedoras); passo(renderLogAlteracoes); passo(renderDiasSemErroConexao); passo(initNotificacoesUI);
+  passo(()=>{ const q=document.getElementById('metaQtdVendasInput'); if(q){ const v=getMetaQtdVendas(); q.value=v>0?v:''; } });
+  passo(initMetasLongoPrazoUI); passo(initLogoBiobelUI); passo(initLinkTrabalheConoscoUI);
+  passo(renderMensagensProgramadas); passo(renderPlanilhasSalvas); passo(initHorarioFuncionamentoUI); passo(initDadosEmpresaUI); passo(initAppsScriptUrlUI);
+  passo(()=>{ const em=document.getElementById('emailContadora'); if(em) em.value=getEmailContadora(); });
+  passo(initProvedorEmailUI);
+ }
  else if(p==='adm'){try{initAdmTab();}catch(e){}}
 };
 
@@ -13992,7 +14023,7 @@ let promptDeInstalacaoGuardado=null;
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();promptDeInstalacaoGuardado=e;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='inline-block';});
 function instalarAppBiobel(){if(!promptDeInstalacaoGuardado)return;promptDeInstalacaoGuardado.prompt();promptDeInstalacaoGuardado.userChoice.then(function(){promptDeInstalacaoGuardado=null;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';});}
 window.addEventListener('appinstalled',function(){const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';try{mostrarToast('✅ Biobel instalado!');}catch(e){}});
-if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=11.48',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
+if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=11.49',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
 window.addEventListener('load',initPaginaAtiva,{once:true});
 
 /* Marca final: se esta linha não rodou, o shell avisa que o sistema não carregou (ver avisarFalhaCarregamento em biobel-shell.js). */

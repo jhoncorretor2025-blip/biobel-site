@@ -6,13 +6,13 @@
 ## Páginas do painel (8)
 | Arquivo | data-biobel-page | id do conteúdo | Tamanho | IDs no HTML | Scripts locais próprios |
 |---|---|---|---|---|---|
-| `dashboard.html` | `dashboard` | `dashboardTab` | 50 KB | 95 | — |
+| `dashboard.html` | `dashboard` | `dashboardTab` | 53 KB | 95 | — |
 | `operacao.html` | `caixa` | `caixaTab` | 8 KB | 27 | — |
 | `equipe.html` | `equipe` | `equipeTab` | 23 KB | 70 | — |
 | `vendas.html` | `campanhas` | `campanhasTab` | 5 KB | 18 | — |
 | `analises.html` | `info` | `infoTab` | 33 KB | 145 | — |
 | `alertas.html` | `alertas` | `alertasTab` | 3 KB | 11 | — |
-| `config.html` | `config` | `configTab` | 74 KB | 130 | — |
+| `config.html` | `config` | `configTab` | 75 KB | 130 | — |
 | `administracao.html` | `adm` | `admTab` | 85 KB | 168 | — |
 
 ## Mapa de navegação (de `biobel-shell.js`)
@@ -24,7 +24,7 @@ const PAGES={dashboard:"dashboard.html",caixa:"operacao.html",equipe:"equipe.htm
 ## Arquivos JavaScript compartilhados
 | Arquivo | Tamanho | Funções (aprox.) | Usado em |
 |---|---|---|---|
-| `biobel-app.js` | 733 KB | 748 | todas as 8 páginas |
+| `biobel-app.js` | 736 KB | 749 | todas as 8 páginas |
 | `biobel-shell.js` | 15 KB | 4 | todas as 8 páginas |
 | `biobel-recognition.js` | 9 KB | 9 | todas as 8 páginas |
 | `biobel-planilha-leitura.js` | 9 KB | 10 | todas as 8 páginas |
@@ -148,6 +148,9 @@ Para achar uma: `grep -n "===== Nome" biobel-app.js`
 - Busca automática do clima de hoje — API gratuita Open-Meteo, sem precisar de chave
 - Previsão futura do clima — busca uma vez por dia e guarda em cache, reaproveitada por
    várias telas (previsão dos próximos dias, alerta de fim de semana, calendário comercial)
+- Clima de AGORA na loja (temperatura + condição) — Open-Meteo, sem chave, coordenadas fixas de Gravataí.
+   Cache de 10 min (memória + localStorage) para não chamar a API a cada atualização da tela. Se a internet cair,
+   usa a última leitura de até 1 hora. Devolve {temperatura, categoria, horaLeitura, em} ou null.
 - Recordes batidos (item 10) — guarda uma linha do tempo de conquistas
 - Exportar a comparação em PDF (item 6)
 - Top 30 Melhores Dias — junta o mês atual com TODOS os meses arquivados, sem separar
@@ -179,7 +182,7 @@ Para achar uma: `grep -n "===== Nome" biobel-app.js`
 - https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js
 - https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js
 
-## Chaves de dados no navegador (localStorage): 142
+## Chaves de dados no navegador (localStorage): 144
 Prefixo comum `biobel_`. Agrupadas pelo 1º termo depois do prefixo:
 
 **adm** (35): `biobel_adm_autenticado`, `biobel_adm_boletos`, `biobel_adm_comissoes`, `biobel_adm_data_admissao_gabriela`, `biobel_adm_fechamentos_mensais`, `biobel_adm_gastos_fixos`, `biobel_adm_historico_comissoes`, `biobel_adm_historico_ferias_gabriela`, `biobel_adm_historico_recesso_day`, `biobel_adm_inicio_estagio_day`, `biobel_adm_inicio_informal_gabriela`, `biobel_adm_login_ts`, `biobel_adm_meta_lucro_mensal`, `biobel_adm_migracao_salarios_v2`, `biobel_adm_migracao_vencimentos_v1`, `biobel_adm_nascimento_`, `biobel_adm_nascimento_day`, `biobel_adm_nascimento_gabriela`, `biobel_adm_niveis_comissao`, `biobel_adm_pct_participacao_lucro`, `biobel_adm_renovacao_estagio_meses`, `biobel_adm_reunioes`, `biobel_adm_secao_isolada`, `biobel_adm_seed_dados_pessoais_v1`, `biobel_adm_taxa_credito`, `biobel_adm_taxa_debito`, `biobel_adm_tipo_imposto`, `biobel_adm_usuario_logado`, `biobel_adm_valor_estoque`, `biobel_adm_valor_estoque_data`, `biobel_adm_valor_hora_extra`, `biobel_adm_valor_hora_extra_definido_manualmente`, `biobel_adm_valor_imposto_mensal`, `biobel_adm_valor_reserva`, `biobel_adm_valor_reserva_data`
@@ -191,6 +194,8 @@ Prefixo comum `biobel_`. Agrupadas pelo 1º termo depois do prefixo:
 **campanhas** (3): `biobel_campanhas`, `biobel_campanhas_`, `biobel_campanhas_migracao_v2`
 
 **chave** (3): `biobel_chave_pix_`, `biobel_chave_pix_day`, `biobel_chave_pix_gabriela`
+
+**clima** (3): `biobel_clima_atual_cache`, `biobel_clima_auto_marca`, `biobel_clima_dias`
 
 **dados** (3): `biobel_dados_empresa`, `biobel_dados_fornecedores`, `biobel_dados_pessoais_`
 
@@ -239,8 +244,6 @@ Prefixo comum `biobel_`. Agrupadas pelo 1º termo depois do prefixo:
 **cadastros** (1): `biobel_cadastros_adm`
 
 **card** (1): `biobel_card_colapsado_`
-
-**clima** (1): `biobel_clima_dias`
 
 **config** (1): `biobel_config_secao_ativa`
 
