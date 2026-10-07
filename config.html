@@ -743,51 +743,96 @@ body.light-mode .dev-gate-form input{background:#fff;color:#172033;border-color:
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell-v1161.js?v=11.61"></script>
-<script src="biobel-recognition.js?v=11.60"></script>
-<script src="biobel-planilha-leitura.js?v=11.60"></script>
-<script src="biobel-planilha-processamento.js?v=11.60"></script>
-<script src="biobel-planilha-comparacao.js?v=11.60"></script><script src="biobel-app.js?v=11.60"></script><script>
+<script src="biobel-recognition.js?v=11.66"></script>
+<script src="biobel-planilha-leitura.js?v=11.66"></script>
+<script src="biobel-planilha-processamento.js?v=11.66"></script>
+<script src="biobel-planilha-comparacao.js?v=11.66"></script><script src="biobel-app.js?v=11.66"></script><script>
 (function(){
  const DEV_KEY='biobel_dev_planilhas_autenticado_v1';
  let aplicando=false;
  const DEV_USER='Jhon';
  const DEV_PASS='medaumaluz';
+
  function devAutenticado(){try{return sessionStorage.getItem(DEV_KEY)==='yes';}catch(e){return false;}}
+ function el(id){return document.getElementById(id);}
+ function setErro(texto,tipo){
+  ['devLoginErro','devLoginErroPlanilhas'].forEach(id=>{
+   const x=el(id); if(!x)return;
+   x.textContent=texto||'';
+   x.classList.toggle('ok',tipo==='ok');
+   x.classList.toggle('loading',tipo==='loading');
+  });
+ }
+ function setBotoes(texto,disabled){
+  document.querySelectorAll('.dev-gate-form button').forEach(btn=>{
+   btn.textContent=texto;
+   btn.disabled=!!disabled;
+   btn.style.opacity=disabled?'.75':'1';
+   btn.style.cursor=disabled?'wait':'pointer';
+  });
+ }
  function aplicarProtecaoDevPlanilhas(){
   if(aplicando)return;
   aplicando=true;
-  ['configSecaoConexao','configSecaoPlanilhas'].forEach(id=>{
-   const sec=document.getElementById(id); if(!sec)return;
-   const gate=sec.querySelector('.dev-protected-gate'); if(!gate)return;
+  try{
    const unlocked=devAutenticado();
-   gate.style.display=unlocked?'none':'flex';
-   [...sec.children].forEach(ch=>{if(ch!==gate)ch.style.display=unlocked?'':'none';});
-   sec.classList.toggle('dev-planilhas-liberada',unlocked);
-  });
-  aplicando=false;
+   ['configSecaoConexao','configSecaoPlanilhas'].forEach(id=>{
+    const sec=el(id); if(!sec)return;
+    const gate=sec.querySelector('.dev-protected-gate'); if(!gate)return;
+    gate.style.display=unlocked?'none':'flex';
+    [...sec.children].forEach(ch=>{if(ch!==gate)ch.style.display=unlocked?'':'none';});
+    sec.classList.toggle('dev-planilhas-liberada',unlocked);
+   });
+  }finally{aplicando=false;}
  }
  window.entrarAcessoDevPlanilhas=function(){
-  const u=document.getElementById('devLoginInput')||document.getElementById('devLoginInputPlanilhas');
-  const p=document.getElementById('devSenhaInput')||document.getElementById('devSenhaInputPlanilhas');
-  const erro=document.getElementById('devLoginErro')||document.getElementById('devLoginErroPlanilhas');
-  if(String(u?.value||'').trim()===DEV_USER && String(p?.value||'')===DEV_PASS){
-   try{sessionStorage.setItem(DEV_KEY,'yes');}catch(e){}
-   document.querySelectorAll('#devLoginInput,#devSenhaInput,#devLoginErro,#devLoginInputPlanilhas,#devSenhaInputPlanilhas,#devLoginErroPlanilhas').forEach(el=>{if(el)el.value='';});
-   aplicarProtecaoDevPlanilhas();
-   if(typeof mostrarToast==='function')mostrarToast('✅ Acesso DEV liberado para os dados das planilhas.');
-  }else{
-   if(erro)erro.textContent='❌ Usuário ou senha DEV incorretos.';
-  }
+  const u=el('devLoginInput')||el('devLoginInputPlanilhas');
+  const p=el('devSenhaInput')||el('devSenhaInputPlanilhas');
+  if(!u||!p){setErro('⚠️ Formulário DEV não encontrado.');return;}
+  setErro('⏳ Verificando acesso DEV…','loading');
+  setBotoes('⏳ Entrando…',true);
+  const usuario=String(u.value||'').trim();
+  const senha=String(p.value||'');
+  setTimeout(function(){
+   if(usuario.toLowerCase()===DEV_USER.toLowerCase() && senha===DEV_PASS){
+    try{sessionStorage.setItem(DEV_KEY,'yes');}catch(e){}
+    setErro('✅ Acesso DEV liberado.','ok');
+    setBotoes('✅ Acesso liberado',true);
+    aplicarProtecaoDevPlanilhas();
+    if(typeof mostrarToast==='function')mostrarToast('✅ Acesso DEV liberado para os dados das planilhas.');
+    setTimeout(function(){
+     ['devLoginInput','devSenhaInput','devLoginInputPlanilhas','devSenhaInputPlanilhas'].forEach(id=>{const x=el(id);if(x)x.value='';});
+     setBotoes('🔓 Entrar',false);
+     setErro('');
+    },900);
+   }else{
+    setErro('❌ Usuário ou senha DEV incorretos.');
+    setBotoes('🔓 Entrar',false);
+    p.focus();
+    if(typeof navigator!=='undefined' && navigator.vibrate)try{navigator.vibrate(120);}catch(e){}
+   }
+  },120);
  };
  window.bloquearAcessoDevPlanilhas=function(){
   try{sessionStorage.removeItem(DEV_KEY);}catch(e){}
+  setErro('');
+  setBotoes('🔓 Entrar',false);
   aplicarProtecaoDevPlanilhas();
  };
- document.addEventListener('keydown',e=>{
-  if(e.key==='Enter' && (document.activeElement?.id==='devLoginInput'||document.activeElement?.id==='devSenhaInput'||document.activeElement?.id==='devLoginInputPlanilhas'||document.activeElement?.id==='devSenhaInputPlanilhas')){e.preventDefault();entrarAcessoDevPlanilhas();}
+ document.addEventListener('keydown',function(e){
+  const id=document.activeElement?.id;
+  if(e.key==='Enter' && ['devLoginInput','devSenhaInput','devLoginInputPlanilhas','devSenhaInputPlanilhas'].includes(id)){
+   e.preventDefault();
+   window.entrarAcessoDevPlanilhas();
+  }
  });
- window.addEventListener('load',()=>setTimeout(aplicarProtecaoDevPlanilhas,50),{once:true});
- const obs=new MutationObserver(()=>{if(!devAutenticado())aplicarProtecaoDevPlanilhas();});
- obs.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['style','class']});
-})();
-</script></body></html>
+ function inicializarDev(){aplicarProtecaoDevPlanilhas();}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',inicializarDev,{once:true});
+ else inicializarDev();
+
+ // Observa apenas mudanças estruturais. Não observa style/class para evitar loop de reprocessamento.
+ const obs=new MutationObserver(function(){
+  if(!devAutenticado())aplicarProtecaoDevPlanilhas();
+ });
+ obs.observe(document.body,{subtree:true,childList:true});
+})();</script></body></html>
