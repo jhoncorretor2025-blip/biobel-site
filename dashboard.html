@@ -78,6 +78,52 @@ body.light-mode .biobel-calendar-chip{background:#f8fafc;border-color:#d7e1ec;co
 .biobel-atendimento-card{background:linear-gradient(135deg,#0d1b2e,#0b1728);border:1px solid #263b56;border-radius:18px;padding:16px 18px;margin-bottom:16px}.biobel-atendimento-grid{display:grid;grid-template-columns:1.1fr 1fr 1fr 1fr;gap:10px}.biobel-atendimento-kpi{background:rgba(255,255,255,.025);border:1px solid #20334d;border-radius:13px;padding:11px 13px}.biobel-atendimento-kpi small{display:block;color:#8fa2ba;font-size:10px;font-weight:800;text-transform:uppercase}.biobel-atendimento-kpi strong{display:block;color:#eef5ff;font-size:20px;margin-top:3px}.biobel-atendimento-status{font-size:12px;font-weight:900;margin-top:5px}.biobel-atendimento-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;background:rgba(39,215,160,.1);border:1px solid rgba(39,215,160,.22);color:#27d7a0;font-size:11px;font-weight:900}.biobel-atendimento-sub{font-size:10.5px;color:#71849d;margin-top:5px}@media(max-width:800px){.biobel-atendimento-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:480px){.biobel-atendimento-grid{grid-template-columns:1fr 1fr}.biobel-atendimento-kpi strong{font-size:17px}}body.light-mode .biobel-atendimento-card{background:linear-gradient(135deg,#fff,#f4f8fc);border-color:#d7e1ec}.light-mode .biobel-atendimento-kpi{background:#f8fafc;border-color:#e2e8f0}.light-mode .biobel-atendimento-kpi strong{color:#172033}.light-mode .biobel-atendimento-sub{color:#64748b}
 body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec!important;box-shadow:0 4px 14px rgba(15,23,42,.06)!important}
 @media(max-width:640px){.biobel-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.biobel-quick-action{grid-template-columns:auto 1fr!important}.biobel-quick-action small{display:block!important}.biobel-quick-action strong{font-size:12px!important}}
+
+/* v11.55 — Movimento da loja: seg-sex separado de sábado */
+.biobel-atendimento-card-v2{background:linear-gradient(135deg,#0d1b2e,#0a1728);border:1px solid #29405f;border-radius:18px;padding:16px 18px;margin-bottom:16px}
+.biobel-atendimento-v2-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.biobel-atendimento-v2-eyebrow{font-size:11px;color:#27d7a0;font-weight:900;text-transform:uppercase;letter-spacing:.08em}
+.biobel-atendimento-v2-title{font-size:17px;color:#eef5ff;font-weight:900;margin-top:2px}
+.biobel-atendimento-v2-subtitle{font-size:10.5px;color:#71849d;margin-top:3px}
+.biobel-atendimento-v2-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.biobel-atendimento-v2-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:rgba(39,215,160,.1);border:1px solid rgba(39,215,160,.22);color:#27d7a0;font-size:10.5px;font-weight:900}
+.biobel-atendimento-v2-grid{display:grid;grid-template-columns:1.35fr repeat(4,minmax(0,1fr));gap:10px}
+.biobel-atendimento-v2-kpi{min-width:0;background:rgba(255,255,255,.025);border:1px solid #20334d;border-radius:13px;padding:11px 13px}
+.biobel-atendimento-v2-kpi.principal{background:linear-gradient(145deg,rgba(39,215,160,.08),rgba(255,255,255,.018));border-color:rgba(39,215,160,.24)}
+.biobel-atendimento-v2-kpi small{display:block;color:#8fa2ba;font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em}
+.biobel-atendimento-v2-kpi strong{display:block;color:#eef5ff;font-size:20px;line-height:1.15;margin-top:4px}
+.biobel-atendimento-v2-kpi.principal strong{font-size:28px;color:#27d7a0}
+.biobel-atendimento-v2-kpi .sub{font-size:10.5px;color:#71849d;margin-top:5px;line-height:1.35}
+.biobel-atendimento-v2-kpi .sub.destaque{font-weight:900;color:#dce5f2}
+.biobel-atendimento-v2-kpi .sub.positivo{color:#27d7a0;font-weight:900}
+.biobel-atendimento-v2-kpi .sub.negativo{color:#fb7185;font-weight:900}
+.biobel-atendimento-v2-tools{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:10px}
+.biobel-atendimento-v2-faixas{display:flex;gap:7px;flex-wrap:wrap}
+.biobel-atendimento-v2-pill{display:inline-flex;align-items:center;gap:5px;padding:6px 9px;border-radius:999px;background:#101f34;border:1px solid #243b57;color:#cbd5e1;font-size:10px;font-weight:800}
+.biobel-atendimento-v2-chart{margin-top:10px;background:rgba(255,255,255,.018);border:1px solid #20334d;border-radius:14px;padding:11px 12px 9px}
+.biobel-atendimento-v2-chart-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:7px}
+.biobel-atendimento-v2-chart-title{font-size:11px;color:#dce5f2;font-weight:900}
+.biobel-atendimento-v2-chart-sub{font-size:10px;color:#71849d;margin-top:2px}
+.biobel-atendimento-v2-chart-wrap{height:210px;position:relative}
+.biobel-atendimento-v2-projecao{margin-top:10px;display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:9px}
+.biobel-atendimento-v2-projbox{background:#101f34;border:1px solid #243b57;border-radius:12px;padding:10px 12px}
+.biobel-atendimento-v2-projbox small{display:block;font-size:9.5px;color:#71849d;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+.biobel-atendimento-v2-projbox strong{display:block;color:#eef5ff;font-size:18px;margin-top:3px}
+.biobel-atendimento-v2-projbox .muted{font-size:10px;color:#71849d;margin-top:3px}
+body.light-mode .biobel-atendimento-card-v2{background:linear-gradient(135deg,#fff,#f4f8fc);border-color:#d7e1ec}
+body.light-mode .biobel-atendimento-v2-title{color:#172033}
+body.light-mode .biobel-atendimento-v2-kpi{background:#f8fafc;border-color:#e2e8f0}
+body.light-mode .biobel-atendimento-v2-kpi.principal{background:linear-gradient(145deg,#eafaf4,#f8fafc);border-color:#a7dfca}
+body.light-mode .biobel-atendimento-v2-kpi strong{color:#172033}
+body.light-mode .biobel-atendimento-v2-kpi.principal strong{color:#087f5b}
+body.light-mode .biobel-atendimento-v2-kpi .sub{color:#64748b}
+body.light-mode .biobel-atendimento-v2-pill,
+body.light-mode .biobel-atendimento-v2-projbox{background:#f8fafc;border-color:#d7e1ec;color:#334155}
+body.light-mode .biobel-atendimento-v2-chart{background:#fff;border-color:#d7e1ec}
+body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
+@media(max-width:1100px){.biobel-atendimento-v2-grid{grid-template-columns:1.2fr repeat(2,minmax(0,1fr))}.biobel-atendimento-v2-projecao{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){.biobel-atendimento-v2-grid{grid-template-columns:1fr 1fr}.biobel-atendimento-v2-kpi.principal{grid-column:1/-1}.biobel-atendimento-v2-projecao{grid-template-columns:1fr}.biobel-atendimento-v2-chart-wrap{height:190px}}
+@media(max-width:480px){.biobel-atendimento-card-v2{padding:13px}.biobel-atendimento-v2-grid{gap:7px}.biobel-atendimento-v2-kpi{padding:9px}.biobel-atendimento-v2-kpi.principal strong{font-size:25px}.biobel-atendimento-v2-kpi strong{font-size:17px}.biobel-atendimento-v2-chart{padding:9px}.biobel-atendimento-v2-chart-wrap{height:175px}}
 </style><style>
 @media(max-width:640px){#resumoVendasHoje{grid-template-columns:1fr!important}.x{display:none}}
 </style></head><body data-biobel-page="dashboard" class="min-h-screen bg-slate-950 text-slate-100">
@@ -98,7 +144,7 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
 -->
 <main id="dashboardTab" class="max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabDashboard">
   <div class="biobel-dashboard-heading no-print" aria-label="Cabeçalho da Visão Geral">
-   <div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><div class="biobel-dashboard-heading-title">Visão Geral</div><span id="versaoSistemaTela" style="display:inline-flex;align-items:center;padding:4px 8px;border:1px solid rgba(14,169,122,.35);border-radius:8px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:10px;font-weight:900;letter-spacing:.04em;">v11.54</span></div><div class="biobel-dashboard-heading-sub">Resumo rápido da loja</div></div>
+   <div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><div class="biobel-dashboard-heading-title">Visão Geral</div><span id="versaoSistemaTela" style="display:inline-flex;align-items:center;padding:4px 8px;border:1px solid rgba(14,169,122,.35);border-radius:8px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:10px;font-weight:900;letter-spacing:.04em;">v11.55</span></div><div class="biobel-dashboard-heading-sub">Resumo rápido da loja</div></div>
    <div class="biobel-dashboard-heading-weather" aria-label="Clima de hoje e previsão de amanhã"><span style="font-size:10px;color:#71849d;font-weight:800;">🌦️ Clima</span><span id="indicadorClimaTopo" style="display:none;"></span></div>
   </div>
   <div class="biobel-dashboard-compact no-print">
@@ -260,20 +306,84 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
    <div id="bannerResumoSemanalEmail" style="display:none;margin-top:12px;"></div>
   </div>
 
-  <section id="painelAtendimentosHoje" class="no-print biobel-atendimento-card" aria-label="Referência de atendimentos">
-   <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
-    <div><div style="font-size:11px;color:#27d7a0;font-weight:900;text-transform:uppercase;letter-spacing:.08em;">👥 Movimento da loja <span id="atendimentosMesReferencia" style="color:#93a3ba;font-weight:800;letter-spacing:.04em;">— OUTUBRO/2026</span></div><div style="font-size:17px;color:#eef5ff;font-weight:900;">Atendimentos de hoje</div></div>
-    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-     <button id="atendimentosOnlineToggle" type="button" class="biobel-atendimento-badge" style="cursor:pointer;" aria-pressed="true" title="Escolha se os atendimentos ONLINE entram na conta do movimento da loja (hoje, mínimo, média, máximo e status).">💻 Online incluído</button>
-     <span id="atendimentoStatusBadge" class="biobel-atendimento-badge">🟡 Calculando...</span>
+  <section id="painelAtendimentosHoje" class="no-print biobel-atendimento-card-v2" aria-label="Movimento da loja">
+   <div class="biobel-atendimento-v2-head">
+    <div>
+     <div class="biobel-atendimento-v2-eyebrow">👥 Movimento da loja <span id="atendimentosMesReferencia" style="color:#93a3ba;font-weight:800;letter-spacing:.04em;">— OUTUBRO/2026</span></div>
+     <div class="biobel-atendimento-v2-title">Movimento de hoje</div>
+     <div class="biobel-atendimento-v2-subtitle">Dias úteis e sábados são analisados separadamente.</div>
+    </div>
+    <div class="biobel-atendimento-v2-actions">
+     <button id="atendimentosOnlineToggle" type="button" class="biobel-atendimento-v2-badge" style="cursor:pointer;" aria-pressed="true" title="Escolha se os atendimentos ONLINE entram nos indicadores de movimento.">💻 Online incluído</button>
+     <span id="atendimentoStatusBadge" class="biobel-atendimento-v2-badge">🟡 Calculando...</span>
     </div>
    </div>
-   <div class="biobel-atendimento-grid">
-    <div class="biobel-atendimento-kpi"><small id="atendimentosHojeLabel">Hoje</small><strong id="atendimentosHojeValor">0</strong><div id="atendimentosHojeSplit" class="biobel-atendimento-sub"></div><div id="atendimentosHojeStatus" class="biobel-atendimento-status">Aguardando dados...</div></div>
-    <div class="biobel-atendimento-kpi"><small>🔻 Mínimo histórico</small><strong id="atendimentosMinHistorico">—</strong><div id="atendimentosMinHistoricoDia" class="biobel-atendimento-sub"></div></div>
-    <div class="biobel-atendimento-kpi"><small>📊 Média por dia</small><strong id="atendimentosMediaHistorico">—</strong><div id="atendimentosMediaHistoricoDias" class="biobel-atendimento-sub">dias úteis</div></div>
-    <div class="biobel-atendimento-kpi"><small>🔺 Máximo histórico</small><strong id="atendimentosMaxHistorico">—</strong><div id="atendimentosMaxHistoricoDia" class="biobel-atendimento-sub"></div></div>
-    <div class="biobel-atendimento-kpi"><small>🎯 Faixa normal</small><strong id="atendimentosFaixaNormal">15–25</strong><div id="atendimentosFaixaSub" class="biobel-atendimento-sub">parâmetro configurável</div></div>
+
+   <div class="biobel-atendimento-v2-grid">
+    <article class="biobel-atendimento-v2-kpi principal">
+     <small id="atendimentosHojeLabel">Hoje</small>
+     <strong id="atendimentosHojeValor">0</strong>
+     <div id="atendimentosHojeSplit" class="sub destaque"></div>
+     <div id="atendimentosHojeComparacao" class="sub"></div>
+     <div id="atendimentosHojeStatus" class="sub positivo">Aguardando dados...</div>
+    </article>
+    <article class="biobel-atendimento-v2-kpi">
+     <small>📊 Média — seg. a sex.</small>
+     <strong id="atendimentosMediaHistorico">—</strong>
+     <div id="atendimentosMediaHistoricoDias" class="sub">dias úteis encerrados</div>
+    </article>
+    <article class="biobel-atendimento-v2-kpi">
+     <small>🔻 Menor dia útil</small>
+     <strong id="atendimentosMinHistorico">—</strong>
+     <div id="atendimentosMinHistoricoDia" class="sub"></div>
+    </article>
+    <article class="biobel-atendimento-v2-kpi">
+     <small>🔺 Maior dia útil</small>
+     <strong id="atendimentosMaxHistorico">—</strong>
+     <div id="atendimentosMaxHistoricoDia" class="sub"></div>
+    </article>
+    <article class="biobel-atendimento-v2-kpi">
+     <small>🔵 Média — sábados</small>
+     <strong id="atendimentosMediaSabado">—</strong>
+     <div id="atendimentosSabadoResumo" class="sub">Até 16h · histórico separado</div>
+    </article>
+   </div>
+
+   <div class="biobel-atendimento-v2-tools">
+    <div class="biobel-atendimento-v2-faixas">
+     <span class="biobel-atendimento-v2-pill">🎯 Seg–Sex: <strong id="atendimentosFaixaNormal">15–25</strong></span>
+     <span class="biobel-atendimento-v2-pill">🔵 Sábado: <strong id="atendimentosFaixaSabado">—</strong></span>
+     <span class="biobel-atendimento-v2-pill">💻 <span id="atendimentosFaixaSub">loja + online</span></span>
+    </div>
+   </div>
+
+   <div class="biobel-atendimento-v2-chart">
+    <div class="biobel-atendimento-v2-chart-head">
+     <div>
+      <div class="biobel-atendimento-v2-chart-title">📈 Evolução dos atendimentos</div>
+      <div class="biobel-atendimento-v2-chart-sub">Seg–Sex e sábados aparecem separados no gráfico.</div>
+     </div>
+     <span id="atendimentosGraficoLegenda" class="biobel-atendimento-v2-pill">Outubro/2026</span>
+    </div>
+    <div class="biobel-atendimento-v2-chart-wrap"><canvas id="atendimentosMovimentoChart" aria-label="Gráfico de atendimentos por dia"></canvas></div>
+   </div>
+
+   <div class="biobel-atendimento-v2-projecao">
+    <div class="biobel-atendimento-v2-projbox">
+     <small>🔮 Projeção do mês</small>
+     <strong id="atendimentosProjecaoMes">—</strong>
+     <div id="atendimentosProjecaoSub" class="muted">Calculando ritmo atual...</div>
+    </div>
+    <div class="biobel-atendimento-v2-projbox">
+     <small>📅 Dias úteis restantes</small>
+     <strong id="atendimentosDiasUteisRestantes">—</strong>
+     <div class="muted">Segunda a sexta</div>
+    </div>
+    <div class="biobel-atendimento-v2-projbox">
+     <small>🔵 Sábados restantes</small>
+     <strong id="atendimentosSabadosRestantes">—</strong>
+     <div class="muted">Funcionamento até 16h</div>
+    </div>
    </div>
   </section>
 
@@ -322,11 +432,11 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
 -->
 
 </main>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js?v=11.53"></script>
-<script src="biobel-recognition.js?v=11.53"></script>
-<script src="biobel-planilha-leitura.js?v=11.53"></script>
-<script src="biobel-planilha-processamento.js?v=11.53"></script>
-<script src="biobel-planilha-comparacao.js?v=11.53"></script><script src="biobel-app.js?v=11.53"></script><script src="inteligencia-operacional.js?v=11.53"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js?v=11.55"></script>
+<script src="biobel-recognition.js?v=11.55"></script>
+<script src="biobel-planilha-leitura.js?v=11.55"></script>
+<script src="biobel-planilha-processamento.js?v=11.55"></script>
+<script src="biobel-planilha-comparacao.js?v=11.55"></script><script src="biobel-app.js?v=11.55"></script><script src="inteligencia-operacional.js?v=11.55"></script>
 <script>
 (function(){
  function arrData(){try{return Array.isArray(daysData)?daysData:(Array.isArray(window.daysData)?window.daysData:[]);}catch(e){return Array.isArray(window.daysData)?window.daysData:[];}}
@@ -547,65 +657,210 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
 <script>
 (function(){
  const KEY='biobel_atendimento_config_v1';
- function cfg(){const d={minimo:15,maximo:25,forte:26,muitoForte:36,recorde:51};try{const x=JSON.parse(localStorage.getItem(KEY)||'null');return {...d,...(x&&typeof x==='object'?x:{})};}catch(e){return d;}}
- // Atendimento = venda com vendedora. ONLINE = coluna G ("tipo de venda") = Online; todo o resto (presencial ou em branco) é da loja.
- // Os atendimentos online NÃO são gente que passou pela porta: o botão do painel escolhe se entram na conta (padrão: entram).
  const KEY_ONLINE='biobel_atendimentos_incluir_online';
+ let chart=null;
+
+ function cfg(){
+  const d={minimo:15,maximo:25,forte:26,muitoForte:36,recorde:51};
+  try{const x=JSON.parse(localStorage.getItem(KEY)||'null');return {...d,...(x&&typeof x==='object'?x:{})};}
+  catch(e){return d;}
+ }
+ function arrData(){
+  try{return Array.isArray(daysData)?daysData:(Array.isArray(window.daysData)?window.daysData:[]);}
+  catch(e){return Array.isArray(window.daysData)?window.daysData:[];}
+ }
  function incluirOnline(){try{return localStorage.getItem(KEY_ONLINE)!=='0';}catch(e){return true;}}
  function contagem(d){
   const reg=(Array.isArray(d?.registrosVendas)?d.registrosVendas:[]).filter(v=>String(v?.vendedora||'').trim());
-  const online=reg.filter(v=>v.tipo==='online').length;
-  return {total:reg.length,online:online,loja:reg.length-online};
+  const online=reg.filter(v=>String(v?.tipo||'').toLowerCase()==='online').length;
+  return {total:reg.length,online,loja:reg.length-online};
  }
- function contar(d){var c=contagem(d);return incluirOnline()?c.total:c.loja;}   // o número que vale para o painel
- function dividido(d){var c=contagem(d);return c.loja+' loja + '+c.online+' online';}
- function um(n){return (Math.round(n*10)/10).toFixed(1).replace('.',',');}
- function ehDomingoAtendimento(d){if(!d)return false;var p=String(d.dia||"").split(".");if(p.length!==2)return false;var dia=Number(p[0]),mes=Number(p[1]);if(!Number.isFinite(dia)||!Number.isFinite(mes))return false;return new Date(new Date().getFullYear(),mes-1,dia).getDay()===0;} function atualizarAtendimentosHoje(){
-  try{
-   var arr=[];try{arr=Array.isArray(daysData)?daysData:(Array.isArray(window.daysData)?window.daysData:[]);}catch(e){arr=Array.isArray(window.daysData)?window.daysData:[];}
-   var agora=typeof window.obterAgoraBrasilia==='function'?window.obterAgoraBrasilia():new Date();
-   var chave=String(agora.getDate()).padStart(2,'0')+'.'+String(agora.getMonth()+1).padStart(2,'0');
-   var dia=arr.find(x=>String(x?.dia||'')===chave);
-   var n=contar(dia), x=cfg(), incl=incluirOnline(), cHoje=contagem(dia);
-    var mesEl=document.getElementById('atendimentosMesReferencia');
-    if(mesEl){
-     var meses=['JANEIRO','FEVEREIRO','MARÇO','ABRIL','MAIO','JUNHO','JULHO','AGOSTO','SETEMBRO','OUTUBRO','NOVEMBRO','DEZEMBRO'];
-     var mesAtual=agora.getMonth()+1, temMesAtual=arr.some(function(d){return Number(String(d?.dia||'').split('.')[1])===mesAtual;});
-     var mesRef=mesAtual;
-     if(!temMesAtual){var candidatos=arr.map(function(d){return Number(String(d?.dia||'').split('.')[1]);}).filter(function(m){return m>=1&&m<=12;});if(candidatos.length)mesRef=candidatos[candidatos.length-1];}
-     mesEl.textContent='— '+meses[mesRef-1]+'/'+agora.getFullYear();
+ function contar(d){const c=contagem(d);return incluirOnline()?c.total:c.loja;}
+ function dividido(d){const c=contagem(d);return c.loja+' loja + '+c.online+' online';}
+ function um(n){return (Math.round((Number(n)||0)*10)/10).toFixed(1).replace('.',',');}
+ function chaveHoje(ag){return String(ag.getDate()).padStart(2,'0')+'.'+String(ag.getMonth()+1).padStart(2,'0');}
+ function partesDia(d){
+  const p=String(d?.dia||'').split('.');
+  if(p.length!==2)return null;
+  const dd=Number(p[0]),mm=Number(p[1]);
+  if(!(dd>0&&mm>0))return null;
+  const ano=(mm > ((typeof window.obterAgoraBrasilia==='function'?window.obterAgoraBrasilia():new Date()).getMonth()+1))
+    ? (typeof window.obterAgoraBrasilia==='function'?window.obterAgoraBrasilia():new Date()).getFullYear()-1
+    : (typeof window.obterAgoraBrasilia==='function'?window.obterAgoraBrasilia():new Date()).getFullYear();
+  const dt=new Date(Date.UTC(ano,mm-1,dd));
+  return {dd,mm,iso:dt.toISOString().slice(0,10),dow:dt.getUTCDay()};
+ }
+ function tipoDia(d){
+  const p=partesDia(d); if(!p)return 'outro';
+  if(p.dow>=1&&p.dow<=5)return 'semana';
+  if(p.dow===6)return 'sabado';
+  return 'domingo';
+ }
+ function rows(arr){
+  return arr.map(d=>({d,n:contar(d),tipo:tipoDia(d)})).filter(x=>x.n>0 && x.tipo!=='domingo');
+ }
+ function media(items){return items.length?items.reduce((s,x)=>s+x.n,0)/items.length:0;}
+ function fmtPct(v){const n=Number(v)||0;return (n>=0?'+':'')+n.toFixed(1).replace('.',',')+'%';}
+ function mesAtual(ag){return ag.getMonth()+1;}
+
+ function faixaSabado(avg){
+  if(!(avg>0))return '—';
+  const min=Math.max(0,Math.floor(avg*0.8));
+  const max=Math.max(min,Math.ceil(avg*1.2));
+  return min+'–'+max;
+ }
+
+ function statusHoje(n,t,avgSat,x){
+  if(t==='domingo')return {texto:'Loja fechada',emoji:'🔒',classe:'sub'};
+  if(t==='sabado'){
+   if(avgSat>0){
+    const pct=((n-avgSat)/avgSat)*100;
+    if(pct>=10)return {texto:'Acima da média de sábado',emoji:'🟢',classe:'sub positivo'};
+    if(pct<=-10)return {texto:'Abaixo da média de sábado',emoji:'🔻',classe:'sub negativo'};
+    return {texto:'Na média de sábado',emoji:'🔵',classe:'sub'};
+   }
+   return {texto:'Primeiro sábado com referência',emoji:'🔵',classe:'sub'};
+  }
+  let status='Abaixo do esperado',emoji='🔴',classe='sub negativo';
+  if(n>=x.muitoForte){status=n>=x.recorde&&x.recorde>0?'Recorde de referência':'Movimento muito forte';emoji='🔥';classe='sub positivo';}
+  else if(n>=x.forte){status='Movimento forte';emoji='🔵';classe='sub';}
+  else if(n>=x.minimo){status='Movimento normal';emoji='🟢';classe='sub positivo';}
+  return {texto:status,emoji,classe};
+ }
+
+ function atualizarGrafico(items,mesLabel){
+  const canvas=document.getElementById('atendimentosMovimentoChart');
+  if(!canvas||typeof Chart==='undefined')return;
+  const sorted=items.slice().sort((a,b)=>String(a.d.dia||'').localeCompare(String(b.d.dia||''),undefined,{numeric:true}));
+  const labels=sorted.map(x=>String(x.d.dia||'').replace('.', '/'));
+  const semana=sorted.map(x=>x.tipo==='semana'?x.n:null);
+  const sabado=sorted.map(x=>x.tipo==='sabado'?x.n:null);
+  try{if(chart)chart.destroy();}catch(e){}
+  chart=new Chart(canvas.getContext('2d'),{
+   type:'line',
+   data:{
+    labels,
+    datasets:[
+     {label:'Seg–Sex',data:semana,borderColor:'#27d7a0',backgroundColor:'rgba(39,215,160,.10)',pointRadius:4,pointHoverRadius:6,tension:.28,spanGaps:true},
+     {label:'Sábado',data:sabado,borderColor:'#4f9cff',backgroundColor:'rgba(79,156,255,.10)',pointRadius:4,pointHoverRadius:6,tension:.28,spanGaps:false}
+    ]
+   },
+   options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'top',labels:{boxWidth:10,usePointStyle:true,color:'#a9b8ca',font:{size:10,weight:'700'}}},
+      tooltip:{callbacks:{label:function(ctx){return ' '+ctx.dataset.label+': '+ctx.parsed.y+' atendimentos';}}}},
+    scales:{
+     x:{grid:{display:false},ticks:{color:'#71849d',font:{size:9}}},
+     y:{beginAtZero:true,grid:{color:'rgba(148,163,184,.10)'},ticks:{color:'#71849d',font:{size:9},precision:0}}
     }
-   var el=document.getElementById('atendimentosHojeValor');if(el)el.textContent=n;
-   var spl=document.getElementById('atendimentosHojeSplit');if(spl)spl.textContent=dia?('🏬 '+cHoje.loja+' na loja · 💻 '+cHoje.online+' online'):'';
-   var tg=document.getElementById('atendimentosOnlineToggle');if(tg){tg.textContent=incl?'💻 Online incluído':'🏬 Só loja';tg.setAttribute('aria-pressed',incl?'true':'false');}
-   var fsub=document.getElementById('atendimentosFaixaSub');if(fsub)fsub.textContent='parâmetro configurável · conta '+(incl?'loja + online':'só a loja');
-   var faixa=document.getElementById('atendimentosFaixaNormal');if(faixa)faixa.textContent=x.minimo+'–'+x.maximo;
-   var status='Abaixo do esperado',emoji='🔴';
-   if(n>=x.muitoForte){status=n>=x.recorde&&x.recorde>0?'Recorde de referência 🔥':'Movimento muito forte';emoji='🔥';}
-   else if(n>=x.forte){status='Movimento forte';emoji='🔵';}
-   else if(n>=x.minimo){status='Movimento normal';emoji='🟢';}
-   if(!dia){status=arr.length?'Hoje ainda sem lançamentos':'Aguardando a planilha';emoji='⏳';}   // sem aba de hoje na planilha: não é "movimento fraco", é falta de lançamento
-   var semanaHoje=['dom','seg','ter','qua','qui','sex','sáb'][new Date(Date.UTC(agora.getFullYear(),agora.getMonth(),agora.getDate())).getUTCDay()];
-   var labHoje=document.getElementById('atendimentosHojeLabel');if(labHoje)labHoje.textContent='Hoje · '+semanaHoje+' '+chave.replace('.','/');
-   var st=document.getElementById('atendimentosHojeStatus');if(st)st.textContent=emoji+' '+status;
-   var badge=document.getElementById('atendimentoStatusBadge');if(badge)badge.textContent=emoji+' '+status;
-   var dias=arr.map(d=>({d,n:contar(d)})).filter(x=>x.n>0 && !ehDomingoAtendimento(x.d));
-   // Histórico de mínimo e média = só dias JÁ ENCERRADOS (hoje ainda está em andamento e distorceria os dois).
-   // O máximo inclui hoje: se hoje já bateu o recorde, vale mostrar.
-   // (Antes: reduce(...,null) dava TypeError ao ter qualquer dia com dados e o catch vazio escondia o erro.)
-   var encerrados=dias.filter(x=>String(x.d?.dia||'')!==chave);
-   var min=encerrados.reduce((a,b)=>(!a||b.n<a.n)?b:a,null), max=dias.reduce((a,b)=>(!a||b.n>a.n)?b:a,null), media=encerrados.length?encerrados.reduce((s,x)=>s+x.n,0)/encerrados.length:0;
-   var mi=document.getElementById('atendimentosMinHistorico');if(mi)mi.textContent=min?min.n:'—';
-   var ma=document.getElementById('atendimentosMaxHistorico');if(ma)ma.textContent=max?max.n:'—'; var med=document.getElementById('atendimentosMediaHistorico');if(med)med.textContent=media?media.toFixed(1).replace('.',','):'—'; var medd=document.getElementById('atendimentosMediaHistoricoDias');if(medd){var mLoja=encerrados.length?encerrados.reduce(function(s2,x2){return s2+contagem(x2.d).loja;},0)/encerrados.length:0, mOn=encerrados.length?encerrados.reduce(function(s2,x2){return s2+contagem(x2.d).online;},0)/encerrados.length:0; medd.textContent=media?(encerrados.length+' dias úteis encerrados · '+um(mLoja)+' loja + '+um(mOn)+' online'):'dias úteis';}
-   var mid=document.getElementById('atendimentosMinHistoricoDia');if(mid)mid.textContent=min?'dia '+min.d.dia+' · '+dividido(min.d):'';
-   var mad=document.getElementById('atendimentosMaxHistoricoDia');if(mad)mad.textContent=max?'dia '+max.d.dia+' · '+dividido(max.d):'';
-  }catch(e){console.warn('Movimento da loja:',e);}
+   }
+  });
+  const leg=document.getElementById('atendimentosGraficoLegenda');if(leg)leg.textContent=mesLabel;
  }
- window.addEventListener('biobel:data-updated',()=>setTimeout(atualizarAtendimentosHoje,350));
- window.addEventListener('storage',e=>{if(e.key===KEY||e.key===KEY_ONLINE)atualizarAtendimentosHoje();});
- var botaoOnline=document.getElementById('atendimentosOnlineToggle');
- if(botaoOnline)botaoOnline.addEventListener('click',function(){try{localStorage.setItem(KEY_ONLINE,incluirOnline()?'0':'1');}catch(e){}atualizarAtendimentosHoje();});
- setTimeout(atualizarAtendimentosHoje,1400);setInterval(atualizarAtendimentosHoje,60000);
+
+ function atualizar(){
+  try{
+   const arr=arrData();
+   const ag=typeof window.obterAgoraBrasilia==='function'?window.obterAgoraBrasilia():new Date();
+   const hojeChave=chaveHoje(ag);
+   const diaHoje=arr.find(x=>String(x?.dia||'')===hojeChave);
+   const x=cfg(), incl=incluirOnline(), r=rows(arr);
+   const weekdays=r.filter(q=>q.tipo==='semana');
+   const saturdays=r.filter(q=>q.tipo==='sabado');
+   const weekdayClosed=weekdays.filter(q=>String(q.d?.dia||'')!==hojeChave);
+   const saturdayClosed=saturdays.filter(q=>String(q.d?.dia||'')!==hojeChave);
+   const avgWeek=media(weekdayClosed), avgSat=media(saturdayClosed);
+   const todayType=tipoDia({dia:hojeChave});
+   const nToday=contar(diaHoje), cToday=contagem(diaHoje);
+
+   const meses=['JANEIRO','FEVEREIRO','MARÇO','ABRIL','MAIO','JUNHO','JULHO','AGOSTO','SETEMBRO','OUTUBRO','NOVEMBRO','DEZEMBRO'];
+   const refEl=document.getElementById('atendimentosMesReferencia');
+   if(refEl)refEl.textContent='— '+meses[ag.getMonth()]+'/'+ag.getFullYear();
+
+   const splitEl=document.getElementById('atendimentosHojeSplit');
+   if(splitEl)splitEl.textContent=diaHoje?'🏬 '+cToday.loja+' na loja · 💻 '+cToday.online+' online':'';
+   const toggle=document.getElementById('atendimentosOnlineToggle');
+   if(toggle){toggle.textContent=incl?'💻 Online incluído':'🏬 Só loja';toggle.setAttribute('aria-pressed',incl?'true':'false');}
+   const faixaSub=document.getElementById('atendimentosFaixaSub');
+   if(faixaSub)faixaSub.textContent=incl?'loja + online':'só a loja';
+
+   const faixa=document.getElementById('atendimentosFaixaNormal');if(faixa)faixa.textContent=x.minimo+'–'+x.maximo;
+   const faixaS=document.getElementById('atendimentosFaixaSabado');if(faixaS)faixaS.textContent=faixaSabado(avgSat);
+
+   const status=statusHoje(nToday,todayType,avgSat,x);
+   const hojeStatus=document.getElementById('atendimentosHojeStatus');
+   if(hojeStatus){hojeStatus.textContent=diaHoje?status.emoji+' '+status.texto:(arr.length?'⏳ Hoje ainda sem lançamentos':'⏳ Aguardando a planilha');hojeStatus.className=diaHoje?' '+status.classe:'sub';}
+   const badge=document.getElementById('atendimentoStatusBadge');
+   if(badge)badge.textContent=diaHoje?status.emoji+' '+status.texto:(arr.length?'⏳ Sem lançamento hoje':'⏳ Aguardando dados');
+
+   const lab=document.getElementById('atendimentosHojeLabel');
+   if(lab){
+    const dias=['dom','seg','ter','qua','qui','sex','sáb'];
+    lab.textContent=(todayType==='sabado'?'Sábado':'Hoje')+' · '+dias[ag.getDay()]+' '+String(ag.getDate()).padStart(2,'0')+'/'+String(ag.getMonth()+1).padStart(2,'0');
+   }
+   const value=document.getElementById('atendimentosHojeValor');if(value)value.textContent=diaHoje?nToday:'—';
+
+   const refAvg=todayType==='sabado'?avgSat:avgWeek;
+   const comp=document.getElementById('atendimentosHojeComparacao');
+   if(comp){
+    if(!diaHoje)comp.textContent='Sem lançamento para comparar';
+    else if(refAvg>0){
+     const delta=nToday-refAvg,pct=(delta/refAvg)*100;
+     comp.textContent=(delta>=0?'📈 ':'📉 ')+(Math.abs(delta)).toFixed(1).replace('.',',')+' vs. média · '+fmtPct(pct);
+     comp.className='sub '+(delta>=0?'positivo':'negativo');
+    }else comp.textContent=todayType==='sabado'?'Ainda não há média histórica de sábado':'Ainda não há média de dias úteis suficiente';
+   }
+
+   const mi=weekdayClosed.reduce((a,b)=>(!a||b.n<a.n)?b:a,null);
+   const ma=weekdays.reduce((a,b)=>(!a||b.n>a.n)?b:a,null);
+   const miEl=document.getElementById('atendimentosMinHistorico');if(miEl)miEl.textContent=mi?mi.n:'—';
+   const maEl=document.getElementById('atendimentosMaxHistorico');if(maEl)maEl.textContent=ma?ma.n:'—';
+   const medEl=document.getElementById('atendimentosMediaHistorico');if(medEl)medEl.textContent=avgWeek?um(avgWeek):'—';
+   const medDias=document.getElementById('atendimentosMediaHistoricoDias');
+   if(medDias)medDias.textContent=weekdayClosed.length?(weekdayClosed.length+' dias úteis encerrados · '+(incl?'loja + online':'só loja')):'aguardando dias úteis encerrados';
+   const miDia=document.getElementById('atendimentosMinHistoricoDia');
+   if(miDia)miDia.textContent=mi?'dia '+mi.d.dia+' · '+dividido(mi.d):'';
+   const maDia=document.getElementById('atendimentosMaxHistoricoDia');
+   if(maDia)maDia.textContent=ma?'dia '+ma.d.dia+' · '+dividido(ma.d):'';
+
+   const satEl=document.getElementById('atendimentosMediaSabado');if(satEl)satEl.textContent=avgSat?um(avgSat):'—';
+   const satSub=document.getElementById('atendimentosSabadoResumo');
+   if(satSub)satSub.textContent=saturdayClosed.length?(saturdayClosed.length+' sábados encerrados · loja + online separados · até 16h'):'Até 16h · aguardando histórico de sábado';
+
+   atualizarGrafico(r,''); // updated below with actual month label
+   const mesesLower=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+
+   // Projeção apenas para o mês atual; sábados nunca entram na média de seg–sex.
+   const mes=mesAtual(ag);
+   const monthRows=r.filter(q=>partesDia(q.d)?.mm===mes);
+   const actualTotal=monthRows.reduce((s,q)=>s+q.n,0);
+   let restWeek=0,restSat=0;
+   const last=new Date(ag.getFullYear(),mes,0).getDate();
+   for(let day=ag.getDate()+1;day<=last;day++){
+    const dow=new Date(Date.UTC(ag.getFullYear(),mes-1,day)).getUTCDay();
+    if(dow>=1&&dow<=5)restWeek++;
+    else if(dow===6)restSat++;
+   }
+   const projected=actualTotal + restWeek*avgWeek + restSat*avgSat;
+   const projEl=document.getElementById('atendimentosProjecaoMes');
+   if(projEl)projEl.textContent=(avgWeek||avgSat)?Math.round(projected)+' atendimentos':'—';
+   const projSub=document.getElementById('atendimentosProjecaoSub');
+   if(projSub){
+    if(avgWeek||avgSat)projSub.textContent='Ritmo atual · '+(Math.round(actualTotal))+' já lançados no mês';
+    else projSub.textContent='Precisa de histórico para projetar';
+   }
+   const rw=document.getElementById('atendimentosDiasUteisRestantes');if(rw)rw.textContent=restWeek;
+   const rs=document.getElementById('atendimentosSabadosRestantes');if(rs)rs.textContent=restSat;
+
+   atualizarGrafico(monthRows,'Mês atual · '+meses[mes-1]+'/'+ag.getFullYear());
+  }catch(e){console.warn('Movimento da loja v11.55:',e);}
+ }
+
+ const btn=document.getElementById('atendimentosOnlineToggle');
+ if(btn)btn.addEventListener('click',function(){try{localStorage.setItem(KEY_ONLINE,incluirOnline()?'0':'1');}catch(e){}atualizar();});
+ window.addEventListener('biobel:data-updated',()=>setTimeout(atualizar,350));
+ window.addEventListener('storage',e=>{if(e.key===KEY||e.key===KEY_ONLINE)atualizar();});
+ setTimeout(atualizar,1400);setInterval(atualizar,60000);
 })();
 </script>
 <script>
