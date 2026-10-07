@@ -1539,7 +1539,7 @@ function saveHorarioEquipe(){
 }
 
 function resetEquipeWeek(){
- confirmarBiobel('🚨 ATENÇÃO — Reiniciar semana<br><br>Isso vai desmarcar TODAS as tarefas: a rotina diária base E os checklists dos 6 dias da semana (Gabi e Dai).<br><br>O progresso desta semana será salvo no histórico antes de reiniciar.<br><br>Tem certeza que quer reiniciar tudo agora?', _resetEquipeWeekReal);
+ confirmarBiobel('🚨 ATENÇÃO — Reiniciar semana<br><br>Isso vai desmarcar TODAS as tarefas: a rotina diária base E os checklists dos 6 dias da semana (vendedora principal/CLT em treinamento e Dai).<br><br>O progresso desta semana será salvo no histórico antes de reiniciar.<br><br>Tem certeza que quer reiniciar tudo agora?', _resetEquipeWeekReal);
 }
 function _resetEquipeWeekReal(){
  // Salva um retrato (snapshot) da semana atual no histórico antes de zerar tudo.
@@ -1557,6 +1557,7 @@ function _resetEquipeWeekReal(){
  const prefixos = ['biobel_equipe_diaria_'];
  diasSemanaOrdem.forEach(dia=>{
   prefixos.push(`biobel_equipe_${dia}_gabi_`);
+  prefixos.push(`biobel_equipe_${dia}_gabi_treinamento_`);
   prefixos.push(`biobel_equipe_${dia}_dai_`);
  });
  Object.keys(localStorage).forEach(key=>{
