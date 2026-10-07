@@ -10,7 +10,7 @@ const CACHE_NAME = 'biobel-cache-v11.67';
 const ARQUIVOS_ESSENCIAIS=[
  './dashboard.html','./login.html','./operacao.html','./equipe.html',
  './vendas.html','./analises.html','./alertas.html','./config.html','./administracao.html','./administracao/fornecedor.html',
- './biobel-app.css','./biobel-app.js','./biobel-shell-v1161.js','./biobel-recognition.js','./biobel-planilha-leitura.js','./biobel-planilha-processamento.js','./biobel-planilha-comparacao.js','./inteligencia-operacional.js','./biobel-design-system.css','./biobel-ux-refinement.css'
+ './biobel-app.css','./biobel-app.js','./biobel-shell-v1167.js','./biobel-shell-v1161.js','./biobel-recognition.js','./biobel-planilha-leitura.js','./biobel-planilha-processamento.js','./biobel-planilha-comparacao.js','./inteligencia-operacional.js','./biobel-design-system.css','./biobel-ux-refinement.css'
 ];
 
 self.addEventListener('message', (event) => {
