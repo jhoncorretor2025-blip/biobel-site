@@ -1,3 +1,9 @@
+## v11.61 — 07/10/2026
+- Correção definitiva do cabeçalho da tela inicial: publicado um novo arquivo de shell `biobel-shell-v1161.js` para impedir que versões antigas do shell quebrado continuem sendo servidas pelo cache.
+- Todas as páginas agora carregam o shell novo com `?v=11.61`.
+- Dashboard corrigido para exibir `v11.61`.
+- Service Worker atualizado para pré-carregar o shell novo e o cache `biobel-cache-v11.61`.
+
 ## v11.60 — 07/10/2026
 - Corrigido o cabeçalho da tela inicial: atributos HTML da busca não apareciam mais como texto na página.
 - Separado corretamente o link de Backup e o botão “Instalar app”.
