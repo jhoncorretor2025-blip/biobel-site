@@ -1,3 +1,10 @@
+## v11.58 — 06/10/2026
+- Dashboard: removida a faixa de “Acesso rápido” duplicada; mantida uma única área principal de ações.
+- Cabeçalho: título passa a acompanhar a página atual.
+- Acessibilidade: busca global ganhou rótulo acessível; versão do sistema virou botão para interação por teclado.
+- Corrigido o aninhamento de link dentro de botão no cabeçalho.
+- Sincronizados os arquivos HTML e o cache do Service Worker para v11.58.
+
 ## v11.57 — 06/10/2026
 - Planilha secundária de **Setembro/2026** integrada diretamente no código como fonte de respaldo, para não depender apenas da lista de planilhas salva no navegador.
 - O seletor de mês do painel “Movimento da loja” agora mostra a planilha secundária com ⭐ e carrega os dados dela quando selecionada.
