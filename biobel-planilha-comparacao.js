@@ -1,4 +1,4 @@
-/* Biobel — leitura de planilha para comparação. v11.57
+/* Biobel — leitura de planilha para comparação. v11.59
    Responsabilidade: carregar uma planilha sem alterar a planilha ativa,
    usada exclusivamente pela rotina de comparação de meses.
    Dependências mantidas no núcleo: extractSpreadsheetId(),
