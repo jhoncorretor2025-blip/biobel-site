@@ -144,7 +144,7 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
 -->
 <main id="dashboardTab" class="max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabDashboard">
   <div class="biobel-dashboard-heading no-print" aria-label="Cabeçalho da Visão Geral">
-   <div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><div class="biobel-dashboard-heading-title">Visão Geral</div><span id="versaoSistemaTela" style="display:inline-flex;align-items:center;padding:4px 8px;border:1px solid rgba(14,169,122,.35);border-radius:8px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:10px;font-weight:900;letter-spacing:.04em;">v11.64</span></div><div class="biobel-dashboard-heading-sub">Resumo rápido da loja</div></div>
+   <div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><div class="biobel-dashboard-heading-title">Visão Geral</div><span id="versaoSistemaTela" style="display:inline-flex;align-items:center;padding:4px 8px;border:1px solid rgba(14,169,122,.35);border-radius:8px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:10px;font-weight:900;letter-spacing:.04em;">v11.65</span></div><div class="biobel-dashboard-heading-sub">Resumo rápido da loja</div></div>
    <div class="biobel-dashboard-heading-weather" aria-label="Clima de hoje e previsão de amanhã"><span style="font-size:10px;color:#71849d;font-weight:800;">🌦️ Clima</span><span id="indicadorClimaTopo" style="display:none;"></span></div>
   </div>
   <div class="biobel-dashboard-compact no-print">
@@ -428,11 +428,11 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
 -->
 
 </main>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell-v1161.js?v=11.64"></script>
-<script src="biobel-recognition.js?v=11.64"></script>
-<script src="biobel-planilha-leitura.js?v=11.64"></script>
-<script src="biobel-planilha-processamento.js?v=11.64"></script>
-<script src="biobel-planilha-comparacao.js?v=11.64"></script><script src="biobel-app.js?v=11.64"></script><script src="inteligencia-operacional.js?v=11.64"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell-v1161.js?v=11.65"></script>
+<script src="biobel-recognition.js?v=11.65"></script>
+<script src="biobel-planilha-leitura.js?v=11.65"></script>
+<script src="biobel-planilha-processamento.js?v=11.65"></script>
+<script src="biobel-planilha-comparacao.js?v=11.65"></script><script src="biobel-app.js?v=11.65"></script><script src="inteligencia-operacional.js?v=11.65"></script>
 <script>
 (function(){
  function arrData(){try{return Array.isArray(daysData)?daysData:(Array.isArray(window.daysData)?window.daysData:[]);}catch(e){return Array.isArray(window.daysData)?window.daysData:[];}}
@@ -897,12 +897,19 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
     if(st){st.textContent='🟡 Atualizando dados';st.className='sub';}
     return;
    }
-   const selected=isCurrent?rows(fonteMes.dados,ag):rows(fonteMes.dados,ag).filter(q=>q.mes===mesSelecionado);
+   // Para o mês atual, médias históricas usam SOMENTE os dias já encerrados deste próprio mês.
+   // Ex.: em 07/10/2026, os dias úteis de referência são 01, 02, 05 e 06/10; 07/10 é o dia atual e fica fora.
+   // O sábado é calculado separadamente: até agora, 03/10 é o único sábado encerrado de outubro.
+   const todasRows=rows(fonteMes.dados,ag);
+   const dataHojeIso=ag.getFullYear()+'-'+String(ag.getMonth()+1).padStart(2,'0')+'-'+String(ag.getDate()).padStart(2,'0');
+   const selected=isCurrent
+     ? todasRows.filter(q=>q.mes===cur && (q.d?.dia ? (infoDia(q.d,ag)?.iso||'')<=dataHojeIso : false))
+     : todasRows.filter(q=>q.mes===mesSelecionado);
    const x=cfg(), incl=incluirOnline();
    const weekdays=selected.filter(q=>q.tipo==='semana');
    const saturdays=selected.filter(q=>q.tipo==='sabado');
-   const weekdayClosed=weekdays.filter(q=>!(isCurrent&&String(q.d?.dia||'')===String(ag.getDate()).padStart(2,'0')+'.'+String(ag.getMonth()+1).padStart(2,'0')));
-   const saturdayClosed=saturdays.filter(q=>!(isCurrent&&String(q.d?.dia||'')===String(ag.getDate()).padStart(2,'0')+'.'+String(ag.getMonth()+1).padStart(2,'0')));
+   const weekdayClosed=weekdays.filter(q=>!isCurrent || (infoDia(q.d,ag)?.iso||'')<dataHojeIso);
+   const saturdayClosed=saturdays.filter(q=>!isCurrent || (infoDia(q.d,ag)?.iso||'')<dataHojeIso);
    const avgWeek=media(weekdayClosed),avgSat=media(saturdayClosed);
    const faixasWeek=mediaFaixas(weekdayClosed);
    const todayDay=arr.find(q=>String(q?.dia||'')===String(ag.getDate()).padStart(2,'0')+'.'+String(ag.getMonth()+1).padStart(2,'0'));
