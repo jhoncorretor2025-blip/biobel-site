@@ -661,6 +661,8 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
  const KEY_MES='biobel_atendimentos_mes_selecionado';
  let chart=null;
  let mesSelecionado='';
+ let mesCarregando='';
+ const mesCache={};
 
  function cfg(){
   const d={minimo:15,maximo:25,forte:26,muitoForte:36,recorde:51};
@@ -723,12 +725,19 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
   else if(n>=x.minimo){status='Movimento normal';emoji='🟢';classe='sub positivo';}
   return {texto:status,emoji,classe};
  }
+ function getIntegratedSheets(){
+  return Array.isArray(window.BIOBEL_PLANILHAS_INTEGRADAS)?window.BIOBEL_PLANILHAS_INTEGRADAS:
+         (typeof BIOBEL_PLANILHAS_INTEGRADAS!=='undefined'?BIOBEL_PLANILHAS_INTEGRADAS:[]);
+ }
  function availableMonths(arr,ag){
   const map=new Map();
-  arr.forEach(d=>{const k=mesKey(d,ag);if(k)map.set(k,true);});
-  const cur=chaveMes(ag);map.set(cur,true);
+  arr.forEach(d=>{const k=mesKey(d,ag);if(k)map.set(k,'dados carregados');});
+  const cur=chaveMes(ag);map.set(cur,'mês atual');
+  getIntegratedSheets().forEach(p=>{if(p?.id)map.set(p.id,p.nome||'Planilha integrada');});
   return [...map.keys()].sort((a,b)=>b.localeCompare(a));
  }
+ function isIntegratedMonth(key){return getIntegratedSheets().some(p=>p?.id===key);}
+ function integratedById(key){return getIntegratedSheets().find(p=>p?.id===key)||null;}
  function populateSelector(arr,ag){
   const sel=document.getElementById('atendimentosMesSelector');if(!sel)return;
   const months=availableMonths(arr,ag);
@@ -738,11 +747,41 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
   sel.textContent='';
   months.forEach(k=>{
    const o=document.createElement('option');
-   o.value=k;o.textContent=(k===cur?'Mês atual · ':'')+mesLabel(k);
+   o.value=k;
+   if(k===cur)o.textContent='Mês atual · '+mesLabel(k);
+   else if(isIntegratedMonth(k))o.textContent='⭐ '+(integratedById(k)?.nome||mesLabel(k));
+   else o.textContent=mesLabel(k);
    sel.appendChild(o);
   });
   sel.value=mesSelecionado;
-  sel.title='Selecione um mês com dados disponíveis na planilha';
+  sel.title='Escolha o mês; ⭐ indica uma planilha secundária salva dentro do código';
+ }
+ function dadosMesSelecionado(arr,ag){
+  if(mesSelecionado===chaveMes(ag))return {dados:arr,fonte:'Planilha principal'};
+  if(mesCache[mesSelecionado])return {dados:mesCache[mesSelecionado],fonte:'Planilha secundária'};
+  const doCodigo=integratedById(mesSelecionado);
+  if(doCodigo)return {dados:[],fonte:doCodigo.nome,carregando:true};
+  return {dados:arr.filter(d=>mesKey(d,ag)===mesSelecionado),fonte:'Dados carregados'};
+ }
+ async function carregarMesIntegrado(key){
+  if(!isIntegratedMonth(key) || mesCache[key])return;
+  const p=integratedById(key);
+  if(!p?.url || typeof lerDadosPlanilhaSemAtivar!=='function')throw new Error('Fonte secundária não disponível.');
+  mesCarregando=key;
+  atualizar();
+  try{
+   const dados=await lerDadosPlanilhaSemAtivar(p.url);
+   mesCache[key]=Array.isArray(dados)?dados:[];
+   mesCarregando='';
+   mesSelecionado=key;
+   try{localStorage.setItem(KEY_MES,key);}catch(e){}
+   atualizar();
+  }catch(e){
+   mesCarregando='';
+   atualizar();
+   console.warn('Planilha secundária Biobel:',e);
+   if(typeof mostrarToast==='function')mostrarToast('⚠️ Não consegui ler a planilha secundária de '+mesLabel(key)+'. Confira se o link permite leitura.');
+  }
  }
  function atualizarGrafico(items,mesLabelText,ag){
   const canvas=document.getElementById('atendimentosMovimentoChart');
@@ -776,7 +815,21 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
    const ag=typeof window.obterAgoraBrasilia==='function'?window.obterAgoraBrasilia():new Date();
    populateSelector(arr,ag);
    const cur=chaveMes(ag), isCurrent=mesSelecionado===cur;
-   const selected=rows(arr,ag).filter(q=>q.mes===mesSelecionado);
+   const fonteMes=dadosMesSelecionado(arr,ag);
+   if(mesCarregando===mesSelecionado){
+    const lab=document.getElementById('atendimentosHojeLabel');
+    const val=document.getElementById('atendimentosHojeValor');
+    const sub=document.getElementById('atendimentosHojeSplit');
+    const cmp=document.getElementById('atendimentosHojeComparacao');
+    const st=document.getElementById('atendimentosHojeStatus');
+    if(lab)lab.textContent='Carregando · '+mesLabel(mesSelecionado);
+    if(val)val.textContent='…';
+    if(sub)sub.textContent='📥 Lendo planilha secundária salva no código…';
+    if(cmp)cmp.textContent='Aguarde a leitura do período';
+    if(st){st.textContent='🟡 Atualizando dados';st.className='sub';}
+    return;
+   }
+   const selected=isCurrent?rows(fonteMes.dados,ag):rows(fonteMes.dados,ag).filter(q=>q.mes===mesSelecionado);
    const x=cfg(), incl=incluirOnline();
    const weekdays=selected.filter(q=>q.tipo==='semana');
    const saturdays=selected.filter(q=>q.tipo==='sabado');
@@ -788,7 +841,7 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
    const nToday=contar(todayDay),cToday=contagem(todayDay);
 
    const nomes=['JANEIRO','FEVEREIRO','MARÇO','ABRIL','MAIO','JUNHO','JULHO','AGOSTO','SETEMBRO','OUTUBRO','NOVEMBRO','DEZEMBRO'];
-   const ref=document.getElementById('atendimentosMesReferencia');if(ref)ref.textContent='— '+mesLabel(mesSelecionado);
+   const ref=document.getElementById('atendimentosMesReferencia');if(ref)ref.textContent='— '+mesLabel(mesSelecionado)+(isIntegratedMonth(mesSelecionado)?' · secundária':'');
    const sub=document.getElementById('atendimentosHojeSplit');
    const value=document.getElementById('atendimentosHojeValor');
    const label=document.getElementById('atendimentosHojeLabel');
@@ -850,11 +903,19 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
    const rs=document.getElementById('atendimentosSabadosRestantes');if(rs)rs.textContent=isCurrent?restSat:'—';
 
    atualizarGrafico(mesRows,'Mês selecionado · '+mesLabel(mesSelecionado),ag);
-  }catch(e){console.warn('Movimento da loja v11.56:',e);}
+  }catch(e){console.warn('Movimento da loja v11.57:',e);}
  }
 
  const sel=document.getElementById('atendimentosMesSelector');
- if(sel)sel.addEventListener('change',function(){mesSelecionado=this.value;try{localStorage.setItem(KEY_MES,mesSelecionado);}catch(e){}atualizar();});
+ if(sel)sel.addEventListener('change',function(){
+  mesSelecionado=this.value;
+  try{localStorage.setItem(KEY_MES,mesSelecionado);}catch(e){}
+  if(isIntegratedMonth(mesSelecionado) && !mesCache[mesSelecionado]){
+   carregarMesIntegrado(mesSelecionado);
+  }else{
+   atualizar();
+  }
+ });
  const btn=document.getElementById('atendimentosOnlineToggle');
  if(btn)btn.addEventListener('click',function(){try{localStorage.setItem(KEY_ONLINE,incluirOnline()?'0':'1');}catch(e){}atualizar();});
  window.addEventListener('biobel:data-updated',()=>setTimeout(atualizar,350));
