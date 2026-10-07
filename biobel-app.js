@@ -1235,7 +1235,7 @@ function removerTarefaDia(dia, quem, index){
  const texto = rotinaSemanal[dia]?.[quem]?.[index] || 'esta tarefa';
  confirmarBiobel(`Remover a tarefa "${texto}"?`, ()=>{
   rotinaSemanal[dia][quem].splice(index,1);
-  limparCheckboxesEscopo(`biobel_equipe_${dia}_${quem}_`);
+  limparCheckboxesEscopo(`biobel_equipe_${dia}_${quem}_`); if(quem==='gabi') limparCheckboxesEscopo(`biobel_equipe_${dia}_gabi_treinamento_`);
   salvarRotinaPersonalizada();
   renderEquipeDia(dia);
  });
@@ -1249,6 +1249,7 @@ function moverTarefaDia(dia, quem, index){
   const [texto] = rotinaSemanal[dia][quem].splice(index,1);
   rotinaSemanal[dia][outraQuem].push(texto);
   limparCheckboxesEscopo(`biobel_equipe_${dia}_gabi_`);
+  limparCheckboxesEscopo(`biobel_equipe_${dia}_gabi_treinamento_`);
   limparCheckboxesEscopo(`biobel_equipe_${dia}_dai_`);
   salvarRotinaPersonalizada();
   renderEquipeDia(dia);
