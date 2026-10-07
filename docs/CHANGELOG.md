@@ -1,3 +1,11 @@
+## v11.55 — 06/10/2026
+- Painel “Movimento da loja” aprimorado: separa explicitamente segunda a sexta de sábado. Sábados (03, 10, 17, 24 e 31/10/2026) não entram nas médias, mínimo ou máximo de dias úteis.
+- Hoje x média: o cartão principal mostra a diferença em atendimentos e em percentual contra a média do mesmo tipo de dia.
+- Evolução diária: novo gráfico com séries separadas para Seg–Sex e Sábado.
+- Faixas e sábado: a faixa configurada 15–25 fica identificada como Seg–Sex; sábados têm média e faixa automática próprias e a tela reforça o funcionamento até 16h.
+- Projeção do mês: estima o total usando separadamente as médias de dias úteis e sábados e mostra quantos dias de cada tipo ainda restam.
+- Cache: service worker atualizado para biobel-cache-v11.55.
+
 ## v11.53 — 06/10/2026
 Correção dos 5 problemas 🟠 ALTOS da auditoria crítica (#4 a #8). Versão unificada em v11.53 (a v11.52 tinha ficado só no cache do service worker e em 4 scripts).
 - **#4 Dados de exemplo nunca mais aparecem como reais.** Removido o `embeddedData` (9 dias de agosto) que preenchia o painel enquanto a planilha carregava ou quando o Google falhava ("Meta R$ 23.009,95 · 46% · até 11/08", líder "alesandra", "Tudo certo"). `daysData` agora começa **vazio**. Sem dados, os cartões dizem "Aguardando a planilha…" ou "Sem dados: não consegui ler a planilha." e o painel de alertas diz "Sem dados" (não "Tudo certo"). Planilha sem nenhum dia do mês atual: "⚠️ Dados de setembro: a planilha ainda não tem dias de outubro."
