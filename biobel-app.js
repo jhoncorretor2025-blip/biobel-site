@@ -1135,12 +1135,16 @@ let equipeEditMode = false;
    As atividades são herdadas, mas o checklist começa zerado.
 */
 function getEquipePrincipal(){
+ // Gabriela é ex-funcionária: o posto ativo da rotina fica com CLT (Treinamento).
+ // O posto só volta a ser Gabriela com uma reativação explícita no localStorage.
  const desligamento = getDesligamento('gabriela');
- if(desligamento){
-  return {scope:'gabi_treinamento',nome:'CLT (Treinamento)',titulo:'CLT (Treinamento)',inicial:'T',treinamento:true,dataInicio:desligamento.data||null};
+ const reativada = localStorage.getItem('biobel_equipe_gabriela_ativa') === 'yes';
+ if(desligamento || !reativada){
+  if(!desligamento){ try{ garantirSubstitutaCltTreinamento(null); }catch(e){} }
+  return {scope:'gabi_treinamento',nome:'CLT (Treinamento)',titulo:'CLT (Treinamento)',inicial:'T',treinamento:true,dataInicio:desligamento?.data||null};
  }
  const nomeSalvo=(localStorage.getItem('biobel_equipe_equipeNomeGabi')||'').trim();
- const nome=nomeSalvo||'Gabi';
+ const nome=nomeSalvo||'Gabriela';
  return {scope:'gabi',nome,titulo:nome.toUpperCase(),inicial:nome.charAt(0).toUpperCase(),treinamento:false,dataInicio:null};
 }
 function equipePrincipalScope(dia){ return String(dia)+'_'+getEquipePrincipal().scope; }
@@ -2242,9 +2246,9 @@ function printEquipeWeek(){
  diasSemanaOrdem.forEach(dia=>{
   const d = rotinaSemanal[dia];
   html += `<div class="receipt-line"></div><strong>${d.emoji} ${d.nome.toUpperCase()}</strong><br>`;
-  html += `<span class="receipt-small">GABI:</span><br>`;
+  html += `<span class="receipt-small">${String(getEquipePrincipal().nome).toUpperCase()}:</span><br>`;
   d.gabi.forEach((texto,i)=>{
-   const marcado = isEquipeChecked(`${dia}_gabi`, i) ? '[x]' : '[ ]';
+   const marcado = isEquipeChecked(equipePrincipalScope(dia), i) ? '[x]' : '[ ]';
    html += `<div class="receipt-row"><span>${marcado} ${texto}</span></div>`;
   });
   html += `<span class="receipt-small">DAI:</span><br>`;
@@ -2254,7 +2258,7 @@ function printEquipeWeek(){
   });
  });
  html += `<div class="receipt-line"></div>`;
- html += `<div class="receipt-row"><span>Vendedora (Gabi): ${nomeGabi}</span></div>`;
+ html += `<div class="receipt-row"><span>Responsável pelo posto: ${getEquipePrincipal().nome}</span></div>`;
  html += `<div class="receipt-row"><span>Estagiária (Dai): ${nomeDai}</span></div>`;
  html += `<div class="receipt-line"></div><div class="receipt-center receipt-small">Impresso em ${new Date().toLocaleString('pt-BR')}</div>`;
 
