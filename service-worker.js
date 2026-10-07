@@ -59,7 +59,15 @@ self.addEventListener('fetch', (event) => {
       })
       .catch(() => {
         // Sem internet — tenta achar uma cópia salva antes, pra não ficar com a tela em branco.
-        return caches.match(event.request);
+        return caches.match(event.request).then((direto)=>{
+          if(direto) return direto;
+          // As páginas usam ?v=11.58 para cache-busting, mas os arquivos essenciais
+          // são pré-cacheados sem query string. No modo offline, tenta também a URL normalizada.
+          const u=new URL(event.request.url);
+          u.searchParams.delete('v');
+          const normalizada=new Request(u.toString(),{method:'GET',headers:event.request.headers});
+          return caches.match(normalizada);
+        });
       })
   );
 });
