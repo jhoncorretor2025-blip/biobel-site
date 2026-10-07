@@ -126,6 +126,30 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
 @media(max-width:480px){.biobel-atendimento-card-v2{padding:13px}.biobel-atendimento-v2-grid{gap:7px}.biobel-atendimento-v2-kpi{padding:9px}.biobel-atendimento-v2-kpi.principal strong{font-size:25px}.biobel-atendimento-v2-kpi strong{font-size:17px}.biobel-atendimento-v2-chart{padding:9px}.biobel-atendimento-v2-chart-wrap{height:175px}}
 </style><style>
 @media(max-width:640px){#resumoVendasHoje{grid-template-columns:1fr!important}.x{display:none}}
+</style><style>
+/* v11.62 — status diário da planilha */
+.biobel-planilha-status{
+ display:flex;align-items:flex-start;gap:14px;padding:12px 14px;border-radius:14px;
+ background:linear-gradient(145deg,rgba(245,158,11,.12),rgba(245,158,11,.04));
+ border:1px solid rgba(245,158,11,.35);box-shadow:0 5px 16px rgba(0,0,0,.10);
+}
+.biobel-planilha-status-main{min-width:0}
+.biobel-planilha-status-title{font-size:12.5px;font-weight:900;color:#fbbf24;line-height:1.35}
+.biobel-planilha-status-sub{font-size:11px;color:#c7d2e0;margin-top:5px;line-height:1.5}
+.biobel-planilha-status-list{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
+.biobel-planilha-status-pill{
+ display:inline-flex;align-items:center;gap:5px;padding:6px 9px;border-radius:999px;
+ background:#101f34;border:1px solid #354761;color:#dce5f2;font-size:10.5px;font-weight:800;
+}
+.biobel-planilha-status-pill.ok{background:rgba(39,215,160,.08);border-color:rgba(39,215,160,.28);color:#27d7a0}
+body.light-mode .biobel-planilha-status{
+ background:linear-gradient(145deg,#fff8e6,#fff);border-color:#f2c66d;box-shadow:0 4px 14px rgba(15,23,42,.06)
+}
+body.light-mode .biobel-planilha-status-title{color:#9a6500}
+body.light-mode .biobel-planilha-status-sub{color:#64748b}
+body.light-mode .biobel-planilha-status-pill{background:#f8fafc;border-color:#d7e1ec;color:#334155}
+body.light-mode .biobel-planilha-status-pill.ok{background:#ecfdf5;border-color:#a7dfca;color:#087f5b}
+@media(max-width:640px){.biobel-planilha-status{padding:11px 12px}.biobel-planilha-status-title{font-size:12px}.biobel-planilha-status-sub{font-size:10.5px}.biobel-planilha-status-pill{font-size:10px;padding:5px 8px}}
 </style></head><body data-biobel-page="dashboard" class="min-h-screen bg-slate-950 text-slate-100">
 <div id="faixaMensagemProgramada" style="display:none;"></div>
 <div id="tourGuiadoOverlay" style="display:none;"></div>
@@ -144,9 +168,16 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
 -->
 <main id="dashboardTab" class="max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabDashboard">
   <div class="biobel-dashboard-heading no-print" aria-label="Cabeçalho da Visão Geral">
-   <div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><div class="biobel-dashboard-heading-title">Visão Geral</div><span id="versaoSistemaTela" style="display:inline-flex;align-items:center;padding:4px 8px;border:1px solid rgba(14,169,122,.35);border-radius:8px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:10px;font-weight:900;letter-spacing:.04em;">v11.61</span></div><div class="biobel-dashboard-heading-sub">Resumo rápido da loja</div></div>
+   <div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><div class="biobel-dashboard-heading-title">Visão Geral</div><span id="versaoSistemaTela" style="display:inline-flex;align-items:center;padding:4px 8px;border:1px solid rgba(14,169,122,.35);border-radius:8px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:10px;font-weight:900;letter-spacing:.04em;">v11.62</span></div><div class="biobel-dashboard-heading-sub">Resumo rápido da loja</div></div>
    <div class="biobel-dashboard-heading-weather" aria-label="Clima de hoje e previsão de amanhã"><span style="font-size:10px;color:#71849d;font-weight:800;">🌦️ Clima</span><span id="indicadorClimaTopo" style="display:none;"></span></div>
   </div>
+  <section id="statusAtualizacaoPlanilha" class="biobel-planilha-status no-print" style="display:none;" aria-live="polite" aria-label="Status da planilha">
+   <div class="biobel-planilha-status-main">
+    <div id="statusAtualizacaoPlanilhaTitulo" class="biobel-planilha-status-title"></div>
+    <div id="statusAtualizacaoPlanilhaSub" class="biobel-planilha-status-sub"></div>
+    <div id="statusAtualizacaoPlanilhaLista" class="biobel-planilha-status-list"></div>
+   </div>
+  </section>
   <div class="biobel-dashboard-compact no-print">
    <section class="biobel-kpi-grid" aria-label="Indicadores principais">
     <article class="biobel-kpi"><div class="kpi-label">🎯 Meta do mês</div><div id="kpiMetaValor" class="kpi-value kpi-accent">R$ 0,00</div><div id="kpiMetaSub" class="kpi-sub">de R$ 0,00 · 0%</div><div id="kpiMetaExtra" class="kpi-sub">Calculando necessidade diária...</div></article>
@@ -427,11 +458,11 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
 -->
 
 </main>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell-v1161.js?v=11.61"></script>
-<script src="biobel-recognition.js?v=11.60"></script>
-<script src="biobel-planilha-leitura.js?v=11.60"></script>
-<script src="biobel-planilha-processamento.js?v=11.60"></script>
-<script src="biobel-planilha-comparacao.js?v=11.60"></script><script src="biobel-app.js?v=11.60"></script><script src="inteligencia-operacional.js?v=11.60"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell-v1161.js?v=11.62"></script>
+<script src="biobel-recognition.js?v=11.62"></script>
+<script src="biobel-planilha-leitura.js?v=11.62"></script>
+<script src="biobel-planilha-processamento.js?v=11.62"></script>
+<script src="biobel-planilha-comparacao.js?v=11.62"></script><script src="biobel-app.js?v=11.62"></script><script src="inteligencia-operacional.js?v=11.62"></script>
 <script>
 (function(){
  function arrData(){try{return Array.isArray(daysData)?daysData:(Array.isArray(window.daysData)?window.daysData:[]);}catch(e){return Array.isArray(window.daysData)?window.daysData:[];}}
@@ -933,9 +964,15 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
    var valor=Number(dia?.vendaP2)||Number(dia?.sales)||0;
    var fmt=new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"});
    var el=document.getElementById("vendaHojeMini");
-   if(el)el.textContent=fmt.format(valor);
    var vEl=document.getElementById("vendedoraHojeMini");
    var lEl=document.getElementById("valorLiderHojeMini");
+   if(!dia){
+    if(el)el.textContent="—";
+    if(vEl)vEl.textContent="Aguardando "+chave.replace(".", "/");
+    if(lEl)lEl.textContent="—";
+    return;
+   }
+   if(el)el.textContent=fmt.format(valor);
    var vend=dia?.vendedoras||{};
    var ranking=Object.keys(vend).map(function(nome){return {nome:nome,valor:Number(vend[nome])||0};}).filter(function(x){return x.valor>0;}).sort(function(a,b){return b.valor-a.valor;});
    var lider=ranking[0];
@@ -948,4 +985,67 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
  setInterval(atualizarVendaHojeMini,60000);
 })();
 </script>
-</body></html>
+<script>
+(function(){
+ function dados(){try{return Array.isArray(window.daysData)?window.daysData:[];}catch(e){return[];}}
+ function agora(){return typeof window.obterAgoraBrasilia==='function'?window.obterAgoraBrasilia():new Date();}
+ function pad(n){return String(n).padStart(2,'0');}
+ function chave(d){return pad(d.getDate())+'.'+pad(d.getMonth()+1);}
+ function fmt(d){return pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear();}
+ function atualizar(){
+  const box=document.getElementById('statusAtualizacaoPlanilha');
+  const titulo=document.getElementById('statusAtualizacaoPlanilhaTitulo');
+  const sub=document.getElementById('statusAtualizacaoPlanilhaSub');
+  const lista=document.getElementById('statusAtualizacaoPlanilhaLista');
+  if(!box||!titulo||!sub||!lista)return;
+  const ag=agora(), arr=dados(), hojeKey=chave(ag);
+  const hoje=arr.find(function(x){return String(x?.dia||'')===hojeKey;})||null;
+  const ontemData=new Date(ag.getFullYear(),ag.getMonth(),ag.getDate()-1);
+  // Domingo não gera uma nova cobrança de aba/caixa.
+  if(ag.getDay()===0){box.style.display='none';return;}
+  const ontemKey=chave(ontemData);
+  const ontem=arr.find(function(x){return String(x?.dia||'')===ontemKey;})||null;
+  const nomes=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  const ultimo=arr.slice().sort(function(a,b){
+    const pa=String(a?.dia||'').split('.').map(Number),pb=String(b?.dia||'').split('.').map(Number);
+    return ((pa[1]||0)*100+(pa[0]||0))-((pb[1]||0)*100+(pb[0]||0));
+  }).pop()||null;
+  const pendHoje=!hoje, pendCaixa=!ontem || !ontem.closingEncontrado;
+  if(!arr.length){
+    box.style.display='';
+    titulo.textContent='⏳ Ainda estou lendo a planilha';
+    sub.textContent='Aguardando os dados da planilha para atualizar o dashboard.';
+    lista.innerHTML='<span class="biobel-planilha-status-pill">📥 Leitura em andamento</span>';
+    return;
+  }
+  if(!pendHoje && !pendCaixa){box.style.display='none';return;}
+  box.style.display='';
+  if(pendHoje && pendCaixa){
+   titulo.textContent='⏳ Ainda estou lendo a planilha de '+ontemKey;
+   sub.textContent='A aba de '+ontemKey+' ainda está sendo acompanhada. Estou aguardando a criação da aba de '+hojeKey+' e o fechamento do caixa de '+ontemKey+'.';
+  }else if(pendHoje){
+   titulo.textContent='⏳ Aguardando a planilha de '+hojeKey;
+   sub.textContent='A aba de hoje ainda não foi criada. Até ela existir, o sistema não trata nenhum número como venda/atendimento de hoje.';
+  }else{
+   titulo.textContent='⚠️ Fechamento do caixa de '+ontemKey+' pendente';
+   sub.textContent='A aba de hoje já existe, mas o fechamento do caixa do dia anterior ainda não foi identificado na planilha.';
+  }
+  const ultimaData=ultimo?.dia||'—';
+  let html='';
+  html+='<span class="biobel-planilha-status-pill">📚 Último dia lido: '+ultimaData+'</span>';
+  if(pendHoje) html+='<span class="biobel-planilha-status-pill">🆕 Aguardando criação da aba '+hojeKey+'</span>';
+  if(pendCaixa){
+   html+='<span class="biobel-planilha-status-pill">💰 Aguardando fechamento de '+ontemKey+'</span>';
+  }else if(ontem){
+   html+='<span class="biobel-planilha-status-pill ok">✅ Fechamento de '+ontemKey+' identificado</span>';
+  }
+  html+='<span class="biobel-planilha-status-pill">🔄 Atualização automática a cada 1 minuto</span>';
+  lista.innerHTML=html;
+ }
+ window.addEventListener('biobel:data-updated',function(){setTimeout(atualizar,150);});
+ window.addEventListener('storage',function(){setTimeout(atualizar,150);});
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)atualizar();});
+ setTimeout(atualizar,800);
+ setInterval(atualizar,60000);
+})();
+</script></body></html>
