@@ -144,7 +144,7 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
 -->
 <main id="dashboardTab" class="max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabDashboard">
   <div class="biobel-dashboard-heading no-print" aria-label="Cabeçalho da Visão Geral">
-   <div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><div class="biobel-dashboard-heading-title">Visão Geral</div><span id="versaoSistemaTela" style="display:inline-flex;align-items:center;padding:4px 8px;border:1px solid rgba(14,169,122,.35);border-radius:8px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:10px;font-weight:900;letter-spacing:.04em;">v11.63</span></div><div class="biobel-dashboard-heading-sub">Resumo rápido da loja</div></div>
+   <div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><div class="biobel-dashboard-heading-title">Visão Geral</div><span id="versaoSistemaTela" style="display:inline-flex;align-items:center;padding:4px 8px;border:1px solid rgba(14,169,122,.35);border-radius:8px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:10px;font-weight:900;letter-spacing:.04em;">v11.64</span></div><div class="biobel-dashboard-heading-sub">Resumo rápido da loja</div></div>
    <div class="biobel-dashboard-heading-weather" aria-label="Clima de hoje e previsão de amanhã"><span style="font-size:10px;color:#71849d;font-weight:800;">🌦️ Clima</span><span id="indicadorClimaTopo" style="display:none;"></span></div>
   </div>
   <div class="biobel-dashboard-compact no-print">
@@ -325,6 +325,7 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
     <article class="biobel-atendimento-v2-kpi">
      <small>📊 Média — seg. a sex.</small>
      <strong id="atendimentosMediaHistorico">—</strong>
+     <div id="atendimentosMediaHistoricoFaixas" class="sub destaque">🌅 — manhã · 🌇 — tarde</div>
      <div id="atendimentosMediaHistoricoDias" class="sub">dias úteis encerrados</div>
     </article>
     <article class="biobel-atendimento-v2-kpi">
@@ -427,11 +428,11 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
 -->
 
 </main>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell-v1161.js?v=11.63"></script>
-<script src="biobel-recognition.js?v=11.63"></script>
-<script src="biobel-planilha-leitura.js?v=11.63"></script>
-<script src="biobel-planilha-processamento.js?v=11.63"></script>
-<script src="biobel-planilha-comparacao.js?v=11.63"></script><script src="biobel-app.js?v=11.63"></script><script src="inteligencia-operacional.js?v=11.63"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell-v1161.js?v=11.64"></script>
+<script src="biobel-recognition.js?v=11.64"></script>
+<script src="biobel-planilha-leitura.js?v=11.64"></script>
+<script src="biobel-planilha-processamento.js?v=11.64"></script>
+<script src="biobel-planilha-comparacao.js?v=11.64"></script><script src="biobel-app.js?v=11.64"></script><script src="inteligencia-operacional.js?v=11.64"></script>
 <script>
 (function(){
  function arrData(){try{return Array.isArray(daysData)?daysData:(Array.isArray(window.daysData)?window.daysData:[]);}catch(e){return Array.isArray(window.daysData)?window.daysData:[];}}
@@ -707,6 +708,17 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
   return arr.map(d=>({d,n:contar(d),tipo:tipoDia(d,ag),mes:mesKey(d,ag)})).filter(x=>x.n>0&&x.tipo!=='domingo');
  }
  function media(items){return items.length?items.reduce((s,x)=>s+x.n,0)/items.length:0;}
+ function mediaFaixas(items){
+  if(!items.length)return {manha:0,tarde:0,total:0};
+  let manha=0,tarde=0;
+  items.forEach(function(q){
+   const p=q?.d?.porTurno||{};
+   manha += Number(p['manhã']?.qtd)||0;
+   // "meio-dia" entra na tarde: a leitura vira Manhã + Tarde = total do dia.
+   tarde += (Number(p['meio-dia']?.qtd)||0) + (Number(p['tarde']?.qtd)||0);
+  });
+  return {manha:manha/items.length,tarde:tarde/items.length,total:(manha+tarde)/items.length};
+ }
  function fmtPct(v){const n=Number(v)||0;return (n>=0?'+':'')+n.toFixed(1).replace('.',',')+'%';}
  function faixaSabado(avg){return avg>0?Math.max(0,Math.floor(avg*0.8))+'–'+Math.max(Math.max(0,Math.floor(avg*0.8)),Math.ceil(avg*1.2)):'—';}
  function lerHoraEquipe(id,fallback){
@@ -728,7 +740,7 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
   const progresso=Math.max(0,Math.min(1,(agora-ini)/dur));
   return {inicio,fim,ini,fin,agora,progresso,antes:agora<ini,depois:agora>=fin,dur};
  }
- function statusHoje(n,t,avgSat,x,avgWeek,ag){
+ function statusHoje(n,t,avgSat,x,avgWeek,ag,faixasHoje){
   const refAvg=t==='sabado'?avgSat:avgWeek;
   const horario=contextoHorarioMovimento(ag,t);
   if(!refAvg){
@@ -743,11 +755,36 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
    if(pct<=-10)return {texto:t==='sabado'?'Abaixo da média de sábado':'Abaixo da média do dia',emoji:'🔻',classe:'sub negativo',horario};
    return {texto:'Na média',emoji:'🔵',classe:'sub',horario};
   }
-  // Nos primeiros 20% do expediente, ainda não vale classificar como "abaixo/acima":
-  // há pouca amostra e a comparação com o dia inteiro cria falso alerta.
-  const esperado=Math.max(0,refAvg*horario.progresso);
-  if(horario.progresso<0.20){
-   return {texto:'Início do expediente',emoji:'🟡',classe:'sub',horario,esperado};
+  // A média do dia é formada por duas curvas: manhã e tarde.
+  // Durante a manhã, cobramos apenas a parcela de atendimentos esperada para a manhã.
+  // Na tarde, a manhã vira base fechada e passamos a medir a tarde.
+  let esperado=0,baseFaixa=0,deltaFaixa=0,periodo='dia';
+  if(t==='sabado'){
+   // Sábado segue a média do sábado inteiro, pois o histórico ainda não separa faixas com a mesma confiabilidade.
+   esperado=Math.max(0,refAvg*horario.progresso);
+   baseFaixa=refAvg;
+  }else{
+   const manha=Number(faixasHoje?.manha)||0;
+   const tarde=Number(faixasHoje?.tarde)||0;
+   const meio=Number(faixasHoje?.meio)||0;
+   const manhaInicio=horario.ini, manhaFim=13*60;
+   const tardeInicio=13*60, tardeFim=horario.fin;
+   if(horario.agora<manhaFim){
+    periodo='manhã';
+    const durManha=Math.max(1,manhaFim-manhaInicio);
+    const progManha=Math.max(0,Math.min(1,(horario.agora-manhaInicio)/durManha));
+    esperado=manha*progManha;
+    baseFaixa=manha;
+   }else{
+    periodo='tarde';
+    const durTarde=Math.max(1,tardeFim-tardeInicio);
+    const progTarde=Math.max(0,Math.min(1,(horario.agora-tardeInicio)/durTarde));
+    esperado=manha+tarde*progTarde;
+    baseFaixa=manha+tarde;
+   }
+  }
+  if(horario.progresso<0.08){
+   return {texto:'Início do expediente',emoji:'🟡',classe:'sub',horario,esperado,periodo,baseFaixa};
   }
   const pct=esperado>0?((n-esperado)/esperado)*100:0;
   if(n>=x.muitoForte && horario.progresso>=0.50){
@@ -867,8 +904,14 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
    const weekdayClosed=weekdays.filter(q=>!(isCurrent&&String(q.d?.dia||'')===String(ag.getDate()).padStart(2,'0')+'.'+String(ag.getMonth()+1).padStart(2,'0')));
    const saturdayClosed=saturdays.filter(q=>!(isCurrent&&String(q.d?.dia||'')===String(ag.getDate()).padStart(2,'0')+'.'+String(ag.getMonth()+1).padStart(2,'0')));
    const avgWeek=media(weekdayClosed),avgSat=media(saturdayClosed);
+   const faixasWeek=mediaFaixas(weekdayClosed);
    const todayDay=arr.find(q=>String(q?.dia||'')===String(ag.getDate()).padStart(2,'0')+'.'+String(ag.getMonth()+1).padStart(2,'0'));
    const todayType=tipoDia({dia:String(ag.getDate()).padStart(2,'0')+'.'+String(ag.getMonth()+1).padStart(2,'0')},ag);
+   const hojeFaixas={
+    manha: todayDay ? Number(todayDay?.porTurno?.['manhã']?.qtd)||0 : 0,
+    meio: todayDay ? Number(todayDay?.porTurno?.['meio-dia']?.qtd)||0 : 0,
+    tarde: todayDay ? Number(todayDay?.porTurno?.['tarde']?.qtd)||0 : 0
+   };
    const nToday=contar(todayDay),cToday=contagem(todayDay);
 
    const nomes=['JANEIRO','FEVEREIRO','MARÇO','ABRIL','MAIO','JUNHO','JULHO','AGOSTO','SETEMBRO','OUTUBRO','NOVEMBRO','DEZEMBRO'];
@@ -885,24 +928,37 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
     if(sub)sub.textContent=todayDay?'🏬 '+cToday.loja+' na loja · 💻 '+cToday.online+' online':'';
     const refAvg=todayType==='sabado'?avgSat:avgWeek;
     const horarioHoje=contextoHorarioMovimento(ag,todayType);
-    const esperadoAgora=refAvg>0?refAvg*horarioHoje.progresso:0;
+    const esperadoHoje=todayType==='sabado'
+      ? (refAvg>0?refAvg*horarioHoje.progresso:0)
+      : ((Number(faixasWeek.manha)||0)+(Number(faixasWeek.tarde)||0));
     if(compare){
      if(!todayDay)compare.textContent='Sem lançamento para comparar';
      else if(refAvg>0 && !horarioHoje.antes){
       const horaAtual=String(ag.getHours()).padStart(2,'0')+':'+String(ag.getMinutes()).padStart(2,'0');
-      if(horarioHoje.depois){
-       const delta=nToday-refAvg;
-       compare.textContent='🕘 Fechamento '+horarioHoje.fim+' · '+(delta>=0?'📈 ':'📉 ')+Math.abs(delta).toFixed(1).replace('.',',')+' vs. média do dia · '+fmtPct((delta/refAvg)*100);
-       compare.className='sub '+(Math.abs((delta/refAvg)*100)<10?'':(delta>=0?'positivo':'negativo'));
+      if(todayType==='sabado'){
+       if(horarioHoje.depois){
+        const delta=nToday-refAvg;
+        compare.textContent='🕘 Fechamento '+horarioHoje.fim+' · '+(delta>=0?'📈 ':'📉 ')+Math.abs(delta).toFixed(1).replace('.',',')+' vs. média do sábado · '+fmtPct((delta/refAvg)*100);
+        compare.className='sub '+(Math.abs((delta/refAvg)*100)<10?'':(delta>=0?'positivo':'negativo'));
+       }else{
+        const deltaPct=esperadoHoje>0?((nToday-esperadoHoje)/esperadoHoje)*100:0;
+        compare.textContent='🕘 '+horaAtual+' · esperado até agora ~'+Math.max(0,Math.round(esperadoHoje))+' · média '+um(refAvg);
+        compare.className='sub '+(horarioHoje.progresso<0.20?'':(deltaPct>=0?'positivo':'negativo'));
+       }
       }else{
-       const deltaPct=esperadoAgora>0?((nToday-esperadoAgora)/esperadoAgora)*100:0;
-       compare.textContent='🕘 '+horaAtual+' · esperado até agora ~'+Math.max(0,Math.round(esperadoAgora))+' · média cheia '+um(refAvg);
-       compare.className='sub '+(horarioHoje.progresso<0.20?'':(deltaPct>=0?'positivo':'negativo'));
+       const fManha=Number(faixasWeek.manha)||0, fTarde=Number(faixasWeek.tarde)||0;
+       const horaAtual=String(ag.getHours()).padStart(2,'0')+':'+String(ag.getMinutes()).padStart(2,'0');
+       const noTurnoManha=ag.getHours()*60+ag.getMinutes()<13*60;
+       const esperadoFaixa=noTurnoManha ? fManha*((Math.max(0,(ag.getHours()*60+ag.getMinutes())-horarioHoje.ini))/Math.max(1,13*60-horarioHoje.ini))
+                                         : fManha + fTarde*(Math.max(0,(ag.getHours()*60+ag.getMinutes())-13*60))/Math.max(1,horarioHoje.fin-13*60);
+       const esperadoInt=Math.max(0,Math.round(esperadoFaixa));
+       compare.textContent='🕘 '+horaAtual+' · 🌅 manhã '+um(fManha)+' · 🌇 tarde '+um(fTarde)+' · esperado agora ~'+esperadoInt;
+       compare.className='sub';
       }
-     }else if(refAvg>0)compare.textContent='🕘 Abre às '+horarioHoje.inicio+' · média cheia '+um(refAvg);
+     }else if(refAvg>0)compare.textContent='🕘 Abre às '+horarioHoje.inicio+' · média do dia '+um(refAvg);
      else compare.textContent=todayType==='sabado'?'Ainda não há média histórica de sábado':'Ainda não há média de dias úteis suficiente';
     }
-    const st=statusHoje(nToday,todayType,avgSat,x,avgWeek,ag);
+    const st=statusHoje(nToday,todayType,avgSat,x,avgWeek,ag,{manha:faixasWeek.manha,tarde:faixasWeek.tarde,meio:hojeFaixas.meio});
     if(statusEl){
      statusEl.textContent=todayDay?st.emoji+' '+st.texto:(arr.length?'⏳ Hoje ainda sem lançamentos':'⏳ Aguardando a planilha');
      statusEl.className='sub '+(todayDay?st.classe.replace(/^sub\s*/,''):'');
@@ -921,7 +977,9 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
    const ma=weekdays.reduce((a,b)=>(!a||b.n>a.n)?b:a,null);
    const miEl=document.getElementById('atendimentosMinHistorico');if(miEl)miEl.textContent=mi?mi.n:'—';
    const maEl=document.getElementById('atendimentosMaxHistorico');if(maEl)maEl.textContent=ma?ma.n:'—';
-   const medEl=document.getElementById('atendimentosMediaHistorico');if(medEl)medEl.textContent=avgWeek?um(avgWeek):'—';
+   const medEl=document.getElementById('atendimentosMediaHistorico');if(medEl)medEl.textContent=faixasWeek.total?um(faixasWeek.total):(avgWeek?um(avgWeek):'—');
+   const medFaixas=document.getElementById('atendimentosMediaHistoricoFaixas');
+   if(medFaixas)medFaixas.textContent=faixasWeek.total?'🌅 '+um(faixasWeek.manha)+' manhã · 🌇 '+um(faixasWeek.tarde)+' tarde · 🎯 '+um(faixasWeek.total):'aguardando histórico por período';
    const medDias=document.getElementById('atendimentosMediaHistoricoDias');if(medDias)medDias.textContent=weekdayClosed.length?(weekdayClosed.length+' dias úteis encerrados · '+(incl?'loja + online':'só loja')):'aguardando dias úteis encerrados';
    const miDia=document.getElementById('atendimentosMinHistoricoDia');if(miDia)miDia.textContent=mi?'dia '+mi.d.dia+' · '+mi.dia+'':(mi?'':'');
    if(miDia)miDia.textContent=mi?'dia '+mi.d.dia+' · '+contagem(mi.d).loja+' loja + '+contagem(mi.d).online+' online':'';
