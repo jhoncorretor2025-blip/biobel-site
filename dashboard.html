@@ -102,7 +102,7 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
 .biobel-atendimento-v2-pill{display:inline-flex;align-items:center;gap:5px;padding:6px 9px;border-radius:999px;background:#101f34;border:1px solid #243b57;color:#cbd5e1;font-size:10px;font-weight:800}
 .biobel-atendimento-v2-chart{margin-top:10px;background:rgba(255,255,255,.018);border:1px solid #20334d;border-radius:14px;padding:11px 12px 9px}
 .biobel-atendimento-v2-chart-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:7px}
-.biobel-atendimento-v2-chart-title{font-size:11px;color:#dce5f2;font-weight:900}
+.biobel-atendimento-v2-chart-title{font-size:11px;color:#dce5f2;font-weight:900}.biobel-atendimento-v2-monthselect{display:inline-flex;align-items:center;gap:6px;background:#101f34;border:1px solid #29405b;border-radius:999px;padding:6px 9px;color:#dce5f2;font-size:10.5px;font-weight:800;cursor:pointer;outline:none}.biobel-atendimento-v2-monthselect:focus{border-color:#27d7a0;box-shadow:0 0 0 2px rgba(39,215,160,.12)}body.light-mode .biobel-atendimento-v2-monthselect{background:#f8fafc;border-color:#d7e1ec;color:#334155}
 .biobel-atendimento-v2-chart-sub{font-size:10px;color:#71849d;margin-top:2px}
 .biobel-atendimento-v2-chart-wrap{height:210px;position:relative}
 .biobel-atendimento-v2-projecao{margin-top:10px;display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:9px}
@@ -361,9 +361,9 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
     <div class="biobel-atendimento-v2-chart-head">
      <div>
       <div class="biobel-atendimento-v2-chart-title">📈 Evolução dos atendimentos</div>
-      <div class="biobel-atendimento-v2-chart-sub">Seg–Sex e sábados aparecem separados no gráfico.</div>
+      <div class="biobel-atendimento-v2-chart-sub">Seg–Sex e sábados aparecem separados. Escolha outro mês no seletor.</div>
      </div>
-     <span id="atendimentosGraficoLegenda" class="biobel-atendimento-v2-pill">Outubro/2026</span>
+     <label class="biobel-atendimento-v2-monthselect" title="Escolha o mês que deseja analisar">📅 <span>Período</span><select id="atendimentosMesSelector" aria-label="Selecionar mês para analisar"></select></label>
     </div>
     <div class="biobel-atendimento-v2-chart-wrap"><canvas id="atendimentosMovimentoChart" aria-label="Gráfico de atendimentos por dia"></canvas></div>
    </div>
@@ -658,7 +658,9 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
 (function(){
  const KEY='biobel_atendimento_config_v1';
  const KEY_ONLINE='biobel_atendimentos_incluir_online';
+ const KEY_MES='biobel_atendimentos_mes_selecionado';
  let chart=null;
+ let mesSelecionado='';
 
  function cfg(){
   const d={minimo:15,maximo:25,forte:26,muitoForte:36,recorde:51};
@@ -676,49 +678,43 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
   return {total:reg.length,online,loja:reg.length-online};
  }
  function contar(d){const c=contagem(d);return incluirOnline()?c.total:c.loja;}
- function dividido(d){const c=contagem(d);return c.loja+' loja + '+c.online+' online';}
  function um(n){return (Math.round((Number(n)||0)*10)/10).toFixed(1).replace('.',',');}
- function chaveHoje(ag){return String(ag.getDate()).padStart(2,'0')+'.'+String(ag.getMonth()+1).padStart(2,'0');}
- function partesDia(d){
+ function moedaQtd(n){return String(Math.round(Number(n)||0))+' atendimentos';}
+ function chaveMes(ag){return ag.getFullYear()+'-'+String(ag.getMonth()+1).padStart(2,'0');}
+ function chaveDia(d){return String(d?.dia||'').replace('.','-');}
+ function infoDia(d,ag){
   const p=String(d?.dia||'').split('.');
   if(p.length!==2)return null;
   const dd=Number(p[0]),mm=Number(p[1]);
   if(!(dd>0&&mm>0))return null;
-  const ano=(mm > ((typeof window.obterAgoraBrasilia==='function'?window.obterAgoraBrasilia():new Date()).getMonth()+1))
-    ? (typeof window.obterAgoraBrasilia==='function'?window.obterAgoraBrasilia():new Date()).getFullYear()-1
-    : (typeof window.obterAgoraBrasilia==='function'?window.obterAgoraBrasilia():new Date()).getFullYear();
-  const dt=new Date(Date.UTC(ano,mm-1,dd));
-  return {dd,mm,iso:dt.toISOString().slice(0,10),dow:dt.getUTCDay()};
+  const year=(mm>(ag.getMonth()+1))?ag.getFullYear()-1:ag.getFullYear();
+  const dt=new Date(Date.UTC(year,mm-1,dd));
+  return {dd,mm,year,iso:dt.toISOString().slice(0,10),dow:dt.getUTCDay()};
  }
- function tipoDia(d){
-  const p=partesDia(d); if(!p)return 'outro';
+ function tipoDia(d,ag){
+  const p=infoDia(d,ag); if(!p)return 'outro';
   if(p.dow>=1&&p.dow<=5)return 'semana';
   if(p.dow===6)return 'sabado';
   return 'domingo';
  }
- function rows(arr){
-  return arr.map(d=>({d,n:contar(d),tipo:tipoDia(d)})).filter(x=>x.n>0 && x.tipo!=='domingo');
+ function mesKey(d,ag){
+  const p=infoDia(d,ag);return p?p.year+'-'+String(p.mm).padStart(2,'0'):'';
+ }
+ function mesLabel(key){
+  const [y,m]=String(key||'').split('-').map(Number);
+  if(!y||!m)return key||'';
+  const nomes=['JANEIRO','FEVEREIRO','MARÇO','ABRIL','MAIO','JUNHO','JULHO','AGOSTO','SETEMBRO','OUTUBRO','NOVEMBRO','DEZEMBRO'];
+  return nomes[m-1]+'/'+y;
+ }
+ function rows(arr,ag){
+  return arr.map(d=>({d,n:contar(d),tipo:tipoDia(d,ag),mes:mesKey(d,ag)})).filter(x=>x.n>0&&x.tipo!=='domingo');
  }
  function media(items){return items.length?items.reduce((s,x)=>s+x.n,0)/items.length:0;}
  function fmtPct(v){const n=Number(v)||0;return (n>=0?'+':'')+n.toFixed(1).replace('.',',')+'%';}
- function mesAtual(ag){return ag.getMonth()+1;}
-
- function faixaSabado(avg){
-  if(!(avg>0))return '—';
-  const min=Math.max(0,Math.floor(avg*0.8));
-  const max=Math.max(min,Math.ceil(avg*1.2));
-  return min+'–'+max;
- }
-
+ function faixaSabado(avg){return avg>0?Math.max(0,Math.floor(avg*0.8))+'–'+Math.max(Math.max(0,Math.floor(avg*0.8)),Math.ceil(avg*1.2)):'—';}
  function statusHoje(n,t,avgSat,x){
-  if(t==='domingo')return {texto:'Loja fechada',emoji:'🔒',classe:'sub'};
   if(t==='sabado'){
-   if(avgSat>0){
-    const pct=((n-avgSat)/avgSat)*100;
-    if(pct>=10)return {texto:'Acima da média de sábado',emoji:'🟢',classe:'sub positivo'};
-    if(pct<=-10)return {texto:'Abaixo da média de sábado',emoji:'🔻',classe:'sub negativo'};
-    return {texto:'Na média de sábado',emoji:'🔵',classe:'sub'};
-   }
+   if(avgSat>0){const pct=((n-avgSat)/avgSat)*100;if(pct>=10)return {texto:'Acima da média de sábado',emoji:'🟢',classe:'sub positivo'};if(pct<=-10)return {texto:'Abaixo da média de sábado',emoji:'🔻',classe:'sub negativo'};return {texto:'Na média de sábado',emoji:'🔵',classe:'sub'};}
    return {texto:'Primeiro sábado com referência',emoji:'🔵',classe:'sub'};
   }
   let status='Abaixo do esperado',emoji='🔴',classe='sub negativo';
@@ -727,88 +723,98 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
   else if(n>=x.minimo){status='Movimento normal';emoji='🟢';classe='sub positivo';}
   return {texto:status,emoji,classe};
  }
-
- function atualizarGrafico(items,mesLabel){
+ function availableMonths(arr,ag){
+  const map=new Map();
+  arr.forEach(d=>{const k=mesKey(d,ag);if(k)map.set(k,true);});
+  const cur=chaveMes(ag);map.set(cur,true);
+  return [...map.keys()].sort((a,b)=>b.localeCompare(a));
+ }
+ function populateSelector(arr,ag){
+  const sel=document.getElementById('atendimentosMesSelector');if(!sel)return;
+  const months=availableMonths(arr,ag);
+  let saved='';try{saved=localStorage.getItem(KEY_MES)||'';}catch(e){}
+  const cur=chaveMes(ag);
+  if(!mesSelecionado||!months.includes(mesSelecionado))mesSelecionado=(saved&&months.includes(saved))?saved:cur;
+  sel.textContent='';
+  months.forEach(k=>{
+   const o=document.createElement('option');
+   o.value=k;o.textContent=(k===cur?'Mês atual · ':'')+mesLabel(k);
+   sel.appendChild(o);
+  });
+  sel.value=mesSelecionado;
+  sel.title='Selecione um mês com dados disponíveis na planilha';
+ }
+ function atualizarGrafico(items,mesLabelText,ag){
   const canvas=document.getElementById('atendimentosMovimentoChart');
   if(!canvas||typeof Chart==='undefined')return;
-  const sorted=items.slice().sort((a,b)=>String(a.d.dia||'').localeCompare(String(b.d.dia||''),undefined,{numeric:true}));
-  const labels=sorted.map(x=>String(x.d.dia||'').replace('.', '/'));
+  const sorted=items.slice().sort((a,b)=>{
+   const pa=infoDia(a.d,ag),pb=infoDia(b.d,ag);
+   return (pa?.iso||'').localeCompare(pb?.iso||'');
+  });
+  const labels=sorted.map(x=>String(x.d.dia||'').replace('.','/'));
   const semana=sorted.map(x=>x.tipo==='semana'?x.n:null);
   const sabado=sorted.map(x=>x.tipo==='sabado'?x.n:null);
   try{if(chart)chart.destroy();}catch(e){}
   chart=new Chart(canvas.getContext('2d'),{
    type:'line',
-   data:{
-    labels,
-    datasets:[
-     {label:'Seg–Sex',data:semana,borderColor:'#27d7a0',backgroundColor:'rgba(39,215,160,.10)',pointRadius:4,pointHoverRadius:6,tension:.28,spanGaps:true},
-     {label:'Sábado',data:sabado,borderColor:'#4f9cff',backgroundColor:'rgba(79,156,255,.10)',pointRadius:4,pointHoverRadius:6,tension:.28,spanGaps:false}
-    ]
-   },
-   options:{
-    responsive:true,maintainAspectRatio:false,
+   data:{labels,datasets:[
+    {label:'Seg–Sex',data:semana,borderColor:'#27d7a0',backgroundColor:'rgba(39,215,160,.10)',pointRadius:4,pointHoverRadius:6,tension:.28,spanGaps:true},
+    {label:'Sábado',data:sabado,borderColor:'#4f9cff',backgroundColor:'rgba(79,156,255,.10)',pointRadius:4,pointHoverRadius:6,tension:.28,spanGaps:false}
+   ]},
+   options:{responsive:true,maintainAspectRatio:false,
     plugins:{legend:{position:'top',labels:{boxWidth:10,usePointStyle:true,color:'#a9b8ca',font:{size:10,weight:'700'}}},
       tooltip:{callbacks:{label:function(ctx){return ' '+ctx.dataset.label+': '+ctx.parsed.y+' atendimentos';}}}},
-    scales:{
-     x:{grid:{display:false},ticks:{color:'#71849d',font:{size:9}}},
-     y:{beginAtZero:true,grid:{color:'rgba(148,163,184,.10)'},ticks:{color:'#71849d',font:{size:9},precision:0}}
-    }
+    scales:{x:{grid:{display:false},ticks:{color:'#71849d',font:{size:9}}},
+      y:{beginAtZero:true,grid:{color:'rgba(148,163,184,.10)'},ticks:{color:'#71849d',font:{size:9},precision:0}}}
    }
   });
-  const leg=document.getElementById('atendimentosGraficoLegenda');if(leg)leg.textContent=mesLabel;
+  const leg=document.getElementById('atendimentosGraficoLegenda');if(leg)leg.textContent=mesLabelText;
  }
-
  function atualizar(){
   try{
    const arr=arrData();
    const ag=typeof window.obterAgoraBrasilia==='function'?window.obterAgoraBrasilia():new Date();
-   const hojeChave=chaveHoje(ag);
-   const diaHoje=arr.find(x=>String(x?.dia||'')===hojeChave);
-   const x=cfg(), incl=incluirOnline(), r=rows(arr);
-   const weekdays=r.filter(q=>q.tipo==='semana');
-   const saturdays=r.filter(q=>q.tipo==='sabado');
-   const weekdayClosed=weekdays.filter(q=>String(q.d?.dia||'')!==hojeChave);
-   const saturdayClosed=saturdays.filter(q=>String(q.d?.dia||'')!==hojeChave);
-   const avgWeek=media(weekdayClosed), avgSat=media(saturdayClosed);
-   const todayType=tipoDia({dia:hojeChave});
-   const nToday=contar(diaHoje), cToday=contagem(diaHoje);
+   populateSelector(arr,ag);
+   const cur=chaveMes(ag), isCurrent=mesSelecionado===cur;
+   const selected=rows(arr,ag).filter(q=>q.mes===mesSelecionado);
+   const x=cfg(), incl=incluirOnline();
+   const weekdays=selected.filter(q=>q.tipo==='semana');
+   const saturdays=selected.filter(q=>q.tipo==='sabado');
+   const weekdayClosed=weekdays.filter(q=>!(isCurrent&&String(q.d?.dia||'')===String(ag.getDate()).padStart(2,'0')+'.'+String(ag.getMonth()+1).padStart(2,'0')));
+   const saturdayClosed=saturdays.filter(q=>!(isCurrent&&String(q.d?.dia||'')===String(ag.getDate()).padStart(2,'0')+'.'+String(ag.getMonth()+1).padStart(2,'0')));
+   const avgWeek=media(weekdayClosed),avgSat=media(saturdayClosed);
+   const todayDay=arr.find(q=>String(q?.dia||'')===String(ag.getDate()).padStart(2,'0')+'.'+String(ag.getMonth()+1).padStart(2,'0'));
+   const todayType=tipoDia({dia:String(ag.getDate()).padStart(2,'0')+'.'+String(ag.getMonth()+1).padStart(2,'0')},ag);
+   const nToday=contar(todayDay),cToday=contagem(todayDay);
 
-   const meses=['JANEIRO','FEVEREIRO','MARÇO','ABRIL','MAIO','JUNHO','JULHO','AGOSTO','SETEMBRO','OUTUBRO','NOVEMBRO','DEZEMBRO'];
-   const refEl=document.getElementById('atendimentosMesReferencia');
-   if(refEl)refEl.textContent='— '+meses[ag.getMonth()]+'/'+ag.getFullYear();
+   const nomes=['JANEIRO','FEVEREIRO','MARÇO','ABRIL','MAIO','JUNHO','JULHO','AGOSTO','SETEMBRO','OUTUBRO','NOVEMBRO','DEZEMBRO'];
+   const ref=document.getElementById('atendimentosMesReferencia');if(ref)ref.textContent='— '+mesLabel(mesSelecionado);
+   const sub=document.getElementById('atendimentosHojeSplit');
+   const value=document.getElementById('atendimentosHojeValor');
+   const label=document.getElementById('atendimentosHojeLabel');
+   const compare=document.getElementById('atendimentosHojeComparacao');
+   const statusEl=document.getElementById('atendimentosHojeStatus');
 
-   const splitEl=document.getElementById('atendimentosHojeSplit');
-   if(splitEl)splitEl.textContent=diaHoje?'🏬 '+cToday.loja+' na loja · 💻 '+cToday.online+' online':'';
-   const toggle=document.getElementById('atendimentosOnlineToggle');
-   if(toggle){toggle.textContent=incl?'💻 Online incluído':'🏬 Só loja';toggle.setAttribute('aria-pressed',incl?'true':'false');}
-   const faixaSub=document.getElementById('atendimentosFaixaSub');
-   if(faixaSub)faixaSub.textContent=incl?'loja + online':'só a loja';
-
-   const faixa=document.getElementById('atendimentosFaixaNormal');if(faixa)faixa.textContent=x.minimo+'–'+x.maximo;
-   const faixaS=document.getElementById('atendimentosFaixaSabado');if(faixaS)faixaS.textContent=faixaSabado(avgSat);
-
-   const status=statusHoje(nToday,todayType,avgSat,x);
-   const hojeStatus=document.getElementById('atendimentosHojeStatus');
-   if(hojeStatus){hojeStatus.textContent=diaHoje?status.emoji+' '+status.texto:(arr.length?'⏳ Hoje ainda sem lançamentos':'⏳ Aguardando a planilha');hojeStatus.className=diaHoje?' '+status.classe:'sub';}
-   const badge=document.getElementById('atendimentoStatusBadge');
-   if(badge)badge.textContent=diaHoje?status.emoji+' '+status.texto:(arr.length?'⏳ Sem lançamento hoje':'⏳ Aguardando dados');
-
-   const lab=document.getElementById('atendimentosHojeLabel');
-   if(lab){
-    const dias=['dom','seg','ter','qua','qui','sex','sáb'];
-    lab.textContent=(todayType==='sabado'?'Sábado':'Hoje')+' · '+dias[ag.getDay()]+' '+String(ag.getDate()).padStart(2,'0')+'/'+String(ag.getMonth()+1).padStart(2,'0');
-   }
-   const value=document.getElementById('atendimentosHojeValor');if(value)value.textContent=diaHoje?nToday:'—';
-
-   const refAvg=todayType==='sabado'?avgSat:avgWeek;
-   const comp=document.getElementById('atendimentosHojeComparacao');
-   if(comp){
-    if(!diaHoje)comp.textContent='Sem lançamento para comparar';
-    else if(refAvg>0){
-     const delta=nToday-refAvg,pct=(delta/refAvg)*100;
-     comp.textContent=(delta>=0?'📈 ':'📉 ')+(Math.abs(delta)).toFixed(1).replace('.',',')+' vs. média · '+fmtPct(pct);
-     comp.className='sub '+(delta>=0?'positivo':'negativo');
-    }else comp.textContent=todayType==='sabado'?'Ainda não há média histórica de sábado':'Ainda não há média de dias úteis suficiente';
+   if(isCurrent){
+    if(label)label.textContent=(todayType==='sabado'?'Sábado':'Hoje')+' · '+['dom','seg','ter','qua','qui','sex','sáb'][ag.getDay()]+' '+String(ag.getDate()).padStart(2,'0')+'/'+String(ag.getMonth()+1).padStart(2,'0');
+    if(value)value.textContent=todayDay?nToday:'—';
+    if(sub)sub.textContent=todayDay?'🏬 '+cToday.loja+' na loja · 💻 '+cToday.online+' online':'';
+    const refAvg=todayType==='sabado'?avgSat:avgWeek;
+    if(compare){
+     if(!todayDay)compare.textContent='Sem lançamento para comparar';
+     else if(refAvg>0){const delta=nToday-refAvg;compare.textContent=(delta>=0?'📈 ':'📉 ')+Math.abs(delta).toFixed(1).replace('.',',')+' vs. média · '+fmtPct((delta/refAvg)*100);compare.className='sub '+(delta>=0?'positivo':'negativo');}
+     else compare.textContent=todayType==='sabado'?'Ainda não há média histórica de sábado':'Ainda não há média de dias úteis suficiente';
+    }
+    const st=statusHoje(nToday,todayType,avgSat,x);
+    if(statusEl){statusEl.textContent=todayDay?st.emoji+' '+st.texto:(arr.length?'⏳ Hoje ainda sem lançamentos':'⏳ Aguardando a planilha');statusEl.className='sub '+(todayDay?st.classe.replace(/^sub\s*/,''):'');}
+   }else{
+    const totalMonth=selected.reduce((s,q)=>s+q.n,0);
+    const sum=selected.reduce((o,q)=>{const z=contagem(q.d);o.loja+=z.loja;o.online+=z.online;return o;},{loja:0,online:0});
+    if(label)label.textContent='Resumo · '+mesLabel(mesSelecionado);
+    if(value)value.textContent=totalMonth;
+    if(sub)sub.textContent='🏬 '+sum.loja+' na loja · 💻 '+sum.online+' online';
+    if(compare)compare.textContent=selected.length?(um(media(selected))+' atendimentos/dia · '+selected.length+' dias lançados'):'Sem dados neste mês';
+    if(statusEl){statusEl.textContent=selected.length?'📁 Mês encerrado':'⏳ Sem dados no período';statusEl.className='sub';}
    }
 
    const mi=weekdayClosed.reduce((a,b)=>(!a||b.n<a.n)?b:a,null);
@@ -816,50 +822,43 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
    const miEl=document.getElementById('atendimentosMinHistorico');if(miEl)miEl.textContent=mi?mi.n:'—';
    const maEl=document.getElementById('atendimentosMaxHistorico');if(maEl)maEl.textContent=ma?ma.n:'—';
    const medEl=document.getElementById('atendimentosMediaHistorico');if(medEl)medEl.textContent=avgWeek?um(avgWeek):'—';
-   const medDias=document.getElementById('atendimentosMediaHistoricoDias');
-   if(medDias)medDias.textContent=weekdayClosed.length?(weekdayClosed.length+' dias úteis encerrados · '+(incl?'loja + online':'só loja')):'aguardando dias úteis encerrados';
-   const miDia=document.getElementById('atendimentosMinHistoricoDia');
-   if(miDia)miDia.textContent=mi?'dia '+mi.d.dia+' · '+dividido(mi.d):'';
-   const maDia=document.getElementById('atendimentosMaxHistoricoDia');
-   if(maDia)maDia.textContent=ma?'dia '+ma.d.dia+' · '+dividido(ma.d):'';
+   const medDias=document.getElementById('atendimentosMediaHistoricoDias');if(medDias)medDias.textContent=weekdayClosed.length?(weekdayClosed.length+' dias úteis encerrados · '+(incl?'loja + online':'só loja')):'aguardando dias úteis encerrados';
+   const miDia=document.getElementById('atendimentosMinHistoricoDia');if(miDia)miDia.textContent=mi?'dia '+mi.d.dia+' · '+mi.dia+'':(mi?'':'');
+   if(miDia)miDia.textContent=mi?'dia '+mi.d.dia+' · '+contagem(mi.d).loja+' loja + '+contagem(mi.d).online+' online':'';
+   const maDia=document.getElementById('atendimentosMaxHistoricoDia');if(maDia)maDia.textContent=ma?'dia '+ma.d.dia+' · '+contagem(ma.d).loja+' loja + '+contagem(ma.d).online+' online':'';
 
    const satEl=document.getElementById('atendimentosMediaSabado');if(satEl)satEl.textContent=avgSat?um(avgSat):'—';
-   const satSub=document.getElementById('atendimentosSabadoResumo');
-   if(satSub)satSub.textContent=saturdayClosed.length?(saturdayClosed.length+' sábados encerrados · loja + online separados · até 16h'):'Até 16h · aguardando histórico de sábado';
+   const satSub=document.getElementById('atendimentosSabadoResumo');if(satSub)satSub.textContent=saturdayClosed.length?(saturdayClosed.length+' sábados encerrados · loja + online separados · até 16h'):'Até 16h · aguardando histórico de sábado';
+   const faixa=document.getElementById('atendimentosFaixaNormal');if(faixa)faixa.textContent=x.minimo+'–'+x.maximo;
+   const faixaS=document.getElementById('atendimentosFaixaSabado');if(faixaS)faixaS.textContent=faixaSabado(avgSat);
+   const faixaSub=document.getElementById('atendimentosFaixaSub');if(faixaSub)faixaSub.textContent=incl?'loja + online':'só a loja';
 
-   atualizarGrafico(r,''); // updated below with actual month label
-   const mesesLower=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
-
-   // Projeção apenas para o mês atual; sábados nunca entram na média de seg–sex.
-   const mes=mesAtual(ag);
-   const monthRows=r.filter(q=>partesDia(q.d)?.mm===mes);
-   const actualTotal=monthRows.reduce((s,q)=>s+q.n,0);
+   const mesRows=selected;
+   const isPast=!isCurrent;
    let restWeek=0,restSat=0;
-   const last=new Date(ag.getFullYear(),mes,0).getDate();
-   for(let day=ag.getDate()+1;day<=last;day++){
-    const dow=new Date(Date.UTC(ag.getFullYear(),mes-1,day)).getUTCDay();
-    if(dow>=1&&dow<=5)restWeek++;
-    else if(dow===6)restSat++;
+   if(isCurrent){
+    const last=new Date(ag.getFullYear(),ag.getMonth()+1,0).getDate();
+    for(let day=ag.getDate()+1;day<=last;day++){const dow=new Date(Date.UTC(ag.getFullYear(),ag.getMonth(),day)).getUTCDay();if(dow>=1&&dow<=5)restWeek++;else if(dow===6)restSat++;}
    }
-   const projected=actualTotal + restWeek*avgWeek + restSat*avgSat;
-   const projEl=document.getElementById('atendimentosProjecaoMes');
-   if(projEl)projEl.textContent=(avgWeek||avgSat)?Math.round(projected)+' atendimentos':'—';
+   const actualTotal=mesRows.reduce((s,q)=>s+q.n,0);
+   const projected=isCurrent&& (avgWeek||avgSat) ? actualTotal+restWeek*avgWeek+restSat*avgSat : actualTotal;
+   const proj=document.getElementById('atendimentosProjecaoMes');
+   if(proj)proj.textContent=isCurrent&& (avgWeek||avgSat)?Math.round(projected)+' atendimentos':(isPast?Math.round(actualTotal)+' atendimentos':'—');
    const projSub=document.getElementById('atendimentosProjecaoSub');
-   if(projSub){
-    if(avgWeek||avgSat)projSub.textContent='Ritmo atual · '+(Math.round(actualTotal))+' já lançados no mês';
-    else projSub.textContent='Precisa de histórico para projetar';
-   }
-   const rw=document.getElementById('atendimentosDiasUteisRestantes');if(rw)rw.textContent=restWeek;
-   const rs=document.getElementById('atendimentosSabadosRestantes');if(rs)rs.textContent=restSat;
+   if(projSub)projSub.textContent=isCurrent?(avgWeek||avgSat?'Ritmo atual · '+Math.round(actualTotal)+' já lançados no mês':'Precisa de histórico para projetar'):'Mês encerrado · total efetivamente lançado';
+   const rw=document.getElementById('atendimentosDiasUteisRestantes');if(rw)rw.textContent=isCurrent?restWeek:'—';
+   const rs=document.getElementById('atendimentosSabadosRestantes');if(rs)rs.textContent=isCurrent?restSat:'—';
 
-   atualizarGrafico(monthRows,'Mês atual · '+meses[mes-1]+'/'+ag.getFullYear());
-  }catch(e){console.warn('Movimento da loja v11.55:',e);}
+   atualizarGrafico(mesRows,'Mês selecionado · '+mesLabel(mesSelecionado),ag);
+  }catch(e){console.warn('Movimento da loja v11.56:',e);}
  }
 
+ const sel=document.getElementById('atendimentosMesSelector');
+ if(sel)sel.addEventListener('change',function(){mesSelecionado=this.value;try{localStorage.setItem(KEY_MES,mesSelecionado);}catch(e){}atualizar();});
  const btn=document.getElementById('atendimentosOnlineToggle');
  if(btn)btn.addEventListener('click',function(){try{localStorage.setItem(KEY_ONLINE,incluirOnline()?'0':'1');}catch(e){}atualizar();});
  window.addEventListener('biobel:data-updated',()=>setTimeout(atualizar,350));
- window.addEventListener('storage',e=>{if(e.key===KEY||e.key===KEY_ONLINE)atualizar();});
+ window.addEventListener('storage',e=>{if(e.key===KEY||e.key===KEY_ONLINE||e.key===KEY_MES)atualizar();});
  setTimeout(atualizar,1400);setInterval(atualizar,60000);
 })();
 </script>
