@@ -1,3 +1,11 @@
+## v11.56 — 06/10/2026
+- Adicionado seletor de mês diretamente no painel “Movimento da loja” da tela inicial.
+- O mês atual continua sendo o padrão, mas agora é possível selecionar qualquer mês que esteja disponível nos dados carregados, como setembro/2026 quando houver abas desse período.
+- Ao selecionar um mês anterior, o painel troca automaticamente o destaque de “Hoje” para “Resumo do mês”, mantendo a separação Seg–Sex x Sábado.
+- O gráfico, médias, mínimo, máximo, média de sábado e projeção/total passam a acompanhar o mês selecionado.
+- A escolha do mês fica salva no navegador para manter o período selecionado ao voltar à tela.
+- Cache atualizado para biobel-cache-v11.56.
+
 ## v11.55 — 06/10/2026
 - Painel “Movimento da loja” aprimorado: separa explicitamente segunda a sexta de sábado. Sábados (03, 10, 17, 24 e 31/10/2026) não entram nas médias, mínimo ou máximo de dias úteis.
 - Hoje x média: o cartão principal mostra a diferença em atendimentos e em percentual contra a média do mesmo tipo de dia.
