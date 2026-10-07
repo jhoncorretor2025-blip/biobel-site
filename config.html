@@ -71,7 +71,7 @@ body.light-mode .dev-gate-form input{background:#fff;color:#172033;border-color:
  <div class="dev-gate-form">
   <input id="devLoginInput" type="text" autocomplete="username" placeholder="Usuário DEV">
   <div class="dev-password-wrap"><input id="devSenhaInput" type="password" autocomplete="current-password" placeholder="Senha DEV"><button type="button" class="dev-password-toggle" aria-label="Mostrar senha" title="Mostrar senha" onclick="alternarVisibilidadeSenhaDev('devSenhaInput',this)"><svg class="dev-eye-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path><circle cx="12" cy="12" r="2.8"></circle></svg></button></div>
-  <button id="devEntrarBtn" type="button" onclick="entrarAcessoDevPlanilhas()">🔓 Entrar</button>
+  <button id="devEntrarBtn" type="button" data-dev-action="login" onclick="window.entrarAcessoDevPlanilhas()">🔓 Entrar</button>
  </div>
  <div id="devLoginErro" class="dev-gate-erro"></div>
  <small>O acesso DEV permanece liberado somente nesta sessão do navegador.</small>
@@ -779,7 +779,7 @@ function alternarVisibilidadeSenhaDev(inputId,botao){
  const DEV_KEY='biobel_dev_planilhas_autenticado_v1';
  let aplicando=false;
  const DEV_USER='Jhon';
- const DEV_PASS='medaumaluz';
+ const DEV_PASSES=['medaumaluz','meedaumaluz'];
  let devAcessoEmMemoria=false;
 
  function devAutenticado(){if(devAcessoEmMemoria)return true;try{return sessionStorage.getItem(DEV_KEY)==='yes';}catch(e){return false;}}
@@ -822,9 +822,9 @@ function alternarVisibilidadeSenhaDev(inputId,botao){
   setErro('⏳ Verificando acesso DEV…','loading');
   setBotoes('⏳ Entrando…',true);
   const usuario=String(u.value||'').trim();
-  const senha=String(p.value||'');
+  const senha=String(p.value||'').trim();
   setTimeout(function(){
-   if(usuario.toLowerCase()===DEV_USER.toLowerCase() && senha===DEV_PASS){
+   if(usuario.toLowerCase()===DEV_USER.toLowerCase() && DEV_PASSES.includes(senha.toLowerCase())){
     devAcessoEmMemoria=true;
     try{sessionStorage.setItem(DEV_KEY,'yes');}catch(e){}
     setErro('✅ Acesso DEV liberado.','ok');
