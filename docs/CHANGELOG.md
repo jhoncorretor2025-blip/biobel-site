@@ -1,3 +1,8 @@
+## v11.60 — 07/10/2026
+- Corrigido o cabeçalho da tela inicial: atributos HTML da busca não apareciam mais como texto na página.
+- Separado corretamente o link de Backup e o botão “Instalar app”.
+- Atualizados os arquivos das páginas e o cache do Service Worker para v11.60.
+
 ## v11.59 — 06/10/2026
 - Planilhas oficiais: Outubro/2026 e Setembro/2026 passam a ficar definidas no código como fontes de respaldo, para não depender apenas do armazenamento do navegador.
 - A escolha de Setembro/2026 deixa de ser sobrescrita automaticamente ao abrir o sistema.
