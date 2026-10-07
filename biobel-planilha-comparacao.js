@@ -1,9 +1,21 @@
-/* Biobel — leitura de planilha para comparação. v11.32
+/* Biobel — leitura de planilha para comparação. v11.57
    Responsabilidade: carregar uma planilha sem alterar a planilha ativa,
    usada exclusivamente pela rotina de comparação de meses.
    Dependências mantidas no núcleo: extractSpreadsheetId(),
    getAppsScriptProxyUrl(), normalizarNomeAba() e processarLinhasDoDia().
 */
+/*
+ * Planilhas integradas no código — respaldo para quando a lista salva do navegador sumir.
+ * Não substituem a planilha principal; ficam disponíveis como fontes secundárias de leitura.
+ */
+const BIOBEL_PLANILHAS_INTEGRADAS = [
+ {
+  id:'2026-09',
+  nome:'Setembro/2026 · Planilha secundária',
+  url:'https://docs.google.com/spreadsheets/d/1o99UbEDpc0wgnjAfF0D0DQZcLdR53zBMW3Cieqoa1IQ/edit?usp=sharing'
+ }
+];
+
 async function lerDadosPlanilhaSemAtivar(url){
  const id=extractSpreadsheetId(url);
  if(!id) throw new Error('Link da planilha inválido.');
