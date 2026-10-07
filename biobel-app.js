@@ -1130,6 +1130,35 @@ function toggleEquipeCheck(escopo, index){
 }
 
 let equipeEditMode = false;
+/* ===== Slot da vendedora principal / substituição automática =====
+   Quando Gabriela é desligada, o posto passa a ser CLT (Treinamento).
+   As atividades são herdadas, mas o checklist começa zerado.
+*/
+function getEquipePrincipal(){
+ const desligamento = getDesligamento('gabriela');
+ if(desligamento){
+  return {scope:'gabi_treinamento',nome:'CLT (Treinamento)',titulo:'CLT (Treinamento)',inicial:'T',treinamento:true,dataInicio:desligamento.data||null};
+ }
+ const nomeSalvo=(localStorage.getItem('biobel_equipe_equipeNomeGabi')||'').trim();
+ const nome=nomeSalvo||'Gabi';
+ return {scope:'gabi',nome,titulo:nome.toUpperCase(),inicial:nome.charAt(0).toUpperCase(),treinamento:false,dataInicio:null};
+}
+function equipePrincipalScope(dia){ return String(dia)+'_'+getEquipePrincipal().scope; }
+function adaptarTextoEquipePrincipal(texto){
+ const principal=getEquipePrincipal();
+ return principal.treinamento ? String(texto||'').replace(/Gabi/gi,principal.nome) : texto;
+}
+function garantirSubstitutaCltTreinamento(dataDesligamento){
+ const chave='biobel_equipe_substituta_treinamento_gabriela';
+ try{
+  const atual=JSON.parse(localStorage.getItem(chave)||'null');
+  if(atual && atual.ativo) return atual;
+ }catch(e){}
+ const registro={ativo:true,nome:'CLT (Treinamento)',tipo:'CLT',status:'Treinamento',pessoaOrigem:'gabriela',origemNome:'Gabriela',dataInicio:dataDesligamento||null,criadoEm:new Date().toISOString(),atividadesHerdadas:true};
+ localStorage.setItem(chave,JSON.stringify(registro));
+ return registro;
+}
+
 
 function toggleEquipeEditMode(){
  equipeEditMode = !equipeEditMode;
@@ -1245,15 +1274,15 @@ function renderComparativoEquipeHoje(dia, d){
  const el = document.getElementById('equipeComparativoHoje');
  if(!el) return;
  if(getDesligamento('gabriela')){ el.innerHTML=''; return; } // sem comparativo se ela já saiu
- const gabi = calcEquipeProgresso(`${dia}_gabi`, d.gabi.length);
+ const gabi = calcEquipeProgresso(equipePrincipalScope(dia), d.gabi.length);
  const dai = calcEquipeProgresso(`${dia}_dai`, d.dai.length);
  if(gabi.total===0 && dai.total===0){ el.innerHTML=''; return; }
  let mensagem, cor;
  if(gabi.pct===dai.pct){
-  mensagem = '⚖️ Gabi e Day estão empatadas hoje!';
+  mensagem = '⚖️ '+getEquipePrincipal().nome+' e Day estão empatadas hoje!';
   cor = '#93a3ba';
  } else if(gabi.pct>dai.pct){
-  mensagem = '🏆 Gabi está mais em dia hoje ('+gabi.pct.toFixed(0)+'% vs '+dai.pct.toFixed(0)+'%)';
+  mensagem = '🏆 '+getEquipePrincipal().nome+' está mais em dia hoje ('+gabi.pct.toFixed(0)+'% vs '+dai.pct.toFixed(0)+'%)';
   cor = '#27d7a0';
  } else {
   mensagem = '🏆 Day está mais em dia hoje ('+dai.pct.toFixed(0)+'% vs '+gabi.pct.toFixed(0)+'%)';
@@ -1282,7 +1311,7 @@ function renderEquipeRotinaDiaria(){
  if(!el) return;
  let html = rotinaDiariaBase.map((item,i)=>{
   const editControls = equipeEditMode ? `<button onclick="removerTarefaDiaria(${i})" title="Remover tarefa" class="no-print text-rose-400 hover:text-rose-300 text-lg px-2 flex-shrink-0">🗑</button>` : '';
-  return renderEquipeChecklistItem('diaria',i,item.texto,editControls);
+  return renderEquipeChecklistItem('diaria',i,adaptarTextoEquipePrincipal(item.texto),editControls);
  }).join('');
  if(equipeEditMode) html += addTarefaInputHtml('diaria','Nova tarefa da rotina diária...');
  el.innerHTML = html;
@@ -1317,21 +1346,28 @@ function renderEquipeDia(dia){
  if(!d) return;
  // Se a Gabi já foi desligada, a coluna dela some da Rotina — ela não faz mais tarefas do dia a
  // dia, então não faz sentido continuar aparecendo aqui como se ainda estivesse ativa.
- const gabiDesligada = !!getDesligamento('gabriela');
+ const principal = getEquipePrincipal();
  const colunaGabi = document.getElementById('equipeColunaGabi');
  const colunaDai = document.getElementById('equipeColunaDai');
- if(colunaGabi) colunaGabi.style.display = gabiDesligada ? 'none' : 'block';
- if(colunaDai) colunaDai.parentElement.style.gridTemplateColumns = gabiDesligada ? '1fr' : '';
+ if(colunaGabi) colunaGabi.style.display = 'block';
+ if(colunaDai) colunaDai.parentElement.style.gridTemplateColumns = '';
+ const tituloEl=document.getElementById('equipePrincipalTitulo');
+ const avatarEl=document.getElementById('equipePrincipalAvatar');
+ const statusEl=document.getElementById('equipePrincipalStatus');
+ if(tituloEl) tituloEl.textContent=principal.treinamento?'🎓 CLT (Treinamento)':'💇‍♀️ '+principal.titulo;
+ if(avatarEl) avatarEl.textContent=principal.inicial;
+ if(statusEl) statusEl.textContent=principal.treinamento?'🔄 Atividades herdadas da Gabriela':'';
  const gabiEl = document.getElementById('equipeListaGabi');
  const daiEl = document.getElementById('equipeListaDai');
+ const gabiScope=equipePrincipalScope(dia);
  if(gabiEl){
   let html = d.gabi.map((texto,i)=>{
    const editControls = equipeEditMode ? `
     <button onclick="moverTarefaDia('${dia}','gabi',${i})" title="Mover para a DAI" class="no-print text-blue-400 hover:text-blue-300 text-lg px-1 flex-shrink-0">🔁</button>
     <button onclick="removerTarefaDia('${dia}','gabi',${i})" title="Remover tarefa" class="no-print text-rose-400 hover:text-rose-300 text-lg px-1 flex-shrink-0">🗑</button>` : '';
-   return renderEquipeChecklistItem(`${dia}_gabi`,i,texto,editControls);
+   return renderEquipeChecklistItem(gabiScope,i,texto,editControls);
   }).join('');
-  if(equipeEditMode) html += addTarefaInputHtml(`${dia}_gabi`,'Nova tarefa para a Gabi...');
+  if(equipeEditMode) html += addTarefaInputHtml(`${dia}_gabi`,'Nova tarefa para '+principal.nome+'...');
   gabiEl.innerHTML = html;
  }
  if(daiEl){
@@ -1344,7 +1380,7 @@ function renderEquipeDia(dia){
   if(equipeEditMode) html += addTarefaInputHtml(`${dia}_dai`,'Nova tarefa para a Dai...');
   daiEl.innerHTML = html;
  }
- updateEquipeProgressBar('equipeProgressoGabiBar','equipeProgressoGabiTexto',`${dia}_gabi`,d.gabi.length);
+ updateEquipeProgressBar('equipeProgressoGabiBar','equipeProgressoGabiTexto',gabiScope,d.gabi.length);
  updateEquipeProgressBar('equipeProgressoDaiBar','equipeProgressoDaiTexto',`${dia}_dai`,d.dai.length);
  renderComparativoEquipeHoje(dia, d);
 }
@@ -5526,6 +5562,7 @@ function salvarDesligamento(pessoa){
   registro.avisoPrevio = registro.tipoContrato==='experiencia' ? null : document.getElementById('avisoPrevioGabrielaSelect').value;
  }
  localStorage.setItem('biobel_desligamento_'+pessoa, JSON.stringify(registro));
+ if(pessoa==='gabriela') garantirSubstitutaCltTreinamento(data);
  const nomeExibicao = pessoa==='gabriela' ? 'Gabriela' : 'Day';
  mostrarToast('✅ Desligamento de '+nomeExibicao+' registrado.');
  registrarAlteracao('Desligamento de '+nomeExibicao+' registrado em '+new Date(data+'T00:00:00').toLocaleDateString('pt-BR'));
@@ -13282,7 +13319,7 @@ const BIOBEL_RESUMO_1715_KEY='biobel_resumo_1715_v1';
 function chaveDataBiobelOperacional(){const d=typeof obterAgoraBrasilia==='function'?obterAgoraBrasilia():new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function nomeDiaRotinaAtual(){const d=typeof obterAgoraBrasilia==='function'?obterAgoraBrasilia():new Date();return ({1:'segunda',2:'terca',3:'quarta',4:'quinta',5:'sexta',6:'sabado'})[d.getDay()]||null;}
 function escaparHtmlBiobel(txt){return String(txt??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function obterProximaAcaoBiobel(){const dia=nomeDiaRotinaAtual(),a=[];(Array.isArray(rotinaDiariaBase)?rotinaDiariaBase:[]).forEach((x,i)=>{if(!isEquipeChecked('diaria',i))a.push({escopo:'diaria',index:i,text:x.texto,quem:x.quem||'Equipe'});});if(dia&&rotinaSemanal?.[dia])['gabi','dai'].forEach(q=>(rotinaSemanal[dia][q]||[]).forEach((x,i)=>{if(!isEquipeChecked(dia+'_'+q,i))a.push({escopo:dia+'_'+q,index:i,text:x,quem:q==='gabi'?'Gabi':'Day'});}));return a[0]||null;}
+function obterProximaAcaoBiobel(){const dia=nomeDiaRotinaAtual(),a=[];(Array.isArray(rotinaDiariaBase)?rotinaDiariaBase:[]).forEach((x,i)=>{if(!isEquipeChecked('diaria',i))a.push({escopo:'diaria',index:i,text:x.texto,quem:x.quem||'Equipe'});});if(dia&&rotinaSemanal?.[dia])['gabi','dai'].forEach(q=>(rotinaSemanal[dia][q]||[]).forEach((x,i)=>{const scope=q==='gabi'?equipePrincipalScope(dia):dia+'_'+q;if(!isEquipeChecked(scope,i))a.push({escopo:scope,index:i,text:q==='gabi'?adaptarTextoEquipePrincipal(x):x,quem:q==='gabi'?getEquipePrincipal().nome:'Day'});}));return a[0]||null;}
 function renderProximaAcaoBiobel(){const t=document.getElementById('biobelProximaAcaoTitulo'),m=document.getElementById('biobelProximaAcaoMeta'),b=document.getElementById('biobelProximaAcaoBtn');if(!t)return;const a=obterProximaAcaoBiobel();if(!a){t.textContent='🎉 Todas as tarefas previstas estão concluídas!';m.textContent='A rotina de hoje está em dia.';if(b){b.disabled=true;b.textContent='✅ Dia em dia';}return;}t.textContent=a.text;m.textContent='👤 '+a.quem+' · '+(a.escopo==='diaria'?'Rotina diária':'Rotina de '+nomeDiaRotinaAtual());if(b){b.disabled=false;b.textContent='✅ Concluí';}}
 
 function obterPassagensTurno(){try{return JSON.parse(localStorage.getItem(BIOBEL_TURNO_KEY)||'[]');}catch(e){return [];}}
