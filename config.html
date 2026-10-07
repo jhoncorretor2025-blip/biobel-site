@@ -66,11 +66,11 @@ body.light-mode .dev-gate-form input{background:#fff;color:#172033;border-color:
  </nav>
  <div id="configSecaoConexao" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7"><div class="dev-protected-gate" data-dev-gate="conexao" style="display:none;">
  <div class="dev-gate-icon">🔐</div>
- <h3 style="display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;">Área protegida — DEV <span style="display:inline-flex;align-items:center;padding:3px 7px;border:1px solid rgba(14,169,122,.35);border-radius:7px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:9px;font-weight:900;letter-spacing:.04em;">v11.67</span></h3>
+ <h3 style="display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;">Área protegida — DEV <span style="display:inline-flex;align-items:center;padding:3px 7px;border:1px solid rgba(14,169,122,.35);border-radius:7px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:9px;font-weight:900;letter-spacing:.04em;">v11.68</span></h3>
  <p>Os links e configurações das planilhas ficam protegidos para evitar acesso aos dados.</p>
  <div class="dev-gate-form">
   <input id="devLoginInput" type="text" autocomplete="username" placeholder="Usuário DEV">
-  <div class="dev-password-wrap"><input id="devSenhaInput" type="password" autocomplete="current-password" placeholder="Senha DEV"><button type="button" class="dev-password-toggle" aria-label="Mostrar senha" title="Mostrar senha" onclick="alternarVisibilidadeSenhaDev('devSenhaInput',this)"><svg class="dev-eye-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path><circle cx="12" cy="12" r="2.8"></circle></svg></button></div>
+  <div class="dev-password-wrap"><input id="devSenhaInput" type="password" autocomplete="current-password" placeholder="Senha DEV"><button id="devMostrarSenhaBtn" type="button" class="dev-password-toggle" aria-label="Mostrar senha" title="Mostrar senha" onclick="alternarVisibilidadeSenhaDev('devSenhaInput',this)">👁️</button></div>
   <button id="devEntrarBtn" type="button" data-dev-action="login" onclick="window.entrarAcessoDevPlanilhas()">🔓 Entrar</button>
  </div>
  <div id="devLoginErro" class="dev-gate-erro"></div>
@@ -743,37 +743,33 @@ body.light-mode .dev-gate-form input{background:#fff;color:#172033;border-color:
 })();
 </script>
 <style id="dev-password-eye-style">
-.dev-password-wrap{position:relative;display:flex;align-items:center;min-width:0;flex:1;}
-.dev-password-wrap>input{width:100%;padding-right:44px!important;}
+.dev-password-wrap{position:relative!important;display:block!important;min-width:0!important;width:100%!important;}
+.dev-password-wrap>input{display:block!important;width:100%!important;box-sizing:border-box!important;padding-right:52px!important;}
 .dev-password-toggle{
- position:absolute!important;right:7px;top:50%;transform:translateY(-50%);
- width:36px!important;height:34px!important;min-width:36px;padding:0!important;
- border:0!important;border-radius:8px!important;background:transparent!important;
- color:#93a3ba!important;cursor:pointer;display:flex!important;align-items:center!important;justify-content:center!important;
- box-shadow:none!important;
- transition:background .15s,color .15s,opacity .15s;
- z-index:3;
+ position:absolute!important;right:6px!important;top:50%!important;transform:translateY(-50%)!important;
+ width:40px!important;height:36px!important;min-width:40px!important;max-width:40px!important;
+ margin:0!important;padding:0!important;border:0!important;border-radius:8px!important;
+ background:transparent!important;color:#dce5f2!important;
+ cursor:pointer!important;display:flex!important;align-items:center!important;justify-content:center!important;
+ font-size:20px!important;line-height:1!important;z-index:999!important;
+ opacity:1!important;visibility:visible!important;
 }
-.dev-password-toggle:hover{background:rgba(79,156,255,.12)!important;color:#dce5f2!important;}
-.dev-password-toggle:focus-visible{outline:2px solid #27d7a0;outline-offset:1px;}
-.dev-eye-icon{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block;}
-body.light-mode .dev-password-toggle{color:#64748b!important;}
-body.light-mode .dev-password-toggle:hover{color:#172033!important;}
-</style><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell-v1167.js?v=11.67"></script>
-<script src="biobel-recognition.js?v=11.67"></script>
-<script src="biobel-planilha-leitura.js?v=11.67"></script>
-<script src="biobel-planilha-processamento.js?v=11.67"></script>
-<script src="biobel-planilha-comparacao.js?v=11.67"></script><script src="biobel-app.js?v=11.67"></script><script>
+.dev-password-toggle:hover{background:rgba(79,156,255,.16)!important;}
+.dev-password-toggle:focus-visible{outline:2px solid #27d7a0!important;outline-offset:1px!important;}
+body.light-mode .dev-password-toggle{color:#334155!important;}
+</style><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell-v1167.js?v=11.68"></script>
+<script src="biobel-recognition.js?v=11.68"></script>
+<script src="biobel-planilha-leitura.js?v=11.68"></script>
+<script src="biobel-planilha-processamento.js?v=11.68"></script>
+<script src="biobel-planilha-comparacao.js?v=11.68"></script><script src="biobel-app.js?v=11.68"></script><script>
 function alternarVisibilidadeSenhaDev(inputId,botao){
  const input=document.getElementById(inputId);
  if(!input||!botao)return;
  const visivel=input.type==='text';
  input.type=visivel?'password':'text';
+ botao.textContent=visivel?'👁️':'🙈';
  botao.setAttribute('aria-label',visivel?'Mostrar senha':'Ocultar senha');
  botao.title=visivel?'Mostrar senha':'Ocultar senha';
- botao.innerHTML=visivel
-  ? '<svg class="dev-eye-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path><circle cx="12" cy="12" r="2.8"></circle></svg>'
-  : '<svg class="dev-eye-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18"></path><path d="M10.6 5.2A10.6 10.6 0 0 1 12 5c6 0 9.5 7 9.5 7a16 16 0 0 1-3.1 3.8"></path><path d="M6.1 6.2C3.8 7.8 2.5 12 2.5 12s3.5 6 9.5 6a10.5 10.5 0 0 0 4-.8"></path></svg>';
 }
 (function(){
  const DEV_KEY='biobel_dev_planilhas_autenticado_v1';
