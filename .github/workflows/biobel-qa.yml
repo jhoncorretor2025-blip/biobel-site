@@ -1,0 +1,28 @@
+name: Biobel QA
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar repositório
+        uses: actions/checkout@v4
+      - name: Preparar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Verificar versionamento
+        run: node tools/check-version.js
+      - name: Validar páginas
+        shell: bash
+        run: |
+          set -e
+          for file in dashboard.html operacao.html equipe.html vendas.html analises.html alertas.html config.html administracao.html administracao/fornecedor.html backup.html; do
+            echo "=== $file ==="
+            node tools/validar.js "$file"
+          done
