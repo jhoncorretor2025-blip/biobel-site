@@ -12408,6 +12408,13 @@ function printSimpleDay(){
 }
 
 const DEFAULT_GOOGLE_URL='https://docs.google.com/spreadsheets/d/1ipd3Tn_nw8biEwEFMgyC4ZT04RthiTVvFYVRZJ85dj8/edit?usp=sharing';
+/* Fontes oficiais: continuam disponíveis mesmo se o localStorage for limpo/trocado de navegador.
+   A principal é a fonte padrão do mês atual; Setembro/2026 fica como histórico secundário. */
+const BIOBEL_PLANILHAS_OFICIAIS = [
+ {nome:'Outubro 2026',url:DEFAULT_GOOGLE_URL,tipo:'principal'},
+ {nome:'Setembro 2026',url:'https://docs.google.com/spreadsheets/d/1o99UbEDpc0wgnjAfF0D0DQZcLdR53zBMW3Cieqoa1IQ/edit?usp=sharing',tipo:'secundaria'}
+];
+window.BIOBEL_PLANILHAS_OFICIAIS = BIOBEL_PLANILHAS_OFICIAIS;
 let googleTimer=null;
 function updateConnBadge(state){
  // state: 'ok' | 'error' | 'connecting'
@@ -12492,14 +12499,13 @@ function saveGoogleConfig(){
  loadGoogleSheet();
 }
 function getGoogleUrl(){
- const salvo=localStorage.getItem('biobel_google_sheet_url');
- // Ao virar o mês, atualiza automaticamente quem ainda estava usando a planilha padrão antiga
- // ou a planilha de setembro. Quem escolheu outra planilha manualmente continua com a escolha.
- if(salvo=== 'https://docs.google.com/spreadsheets/d/1idL5VN5CRRgQaXZb4i14V9_sRg6CbxUJx3M-PdSpJGA/edit?usp=sharing' || salvo=== 'https://docs.google.com/spreadsheets/d/1o99UbEDpc0wgnjAfF0D0DQZcLdR53zBMW3Cieqoa1IQ/edit?usp=sharing'){
-  localStorage.setItem('biobel_google_sheet_url', DEFAULT_GOOGLE_URL);
-  const campo=document.getElementById('googleSheetUrl');
-  if(campo) campo.value=DEFAULT_GOOGLE_URL;
-  return DEFAULT_GOOGLE_URL;
+ let salvo='';
+ try{ salvo=localStorage.getItem('biobel_google_sheet_url')||''; }catch(e){}
+ // Migração única de uma planilha padrão antiga. Nunca sobrescrevemos uma escolha válida
+ // do usuário (inclusive Setembro/2026), porque ela é uma fonte oficial secundária.
+ if(salvo==='https://docs.google.com/spreadsheets/d/1idL5VN5CRRgQaXZb4i14V9_sRg6CbxUJx3M-PdSpJGA/edit?usp=sharing'){
+  salvo='';
+  try{ localStorage.setItem('biobel_google_sheet_url',DEFAULT_GOOGLE_URL); }catch(e){}
  }
  return salvo || document.getElementById('googleSheetUrl')?.value || DEFAULT_GOOGLE_URL;
 }
@@ -12509,8 +12515,27 @@ function getGoogleUrl(){
    ============================================================ */
 /* ===== Múltiplas planilhas salvas (troca rápida entre meses) ===== */
 function getPlanilhasSalvas(){
- try{ return JSON.parse(localStorage.getItem('biobel_planilhas_salvas')||'[]'); }
- catch(e){ return []; }
+ let lista=[];
+ try{
+  const raw=JSON.parse(localStorage.getItem('biobel_planilhas_salvas')||'[]');
+  lista=Array.isArray(raw)?raw:[];
+ }catch(e){}
+ const oficiais=Array.isArray(window.BIOBEL_PLANILHAS_OFICIAIS)?window.BIOBEL_PLANILHAS_OFICIAIS:[];
+ const porUrl=new Map();
+ // Primeiro os oficiais: são o fallback e nunca devem desaparecer porque o navegador foi limpo.
+ oficiais.forEach(p=>{
+  const url=String(p?.url||'').trim();
+  if(url)porUrl.set(url,{nome:String(p?.nome||'Planilha oficial').trim(),url,tipo:p?.tipo||'oficial',oficial:true});
+ });
+ lista.forEach(p=>{
+  const url=String(p?.url||'').trim();
+  if(!url)return;
+  const atual=porUrl.get(url);
+  // Itens oficiais mantêm o rótulo oficial; itens criados pelo usuário entram normalmente.
+  if(atual) return;
+  porUrl.set(url,{nome:String(p?.nome||'Planilha').trim()||'Planilha',url,tipo:p?.tipo||'usuario',oficial:false});
+ });
+ return [...porUrl.values()];
 }
 function salvarListaPlanilhas(lista){
  localStorage.setItem('biobel_planilhas_salvas', JSON.stringify(lista));
@@ -12731,7 +12756,7 @@ function removerPlanilhaSalva(index){
  });
 }
 function seedPlanilhas2026(){
- // Mantém os meses conhecidos, remove duplicatas pelo mesmo link e garante Outubro 2026 como padrão.
+ // Mantém os meses conhecidos, remove duplicatas pelo mesmo link e garante as fontes oficiais.
  let lista = getPlanilhasSalvas();
  const outubroUrl = DEFAULT_GOOGLE_URL;
  const setembroUrl = 'https://docs.google.com/spreadsheets/d/1o99UbEDpc0wgnjAfF0D0DQZcLdR53zBMW3Cieqoa1IQ/edit?usp=sharing';
@@ -13279,7 +13304,17 @@ setInterval(verificarAlertaHorarioAusente,60000);
 
 function startGoogleAutoRefresh(){
  if(googleTimer) clearInterval(googleTimer);
- googleTimer=setInterval(loadGoogleSheet,60000);
+ const page=document.body?.dataset?.biobelPage||'dashboard';
+ const intervalo=(page==='dashboard'||page==='caixa')?60000:180000;
+ googleTimer=setInterval(()=>{
+  // Não consulte a planilha enquanto a aba estiver oculta: reduz consumo e evita leituras
+  // concorrentes quando o usuário volta ao navegador depois de horas.
+  if(document.visibilityState==='visible') loadGoogleSheet();
+ },intervalo);
+ // Ao voltar para a aba, atualiza uma vez para recuperar o estado mais recente.
+ document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible') loadGoogleSheet();
+ });
 }
 (function initGoogleConfig(){
  const saved=localStorage.getItem('biobel_google_sheet_url');
