@@ -1,3 +1,10 @@
+## v11.59 — 06/10/2026
+- Planilhas oficiais: Outubro/2026 e Setembro/2026 passam a ficar definidas no código como fontes de respaldo, para não depender apenas do armazenamento do navegador.
+- A escolha de Setembro/2026 deixa de ser sobrescrita automaticamente ao abrir o sistema.
+- Atualização automática da planilha agora respeita a visibilidade da aba: páginas operacionais atualizam mais frequentemente; outras áreas reduzem a frequência e a consulta é pausada quando a aba fica em segundo plano.
+- Service Worker: fallback offline também tenta a URL sem o parâmetro de cache-busting, evitando falha ao abrir arquivos versionados sem internet.
+- Adicionado `tools/check-version.js` e workflow `Biobel QA` para validar versionamento, sintaxe, referências, handlers e estrutura das páginas em cada push/PR.
+
 ## v11.58 — 06/10/2026
 - Dashboard: removida a faixa de “Acesso rápido” duplicada; mantida uma única área principal de ações.
 - Cabeçalho: título passa a acompanhar a página atual.
