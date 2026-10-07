@@ -79,7 +79,7 @@ body.light-mode .biobel-calendar-chip{background:#f8fafc;border-color:#d7e1ec;co
 body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec!important;box-shadow:0 4px 14px rgba(15,23,42,.06)!important}
 @media(max-width:640px){.biobel-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.biobel-quick-action{grid-template-columns:auto 1fr!important}.biobel-quick-action small{display:block!important}.biobel-quick-action strong{font-size:12px!important}}
 
-/* v11.55 — Movimento da loja: seg-sex separado de sábado */
+/* v11.58 — Movimento da loja: seg-sex separado de sábado */
 .biobel-atendimento-card-v2{background:linear-gradient(135deg,#0d1b2e,#0a1728);border:1px solid #29405f;border-radius:18px;padding:16px 18px;margin-bottom:16px}
 .biobel-atendimento-v2-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
 .biobel-atendimento-v2-eyebrow{font-size:11px;color:#27d7a0;font-weight:900;text-transform:uppercase;letter-spacing:.08em}
@@ -144,7 +144,7 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
 -->
 <main id="dashboardTab" class="max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabDashboard">
   <div class="biobel-dashboard-heading no-print" aria-label="Cabeçalho da Visão Geral">
-   <div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><div class="biobel-dashboard-heading-title">Visão Geral</div><span id="versaoSistemaTela" style="display:inline-flex;align-items:center;padding:4px 8px;border:1px solid rgba(14,169,122,.35);border-radius:8px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:10px;font-weight:900;letter-spacing:.04em;">v11.55</span></div><div class="biobel-dashboard-heading-sub">Resumo rápido da loja</div></div>
+   <div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><div class="biobel-dashboard-heading-title">Visão Geral</div><span id="versaoSistemaTela" style="display:inline-flex;align-items:center;padding:4px 8px;border:1px solid rgba(14,169,122,.35);border-radius:8px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:10px;font-weight:900;letter-spacing:.04em;">v11.58</span></div><div class="biobel-dashboard-heading-sub">Resumo rápido da loja</div></div>
    <div class="biobel-dashboard-heading-weather" aria-label="Clima de hoje e previsão de amanhã"><span style="font-size:10px;color:#71849d;font-weight:800;">🌦️ Clima</span><span id="indicadorClimaTopo" style="display:none;"></span></div>
   </div>
   <div class="biobel-dashboard-compact no-print">
@@ -156,11 +156,6 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
    </section>
    <div class="biobel-context">
     <span class="biobel-context-label">🌦️ Clima</span><span id="kpiClimaTexto" class="biobel-context-label">—</span>
-    <span class="biobel-context-label" style="margin-left:4px;">⚡ Acesso rápido</span>
-    <button class="biobel-mini-action" onclick="showTab('caixa')">⚡ Fechar Caixa</button>
-    <button class="biobel-mini-action" onclick="showTab('equipe')">📋 Ponto</button>
-    <button class="biobel-mini-action" onclick="showTab('alertas')">🚨 Alertas</button>
-    <button class="biobel-mini-action" onclick="showTab('info')">📊 Análises</button>
    </div>
    <details class="biobel-section-compact" open>
     <summary>🚨 Alertas e ações críticas <span id="kpiAlertasResumo" style="font-weight:700;color:#fbbf24;">verificando...</span></summary>
@@ -177,7 +172,7 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
   </div>
 
 
-  <section class="no-print" aria-label="Atalhos rápidos" style="margin-bottom:10px;">
+  <section class="no-print" aria-label="Ações rápidas da loja" style="margin-bottom:10px;">
    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px;">
     <div>
      <div style="font-size:11px;color:#27d7a0;font-weight:900;text-transform:uppercase;letter-spacing:.09em;">Acesso rápido</div>
@@ -807,7 +802,6 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
       y:{beginAtZero:true,grid:{color:'rgba(148,163,184,.10)'},ticks:{color:'#71849d',font:{size:9},precision:0}}}
    }
   });
-  const leg=document.getElementById('atendimentosGraficoLegenda');if(leg)leg.textContent=mesLabelText;
  }
  function atualizar(){
   try{
