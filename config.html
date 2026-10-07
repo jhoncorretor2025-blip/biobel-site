@@ -70,7 +70,7 @@ body.light-mode .dev-gate-form input{background:#fff;color:#172033;border-color:
  <p>Os links e configurações das planilhas ficam protegidos para evitar acesso aos dados.</p>
  <div class="dev-gate-form">
   <input id="devLoginInput" type="text" autocomplete="username" placeholder="Usuário DEV">
-  <input id="devSenhaInput" type="password" autocomplete="current-password" placeholder="Senha DEV">
+  <div class="dev-password-wrap"><input id="devSenhaInput" type="password" autocomplete="current-password" placeholder="Senha DEV"><button type="button" class="dev-password-toggle" aria-label="Mostrar senha" title="Mostrar senha" onclick="alternarVisibilidadeSenhaDev('devSenhaInput',this)">👁️</button></div>
   <button type="button" onclick="entrarAcessoDevPlanilhas()">🔓 Entrar</button>
  </div>
  <div id="devLoginErro" class="dev-gate-erro"></div>
@@ -742,11 +742,31 @@ body.light-mode .dev-gate-form input{background:#fff;color:#172033;border-color:
  document.addEventListener('DOMContentLoaded',()=>setTimeout(carregarConfigAtendimentos,100));
 })();
 </script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell-v1161.js?v=11.61"></script>
+<style id="dev-password-eye-style">
+.dev-password-wrap{position:relative;display:flex;align-items:center;min-width:0;flex:1;}
+.dev-password-wrap>input{width:100%;padding-right:44px!important;}
+.dev-password-toggle{
+ position:absolute;right:8px;top:50%;transform:translateY(-50%);
+ width:34px;height:32px;border:0;border-radius:8px;background:transparent;
+ color:#93a3ba;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;
+ transition:background .15s,color .15s;
+}
+.dev-password-toggle:hover{background:rgba(79,156,255,.12);color:#dce5f2;}
+.dev-password-toggle:focus-visible{outline:2px solid #27d7a0;outline-offset:1px;}
+</style><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell-v1161.js?v=11.61"></script>
 <script src="biobel-recognition.js?v=11.66"></script>
 <script src="biobel-planilha-leitura.js?v=11.66"></script>
 <script src="biobel-planilha-processamento.js?v=11.66"></script>
 <script src="biobel-planilha-comparacao.js?v=11.66"></script><script src="biobel-app.js?v=11.66"></script><script>
+function alternarVisibilidadeSenhaDev(inputId,botao){
+ const input=document.getElementById(inputId);
+ if(!input||!botao)return;
+ const visivel=input.type==='text';
+ input.type=visivel?'password':'text';
+ botao.textContent=visivel?'👁️':'🙈';
+ botao.setAttribute('aria-label',visivel?'Mostrar senha':'Ocultar senha');
+ botao.title=visivel?'Mostrar senha':'Ocultar senha';
+}
 (function(){
  const DEV_KEY='biobel_dev_planilhas_autenticado_v1';
  let aplicando=false;
