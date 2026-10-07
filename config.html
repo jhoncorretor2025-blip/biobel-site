@@ -408,6 +408,10 @@ body.light-mode .dev-gate-form input{background:#fff;color:#172033;border-color:
   </div>
   <div style="display:flex;flex-direction:column;gap:14px;">
    <div style="background:#0b1728;border:1px solid rgba(39,215,160,.35);border-radius:10px;padding:12px 14px;">
+    <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v11.53 — 06/10/2026</div>
+    <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">🛡️ <strong>Correções importantes:</strong> o painel <strong>nunca mais mostra números de exemplo</strong> (enquanto carrega ou se o Google falhar ele avisa; sem internet mostra os últimos dados reais com o horário). Folha de ponto <strong>recusa horários impossíveis</strong> e calcula o intervalo certo. Lembrete das 9h30 funciona com teclado e o balão de parabéns espera ele fechar. Botão "Planilha padrão" voltou a funcionar. Páginas <strong>3x mais leves</strong> (logo de 2,4 MB virou 16 KB).</div>
+   </div>
+   <div style="background:#0b1728;border:1px solid rgba(39,215,160,.35);border-radius:10px;padding:12px 14px;">
     <div style="font-size:12px;font-weight:800;color:#27d7a0;margin-bottom:6px;">v11.51 — 06/10/2026</div>
     <div style="font-size:12.5px;color:#dce5f2;line-height:1.6;">🕐 <strong>Resumo do dia no horário certo:</strong> agora abre <strong>20 minutos antes de a loja fechar</strong> (fecha 18h = resumo às 17h40; sábado fecha 16h = resumo às 15h40) e acompanha o horário de funcionamento da Configuração. Antes aparecia sempre às 17h15.</div>
    </div>
@@ -585,7 +589,7 @@ body.light-mode .dev-gate-form input{background:#fff;color:#172033;border-color:
   </div>
   <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
    <div style="width:80px;height:80px;border-radius:12px;background:#0b1728;border:1px solid #1e2c42;display:flex;align-items:center;justify-content:center;overflow:hidden;">
-    <img id="previewLogoBiobel" src="./logo_biobel_gravatai.png" alt="Prévia da logo atual" style="max-width:100%;max-height:100%;object-fit:contain;">
+    <img id="previewLogoBiobel" src="./logo_biobel_gravatai_256.jpg" alt="Prévia da logo atual" style="max-width:100%;max-height:100%;object-fit:contain;">
    </div>
    <div style="flex:1;min-width:200px;">
     <input id="inputLogoBiobel" type="file" accept="image/png,image/jpeg" onchange="carregarLogoBiobel(event)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-300 outline-none focus:border-emerald-500">
@@ -738,11 +742,11 @@ body.light-mode .dev-gate-form input{background:#fff;color:#172033;border-color:
  document.addEventListener('DOMContentLoaded',()=>setTimeout(carregarConfigAtendimentos,100));
 })();
 </script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js?v=11.51"></script>
-<script src="biobel-recognition.js?v=11.51"></script>
-<script src="biobel-planilha-leitura.js?v=11.51"></script>
-<script src="biobel-planilha-processamento.js?v=11.51"></script>
-<script src="biobel-planilha-comparacao.js?v=11.51"></script><script src="biobel-app.js?v=11.51"></script><script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js?v=11.53"></script>
+<script src="biobel-recognition.js?v=11.53"></script>
+<script src="biobel-planilha-leitura.js?v=11.53"></script>
+<script src="biobel-planilha-processamento.js?v=11.53"></script>
+<script src="biobel-planilha-comparacao.js?v=11.53"></script><script src="biobel-app.js?v=11.53"></script><script>
 (function(){
  const DEV_KEY='biobel_dev_planilhas_autenticado_v1';
  let aplicando=false;

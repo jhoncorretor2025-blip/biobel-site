@@ -98,7 +98,7 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
 -->
 <main id="dashboardTab" class="max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabDashboard">
   <div class="biobel-dashboard-heading no-print" aria-label="Cabeçalho da Visão Geral">
-   <div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><div class="biobel-dashboard-heading-title">Visão Geral</div><span id="versaoSistemaTela" style="display:inline-flex;align-items:center;padding:4px 8px;border:1px solid rgba(14,169,122,.35);border-radius:8px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:10px;font-weight:900;letter-spacing:.04em;">v11.52</span></div><div class="biobel-dashboard-heading-sub">Resumo rápido da loja</div></div>
+   <div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><div class="biobel-dashboard-heading-title">Visão Geral</div><span id="versaoSistemaTela" style="display:inline-flex;align-items:center;padding:4px 8px;border:1px solid rgba(14,169,122,.35);border-radius:8px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:10px;font-weight:900;letter-spacing:.04em;">v11.53</span></div><div class="biobel-dashboard-heading-sub">Resumo rápido da loja</div></div>
    <div class="biobel-dashboard-heading-weather" aria-label="Clima de hoje e previsão de amanhã"><span style="font-size:10px;color:#71849d;font-weight:800;">🌦️ Clima</span><span id="indicadorClimaTopo" style="display:none;"></span></div>
   </div>
   <div class="biobel-dashboard-compact no-print">
@@ -322,11 +322,11 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
 -->
 
 </main>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js?v=11.52"></script>
-<script src="biobel-recognition.js?v=11.52"></script>
-<script src="biobel-planilha-leitura.js?v=11.52"></script>
-<script src="biobel-planilha-processamento.js?v=11.52"></script>
-<script src="biobel-planilha-comparacao.js?v=11.51"></script><script src="biobel-app.js?v=11.51"></script><script src="inteligencia-operacional.js?v=11.51"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js?v=11.53"></script>
+<script src="biobel-recognition.js?v=11.53"></script>
+<script src="biobel-planilha-leitura.js?v=11.53"></script>
+<script src="biobel-planilha-processamento.js?v=11.53"></script>
+<script src="biobel-planilha-comparacao.js?v=11.53"></script><script src="biobel-app.js?v=11.53"></script><script src="inteligencia-operacional.js?v=11.53"></script>
 <script>
 (function(){
  function arrData(){try{return Array.isArray(daysData)?daysData:(Array.isArray(window.daysData)?window.daysData:[]);}catch(e){return Array.isArray(window.daysData)?window.daysData:[];}}
@@ -358,9 +358,24 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
   if(quando) return {venda:'Venda '+quando+' · '+i.semana+' '+i.data, lider:'Líder '+quando+' · '+i.data};
   return {venda:'Último dia lançado · '+i.semana+' '+i.data, lider:'Líder de '+i.data};
  }
+ // Enquanto NÃO há dado real (carregando, ou a planilha falhou e não há leitura salva), os cartões dizem isso — nunca mostram número inventado.
+ // (Antes: 9 dias de EXEMPLO de agosto apareciam como "Meta do mês R$ 23.009,95 · 46%" e o painel dizia "Tudo certo".)
+ function renderCompactSemDados(){
+  const erro=(document.getElementById('connBadge')?.className||'').includes('conn-error');
+  const msg=erro?'Sem dados: não consegui ler a planilha.':'Aguardando a planilha…';
+  const set=(id,t)=>{const e=document.getElementById(id); if(e) e.textContent=t;};
+  set('kpiMetaValor','—'); set('kpiMetaSub',msg); set('kpiMetaExtra','');
+  set('kpiVendaHoje','—'); set('kpiVendaHojeSub',msg); set('kpiVendaHojeUltimo','');
+  set('kpiVendaHojeLabel','🛍️ Venda hoje'); set('kpiLiderHojeLabel','🏆 Líder do dia'); set('kpiLiderHoje','—'); set('kpiLiderHojeSub',msg);
+  const top=document.getElementById('kpiLiderHojeTop'); if(top){ top.textContent=''; top.style.display='none'; }
+  const av=document.getElementById('kpiVendaHojeAviso'); if(av) av.remove();
+  set('kpiAlertasResumo','Sem dados'); set('kpiComparativoResumo','Sem dados');
+  const body=document.getElementById('kpiAlertasBody'); if(body) body.innerHTML='<tr><td colspan="4" class="biobel-alert-empty">⏳ '+msg+' Os alertas aparecem quando os dados chegarem.</td></tr>';
+ }
  function renderCompact(){
   try{
    const a=arrData(), hoje=diaHoje(a), idx=a.indexOf(hoje);
+   if(!a.length){ renderCompactSemDados(); return; }
    // REGRA COMERCIAL BIOBEL: domingos nunca entram em comparativos.
    // Na segunda-feira, o "dia anterior" válido é sábado (ou o último dia não-domingo disponível).
    const ehDomingo=(d)=>{
@@ -384,11 +399,13 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
    // Quanto precisa vender por dia = o que falta ÷ (dias úteis DEPOIS de hoje + a fração de hoje que ainda resta).
    // Mesma regra do núcleo (renderAdvancedDashboard): sem domingo e sem feriado marcado em "dias atípicos"; a fração de
    // hoje vem do horário da loja. (Antes: lia o número de um elemento que contém uma FRASE -> NaN -> "1 dia" -> por dia = total.)
-   let diasUteisFuturos=0, fracaoHoje=0;
+   let diasUteisFuturos=0, fracaoHoje=0, mesmoMesPlanilha=true, mesRefPlanilha=0;
    try{
     const mesRef=Number(String(a[0]?.dia||'').split('.')[1]);
     if(mesRef>0){
+     mesRefPlanilha=mesRef;
      const agM=obterAgoraBrasilia(), ultimoDiaMes=new Date(agM.getFullYear(),mesRef,0).getDate(), mesmoMes=(agM.getMonth()+1===mesRef);
+     mesmoMesPlanilha=mesmoMes;
      diasUteisFuturos=contarDiasUteisRestantes(mesRef, mesmoMes?agM.getDate():ultimoDiaMes, ultimoDiaMes);
      fracaoHoje=mesmoMes?calcularFracaoHojeRestante():0;     // só conta "o resto de hoje" se a planilha aberta é do mês atual
     }
@@ -397,7 +414,9 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
    document.getElementById('kpiMetaValor').textContent=moeda(acumulado);
    document.getElementById('kpiMetaSub').textContent='de '+moeda(metaTotal)+' · '+pct.toFixed(0)+'%';
    const metaExtraEl=document.getElementById('kpiMetaExtra');
-   metaExtraEl.textContent = falta<=0 ? '🎉 Meta batida!' : diasPrecisos>0 ? 'Faltam '+moeda(falta)+' · '+moeda(necessidade)+'/dia' : 'Faltam '+moeda(falta)+' · sem dias úteis restantes';
+   const NOMES_MES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+   // Planilha sem nenhum dia do mês atual (ex.: só setembro): avisa, em vez de mostrar a meta de OUTUBRO com números de setembro.
+   metaExtraEl.textContent = !mesmoMesPlanilha ? ('⚠️ Dados de '+NOMES_MES[mesRefPlanilha-1]+': a planilha ainda não tem dias de '+NOMES_MES[obterAgoraBrasilia().getMonth()]+'.') : falta<=0 ? '🎉 Meta batida!' : diasPrecisos>0 ? 'Faltam '+moeda(falta)+' · '+moeda(necessidade)+'/dia' : 'Faltam '+moeda(falta)+' · sem dias úteis restantes';
    metaExtraEl.title='Base da conta: '+diasUteisFuturos+' dia(s) útil(eis) depois de hoje + '+Math.round(fracaoHoje*100)+'% do expediente de hoje (sem domingos e sem feriados marcados em Análises).';
    document.getElementById('kpiVendaHoje').textContent=moeda(total);
    document.getElementById('kpiVendaHojeSub').textContent=qtd+' atendimento'+(qtd===1?'':'s')+' · ticket '+moeda(ticket);
@@ -565,7 +584,7 @@ body.light-mode .biobel-clima-bar{background:#fff!important;border-color:#d7e1ec
    if(n>=x.muitoForte){status=n>=x.recorde&&x.recorde>0?'Recorde de referência 🔥':'Movimento muito forte';emoji='🔥';}
    else if(n>=x.forte){status='Movimento forte';emoji='🔵';}
    else if(n>=x.minimo){status='Movimento normal';emoji='🟢';}
-   if(!dia){status='Hoje ainda sem lançamentos';emoji='⏳';}   // sem aba de hoje na planilha: não é "movimento fraco", é falta de lançamento
+   if(!dia){status=arr.length?'Hoje ainda sem lançamentos':'Aguardando a planilha';emoji='⏳';}   // sem aba de hoje na planilha: não é "movimento fraco", é falta de lançamento
    var semanaHoje=['dom','seg','ter','qua','qui','sex','sáb'][new Date(Date.UTC(agora.getFullYear(),agora.getMonth(),agora.getDate())).getUTCDay()];
    var labHoje=document.getElementById('atendimentosHojeLabel');if(labHoje)labHoje.textContent='Hoje · '+semanaHoje+' '+chave.replace('.','/');
    var st=document.getElementById('atendimentosHojeStatus');if(st)st.textContent=emoji+' '+status;

@@ -67,8 +67,8 @@ function salvarRotinaPersonalizada(){
  localStorage.setItem('biobel_equipe_rotina_custom', JSON.stringify({diaria: rotinaDiariaBase, semanal: rotinaSemanal}));
 }
 
-const embeddedData = [{"dia": "01.08", "initial": 117.3, "sales": 2053.88, "withdrawals": 50, "closing": 229.3, "dinheiro": 162, "debito": 314.99, "credito": 480.97, "pix": 1095.92, "vendedoras": {"alesandra": 1285.94, "Day": 767.94}, "tipoVenda": {"presencial": 17, "online": 3}, "produtos": {"cabelo / Creme e shapoo e etc": {"qtd": 16.0, "valor": 1150.92}, "Creme": {"qtd": 3.0, "valor": 104.99}, "Perfume": {"qtd": 4.0, "valor": 130.99}, "maquiagem": {"qtd": 8.0, "valor": 427.0}, "presente": {"qtd": 1.0, "valor": 50.0}, "Coloração/Tinta": {"qtd": 6.0, "valor": 189.98}}, "horarios": {"10": {"qtd": 5, "valor": 240.99, "dinheiro": 0}, "11": {"qtd": 5, "valor": 607.97, "dinheiro": 162.0}, "13": {"qtd": 4, "valor": 509.94, "dinheiro": 0}, "15": {"qtd": 5, "valor": 474.98, "dinheiro": 0}, "16": {"qtd": 1, "valor": 220.0, "dinheiro": 0}}, "porTurno": {"manhã": {"qtd": 1, "valor": 49.99}, "tarde": {"qtd": 2, "valor": 106.0}}, "porTurnoVend": {"manhã": {"alesandra": {"qtd": 1, "valor": 49.99}}, "tarde": {"Day": {"qtd": 1, "valor": 25.0}, "alesandra": {"qtd": 1, "valor": 81.0}}}, "genero": {"mulher": {"qtd": 20, "valor": 2053.88}}}, {"dia": "03.08", "initial": 117, "sales": 1128.98, "withdrawals": 0, "closing": 279, "dinheiro": 162, "debito": 186.5, "credito": 445.49, "pix": 334.99, "vendedoras": {"alesandra": 795.99, "Gabriela": 164.0, "Day": 168.99}, "tipoVenda": {"presencial": 18, "online": 2}, "produtos": {"Creme": {"qtd": 1.0, "valor": 50.0}, "cabelo / Creme e shapoo e etc": {"qtd": 13.0, "valor": 532.99}, "maquiagem": {"qtd": 4.0, "valor": 129.99}, "Coloração/Tinta": {"qtd": 8.0, "valor": 197.0}, "Unha": {"qtd": 9.0, "valor": 184.0}, "Perfume": {"qtd": 1.0, "valor": 35.0}}, "horarios": {"10": {"qtd": 4, "valor": 222.99, "dinheiro": 60.0}, "11": {"qtd": 3, "valor": 223.0, "dinheiro": 53.0}, "12": {"qtd": 3, "valor": 109.5, "dinheiro": 0}, "13": {"qtd": 1, "valor": 40.0, "dinheiro": 40.0}, "14": {"qtd": 1, "valor": 30.0, "dinheiro": 0}, "15": {"qtd": 1, "valor": 161.5, "dinheiro": 0}, "16": {"qtd": 1, "valor": 40.0, "dinheiro": 0}, "17": {"qtd": 4, "valor": 217.0, "dinheiro": 9.0}, "8": {"qtd": 1, "valor": 49.99, "dinheiro": 0}}, "porTurno": {"manhã": {"qtd": 2, "valor": 119.99}}, "porTurnoVend": {"manhã": {"alesandra": {"qtd": 2, "valor": 119.99}}}, "genero": {"mulher": {"qtd": 20, "valor": 1128.98}}}, {"dia": "04.08", "initial": 208.05, "sales": 1459.79, "withdrawals": 400, "closing": 137.05, "dinheiro": 329, "debito": 386, "credito": 279.89, "pix": 464.9, "vendedoras": {"Gabriela": 460.0, "Day": 615.89, "alesandra": 383.9}, "tipoVenda": {"presencial": 26, "online": 3}, "produtos": {"cabelo / Creme e shapoo e etc": {"qtd": 18.0, "valor": 664.9}, "maquiagem": {"qtd": 16.0, "valor": 480.89}, "Unha": {"qtd": 1.0, "valor": 10.0}, "Perfume": {"qtd": 3.0, "valor": 190.0}, "Coloração/Tinta": {"qtd": 5.0, "valor": 114.0}}, "horarios": {"9": {"qtd": 1, "valor": 110.0, "dinheiro": 110.0}, "10": {"qtd": 3, "valor": 166.9, "dinheiro": 12.0}, "12": {"qtd": 4, "valor": 199.9, "dinheiro": 0}, "13": {"qtd": 4, "valor": 175.0, "dinheiro": 10.0}, "14": {"qtd": 3, "valor": 199.0, "dinheiro": 0}, "15": {"qtd": 8, "valor": 369.0, "dinheiro": 197.0}, "16": {"qtd": 1, "valor": 60.0, "dinheiro": 0}, "17": {"qtd": 4, "valor": 150.0, "dinheiro": 0}, "18": {"qtd": 1, "valor": 29.99, "dinheiro": 0}}, "porTurno": {"manhã": {"qtd": 1, "valor": 110.0}, "tarde": {"qtd": 12, "valor": 581.8}}, "porTurnoVend": {"manhã": {"Gabriela": {"qtd": 1, "valor": 110.0}}, "tarde": {"Day": {"qtd": 1, "valor": 99.9}, "Gabriela": {"qtd": 3, "valor": 200.0}, "alesandra": {"qtd": 8, "valor": 281.9}}}, "genero": {"mulher": {"qtd": 29, "valor": 1459.79}}}, {"dia": "05.08", "initial": 137.15, "sales": 3415.34, "withdrawals": 650, "closing": 66.5, "dinheiro": 579.35, "debito": 737.58, "credito": 1013.95, "pix": 1084.46, "vendedoras": {"alesandra": 1963.41, "Gabriela": 1004.95, "Day": 446.98}, "tipoVenda": {"presencial": 50, "online": 1}, "produtos": {"cabelo / Creme e shapoo e etc": {"qtd": 58.0, "valor": 2167.87}, "maquiagem": {"qtd": 18.0, "valor": 517.47}, "Perfume": {"qtd": 4.0, "valor": 360.0}, "Coloração/Tinta": {"qtd": 11.0, "valor": 268.0}, "Unha": {"qtd": 5.0, "valor": 70.0}, "Cabelo/acessorios": {"qtd": 3.0, "valor": 32.0}}, "horarios": {"9": {"qtd": 1, "valor": 50.0, "dinheiro": 0}, "10": {"qtd": 6, "valor": 410.58, "dinheiro": 0}, "11": {"qtd": 6, "valor": 203.0, "dinheiro": 20.0}, "12": {"qtd": 10, "valor": 1309.92, "dinheiro": 281.45}, "13": {"qtd": 3, "valor": 200.0, "dinheiro": 0}, "18": {"qtd": 2, "valor": 225.0, "dinheiro": 0}, "14": {"qtd": 3, "valor": 95.0, "dinheiro": 80.0}, "15": {"qtd": 11, "valor": 504.85, "dinheiro": 122.9}, "16": {"qtd": 6, "valor": 216.99, "dinheiro": 55.0}, "17": {"qtd": 3, "valor": 200.0, "dinheiro": 20.0}}, "porTurno": {"manhã": {"qtd": 1, "valor": 50.0}, "meio-dia": {"qtd": 8, "valor": 431.58}, "tarde": {"qtd": 25, "valor": 2094.82}}, "porTurnoVend": {"manhã": {"alesandra": {"qtd": 1, "valor": 50.0}}, "meio-dia": {"alesandra": {"qtd": 7, "valor": 420.58}, "Gabriela": {"qtd": 1, "valor": 11.0}}, "tarde": {"Gabriela": {"qtd": 9, "valor": 618.96}, "alesandra": {"qtd": 11, "valor": 1180.86}, "Day": {"qtd": 5, "valor": 295.0}}}, "genero": {"mulher": {"qtd": 50, "valor": 3295.34}, "homem": {"qtd": 1, "valor": 120.0}}}, {"dia": "06.08", "initial": 67.5, "sales": 4086.72, "withdrawals": 600, "closing": 103.5, "dinheiro": 636, "debito": 593.79, "credito": 1942.93, "pix": 914, "vendedoras": {"Gabriela": 2004.99, "alesandra": 1296.96, "Day": 784.77}, "tipoVenda": {"presencial": 40, "online": 2}, "produtos": {"cabelo / Creme e shapoo e etc": {"qtd": 41.0, "valor": 2069.98}, "maquiagem": {"qtd": 6.0, "valor": 210.0}, "Coloração/Tinta": {"qtd": 21.0, "valor": 637.97}, "Perfume": {"qtd": 7.0, "valor": 1014.97}, "Unha": {"qtd": 4.0, "valor": 28.8}, "Creme": {"qtd": 1.0, "valor": 25.0}, "Cabelo/acessorios": {"qtd": 7.0, "valor": 100.0}}, "horarios": {"9": {"qtd": 1, "valor": 140.0, "dinheiro": 0}, "11": {"qtd": 5, "valor": 760.0, "dinheiro": 160.0}, "12": {"qtd": 6, "valor": 340.0, "dinheiro": 20.0}, "13": {"qtd": 6, "valor": 767.94, "dinheiro": 10.0}, "14": {"qtd": 6, "valor": 289.0, "dinheiro": 30.0}, "15": {"qtd": 8, "valor": 728.0, "dinheiro": 285.0}, "16": {"qtd": 3, "valor": 309.8, "dinheiro": 120.0}, "17": {"qtd": 7, "valor": 751.98, "dinheiro": 11.0}}, "porTurno": {"manhã": {"qtd": 1, "valor": 140.0}, "tarde": {"qtd": 24, "valor": 2226.94}}, "porTurnoVend": {"manhã": {"Gabriela": {"qtd": 1, "valor": 140.0}}, "tarde": {"Gabriela": {"qtd": 7, "valor": 840.0}, "alesandra": {"qtd": 10, "valor": 994.97}, "Day": {"qtd": 7, "valor": 391.97}}}, "genero": {"mulher": {"qtd": 42, "valor": 4086.72}}}, {"dia": "07.08", "initial": 103.5, "sales": 3843.48, "withdrawals": 500, "closing": 150.9, "dinheiro": 547.4, "debito": 1033.58, "credito": 2102.5, "pix": 160, "vendedoras": {"Gabriela": 1325.0, "alesandra": 1353.5, "Day": 1164.98}, "tipoVenda": {"presencial": 33, "online": 2}, "produtos": {"Perfume": {"qtd": 9.0, "valor": 763.0}, "Coloração/Tinta": {"qtd": 17.0, "valor": 422.0}, "cabelo / Creme e shapoo e etc": {"qtd": 35.0, "valor": 2136.48}, "Creme": {"qtd": 1.0, "valor": 20.0}, "maquiagem": {"qtd": 9.0, "valor": 330.0}, "Unha": {"qtd": 7.0, "valor": 76.6}, "Cabelo/acessorios": {"qtd": 4.0, "valor": 95.4}}, "horarios": {"13": {"qtd": 20, "valor": 1753.5, "dinheiro": 332.0}, "14": {"qtd": 3, "valor": 769.6, "dinheiro": 0}, "15": {"qtd": 2, "valor": 85.0, "dinheiro": 0}, "16": {"qtd": 5, "valor": 545.38, "dinheiro": 165.4}, "17": {"qtd": 4, "valor": 570.0, "dinheiro": 50.0}, "18": {"qtd": 1, "valor": 120.0, "dinheiro": 0}}, "porTurno": {"meio-dia": {"qtd": 3, "valor": 192.0}, "tarde": {"qtd": 15, "valor": 1211.5}}, "porTurnoVend": {"meio-dia": {"Gabriela": {"qtd": 3, "valor": 192.0}}, "tarde": {"Gabriela": {"qtd": 5, "valor": 383.0}, "alesandra": {"qtd": 10, "valor": 828.5}}}, "genero": {"mulher": {"qtd": 35, "valor": 3843.48}}}, {"dia": "08.08", "initial": 150.9, "sales": 2828.86, "withdrawals": 100, "closing": 116.9, "dinheiro": 66, "debito": 481.9, "credito": 1334.99, "pix": 945.97, "vendedoras": {"alesandra": 602.9, "Day": 993.96, "Gabriela": 1232.0}, "tipoVenda": {"presencial": 26, "online": 6}, "produtos": {"Perfume": {"qtd": 14.0, "valor": 1228.0}, "cabelo / Creme e shapoo e etc": {"qtd": 13.0, "valor": 650.0}, "Coloração/Tinta": {"qtd": 15.0, "valor": 457.99}, "maquiagem": {"qtd": 15.0, "valor": 434.87}, "Creme": {"qtd": 1.0, "valor": 40.0}, "Unha": {"qtd": 2.0, "valor": 18.0}}, "horarios": {"9": {"qtd": 1, "valor": 60.0, "dinheiro": 0}, "10": {"qtd": 3, "valor": 257.0, "dinheiro": 32.0}, "11": {"qtd": 8, "valor": 614.0, "dinheiro": 22.0}, "12": {"qtd": 2, "valor": 95.0, "dinheiro": 0}, "13": {"qtd": 5, "valor": 529.96, "dinheiro": 0}, "14": {"qtd": 5, "valor": 208.0, "dinheiro": 12.0}, "15": {"qtd": 6, "valor": 872.9, "dinheiro": 0}, "8": {"qtd": 1, "valor": 32.0, "dinheiro": 0}}, "porTurno": {"manhã": {"qtd": 2, "valor": 119.99}, "meio-dia": {"qtd": 1, "valor": 60.0}, "tarde": {"qtd": 11, "valor": 876.0}}, "porTurnoVend": {"manhã": {"alesandra": {"qtd": 1, "valor": 60.0}, "Day": {"qtd": 1, "valor": 59.99}}, "meio-dia": {"Day": {"qtd": 1, "valor": 60.0}}, "tarde": {"alesandra": {"qtd": 3, "valor": 237.0}, "Day": {"qtd": 5, "valor": 462.0}, "Gabriela": {"qtd": 3, "valor": 177.0}}}, "genero": {"mulher": {"qtd": 32, "valor": 2828.86}}}, {"dia": "10.08", "initial": 84, "sales": 2119.4, "withdrawals": 500, "closing": 36.9, "dinheiro": 452.9, "debito": 146, "credito": 752, "pix": 768.5, "vendedoras": {"alesandra": 390.4, "Gabriela": 1096.0, "Day": 633.0}, "tipoVenda": {"presencial": 25, "online": 2}, "produtos": {"cabelo / Creme e shapoo e etc": {"qtd": 34.0, "valor": 1464.0}, "maquiagem": {"qtd": 6.0, "valor": 194.9}, "Creme": {"qtd": 4.0, "valor": 130.0}, "Coloração/Tinta": {"qtd": 2.0, "valor": 68.5}, "Perfume": {"qtd": 6.0, "valor": 262.0}}, "horarios": {"10": {"qtd": 4, "valor": 225.9, "dinheiro": 225.9}, "11": {"qtd": 3, "valor": 195.0, "dinheiro": 0}, "12": {"qtd": 2, "valor": 83.5, "dinheiro": 0}, "13": {"qtd": 6, "valor": 760.0, "dinheiro": 0}, "14": {"qtd": 2, "valor": 137.0, "dinheiro": 47.0}, "15": {"qtd": 5, "valor": 342.0, "dinheiro": 45.0}, "16": {"qtd": 1, "valor": 6.0, "dinheiro": 0}, "17": {"qtd": 4, "valor": 370.0, "dinheiro": 135.0}}, "porTurno": {"manhã": {"qtd": 1, "valor": 50.0}, "tarde": {"qtd": 9, "valor": 754.4}}, "porTurnoVend": {"manhã": {"alesandra": {"qtd": 1, "valor": 50.0}}, "tarde": {"Gabriela": {"qtd": 4, "valor": 586.0}, "alesandra": {"qtd": 5, "valor": 168.4}}}, "genero": {"mulher": {"qtd": 27, "valor": 2119.4}}}, {"dia": "11.08", "initial": 55, "sales": 2073.5, "withdrawals": 550, "closing": 109.5, "dinheiro": 604.5, "debito": 460, "credito": 220, "pix": 789, "vendedoras": {"alesandra": 874.0, "Gabriela": 819.0, "Day": 380.5}, "tipoVenda": {"presencial": 31, "online": 1}, "produtos": {"cabelo / Creme e shapoo e etc": {"qtd": 18.0, "valor": 867.0}, "Cabelo/acessorios": {"qtd": 2.0, "valor": 60.0}, "maquiagem": {"qtd": 19.0, "valor": 694.0}, "Perfume": {"qtd": 7.0, "valor": 260.0}, "Coloração/Tinta": {"qtd": 8.0, "valor": 179.0}, "Unha": {"qtd": 1, "valor": 13.5}}, "horarios": {"9": {"qtd": 2, "valor": 130.0, "dinheiro": 70.0}, "10": {"qtd": 5, "valor": 480.0, "dinheiro": 30.0}, "11": {"qtd": 2, "valor": 110.0, "dinheiro": 40.0}, "12": {"qtd": 3, "valor": 107.0, "dinheiro": 62.0}, "13": {"qtd": 5, "valor": 187.0, "dinheiro": 147.0}, "14": {"qtd": 2, "valor": 83.5, "dinheiro": 13.5}, "15": {"qtd": 7, "valor": 457.0, "dinheiro": 202.0}, "16": {"qtd": 2, "valor": 140.0, "dinheiro": 0}, "17": {"qtd": 3, "valor": 339.0, "dinheiro": 0}, "18": {"qtd": 1, "valor": 40.0, "dinheiro": 40.0}}, "porTurno": {"manhã": {"qtd": 1, "valor": 70.0}, "tarde": {"qtd": 14, "valor": 851.0}}, "porTurnoVend": {"manhã": {"alesandra": {"qtd": 1, "valor": 70.0}}, "tarde": {"Gabriela": {"qtd": 6, "valor": 377.0}, "alesandra": {"qtd": 6, "valor": 444.0}, "Day": {"qtd": 2, "valor": 30.0}}}, "genero": {"mulher": {"qtd": 32, "valor": 2073.5}}}];
-let daysData = [...embeddedData];
+// (Removido o "embeddedData": 9 dias de EXEMPLO de agosto que apareciam como se fossem dados reais enquanto a planilha carregava ou quando o Google falhava.)
+let daysData = [];   // começa VAZIO: só entra dado REAL (leitura da planilha ou última leitura salva)
 let mesVisualizadoPassado = null; // null = mes atual (ao vivo). Se preenchido (ex: '07'), esta vendo um mes arquivado.
 let daysDataOriginal = null; // guarda os dados ao vivo enquanto a pessoa esta vendo um mes passado, pra poder voltar
 let chart = null;
@@ -1564,11 +1564,14 @@ function calcularHorasDoDia(registro){
  const entrada = paraMinutos(registro.entrada);
  const saida = paraMinutos(registro.saida);
  if(entrada===null || saida===null) return { horas:0, extras:0 };
+ // Registro antigo com saída ANTES (ou igual) da entrada: não vira "0,0h" calado — é marcado como inválido na lista.
+ if(saida<=entrada) return { horas:0, extras:0, invalido:true };
  let minutosTrabalhados = saida-entrada;
  const inicioIntervalo = paraMinutos(registro.inicioIntervalo);
  const fimIntervalo = paraMinutos(registro.fimIntervalo);
  if(inicioIntervalo!==null && fimIntervalo!==null){
-  minutosTrabalhados -= Math.max(0, fimIntervalo-inicioIntervalo);
+  // Desconta só a parte do intervalo que cai DENTRO do expediente (antes descontava sempre, até um "intervalo" às 20h).
+  minutosTrabalhados -= Math.max(0, Math.min(fimIntervalo,saida)-Math.max(inicioIntervalo,entrada));
  }
  const horas = Math.max(0, minutosTrabalhados/60);
 
@@ -1608,6 +1611,15 @@ function adicionarRegistroPonto(){
  if(!data){ mostrarToast('⚠️ Escolha a data.'); return; }
  if(!entrada){ mostrarToast('⚠️ Preencha ao menos a entrada.'); return; }
  const saidaFinal = saida || null;
+ // Horários coerentes (antes aceitava saída antes da entrada e intervalo fora do expediente → "0,0h" ou horas erradas na folha).
+ const hmPonto=(t)=>t?Number(t.split(':')[0])*60+Number(t.split(':')[1]):null;
+ const mE=hmPonto(entrada), mS=hmPonto(saidaFinal), mI=hmPonto(inicioIntervalo), mF=hmPonto(fimIntervalo);
+ if(mS!==null && mS<=mE){ mostrarToast('⚠️ A saída precisa ser depois da entrada.'); return; }
+ if((mI===null)!==(mF===null)){ mostrarToast('⚠️ Preencha o início E o fim do intervalo (ou deixe os dois em branco).'); return; }
+ if(mI!==null){
+  if(mF<=mI){ mostrarToast('⚠️ O fim do intervalo precisa ser depois do início.'); return; }
+  if(mI<mE || (mS!==null && mF>mS)){ mostrarToast('⚠️ O intervalo precisa ficar entre a entrada e a saída.'); return; }
+ }
 
  const lista = getRegistrosPonto();
  if(pontoEditandoId!==null){
@@ -1833,9 +1845,9 @@ function renderFolhaDePonto(){
 
  let totalHoras = 0, totalExtras = 0;
  elLista.innerHTML = lista.map(p=>{
-  const { horas, extras } = calcularHorasDoDia(p);
+  const { horas, extras, invalido } = calcularHorasDoDia(p);
   const semSaida = !p.saida;
-  if(!semSaida){ totalHoras += horas; totalExtras += extras; }
+  if(!semSaida && !invalido){ totalHoras += horas; totalExtras += extras; }
   const dataObj = new Date(p.data+'T00:00:00');
   const diaSemana = nomesDiasAbrev[dataObj.getDay()];
   const ehSabado = dataObj.getDay()===6;
@@ -1844,7 +1856,7 @@ function renderFolhaDePonto(){
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
      <span style="color:#dce5f2;font-weight:700;font-size:13px;">${dataObj.toLocaleDateString('pt-BR')} (${diaSemana})${ehSabado?' <span style="color:#94a3b8;font-weight:600;font-size:11px;">· sábado</span>':''}</span>
      <div style="display:flex;align-items:center;gap:10px;">
-      <span style="color:${semSaida?'#fbbf24':'#27d7a0'};font-weight:800;font-size:12.5px;">${semSaida?'⚠️ Saída pendente':horas.toFixed(1)+'h'+(extras>0?' (+'+extras.toFixed(1)+'h extra)':'')}</span>
+      <span style="color:${semSaida?'#fbbf24':invalido?'#fb7185':'#27d7a0'};font-weight:800;font-size:12.5px;">${semSaida?'⚠️ Saída pendente':invalido?'⚠️ Horário inválido — corrija':horas.toFixed(1)+'h'+(extras>0?' (+'+extras.toFixed(1)+'h extra)':'')}</span>
       <button onclick="editarRegistroPonto(${p.id})" aria-label="Editar" style="background:none;border:none;color:#4f9cff;cursor:pointer;font-size:14px;">✏️</button>
       <button onclick="removerRegistroPonto(${p.id})" aria-label="Remover" style="background:none;border:none;color:#fb7185;cursor:pointer;font-size:14px;">🗑️</button>
      </div>
@@ -2324,7 +2336,7 @@ function getLogoAtivaParaExibicao(){
  if(upload) return upload;
  const url = localStorage.getItem('biobel_logo_custom_url');
  if(url) return url;
- return '/logo_biobel_gravatai.png';
+ return caminhoLogoPadrao(512);
 }
 function seedLogoUrlPadrao(){
  // Se a loja ainda não configurou nenhuma logo (nem upload, nem link), usa automaticamente
@@ -2402,7 +2414,7 @@ function restaurarLogoPadrao(){
  localStorage.removeItem('biobel_logo_custom_url');
  localStorage.setItem('biobel_logo_padrao_escolhido', 'yes'); // marca que foi escolha da pessoa, não aplica o seed de novo
  const preview = document.getElementById('previewLogoBiobel');
- if(preview) preview.src = '/logo_biobel_gravatai.png';
+ if(preview) preview.src = caminhoLogoPadrao(256);
  aplicarLogoPersonalizadaNoSistema();
  const statusEl = document.getElementById('logoBiobelStatus');
  if(statusEl) statusEl.innerHTML = '<span class="text-emerald-400">Logo padrão restaurada.</span>';
@@ -2489,12 +2501,12 @@ function obterLogoDataUrl(){
   if(url){
    converterViaCanvas(url).then(resultado=>{
     if(resultado) resolve(resultado);
-    else converterViaCanvas('/logo_biobel_gravatai.png').then(resolve); // link falhou — usa a padrão como respaldo
+    else converterViaCanvas(caminhoLogoPadrao(512)).then(resolve); // link falhou — usa a padrão como respaldo
    });
    return;
   }
 
-  converterViaCanvas('/logo_biobel_gravatai.png').then(resolve);
+  converterViaCanvas(caminhoLogoPadrao(512)).then(resolve);
  });
 }
 
@@ -7563,7 +7575,7 @@ function dispararNotificacaoMetaBatida(sales, goal){
  try{
   new Notification('🎉 Meta do dia batida!', {
    body: 'Vendeu '+money(sales)+' de uma meta de '+money(goal)+'.',
-   icon: '/logo_biobel_gravatai.png'
+   icon: caminhoLogoPadrao(256)
   });
  }catch(e){}
 }
@@ -7599,7 +7611,7 @@ function dispararNotificacaoVencimentos(){
  try{
   new Notification('💰 Vencimentos próximos', {
    body: proximos.slice(0,4).join(' · ')+(proximos.length>4?' e mais '+(proximos.length-4):''),
-   icon: '/logo_biobel_gravatai.png'
+   icon: caminhoLogoPadrao(256)
   });
  }catch(e){}
 }
@@ -12365,7 +12377,10 @@ function updateConnBadge(state){
   const ultima = localStorage.getItem('biobel_ultima_sincronizacao_ok');
   el.style.display = '';
   el.className = 'conn-badge conn-error';
-  el.textContent = ultima ? '🔴 Falha agora · última atualização '+new Date(ultima).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : '🔴 Falha ao atualizar';
+  // Diz DE QUANDO são os números que estão na tela (e inclui o DIA quando não é hoje: "dados de 05/10 18:30").
+  const duErro=ultima?new Date(ultima):null;
+  const quandoErro=duErro?((duErro.toDateString()===new Date().toDateString()?'':duErro.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' ')+duErro.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})):null;
+  el.textContent = window.__biobelSnapshotDe ? '🔴 Sem conexão · dados de '+window.__biobelSnapshotDe : (quandoErro ? '🔴 Falha agora · última atualização '+quandoErro : '🔴 Falha ao atualizar');
   atualizarAvisoErroPlanilha('Não consegui atualizar a planilha. Confira a conexão e tente novamente.');
   return;
  }
@@ -12630,7 +12645,7 @@ function dispararNotificacaoMesDivergente(nomeAtual, nomeMesReal){
  try{
   new Notification('📅 O mês virou!', {
    body: 'Você ainda está vendo "'+nomeAtual+'" — já é '+nomeMesReal+'. Hora de trocar de planilha.',
-   icon: '/logo_biobel_gravatai.png'
+   icon: caminhoLogoPadrao(256)
   });
  }catch(e){}
 }
@@ -12856,7 +12871,8 @@ async function lerPlanilhaSelecionadaInfoGeral(){
 
 async function voltarPlanilhaPadrao(){
  const btn = document.getElementById('btnVoltarPadraoInfoGeral');
- document.getElementById('googleSheetUrl').value = DEFAULT_GOOGLE_URL;
+ const campoUrlPadrao = document.getElementById('googleSheetUrl');   // só existe na página Configuração; antes quebrava em Análises
+ if(campoUrlPadrao) campoUrlPadrao.value = DEFAULT_GOOGLE_URL;
  localStorage.setItem('biobel_google_sheet_url', DEFAULT_GOOGLE_URL);
 
  const textoOriginal = btn.textContent;
@@ -12889,6 +12905,9 @@ async function voltarPlanilhaPadrao(){
 
 
 
+// Logo padrão: JPEG leve (256 px = 15 KB; 512 px = 40 KB; o PNG original tinha 2,4 MB) e caminho RELATIVO à página.
+// Antes o código apontava para a raiz do domínio (barra inicial) e o GitHub Pages serve o site em /biobel-site/ -> 404.
+function caminhoLogoPadrao(tam){ return (location.pathname.indexOf('/administracao/')>=0?'../':'./')+'logo_biobel_gravatai_'+(tam||256)+'.jpg'; }
 function extrairHoraDoValor(v){
  // A coluna L guarda o horário exato de cada venda. O XLSX.js entrega isso como
  // uma fração do dia (ex: 0.40 = 09:36) na maioria dos casos, mas também trata
@@ -13115,6 +13134,7 @@ async function loadGoogleSheet(){
     const novosDias=await lerPlanilhaViaAppsScript(id,proxyUrl,9000);
     const found=novosDias.length;
     daysData=novosDias;
+    salvarUltimaLeituraPlanilha(id,novosDias); window.__biobelSnapshotDe=null;   // guarda a leitura REAL (a função existia, mas ninguém a chamava desde o v11.33)
     render();
     window.dispatchEvent(new CustomEvent('biobel:data-updated'));
     setGoogleStatus('conectado pela ponte. '+found+' dia(s) atualizado(s).',true);
@@ -13131,6 +13151,7 @@ async function loadGoogleSheet(){
   // 2) Método direto — XLSX, preservando o leitor tradicional do Biobel.
   const novosDias=await lerPlanilhaDiretaXlsx(id);
   daysData=novosDias;
+  salvarUltimaLeituraPlanilha(id,novosDias); window.__biobelSnapshotDe=null;
   render();
   window.dispatchEvent(new CustomEvent('biobel:data-updated'));
   setGoogleStatus(
@@ -13305,6 +13326,9 @@ let advSummaryDonut = null;
    Quatro leituras automáticas sem cadastro de produtos/clientes:
    2) possíveis inconsistências, 3) comparação, 5) explicação e 10) destaques.
    ============================================================ */
+// esc(): escapa texto para HTML. Era usada em vários lugares (Administração, cadastros) mas só estava DEFINIDA na página de Fornecedores:
+// na Administração dava "esc is not defined" assim que o detalhe dos gastos semanais tinha algum item.
+function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function escInteligencia(valor){
  const s=String(valor??'');
  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
@@ -13911,6 +13935,7 @@ function salvarRotinaConcluidaHoje(ids){
 function fecharLembreteAtividades930(){
  const el=document.getElementById('lembreteAtividades930');
  if(el) el.remove();
+ document.querySelectorAll('[data-inert930]').forEach(c=>{ c.removeAttribute('inert'); delete c.dataset.inert930; });   // devolve a página ao uso normal
 }
 function confirmarRotina930(){
  const checks=[...document.querySelectorAll('#lembreteAtividades930 input[data-rotina-id]:checked')];
@@ -13933,11 +13958,12 @@ function abrirLembreteAtividades930(){
  el.id='lembreteAtividades930';
  el.setAttribute('role','alertdialog');
  el.setAttribute('aria-modal','true');
+ el.setAttribute('aria-labelledby','lembrete930Titulo');   // o leitor de tela precisa de um NOME para o diálogo
  el.innerHTML=`
   <div class="biobel-930-backdrop"></div>
   <div class="biobel-930-card">
    <div class="biobel-930-pulse">⏰ 09:30 — HORA DE ORGANIZAR O DIA</div>
-   <h2>📋 O que você vai fazer hoje?</h2>
+   <h2 id="lembrete930Titulo">📋 O que você vai fazer hoje?</h2>
    <p class="biobel-930-sub">Antes de continuar usando o sistema, confira a rotina e escolha as atividades que você vai assumir hoje.</p>
    <div class="biobel-930-list">
     ${atividades.map(a=>`<label class="biobel-930-item biobel-930-choice">
@@ -13953,6 +13979,16 @@ function abrirLembreteAtividades930(){
    </div>
   </div>`;
  document.body.appendChild(el);
+ // Modal de verdade: o resto da página fica INERTE (teclado e leitor de tela não saem daqui) e o Tab circula só aqui dentro.
+ [...document.body.children].forEach(c=>{ if(c!==el && !c.hasAttribute('inert')){ c.setAttribute('inert',''); c.dataset.inert930='1'; } });
+ el.addEventListener('keydown',ev=>{
+  if(ev.key!=='Tab') return;
+  const foc=[...el.querySelectorAll('input:not([disabled]),button:not([disabled])')].filter(x=>x.getClientRects().length);
+  if(!foc.length){ ev.preventDefault(); return; }
+  const prim=foc[0], ult=foc[foc.length-1];
+  if(ev.shiftKey && (document.activeElement===prim || !el.contains(document.activeElement))){ ev.preventDefault(); ult.focus(); }
+  else if(!ev.shiftKey && (document.activeElement===ult || !el.contains(document.activeElement))){ ev.preventDefault(); prim.focus(); }
+ });
  atualizarEstadoRotina930();
  const primeiro=el.querySelector('input[data-rotina-id]');
  primeiro?.focus();
@@ -14042,7 +14078,7 @@ let promptDeInstalacaoGuardado=null;
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();promptDeInstalacaoGuardado=e;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='inline-block';});
 function instalarAppBiobel(){if(!promptDeInstalacaoGuardado)return;promptDeInstalacaoGuardado.prompt();promptDeInstalacaoGuardado.userChoice.then(function(){promptDeInstalacaoGuardado=null;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';});}
 window.addEventListener('appinstalled',function(){const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';try{mostrarToast('✅ Biobel instalado!');}catch(e){}});
-if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=11.51',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
+if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=11.53',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
 window.addEventListener('load',initPaginaAtiva,{once:true});
 
 /* Marca final: se esta linha não rodou, o shell avisa que o sistema não carregou (ver avisarFalhaCarregamento em biobel-shell.js). */

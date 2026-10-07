@@ -31,7 +31,9 @@ const ORFAOS_CONHECIDOS = new Set(['avgClosing','avisoPoucosDadosGastos','banner
   // criado pelo próprio código se faltar / usado só se existir (conferido em 05/10):
   'admGabrielaHistoricoNote','statusBackupAutomatico',
   // criado/removido pelo código do dashboard conforme o dia mostrado seja ou não hoje:
-  'kpiVendaHojeAviso']);
+  'kpiVendaHojeAviso',
+  // criado pelo biobel-shell.js (selo de conexão do cabeçalho), não está no HTML estático:
+  'connBadge']);
 
 // 1) sintaxe
 const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]);

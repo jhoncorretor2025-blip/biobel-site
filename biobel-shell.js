@@ -1,5 +1,5 @@
-/* Biobel — shell compartilhado. v11.51 */
-const BIOBEL_VERSION="v11.51";
+/* Biobel — shell compartilhado. v11.53 */
+const BIOBEL_VERSION="v11.53";
 (function(){
 "use strict";
 const PAGES={dashboard:"dashboard.html",caixa:"operacao.html",equipe:"equipe.html",campanhas:"vendas.html",info:"analises.html",alertas:"alertas.html",config:"config.html",adm:"administracao.html",backup:"backup.html"};
@@ -29,7 +29,7 @@ function montar(){
  '<button id="btnColapsarTudo" onclick="alternarColapsoTodosCards()" class="no-print" style="background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:7px 10px;color:#cbd5e1;font-size:11px;">▾ Minimizar tudo</button>'+
  '<button onclick="iniciarTourGuiado()" class="no-print" style="background:none;border:none;color:#93a3ba;font-size:11px;text-decoration:underline;cursor:pointer;">❓ Tour</button><button onclick="confirmLogout()" class="no-print" style="background:none;border:none;color:#93a3ba;font-size:11px;text-decoration:underline;cursor:pointer;">Sair</button>'+
  '</div>'+
- '<div class="biobel-header-brand"><div class="biobel-brand-left"><img id="logoHeaderBiobel" src="./logo_biobel_gravatai.png" alt="Logo da loja" style="width:44px;height:44px;object-fit:contain;border-radius:8px;"><div><h1>Biobel — Fechamento de Caixa</h1><p class="text-sm text-slate-400">Leitura diária da planilha + histórico do fechamento da gaveta</p><p style="font-size:11px;color:#27d7a0;margin:3px 0 0;">🧭 Páginas independentes com dados compartilhados</p></div></div><label style="cursor:pointer;background:#0ea97a;color:#04241a;padding:9px 13px;border-radius:11px;font-size:12px;font-weight:800;white-space:nowrap;">Carregar Excel/CSV<input id="fileInput" type="file" multiple accept=".xlsx,.xls,.csv" class="hidden"></label></div></header>'+
+ '<div class="biobel-header-brand"><div class="biobel-brand-left"><img id="logoHeaderBiobel" src="./logo_biobel_gravatai_256.jpg" alt="Logo da loja" style="width:44px;height:44px;object-fit:contain;border-radius:8px;"><div><h1>Biobel — Fechamento de Caixa</h1><p class="text-sm text-slate-400">Leitura diária da planilha + histórico do fechamento da gaveta</p><p style="font-size:11px;color:#27d7a0;margin:3px 0 0;">🧭 Páginas independentes com dados compartilhados</p></div></div><label style="cursor:pointer;background:#0ea97a;color:#04241a;padding:9px 13px;border-radius:11px;font-size:12px;font-weight:800;white-space:nowrap;">Carregar Excel/CSV<input id="fileInput" type="file" multiple accept=".xlsx,.xls,.csv" class="hidden"></label></div></header>'+
  '<div id="faixaErroConexao" class="no-print" style="display:none;background:linear-gradient(90deg,#3a0f16,#2a0a10);border-bottom:1px solid rgba(251,113,133,.4);padding:10px 16px;"><div style="max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;"><span class="biobel-faixa-erro-texto" style="font-size:12px;color:#fca5b1;">🔴 Não foi possível conectar à planilha.</span><button onclick="loadGoogleSheet()" style="background:#fb7185;color:#3a0f16;border:none;border-radius:9px;padding:7px 14px;font-weight:800;font-size:12px;">🔄 Tentar novamente</button></div></div>'+
  '<div id="biobelLoadingPlanilha" class="no-print" style="display:none;align-items:center;gap:10px;background:linear-gradient(90deg,#0b1728,#0f172a);border-bottom:1px solid #1e2c42;padding:9px 16px;font-size:12px;color:#93a3ba;"></div>'+
  '<nav class="biobel-nav-direct no-print" aria-label="Navegação principal"><div class="biobel-nav-direct-inner"><strong class="biobel-nav-brand">🟢 BioBel</strong>'+
@@ -75,7 +75,7 @@ function montar(){
    const hit=Object.keys(PAGES).find(k=>PAGES[k]===href);
    if(hit)link.setAttribute("href",hrefMap[hit]);
   });
-  const logo=m.querySelector("#logoHeaderBiobel");if(logo)logo.src=ROOT+"logo_biobel_gravatai.png";
+  const logo=m.querySelector("#logoHeaderBiobel");if(logo)logo.src=ROOT+"logo_biobel_gravatai_256.jpg";
   m.querySelectorAll("[data-page]").forEach(link=>{
    const key=link.dataset.page;if(hrefMap[key])link.setAttribute("href",hrefMap[key]);
    link.classList.toggle("active",p===key);

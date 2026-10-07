@@ -183,14 +183,24 @@ function restaurarUltimaLeituraPlanilha(spreadsheetId){
   const snap=JSON.parse(raw);
   if(snap?.spreadsheetId!==spreadsheetId || !Array.isArray(snap.days) || !snap.days.length)return false;
   daysData=snap.days;
-  render();
-  window.dispatchEvent(new CustomEvent('biobel:data-updated'));
-  const badge=document.getElementById('connBadge');
-  if(badge){
-   const dt=snap.savedAt?new Date(snap.savedAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—';
-   badge.className='conn-badge conn-connecting';
-   badge.textContent='🟡 Dados salvos às '+dt+' · atualizando...';
-  }
+  // De quando são os dados salvos (com o DIA quando não é hoje). Calculado ANTES de desenhar: o selo de falha precisa disso depois.
+  const dtSalvo=snap.savedAt?new Date(snap.savedAt):null, hhmm=dtSalvo?dtSalvo.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—';
+  const mesmoDia=!!dtSalvo && dtSalvo.toDateString()===new Date().toDateString();
+  const dt=(dtSalvo && !mesmoDia)?dtSalvo.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' '+hhmm:hhmm;
+  window.__biobelSnapshotDe=dt;   // usado no selo de falha: "Sem conexão · dados de 05/10 21:10"
+  // Os DADOS entram agora (para a leitura que vem a seguir saber que já existe algo), mas o DESENHO espera a página terminar de
+  // montar: este código roda no meio do carregamento, antes dos scripts da própria página (ex.: a Administração define funções
+  // depois) — desenhar cedo demais dava "is not defined" em silêncio. Se mesmo assim falhar, deixa rastro no console.
+  const desenhar=()=>{
+   try{ render(); }catch(e){ console.warn('Leitura salva restaurada, mas o desenho falhou:',e); }
+   window.dispatchEvent(new CustomEvent('biobel:data-updated'));
+   const badge=document.getElementById('connBadge');
+   if(badge && !(badge.className||'').includes('conn-ok')){
+    badge.className='conn-badge conn-connecting';
+    badge.textContent='🟡 Dados salvos '+(mesmoDia?'às ':'de ')+dt+' · atualizando...';
+   }
+  };
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',desenhar,{once:true}); else desenhar();
   return true;
- }catch(e){ return false; }
+ }catch(e){ console.warn('Não consegui restaurar a última leitura salva:',e); return false; }
 }

@@ -21,7 +21,6 @@ const raiz = path.join(__dirname, '..');
 // Órfãs já analisadas em 06/10/2026 (cada uma com o motivo). A lista deve ENCOLHER com o tempo.
 const CONHECIDAS = {
   // --- recursos que PERDERAM a chamada e merecem ser religados (decisão do dono) ---
-  salvarUltimaLeituraPlanilha: 'sem ela, "mostrar a última leitura salva" (offline/instantâneo) nunca funciona; perdeu a chamada no v11.33',
   carregarMesAtualViaGviz: 'leitor de reserva (gviz) que deixou de ser usado na reescrita da leitura (v11.29/v11.33)',
   carregarPlanilhaViaGoogleVisualizationDireta: 'idem: leitor de reserva (gviz)',
   // --- intencionais / código morto / falso positivo ---

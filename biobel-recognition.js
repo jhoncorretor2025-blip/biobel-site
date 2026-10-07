@@ -18,6 +18,7 @@
       "Boa venda" some sozinho; "Parabéns" e "SUPER venda" ficam até fechar, a menos que haja outro esperando.
    6. Só roda depois de uma leitura REAL da planilha (evento biobel:data-updated) — nunca com os dados de exemplo.
    7. Nomes vêm da planilha: entram na tela só por textContent (nunca innerHTML).
+   8. Se houver um modal bloqueante aberto (ex.: lembrete das 9h30), o aviso espera ele fechar.
 */
 (function(){
 "use strict";
@@ -65,7 +66,12 @@ function fechar(){
  if(atual){ atual.el.remove(); atual=null; }
  if(fila.length) setTimeout(proxima,250);
 }
-function proxima(){ if(atual||!fila.length)return; exibir(fila.shift()); }
+// Modal bloqueante aberto (lembrete das 9h30, confirmações...): o aviso ESPERA fechar, em vez de ficar por cima dele
+// e interceptar cliques (foi o que aconteceu com o balão sobre a 1ª atividade do lembrete).
+function modalBloqueanteAberto(){
+ return [...document.querySelectorAll('[aria-modal="true"]')].some(e=>e.id!=='celebracaoVendaBiobel' && e.isConnected && getComputedStyle(e).display!=='none' && getComputedStyle(e).visibility!=='hidden');
+}
+function proxima(){ if(atual||!fila.length)return; if(modalBloqueanteAberto()){ setTimeout(proxima,1000); return; } exibir(fila.shift()); }
 function exibir(venda){
  const valor=Number(venda?.valor)||0, faixa=faixaDe(valor);
  if(!faixa){ proxima(); return; }
