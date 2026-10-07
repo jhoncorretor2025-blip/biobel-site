@@ -427,11 +427,11 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
 -->
 
 </main>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js?v=11.55"></script>
-<script src="biobel-recognition.js?v=11.55"></script>
-<script src="biobel-planilha-leitura.js?v=11.55"></script>
-<script src="biobel-planilha-processamento.js?v=11.55"></script>
-<script src="biobel-planilha-comparacao.js?v=11.55"></script><script src="biobel-app.js?v=11.55"></script><script src="inteligencia-operacional.js?v=11.55"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell.js?v=11.58"></script>
+<script src="biobel-recognition.js?v=11.58"></script>
+<script src="biobel-planilha-leitura.js?v=11.58"></script>
+<script src="biobel-planilha-processamento.js?v=11.58"></script>
+<script src="biobel-planilha-comparacao.js?v=11.58"></script><script src="biobel-app.js?v=11.58"></script><script src="inteligencia-operacional.js?v=11.58"></script>
 <script>
 (function(){
  function arrData(){try{return Array.isArray(daysData)?daysData:(Array.isArray(window.daysData)?window.daysData:[]);}catch(e){return Array.isArray(window.daysData)?window.daysData:[];}}
@@ -897,7 +897,7 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
    const rs=document.getElementById('atendimentosSabadosRestantes');if(rs)rs.textContent=isCurrent?restSat:'—';
 
    atualizarGrafico(mesRows,'Mês selecionado · '+mesLabel(mesSelecionado),ag);
-  }catch(e){console.warn('Movimento da loja v11.57:',e);}
+  }catch(e){console.warn('Movimento da loja v11.58:',e);}
  }
 
  const sel=document.getElementById('atendimentosMesSelector');
