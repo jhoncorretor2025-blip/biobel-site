@@ -1,3 +1,10 @@
+## v11.57 — 06/10/2026
+- Planilha secundária de **Setembro/2026** integrada diretamente no código como fonte de respaldo, para não depender apenas da lista de planilhas salva no navegador.
+- O seletor de mês do painel “Movimento da loja” agora mostra a planilha secundária com ⭐ e carrega os dados dela quando selecionada.
+- A seleção continua separando Seg–Sex x Sábado e recalcula gráfico, médias, mínimo/máximo e resumo do mês selecionado.
+- A planilha principal continua sendo a fonte padrão; a secundária é usada somente quando o mês correspondente é escolhido no seletor.
+- Cache atualizado para biobel-cache-v11.57.
+
 ## v11.56 — 06/10/2026
 - Adicionado seletor de mês diretamente no painel “Movimento da loja” da tela inicial.
 - O mês atual continua sendo o padrão, mas agora é possível selecionar qualquer mês que esteja disponível nos dados carregados, como setembro/2026 quando houver abas desse período.
