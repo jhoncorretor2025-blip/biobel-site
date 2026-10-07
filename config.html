@@ -71,7 +71,7 @@ body.light-mode .dev-gate-form input{background:#fff;color:#172033;border-color:
  <div class="dev-gate-form">
   <input id="devLoginInput" type="text" autocomplete="username" placeholder="Usuário DEV">
   <div class="dev-password-wrap"><input id="devSenhaInput" type="password" autocomplete="current-password" placeholder="Senha DEV"><button type="button" class="dev-password-toggle" aria-label="Mostrar senha" title="Mostrar senha" onclick="alternarVisibilidadeSenhaDev('devSenhaInput',this)"><svg class="dev-eye-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path><circle cx="12" cy="12" r="2.8"></circle></svg></button></div>
-  <button type="button" onclick="entrarAcessoDevPlanilhas()">🔓 Entrar</button>
+  <button id="devEntrarBtn" type="button" onclick="entrarAcessoDevPlanilhas()">🔓 Entrar</button>
  </div>
  <div id="devLoginErro" class="dev-gate-erro"></div>
  <small>O acesso DEV permanece liberado somente nesta sessão do navegador.</small>
@@ -780,8 +780,9 @@ function alternarVisibilidadeSenhaDev(inputId,botao){
  let aplicando=false;
  const DEV_USER='Jhon';
  const DEV_PASS='medaumaluz';
+ let devAcessoEmMemoria=false;
 
- function devAutenticado(){try{return sessionStorage.getItem(DEV_KEY)==='yes';}catch(e){return false;}}
+ function devAutenticado(){if(devAcessoEmMemoria)return true;try{return sessionStorage.getItem(DEV_KEY)==='yes';}catch(e){return false;}}
  function el(id){return document.getElementById(id);}
  function setErro(texto,tipo){
   ['devLoginErro','devLoginErroPlanilhas'].forEach(id=>{
@@ -792,13 +793,14 @@ function alternarVisibilidadeSenhaDev(inputId,botao){
   });
  }
  function setBotoes(texto,disabled){
-  document.querySelectorAll('.dev-gate-form button').forEach(btn=>{
+  document.querySelectorAll('#devEntrarBtn,#devEntrarBtnPlanilhas').forEach(btn=>{
    btn.textContent=texto;
    btn.disabled=!!disabled;
    btn.style.opacity=disabled?'.75':'1';
    btn.style.cursor=disabled?'wait':'pointer';
   });
  }
+
  function aplicarProtecaoDevPlanilhas(){
   if(aplicando)return;
   aplicando=true;
@@ -823,6 +825,7 @@ function alternarVisibilidadeSenhaDev(inputId,botao){
   const senha=String(p.value||'');
   setTimeout(function(){
    if(usuario.toLowerCase()===DEV_USER.toLowerCase() && senha===DEV_PASS){
+    devAcessoEmMemoria=true;
     try{sessionStorage.setItem(DEV_KEY,'yes');}catch(e){}
     setErro('✅ Acesso DEV liberado.','ok');
     setBotoes('✅ Acesso liberado',true);
@@ -842,6 +845,7 @@ function alternarVisibilidadeSenhaDev(inputId,botao){
   },120);
  };
  window.bloquearAcessoDevPlanilhas=function(){
+  devAcessoEmMemoria=false;
   try{sessionStorage.removeItem(DEV_KEY);}catch(e){}
   setErro('');
   setBotoes('🔓 Entrar',false);
