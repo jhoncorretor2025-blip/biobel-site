@@ -1273,7 +1273,6 @@ function restaurarRotinaPadrao(){
 function renderComparativoEquipeHoje(dia, d){
  const el = document.getElementById('equipeComparativoHoje');
  if(!el) return;
- if(getDesligamento('gabriela')){ el.innerHTML=''; return; } // sem comparativo se ela já saiu
  const gabi = calcEquipeProgresso(equipePrincipalScope(dia), d.gabi.length);
  const dai = calcEquipeProgresso(`${dia}_dai`, d.dai.length);
  if(gabi.total===0 && dai.total===0){ el.innerHTML=''; return; }
@@ -1390,7 +1389,7 @@ function calcEquipeTotaisSemana(){
  let gabiDone=0, gabiTotal=0, daiDone=0, daiTotal=0;
  diasSemanaOrdem.forEach(dia=>{
   const d = rotinaSemanal[dia];
-  const g = calcEquipeProgresso(`${dia}_gabi`, d.gabi.length);
+  const g = calcEquipeProgresso(equipePrincipalScope(dia), d.gabi.length);
   const a = calcEquipeProgresso(`${dia}_dai`, d.dai.length);
   gabiDone += g.done; gabiTotal += g.total;
   daiDone += a.done; daiTotal += a.total;
@@ -1546,7 +1545,7 @@ function _resetEquipeWeekReal(){
  const totais = calcEquipeTotaisSemana();
  const weekStart = document.getElementById('equipeWeekStart')?.value || '';
  const weekEnd = document.getElementById('equipeWeekEnd')?.value || '';
- const nomeGabi = document.getElementById('equipeNomeGabi')?.value || '';
+ const nomeGabi = getEquipePrincipal().nome;
  const nomeDai = document.getElementById('equipeNomeDai')?.value || '';
  saveEquipeHistoricoEntry({
   weekStart, weekEnd, nomeGabi, nomeDai,
@@ -1836,6 +1835,17 @@ function renderFolhaDePonto(){
  // pra puxar a folha de ponto dela até o último mês trabalhado, pra contadora.
  const selectFuncionaria = document.getElementById('pontoFuncionariaSelect');
  if(selectFuncionaria){
+  const treinoAtivo=!!getDesligamento('gabriela');
+  let optTreino=Array.from(selectFuncionaria.options).find(opt=>opt.value==='CLT_TREINAMENTO');
+  if(treinoAtivo && !optTreino){
+   optTreino=document.createElement('option');
+   optTreino.value='CLT_TREINAMENTO';
+   optTreino.textContent='CLT (Treinamento)';
+   selectFuncionaria.appendChild(optTreino);
+  } else if(!treinoAtivo && optTreino){
+   if(selectFuncionaria.value==='CLT_TREINAMENTO') selectFuncionaria.value='Gabriela';
+   optTreino.remove();
+  }
   Array.from(selectFuncionaria.options).forEach(opt=>{
    const chave = opt.value.toLowerCase();
    const nomeBase = opt.value;
@@ -13329,7 +13339,7 @@ function fecharPassagemTurno(){const e=document.getElementById('biobelPassagemTu
 function renderPassagemTurno(){const e=document.getElementById('biobelUltimaPassagemTurno');if(!e)return;const x=obterPassagensTurno().find(v=>v.data===chaveDataBiobelOperacional());if(!x){e.textContent='Nenhuma passagem registrada hoje.';return;}const p=[];if(x.de||x.para)p.push((x.de||'—')+' → '+(x.para||'—'));if(x.pendencia)p.push('⚠️ '+x.pendencia);if(x.cliente)p.push('🧍 '+x.cliente);e.innerHTML=p.map(escaparHtmlBiobel).join('<br>');}
 function calcularResumoEquipeBiobel(){const dia=nomeDiaRotinaAtual();let total=0,done=0,g={total:0,done:0},dy={total:0,done:0};(Array.isArray(rotinaDiariaBase)?rotinaDiariaBase:[]).forEach((x,i)=>{total++;if(isEquipeChecked('diaria',i))done++;});if(dia&&rotinaSemanal?.[dia])['gabi','dai'].forEach(q=>{const a=q==='gabi'?g:dy;(rotinaSemanal[dia][q]||[]).forEach((x,i)=>{a.total++;total++;if(isEquipeChecked(dia+'_'+q,i)){a.done++;done++;}});});const arr=Array.isArray(daysData)?daysData:[],hoje=arr.find(x=>x?.dia===chaveDataBiobelOperacional())||arr[arr.length-1]||{},regs=Array.isArray(hoje.registrosVendas)?hoje.registrosVendas:[],v=Number(hoje.vendaP2)||Number(hoje.sales)||0;return{total,done,pct:total?done/total*100:0,g,dy,v,atend:regs.length};}
 function renderResumoEquipeDia(){const r=calcularResumoEquipeBiobel(),e=document.getElementById('biobelResumoEquipeMini');if(e)e.innerHTML='<strong>'+r.done+'/'+r.total+'</strong> tarefas · <strong>'+r.pct.toFixed(0)+'%</strong> concluído · 💰 <strong>'+new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(r.v||0)+'</strong> em vendas';}
-function abrirResumoEquipeDia(){const r=calcularResumoEquipeBiobel(),e=document.getElementById('biobelResumoEquipeModal'),d=document.getElementById('biobelResumoEquipeDetalhado');if(!e||!d)return;const p=r.total-r.done;d.innerHTML='<div class="biobel-summary-kpis"><div><strong>'+r.done+'/'+r.total+'</strong><span>Tarefas concluídas</span></div><div><strong>'+r.pct.toFixed(0)+'%</strong><span>Rotina concluída</span></div><div><strong>'+new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(r.v||0)+'</strong><span>Vendas do dia</span></div><div><strong>'+r.atend+'</strong><span>Registros de venda</span></div></div><div class="biobel-summary-person"><b>💇‍♀️ Gabi</b><span>'+r.g.done+'/'+r.g.total+' tarefas</span></div><div class="biobel-summary-person"><b>✨ Day</b><span>'+r.dy.done+'/'+r.dy.total+' tarefas</span></div>'+(p?'<div class="biobel-summary-pending">🟡 '+p+' tarefa(s) pendente(s).</div>':'<div class="biobel-summary-ok">🎉 Rotina concluída!</div>');e.style.display='flex';}
+function abrirResumoEquipeDia(){const r=calcularResumoEquipeBiobel(),e=document.getElementById('biobelResumoEquipeModal'),d=document.getElementById('biobelResumoEquipeDetalhado');if(!e||!d)return;const p=r.total-r.done;d.innerHTML='<div class="biobel-summary-kpis"><div><strong>'+r.done+'/'+r.total+'</strong><span>Tarefas concluídas</span></div><div><strong>'+r.pct.toFixed(0)+'%</strong><span>Rotina concluída</span></div><div><strong>'+new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(r.v||0)+'</strong><span>Vendas do dia</span></div><div><strong>'+r.atend+'</strong><span>Registros de venda</span></div></div><div class="biobel-summary-person"><b>💇‍♀️ '+getEquipePrincipal().nome+'</b><span>'+r.g.done+'/'+r.g.total+' tarefas</span></div><div class="biobel-summary-person"><b>✨ Day</b><span>'+r.dy.done+'/'+r.dy.total+' tarefas</span></div>'+(p?'<div class="biobel-summary-pending">🟡 '+p+' tarefa(s) pendente(s).</div>':'<div class="biobel-summary-ok">🎉 Rotina concluída!</div>');e.style.display='flex';}
 function fecharResumoEquipeDia(){const e=document.getElementById('biobelResumoEquipeModal');if(e)e.style.display='none';}
 /* O resumo "Como foi o dia?" abre MINUTOS ANTES DE FECHAR a loja (padrão: 20 min -> fecha 18:00 = abre 17:40; sábado fecha 16:00 = abre 15:40),
    usando o horário de funcionamento da Configuração. Antes era um horário FIXO (17:15) em todos os dias — inclusive no sábado, quando a loja
