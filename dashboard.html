@@ -144,7 +144,7 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
 -->
 <main id="dashboardTab" class="max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabDashboard">
   <div class="biobel-dashboard-heading no-print" aria-label="Cabeçalho da Visão Geral">
-   <div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><div class="biobel-dashboard-heading-title">Visão Geral</div><span id="versaoSistemaTela" style="display:inline-flex;align-items:center;padding:4px 8px;border:1px solid rgba(14,169,122,.35);border-radius:8px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:10px;font-weight:900;letter-spacing:.04em;">v11.75</span></div><div class="biobel-dashboard-heading-sub">Resumo rápido da loja</div></div>
+   <div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><div class="biobel-dashboard-heading-title">Visão Geral</div><span id="versaoSistemaTela" style="display:inline-flex;align-items:center;padding:4px 8px;border:1px solid rgba(14,169,122,.35);border-radius:8px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:10px;font-weight:900;letter-spacing:.04em;">v11.76</span></div><div class="biobel-dashboard-heading-sub">Resumo rápido da loja</div></div>
    <div class="biobel-dashboard-heading-weather" aria-label="Clima de hoje e previsão de amanhã"><span style="font-size:10px;color:#71849d;font-weight:800;">🌦️ Clima</span><span id="indicadorClimaTopo" style="display:none;"></span></div>
   </div>
   <div class="biobel-dashboard-compact no-print">
@@ -154,6 +154,31 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
     <article class="biobel-kpi"><div id="kpiLiderHojeLabel" class="kpi-label">🏆 Líder do dia</div><div id="kpiLiderHoje" class="kpi-value">—</div><div id="kpiLiderHojeSub" class="kpi-sub">R$ 0,00</div><div id="kpiLiderHojeTop" style="display:none;margin-top:8px;"></div></article>
     <article class="biobel-kpi"><div class="kpi-label">🌦️ Clima hoje</div><div id="kpiClimaCard" class="kpi-value">Carregando...</div><div id="kpiClimaCardSub" class="kpi-sub">Buscando previsão...</div></article>
    </section>
+
+   <section id="biobelMetaInteligente" class="no-print" aria-label="Controle inteligente da meta" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px;margin-bottom:10px;">
+    <article id="biobelSemaforoMetaCard" style="background:#0b1728;border:1px solid #1e2c42;border-radius:14px;padding:14px 16px;">
+     <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+      <div>
+       <div style="font-size:10px;color:#93a3ba;font-weight:900;text-transform:uppercase;letter-spacing:.08em;">🚦 Semáforo da Meta</div>
+       <div id="biobelSemaforoMetaTitulo" style="font-size:20px;font-weight:900;color:#dce5f2;margin-top:4px;">Calculando...</div>
+      </div>
+      <div id="biobelSemaforoMetaIcon" style="font-size:30px;">⏳</div>
+     </div>
+     <div id="biobelSemaforoMetaTexto" style="font-size:12px;color:#93a3ba;margin-top:8px;line-height:1.45;">Analisando o ritmo da loja...</div>
+     <div id="biobelSemaforoMetaDetalhe" style="font-size:11px;color:#64748b;margin-top:7px;"></div>
+    </article>
+
+    <article style="background:#0b1728;border:1px solid #1e2c42;border-radius:14px;padding:14px 16px;">
+     <div style="font-size:10px;color:#93a3ba;font-weight:900;text-transform:uppercase;letter-spacing:.08em;">🎯 Quanto precisamos vender hoje?</div>
+     <div id="biobelMetaHojeValor" style="font-size:24px;font-weight:900;color:#27d7a0;margin-top:4px;">—</div>
+     <div id="biobelMetaHojeTexto" style="font-size:12px;color:#93a3ba;margin-top:6px;line-height:1.45;">Calculando necessidade de hoje...</div>
+     <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;font-size:11px;">
+      <span id="biobelMetaHojeVendido" style="color:#4f9cff;">Hoje: —</span>
+      <span id="biobelMetaHojeFalta" style="color:#fbbf24;">Falta hoje: —</span>
+     </div>
+    </article>
+   </section>
+
    <div class="biobel-context">
     <span class="biobel-context-label">🌦️ Clima</span><span id="kpiClimaTexto" class="biobel-context-label">—</span>
    </div>
@@ -428,11 +453,11 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
 -->
 
 </main>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell-v1168.js?v=11.75"></script>
-<script src="biobel-recognition.js?v=11.75"></script>
-<script src="biobel-planilha-leitura.js?v=11.75"></script>
-<script src="biobel-planilha-processamento.js?v=11.75"></script>
-<script src="biobel-planilha-comparacao.js?v=11.75"></script><script src="biobel-app.js?v=11.75"></script><script src="inteligencia-operacional.js?v=11.75"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell-v1168.js?v=11.76"></script>
+<script src="biobel-recognition.js?v=11.76"></script>
+<script src="biobel-planilha-leitura.js?v=11.76"></script>
+<script src="biobel-planilha-processamento.js?v=11.76"></script>
+<script src="biobel-planilha-comparacao.js?v=11.76"></script><script src="biobel-app.js?v=11.76"></script><script src="inteligencia-operacional.js?v=11.76"></script>
 <script>
 (function(){
  function arrData(){try{return Array.isArray(daysData)?daysData:(Array.isArray(window.daysData)?window.daysData:[]);}catch(e){return Array.isArray(window.daysData)?window.daysData:[];}}
