@@ -2401,6 +2401,8 @@ function atualizarMetaLojaNaConfig(){
  const source=document.getElementById('goalPlanilhaSource');
  const status=document.getElementById('goalStatus');
  if(input) input.value=money(getSalesGoal());
+ const resumo=document.getElementById('metaConfigResumo');
+ if(resumo) resumo.textContent=money(getSalesGoal());
  const info=getSalesGoalSource();
  if(source){
   source.textContent=info.aoVivo
