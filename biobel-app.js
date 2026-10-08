@@ -1,3 +1,4 @@
+/* BIOBEL v11.71 — Configuração de Meta e Super Meta. */
 /* BIOBEL v11.69 — Meta mensal automática: célula N2 da planilha é a fonte oficial. */
 
 
@@ -2344,6 +2345,57 @@ function getSalesGoalSource(){
  }catch(e){}
  return {valor:getSalesGoal(),celula:'N2',aba:'aguardando planilha',aoVivo:false};
 }
+const BIOBEL_SUPER_META_KEY='biobel_super_meta_v1';
+function getSuperMeta(){
+ try{
+  const salvo=Number(String(localStorage.getItem(BIOBEL_SUPER_META_KEY)||'').replace(/\./g,'').replace(',','.'));
+  return salvo>0 ? salvo : 55000;
+ }catch(e){ return 55000; }
+}
+function saveSuperMeta(){
+ const el=document.getElementById('superMetaInput');
+ const status=document.getElementById('superMetaStatus');
+ const val=typeof parseMoneyInput==='function' ? parseMoneyInput(el?.value||'') : NaN;
+ if(!(val>0)){
+  if(status) status.innerHTML='<span class="text-rose-400">Digite um valor válido para a Super Meta.</span>';
+  return;
+ }
+ const meta=getSalesGoal();
+ if(meta>0 && val<=meta){
+  if(status) status.innerHTML='<span class="text-rose-400">A Super Meta precisa ser maior que a Meta da Loja ('+money(meta)+').</span>';
+  return;
+ }
+ localStorage.setItem(BIOBEL_SUPER_META_KEY,String(val));
+ if(status) status.innerHTML='<span class="text-emerald-400">✅ Super Meta salva: '+money(val)+'</span>';
+ try{sincronizarMetasComissaoPrincipais();}catch(e){console.warn('Não consegui sincronizar os níveis de comissão:',e);}
+ try{renderNiveisComissao();}catch(e){}
+ registrarAlteracao('Super Meta alterada para '+money(val));
+ try{renderLogAlteracoes();}catch(e){}
+ try{atualizarTotaisAdm();}catch(e){}
+ mostrarToast('🔥 Super Meta salva com sucesso!');
+}
+function atualizarSuperMetaNaConfig(){
+ const el=document.getElementById('superMetaInput');
+ const status=document.getElementById('superMetaStatus');
+ if(el) el.value=money(getSuperMeta());
+ const meta=getSalesGoal();
+ if(status && meta>0 && getSuperMeta()<=meta){
+  status.innerHTML='<span class="text-amber-300">⚠️ Ajuste a Super Meta para ficar acima da Meta da Loja.</span>';
+ }else if(status){
+  status.innerHTML='<span class="text-slate-400">🔥 Valor usado no nível de Super Meta.</span>';
+ }
+}
+function sincronizarMetasComissaoPrincipais(){
+ const lista=getNiveisComissao();
+ if(!Array.isArray(lista)||lista.length!==2) return;
+ const ordenados=[...lista].sort((a,b)=>Number(a.meta)-Number(b.meta));
+ const meta=getSalesGoal(), superMeta=getSuperMeta();
+ if(!(meta>0)||!(superMeta>meta)) return;
+ // Os 2 níveis padrão do sistema representam Meta e Super Meta.
+ ordenados[0].meta=meta;
+ ordenados[1].meta=superMeta;
+ salvarNiveisComissao(ordenados);
+}
 function atualizarMetaLojaNaConfig(){
  const input=document.getElementById('salesGoalInput');
  const source=document.getElementById('goalPlanilhaSource');
@@ -2358,6 +2410,8 @@ function atualizarMetaLojaNaConfig(){
  if(status && info.aoVivo){
   status.innerHTML='<span class="text-emerald-400">✅ Meta sincronizada automaticamente com a planilha.</span>';
  }
+ try{sincronizarMetasComissaoPrincipais();}catch(e){}
+ try{atualizarSuperMetaNaConfig();}catch(e){}
 }
 /* ===== Log de alterações (simples, guarda as últimas 30) ===== */
 function registrarAlteracao(texto){
@@ -13332,7 +13386,7 @@ function solicitarNotificacaoHorarioAusente(){if(!('Notification'in window)){atu
 function atualizarStatusConfigAlertaHorarioAusente(t){const el=document.getElementById('alertaHorarioAusenteStatus');if(el)el.textContent=t;}
 function carregarConfigAlertaHorarioAusente(){const cfg=getConfigAlertaHorarioAusente();const a=document.getElementById('alertaHorarioAusenteAtivo'),i=document.getElementById('alertaHorarioAusenteIntervalo'),ini=document.getElementById('alertaHorarioAusenteInicio'),fim=document.getElementById('alertaHorarioAusenteFim');if(a)a.checked=cfg.habilitado!==false;if(i)i.value=String(cfg.intervaloMin||30);if(ini)ini.value=cfg.inicio||'09:00';if(fim)fim.value=cfg.fim||'18:00';}
 function testarAlertaHorarioAusente(){const info=obterAlertaHorarioAusenteHoje();if(info.semDados||info.quantidade<=0){mostrarToast('ℹ️ Não há venda sem horário detectada no dia de hoje para testar.');return;}dispararAlertaHorarioAusente(true);}
-window.addEventListener('biobel:data-updated',()=>setTimeout(atualizarMetaLojaNaConfig,50));
+window.addEventListener('biobel:data-updated',()=>setTimeout(()=>{atualizarMetaLojaNaConfig();atualizarSuperMetaNaConfig();},50));
 window.addEventListener('biobel:data-updated',()=>setTimeout(verificarAlertaHorarioAusente,500));
 setInterval(verificarAlertaHorarioAusente,60000);
 
@@ -13960,6 +14014,7 @@ render = function(){
   // salvo): meta do mês, meta de atendimentos, metas de longo prazo, logo, link Trabalhe Conosco, e-mail da contadora e provedor de e-mail.
   const passo=fn=>{ try{ fn(); }catch(e){ console.warn('Configuração:',e); } };
   passo(atualizarMetaLojaNaConfig);
+  passo(atualizarSuperMetaNaConfig);
   passo(initDailyGoalUI); passo(renderListaMetasVendedoras); passo(renderLogAlteracoes); passo(renderDiasSemErroConexao); passo(initNotificacoesUI);
   passo(()=>{ const q=document.getElementById('metaQtdVendasInput'); if(q){ const v=getMetaQtdVendas(); q.value=v>0?v:''; } });
   passo(initMetasLongoPrazoUI); passo(initLogoBiobelUI); passo(initLinkTrabalheConoscoUI);
