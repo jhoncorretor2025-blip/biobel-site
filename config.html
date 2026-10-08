@@ -196,8 +196,8 @@ body.light-mode .dev-gate-form input{background:#fff;color:#172033;border-color:
      <span id="metaFonteToggleLabel" class="text-sm font-bold text-emerald-400">LIGADO</span>
      <span style="position:relative;display:inline-block;width:48px;height:26px;">
       <input id="metaUsarPlanilhaToggle" type="checkbox" checked onchange="toggleFonteMetaLoja()" style="opacity:0;width:0;height:0;position:absolute;">
-      <span aria-hidden="true" style="position:absolute;inset:0;background:#10b981;border-radius:999px;transition:.2s;cursor:pointer;"></span>
-      <span aria-hidden="true" style="position:absolute;width:20px;height:20px;left:24px;top:3px;background:#fff;border-radius:50%;transition:.2s;pointer-events:none;"></span>
+      <span aria-hidden="true" id="metaFonteTrack" aria-hidden="true" style="position:absolute;inset:0;background:#10b981;border-radius:999px;transition:.2s;cursor:pointer;"></span>
+      <span id="metaFonteKnob" aria-hidden="true" style="position:absolute;width:20px;height:20px;left:24px;top:3px;background:#fff;border-radius:50%;transition:.2s;pointer-events:none;"></span>
      </span>
     </label>
    </div>
@@ -262,8 +262,8 @@ body.light-mode .dev-gate-form input{background:#fff;color:#172033;border-color:
       <span id="notificacoesToggleLabel" class="text-sm font-bold text-emerald-400">LIGADO</span>
       <span style="position:relative;display:inline-block;width:48px;height:26px;">
        <input type="checkbox" id="notificacoesToggle" checked onchange="ativarNotificacoes()" style="opacity:0;width:0;height:0;position:absolute;">
-       <span aria-hidden="true" style="position:absolute;inset:0;background:#10b981;border-radius:999px;transition:.2s;cursor:pointer;"></span>
-       <span aria-hidden="true" style="position:absolute;width:20px;height:20px;left:24px;top:3px;background:#fff;border-radius:50%;transition:.2s;pointer-events:none;"></span>
+       <span aria-hidden="true" id="notificacoesTrack" aria-hidden="true" style="position:absolute;inset:0;background:#10b981;border-radius:999px;transition:.2s;cursor:pointer;"></span>
+       <span id="notificacoesKnob" aria-hidden="true" style="position:absolute;width:20px;height:20px;left:24px;top:3px;background:#fff;border-radius:50%;transition:.2s;pointer-events:none;"></span>
       </span>
      </span>
     </label>
