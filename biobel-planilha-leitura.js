@@ -1,6 +1,6 @@
 /* ============================================================
    BIOBEL — LEITURA DE PLANILHAS
-   v11.70 — leitura principal/fallbacks + meta automática da célula N2.
+   v11.74 — leitura principal/fallbacks + meta automática da célula N2.
    As funções abaixo dependem de utilitários globais do núcleo
    (por exemplo: processarLinhasDoDia, normalizarNomeAba,
    obterAgoraBrasilia e fetchBiobelComTimeout).
@@ -226,6 +226,8 @@ async function lerPlanilhaDiretaXlsx(spreadsheetId){
  if(!response.ok) throw new Error('Google XLSX HTTP '+response.status);
  const buf=await response.arrayBuffer();
  const wb=XLSX.read(buf,{type:'array'});
+ // A leitura direta do Google Sheets também precisa atualizar a Meta da Loja pela N2.
+ extrairMetaN2DoWorkbook(wb);
  const novosDias=[];
  for(const sheetName of wb.SheetNames){
   const nomeNormalizado=normalizarNomeAba(sheetName);
