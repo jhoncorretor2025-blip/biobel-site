@@ -2379,6 +2379,8 @@ function initFonteMetaLojaUI(){
  const usar=usarMetaDaPlanilha();
  const toggle=document.getElementById('metaUsarPlanilhaToggle');
  if(toggle) toggle.checked=usar;
+ const label=document.getElementById('metaFonteToggleLabel');
+ if(label){label.textContent=usar?'LIGADO':'DESLIGADO';label.style.color=usar?'#34d399':'#fbbf24';}
  const wrap=document.getElementById('metaManualWrap');
  if(wrap) wrap.style.display=usar?'none':'block';
  const input=document.getElementById('salesGoalInput');
