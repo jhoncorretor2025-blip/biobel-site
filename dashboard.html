@@ -500,7 +500,7 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
     .filter(d=>d && !ehDomingo(d))
     .slice(-4);
    const total=val(hoje), qtd=nAt(hoje), ticket=qtd?total/qtd:0, l=lider(hoje), x=cfg();
-   const metaTotal=Number(localStorage.getItem('biobel_sales_goal')||50000)||50000;
+   const metaTotal=typeof getSalesGoal==='function' ? getSalesGoal() : 0;
    const acumulado=a.reduce((s,d)=>s+val(d),0), pct=metaTotal?(acumulado/metaTotal*100):0, falta=Math.max(0,metaTotal-acumulado);
    // Quanto precisa vender por dia = o que falta ÷ (dias úteis DEPOIS de hoje + a fração de hoje que ainda resta).
    // Mesma regra do núcleo (renderAdvancedDashboard): sem domingo e sem feriado marcado em "dias atípicos"; a fração de
