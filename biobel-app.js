@@ -1,4 +1,4 @@
-/* BIOBEL v11.71 — Configuração de Meta e Super Meta. */
+/* BIOBEL v11.72 — Configuração de Meta e Super Meta. */
 /* BIOBEL v11.69 — Meta mensal automática: célula N2 da planilha é a fonte oficial. */
 
 
@@ -2320,30 +2320,90 @@ function updateThemeButton(isLight){
 }
 updateThemeButton(document.body.classList.contains('light-mode'));
 
+const BIOBEL_META_FONTE_KEY='biobel_meta_loja_fonte_v1';
+const BIOBEL_META_MANUAL_KEY='biobel_sales_goal_manual_v1';
+
+function usarMetaDaPlanilha(){
+ try{return localStorage.getItem(BIOBEL_META_FONTE_KEY)!=='manual';}catch(e){return true;}
+}
+function getMetaManual(){
+ try{
+  const atual=Number(localStorage.getItem(BIOBEL_META_MANUAL_KEY)||'0');
+  if(atual>0) return atual;
+  const antigo=Number(localStorage.getItem('biobel_sales_goal')||'0');
+  return antigo>0 ? antigo : 0;
+ }catch(e){return 0;}
+}
+function salvarMetaManual(valor){
+ const n=Number(valor)||0;
+ if(!(n>0)) return false;
+ localStorage.setItem(BIOBEL_META_MANUAL_KEY,String(n));
+ localStorage.setItem('biobel_sales_goal',String(n));
+ return true;
+}
+function toggleFonteMetaLoja(){
+ const usar=!!document.getElementById('metaUsarPlanilhaToggle')?.checked;
+ localStorage.setItem(BIOBEL_META_FONTE_KEY,usar?'planilha':'manual');
+ const input=document.getElementById('salesGoalInput');
+ const wrap=document.getElementById('metaManualWrap');
+ const source=document.getElementById('goalPlanilhaSource');
+ if(input){
+  input.readOnly=usar;
+  if(usar){input.setAttribute('aria-readonly','true');}
+  else{input.removeAttribute('aria-readonly'); input.value=money(getMetaManual()||Number(window.__biobelMetaLojaPlanilha?.valor)||0);}
+ }
+ if(wrap) wrap.style.display=usar?'none':'block';
+ if(source) source.textContent=usar?'📊 Fonte: planilha ativa · célula N2':'✍️ Fonte: meta manual. Informe o valor e clique em Salvar meta manual.';
+ if(typeof atualizarMetaLojaNaConfig==='function') atualizarMetaLojaNaConfig();
+ if(typeof atualizarInfoMetaDiariaAutomatica==='function') atualizarInfoMetaDiariaAutomatica();
+ try{renderNiveisComissao();}catch(e){}
+ mostrarToast(usar?'📊 Meta voltou a usar automaticamente a célula N2 da planilha.':'✍️ Modo manual ativado. Informe a Meta da Loja e salve.');
+}
+function saveSalesGoalManual(){
+ const input=document.getElementById('salesGoalInput');
+ const status=document.getElementById('goalStatus');
+ const val=typeof parseMoneyInput==='function'?parseMoneyInput(input?.value||''):NaN;
+ if(!(val>0)){if(status) status.innerHTML='<span class="text-rose-400">Digite uma Meta da Loja válida.</span>';return;}
+ if(usarMetaDaPlanilha()){if(status) status.innerHTML='<span class="text-amber-300">📊 O modo planilha está ligado. Desligue-o para salvar uma meta manual.</span>';return;}
+ salvarMetaManual(val);
+ if(status) status.innerHTML='<span class="text-emerald-400">✅ Meta manual salva: '+money(val)+'</span>';
+ registrarAlteracao('Meta manual alterada para '+money(val));
+ try{renderLogAlteracoes();}catch(e){}
+ if(typeof atualizarMetaLojaNaConfig==='function') atualizarMetaLojaNaConfig();
+ if(typeof atualizarInfoMetaDiariaAutomatica==='function') atualizarInfoMetaDiariaAutomatica();
+ try{renderNiveisComissao();}catch(e){}
+ window.dispatchEvent(new CustomEvent('biobel:meta-source-updated'));
+ mostrarToast('✅ Meta manual salva com sucesso!');
+}
+function initFonteMetaLojaUI(){
+ const usar=usarMetaDaPlanilha();
+ const toggle=document.getElementById('metaUsarPlanilhaToggle');
+ if(toggle) toggle.checked=usar;
+ const wrap=document.getElementById('metaManualWrap');
+ if(wrap) wrap.style.display=usar?'none':'block';
+ const input=document.getElementById('salesGoalInput');
+ if(input){input.readOnly=usar;if(usar) input.setAttribute('aria-readonly','true'); else input.value=money(getMetaManual());}
+}
 function getSalesGoal(){
- // Fonte oficial: N2 da planilha ativa.
+ if(!usarMetaDaPlanilha()) return getMetaManual();
  const aoVivo=Number(window.__biobelMetaLojaPlanilha?.valor);
  if(aoVivo>0) return aoVivo;
-
- // Contingência: último valor REAL de N2 salvo localmente.
  try{
-  const metaSalva=typeof obterMetaLojaPlanilhaSalva==='function' ? obterMetaLojaPlanilhaSalva() : null;
+  const metaSalva=typeof obterMetaLojaPlanilhaSalva==='function'?obterMetaLojaPlanilhaSalva():null;
   const valorSalvo=Number(metaSalva?.valor);
   if(valorSalvo>0) return valorSalvo;
  }catch(e){ console.warn('Meta N2 salva não disponível:',e); }
-
- // Compatibilidade com instalações antigas: somente se ainda não houver leitura real de N2.
- const saved = localStorage.getItem('biobel_sales_goal');
- return saved ? parseFloat(saved) : 45000;
+ return 0;
 }
 function getSalesGoalSource(){
+ if(!usarMetaDaPlanilha()) return {valor:getMetaManual(),celula:'manual',aba:'Configuração',aoVivo:false,manual:true};
  const aoVivo=window.__biobelMetaLojaPlanilha;
- if(Number(aoVivo?.valor)>0) return {valor:Number(aoVivo.valor),celula:aoVivo.celula||'N2',aba:aoVivo.aba||'',aoVivo:true};
+ if(Number(aoVivo?.valor)>0) return {valor:Number(aoVivo.valor),celula:aoVivo.celula||'N2',aba:aoVivo.aba||'',aoVivo:true,manual:false};
  try{
   const meta=typeof obterMetaLojaPlanilhaSalva==='function'?obterMetaLojaPlanilhaSalva():null;
-  if(Number(meta?.valor)>0) return {valor:Number(meta.valor),celula:meta.celula||'N2',aba:meta.aba||'',aoVivo:false};
+  if(Number(meta?.valor)>0) return {valor:Number(meta.valor),celula:meta.celula||'N2',aba:meta.aba||'',aoVivo:false,manual:false};
  }catch(e){}
- return {valor:getSalesGoal(),celula:'N2',aba:'aguardando planilha',aoVivo:false};
+ return {valor:0,celula:'N2',aba:'aguardando planilha',aoVivo:false,manual:false};
 }
 const BIOBEL_SUPER_META_KEY='biobel_super_meta_v1';
 function getSuperMeta(){
@@ -2400,18 +2460,27 @@ function atualizarMetaLojaNaConfig(){
  const input=document.getElementById('salesGoalInput');
  const source=document.getElementById('goalPlanilhaSource');
  const status=document.getElementById('goalStatus');
- if(input) input.value=money(getSalesGoal());
  const resumo=document.getElementById('metaConfigResumo');
- if(resumo) resumo.textContent=money(getSalesGoal());
- const info=getSalesGoalSource();
+ const manual=!usarMetaDaPlanilha();
+ const valor=getSalesGoal();
+ if(input){
+  input.value=valor>0?money(valor):'';
+  input.readOnly=!manual;
+  if(manual) input.removeAttribute('aria-readonly'); else input.setAttribute('aria-readonly','true');
+ }
+ if(resumo) resumo.textContent=valor>0?money(valor):'Aguardando...';
  if(source){
-  source.textContent=info.aoVivo
-   ? '📊 Fonte automática: planilha ativa · célula '+info.celula+(info.aba?' · aba '+info.aba:'')
-   : '🟡 Última leitura real da planilha · célula '+info.celula+(info.aba?' · aba '+info.aba:'');
+  if(manual) source.textContent='✍️ Fonte: meta manual definida nesta Configuração.';
+  else{
+   const info=getSalesGoalSource();
+   source.textContent=info.aoVivo?'📊 Fonte automática: planilha ativa · célula N2'+(info.aba?' · aba '+info.aba:''):'🟡 Aguardando leitura da planilha · célula N2';
+  }
  }
- if(status && info.aoVivo){
-  status.innerHTML='<span class="text-emerald-400">✅ Meta sincronizada automaticamente com a planilha.</span>';
- }
+ if(status) status.innerHTML=manual?'<span class="text-slate-400">✍️ Modo manual ativo.</span>':'<span class="text-emerald-400">✅ Meta automática pela planilha.</span>';
+ const toggle=document.getElementById('metaUsarPlanilhaToggle');
+ const wrap=document.getElementById('metaManualWrap');
+ if(toggle) toggle.checked=!manual;
+ if(wrap) wrap.style.display=manual?'block':'none';
  try{sincronizarMetasComissaoPrincipais();}catch(e){}
  try{atualizarSuperMetaNaConfig();}catch(e){}
 }
@@ -7158,12 +7227,7 @@ function importarBackupCompleto(arquivo){
  leitor.readAsText(arquivo);
 }
 
-function saveSalesGoal(){
- const statusEl=document.getElementById('goalStatus');
- if(statusEl) statusEl.innerHTML='<span class="text-amber-300">🎯 A meta da loja é automática e vem da célula N2 da planilha.</span>';
- atualizarMetaLojaNaConfig();
- mostrarToast('📊 A meta é sincronizada automaticamente pela célula N2 da planilha.');
-}
+function saveSalesGoal(){ saveSalesGoalManual(); }
 
 function diasUteisDoMes(ano, mesIndex){
  // Conta os dias do mês que não são domingo (a loja funciona de segunda a sábado).
@@ -14015,6 +14079,7 @@ render = function(){
   // Cada passo é protegido EM SEPARADO: um erro não pode pular os demais. Estavam faltando (campos apareciam VAZIOS mesmo com tudo
   // salvo): meta do mês, meta de atendimentos, metas de longo prazo, logo, link Trabalhe Conosco, e-mail da contadora e provedor de e-mail.
   const passo=fn=>{ try{ fn(); }catch(e){ console.warn('Configuração:',e); } };
+  passo(initFonteMetaLojaUI);
   passo(atualizarMetaLojaNaConfig);
   passo(atualizarSuperMetaNaConfig);
   passo(initDailyGoalUI); passo(renderListaMetasVendedoras); passo(renderLogAlteracoes); passo(renderDiasSemErroConexao); passo(initNotificacoesUI);
