@@ -66,7 +66,7 @@ body.light-mode .dev-gate-form input{background:#fff;color:#172033;border-color:
  </nav>
  <div id="configSecaoConexao" class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7"><div class="dev-protected-gate" data-dev-gate="conexao" style="display:none;">
  <div class="dev-gate-icon">🔐</div>
- <h3 style="display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;">Área protegida — DEV <span style="display:inline-flex;align-items:center;padding:3px 7px;border:1px solid rgba(14,169,122,.35);border-radius:7px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:9px;font-weight:900;letter-spacing:.04em;">v11.71</span></h3>
+ <h3 style="display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;">Área protegida — DEV <span style="display:inline-flex;align-items:center;padding:3px 7px;border:1px solid rgba(14,169,122,.35);border-radius:7px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:9px;font-weight:900;letter-spacing:.04em;">v11.72</span></h3>
  <p>Os links e configurações das planilhas ficam protegidos para evitar acesso aos dados.</p>
  <div class="dev-gate-form">
   <input id="devLoginInput" type="text" autocomplete="username" placeholder="Usuário DEV">
@@ -186,11 +186,28 @@ body.light-mode .dev-gate-form input{background:#fff;color:#172033;border-color:
    <h2 class="text-xl font-bold">🎯 Meta de vendas do mês — automática</h2>
    <p class="text-sm text-slate-400 mt-1">A meta da loja é lida <strong class="text-slate-300">diretamente da célula N2</strong> da planilha ativa. Não é necessário digitar ou salvar manualmente.</p>
   </div>
-  <label class="block text-sm font-semibold mb-2" for="salesGoalInput">Meta atual da loja (R$)</label>
+  <div class="rounded-xl border border-slate-700 bg-slate-950/50 p-4 mb-4">
+   <div class="flex items-center justify-between gap-4 flex-wrap">
+    <div>
+     <div class="font-bold text-slate-200">📊 Usar informação da planilha</div>
+     <div class="text-xs text-slate-500 mt-1">Ligado por padrão: a Meta da Loja vem automaticamente da célula N2.</div>
+    </div>
+    <label class="inline-flex items-center gap-3 cursor-pointer select-none">
+     <span id="metaFonteToggleLabel" class="text-sm font-bold text-emerald-400">LIGADO</span>
+     <input id="metaUsarPlanilhaToggle" type="checkbox" checked onchange="toggleFonteMetaLoja()" style="width:20px;height:20px;accent-color:#27d7a0;">
+    </label>
+   </div>
+  </div>
+
+  <label class="block text-sm font-semibold mb-2" for="salesGoalInput">Meta da Loja (R$)</label>
   <input id="salesGoalInput" type="text" readonly aria-readonly="true" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none opacity-90" placeholder="Aguardando a planilha...">
-  <div id="goalPlanilhaSource" class="mt-2 text-xs text-slate-400">🟡 Aguardando leitura da planilha · célula N2</div>
+  <div id="metaManualWrap" style="display:none;">
+   <p class="text-xs text-amber-300 mt-2 mb-2">✍️ Modo manual ativo. Digite a Meta da Loja e salve.</p>
+   <button onclick="saveSalesGoalManual()" class="mt-2 w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-xl font-semibold text-sm">💾 Salvar Meta Manual</button>
+  </div>
+  <div id="goalPlanilhaSource" class="mt-2 text-xs text-slate-400">📊 Fonte automática: planilha ativa · célula N2</div>
   <div id="goalStatus" class="mt-2 text-sm text-slate-400"></div>
-  <div class="mt-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-xs text-slate-400">🔄 Sempre que a planilha for atualizada, a meta é atualizada automaticamente no sistema.</div>
+  <div class="mt-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-xs text-slate-400">🔄 Ligado = Meta vem da N2. Desligado = você informa a Meta manualmente.</div>
 
   <div class="mt-5 pt-5 border-t border-slate-800">
    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -777,11 +794,11 @@ body.light-mode .dev-gate-form input{background:#fff;color:#172033;border-color:
 .dev-password-toggle:hover{background:rgba(79,156,255,.16)!important;}
 .dev-password-toggle:focus-visible{outline:2px solid #27d7a0!important;outline-offset:1px!important;}
 body.light-mode .dev-password-toggle{color:#334155!important;}
-</style><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell-v1168.js?v=11.71"></script>
-<script src="biobel-recognition.js?v=11.71"></script>
-<script src="biobel-planilha-leitura.js?v=11.71"></script>
-<script src="biobel-planilha-processamento.js?v=11.71"></script>
-<script src="biobel-planilha-comparacao.js?v=11.71"></script><script src="biobel-app.js?v=11.71"></script><script>
+</style><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell-v1168.js?v=11.72"></script>
+<script src="biobel-recognition.js?v=11.72"></script>
+<script src="biobel-planilha-leitura.js?v=11.72"></script>
+<script src="biobel-planilha-processamento.js?v=11.72"></script>
+<script src="biobel-planilha-comparacao.js?v=11.72"></script><script src="biobel-app.js?v=11.72"></script><script>
 function alternarVisibilidadeSenhaDev(inputId,botao){
  const input=document.getElementById(inputId);
  if(!input||!botao)return;
