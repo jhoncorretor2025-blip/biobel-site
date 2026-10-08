@@ -1,6 +1,6 @@
 /* ============================================================
    BIOBEL — LEITURA DE PLANILHAS
-   v11.69 — leitura principal/fallbacks + meta automática da célula N2.
+   v11.70 — leitura principal/fallbacks + meta automática da célula N2.
    As funções abaixo dependem de utilitários globais do núcleo
    (por exemplo: processarLinhasDoDia, normalizarNomeAba,
    obterAgoraBrasilia e fetchBiobelComTimeout).
@@ -245,6 +245,9 @@ async function lerPlanilhaViaAppsScript(spreadsheetId,proxyUrl,timeoutMs=12000){
  if(!resp.ok) throw new Error('Apps Script HTTP '+resp.status);
  const data=await resp.json();
  if(data.error) throw new Error(String(data.error));
+ // A ponte retorna todas as abas e seus valores. N2 precisa ser lida ANTES
+ // de filtrar somente as abas diárias DD.MM.
+ extrairMetaN2DoMapaSheets(data.sheets||{});
  const novosDias=[];
  for(const sheetName in (data.sheets||{})){
   const nomeNormalizado=normalizarNomeAba(sheetName);
