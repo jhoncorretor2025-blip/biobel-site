@@ -2323,6 +2323,18 @@ updateThemeButton(document.body.classList.contains('light-mode'));
 const BIOBEL_META_FONTE_KEY='biobel_meta_loja_fonte_v1';
 const BIOBEL_META_MANUAL_KEY='biobel_sales_goal_manual_v1';
 
+function pintarSwitchBiobel(prefix,ativo){
+ const track=document.getElementById(prefix+'Track');
+ const knob=document.getElementById(prefix+'Knob');
+ if(track) track.style.background=ativo?'#10b981':'#334155';
+ if(knob) knob.style.left=ativo?'24px':'4px';
+}
+function atualizarVisualFonteMeta(){
+ const ativo=usarMetaDaPlanilha();
+ pintarSwitchBiobel('metaFonte',ativo);
+ const label=document.getElementById('metaFonteToggleLabel');
+ if(label){label.textContent=ativo?'LIGADO':'DESLIGADO';label.style.color=ativo?'#34d399':'#fbbf24';}
+}
 function usarMetaDaPlanilha(){
  try{return localStorage.getItem(BIOBEL_META_FONTE_KEY)!=='manual';}catch(e){return true;}
 }
@@ -2383,10 +2395,12 @@ function initFonteMetaLojaUI(){
  if(toggle) toggle.checked=usar;
  const label=document.getElementById('metaFonteToggleLabel');
  if(label){label.textContent=usar?'LIGADO':'DESLIGADO';label.style.color=usar?'#34d399':'#fbbf24';}
+ pintarSwitchBiobel('metaFonte',usar);
  const wrap=document.getElementById('metaManualWrap');
  if(wrap) wrap.style.display=usar?'none':'block';
  const input=document.getElementById('salesGoalInput');
  if(input){input.readOnly=usar;if(usar) input.setAttribute('aria-readonly','true'); else input.value=money(getMetaManual());}
+ atualizarVisualFonteMeta();
 }
 function getSalesGoal(){
  if(!usarMetaDaPlanilha()) return getMetaManual();
@@ -7834,6 +7848,7 @@ function ativarNotificacoes(){
  if(!toggle.checked){
   localStorage.setItem('biobel_notificacoes_ativas', 'no');
   if(label){label.textContent='DESLIGADO';label.style.color='#fbbf24';}
+  pintarSwitchBiobel('notificacoes',false);
   if(statusEl) statusEl.textContent = 'Notificações desativadas.';
   return;
  }
@@ -7841,12 +7856,14 @@ function ativarNotificacoes(){
   if(permissao==='granted'){
    localStorage.setItem('biobel_notificacoes_ativas', 'yes');
    if(label){label.textContent='LIGADO';label.style.color='#34d399';}
+   pintarSwitchBiobel('notificacoes',true);
    if(statusEl) statusEl.innerHTML = '<span class="text-emerald-400">✅ Ativado! Você vai receber um aviso quando a meta do dia for batida.</span>';
    mostrarToast('✅ Notificações ativadas!');
   } else {
    localStorage.setItem('biobel_notificacoes_ativas', 'no');
    toggle.checked = false;
    if(label){label.textContent='DESLIGADO';label.style.color='#fbbf24';}
+   pintarSwitchBiobel('notificacoes',false);
    if(statusEl) statusEl.innerHTML = '<span class="text-rose-400">Permissão negada. Pra ativar, permita notificações desse site nas configurações do navegador.</span>';
   }
  });
@@ -7861,6 +7878,7 @@ function initNotificacoesUI(){
  toggle.checked = ativo;
  const label=document.getElementById('notificacoesToggleLabel');
  if(label){ label.textContent=ativo?'LIGADO':'DESLIGADO'; label.style.color=ativo?'#34d399':'#fbbf24'; }
+ pintarSwitchBiobel('notificacoes',ativo);
  const statusEl=document.getElementById('notificacoesStatus');
  if(statusEl && ativo){
   statusEl.innerHTML = (typeof Notification!=='undefined' && Notification.permission!=='granted')
