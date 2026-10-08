@@ -1,10 +1,98 @@
 /* ============================================================
    BIOBEL — LEITURA DE PLANILHAS
-   v11.41 — leitura principal e fallbacks preservados.
+   v11.69 — leitura principal/fallbacks + meta automática da célula N2.
    As funções abaixo dependem de utilitários globais do núcleo
    (por exemplo: processarLinhasDoDia, normalizarNomeAba,
    obterAgoraBrasilia e fetchBiobelComTimeout).
    ============================================================ */
+
+const BIOBEL_META_LOJA_PLANILHA_KEY='biobel_sales_goal_planilha_v1';
+
+/* ============================================================
+   META DA LOJA — FONTE OFICIAL: CÉLULA N2 DA PLANILHA
+   A meta mensal não deve ser digitada manualmente no sistema.
+   O Biobel lê N2 do arquivo/planilha ativa e usa esse valor
+   em todas as telas. O último valor real fica salvo localmente
+   apenas como contingência quando a planilha estiver offline.
+   ============================================================ */
+function normalizarNumeroMetaPlanilha(valor){
+ try{
+  if(typeof valor==='number' && Number.isFinite(valor)) return valor;
+  if(typeof numeroPlanilha==='function'){
+   const n=numeroPlanilha(valor);
+   if(Number.isFinite(n)) return n;
+  }
+  const s=String(valor??'').trim();
+  if(!s) return NaN;
+  const limpo=s.replace(/R\$|\s/g,'').replace(/\./g,'').replace(',','.');
+  const n=Number(limpo);
+  return Number.isFinite(n)?n:NaN;
+ }catch(e){ return NaN; }
+}
+function registrarMetaLojaPlanilha(valor, aba){
+ const n=normalizarNumeroMetaPlanilha(valor);
+ if(!(n>0)) return false;
+ const meta={valor:n,celula:'N2',aba:String(aba||''),atualizadoEm:new Date().toISOString()};
+ try{ window.__biobelMetaLojaPlanilha=meta; }catch(e){}
+ try{ localStorage.setItem(BIOBEL_META_LOJA_PLANILHA_KEY,JSON.stringify(meta)); }catch(e){}
+ return true;
+}
+function obterMetaLojaPlanilhaSalva(){
+ try{
+  const raw=localStorage.getItem(BIOBEL_META_LOJA_PLANILHA_KEY);
+  const meta=raw?JSON.parse(raw):null;
+  const n=normalizarNumeroMetaPlanilha(meta?.valor);
+  return n>0?{...meta,valor:n}:null;
+ }catch(e){ return null; }
+}
+function obterMetaN2DaAba(rows, sheetName){
+ const valor=rows?.[1]?.[13]; // N2: linha 2, coluna N (índice 13)
+ return registrarMetaLojaPlanilha(valor,sheetName);
+}
+function extrairMetaN2DoWorkbook(wb){
+ const agora=typeof obterAgoraBrasilia==='function'?obterAgoraBrasilia():new Date();
+ const mesAtual=agora.getMonth()+1;
+ const diaAtual=agora.getDate();
+ const hojeNome=String(diaAtual).padStart(2,'0')+'.'+String(mesAtual).padStart(2,'0');
+ const candidatas=[];
+ for(const sheetName of (wb?.SheetNames||[])){
+  const ws=wb?.Sheets?.[sheetName];
+  const cell=ws?.N2;
+  if(!cell) continue;
+  const valor=cell.v!=null?cell.v:(cell.w!=null?cell.w:null);
+  const n=normalizarNumeroMetaPlanilha(valor);
+  if(!(n>0)) continue;
+  const m=String(sheetName||'').match(/^(\d{2})\.(\d{2})$/);
+  const dia=m?Number(m[1]):0, mes=m?Number(m[2]):0;
+  let prioridade=1;
+  if(String(sheetName)===hojeNome) prioridade=3;
+  else if(m && mes===mesAtual && dia<=31) prioridade=2;
+  candidatas.push({n,sheetName,prioridade,dia,mes});
+ }
+ candidatas.sort((a,b)=>b.prioridade-a.prioridade || b.mes-a.mes || b.dia-a.dia);
+ const escolhida=candidatas[0];
+ return escolhida ? registrarMetaLojaPlanilha(escolhida.n,escolhida.sheetName) : false;
+}
+function extrairMetaN2DoMapaSheets(sheets){
+ const agora=typeof obterAgoraBrasilia==='function'?obterAgoraBrasilia():new Date();
+ const mesAtual=agora.getMonth()+1;
+ const diaAtual=agora.getDate();
+ const hojeNome=String(diaAtual).padStart(2,'0')+'.'+String(mesAtual).padStart(2,'0');
+ const candidatas=[];
+ for(const [sheetName,rows] of Object.entries(sheets||{})){
+  const n=normalizarNumeroMetaPlanilha(rows?.[1]?.[13]);
+  if(!(n>0)) continue;
+  const m=String(sheetName||'').match(/^(\d{2})\.(\d{2})$/);
+  const dia=m?Number(m[1]):0, mes=m?Number(m[2]):0;
+  let prioridade=1;
+  if(String(sheetName)===hojeNome) prioridade=3;
+  else if(m && mes===mesAtual && dia<=31) prioridade=2;
+  candidatas.push({n,sheetName,prioridade,dia,mes});
+ }
+ candidatas.sort((a,b)=>b.prioridade-a.prioridade || b.mes-a.mes || b.dia-a.dia);
+ const escolhida=candidatas[0];
+ return escolhida ? registrarMetaLojaPlanilha(escolhida.n,escolhida.sheetName) : false;
+}
 
 function lerAbaGoogleGvizJSONP(spreadsheetId, sheetName, timeoutMs=9000){
  return new Promise((resolve,reject)=>{
@@ -54,6 +142,7 @@ async function carregarMesAtualViaGviz(spreadsheetId){
    try{
     const rows=await lerAbaGoogleGvizJSONP(spreadsheetId,sheetName);
     const dados=processarLinhasDoDia(sheetName,rows);
+    obterMetaN2DaAba(rows,sheetName);
     return {dados,ok:true};
    }catch(err){
     console.warn('Fallback Google Sheets — '+sheetName+':',err);
@@ -110,6 +199,7 @@ async function carregarPlanilhaViaGoogleVisualizationDireta(spreadsheetId){
   const lidos=await Promise.all(lote.map(async nome=>{
    try{
     const rows=await lerAbaGoogleVisualizationDireta(spreadsheetId,nome);
+    obterMetaN2DaAba(rows,nome);
     return processarLinhasDoDia(nome,rows);
    }catch(err){
     console.warn('Google Visualization direto — '+nome+':',err);
