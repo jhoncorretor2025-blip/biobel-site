@@ -1,4 +1,4 @@
-/* BIOBEL v11.74 — Configuração de Meta e Super Meta. */
+/* BIOBEL v11.75 — Configuração de Meta e Super Meta. */
 /* BIOBEL v11.69 — Meta mensal automática: célula N2 da planilha é a fonte oficial. */
 
 
