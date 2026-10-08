@@ -1,4 +1,4 @@
-/* BIOBEL v11.75 — Configuração de Meta e Super Meta. */
+/* BIOBEL v11.76 — Configuração de Meta e Super Meta. */
 /* BIOBEL v11.69 — Meta mensal automática: célula N2 da planilha é a fonte oficial. */
 
 
@@ -13821,6 +13821,93 @@ function renderPosicaoMesDashboard(){
  '</div>';
 }
 
+function renderMetaInteligenteBiobel(){
+ const card=document.getElementById('biobelMetaInteligente');
+ if(!card) return;
+
+ const set=(id,prop,val)=>{
+  const el=document.getElementById(id);
+  if(el) el[prop]=val;
+ };
+
+ const totalSales=Array.isArray(daysData)?daysData.reduce((s,d)=>s+(Number(d.sales)||0),0):0;
+ const meta=Number(getSalesGoal())||0;
+ if(meta<=0 || !Array.isArray(daysData) || daysData.length===0){
+  set('biobelSemaforoMetaIcon','textContent','⏳');
+  set('biobelSemaforoMetaTitulo','textContent','Aguardando meta');
+  set('biobelSemaforoMetaTexto','textContent','Aguardando os dados da planilha e da célula N2 para calcular o ritmo.');
+  set('biobelSemaforoMetaDetalhe','textContent','Meta atual: não disponível');
+  set('biobelMetaHojeValor','textContent','—');
+  set('biobelMetaHojeTexto','textContent','Aguardando a Meta da Loja.');
+  set('biobelMetaHojeVendido','textContent','Hoje: —');
+  set('biobelMetaHojeFalta','textContent','Falta hoje: —');
+  return;
+ }
+
+ const hoje=obterAgoraBrasilia();
+ const diaAtual=hoje.getDate();
+ const mesAtual=hoje.getMonth();
+ const chaveHoje=String(diaAtual).padStart(2,'0')+'.'+String(mesAtual+1).padStart(2,'0');
+ const registroHoje=daysData.find(d=>String(d?.dia)===chaveHoje);
+ const vendidoHoje=Number(registroHoje?.sales)||0;
+
+ // Dias precisos ainda disponíveis, incluindo a fração do expediente de hoje quando a loja ainda está aberta.
+ let diasPrecisos=0, diasFuturos=0;
+ try{
+  diasFuturos=diasUteisRestantesNoMes();
+  const fracao=(typeof calcularFracaoHojeRestante==='function')?calcularFracaoHojeRestante():0;
+  diasPrecisos=diasFuturos+Math.max(0,fracao);
+ }catch(e){ diasPrecisos=0; }
+
+ // Quando hoje já fechou, diasFuturos já exclui hoje. Quando ainda está aberto,
+ // usamos a fração de hoje para não tratar um expediente parcial como um dia inteiro.
+ const faltaTotal=Math.max(0,meta-totalSales);
+ const necessidadePorDia=diasPrecisos>0?faltaTotal/diasPrecisos:faltaTotal;
+
+ // Ritmo médio real dos dias lançados. Comparamos com o valor que seria necessário
+ // daqui para frente. Isso evita um semáforo baseado apenas no percentual acumulado.
+ const diasLancados=daysData.filter(d=>Number(d?.sales)||0>=0).length||1;
+ const mediaAtual=totalSales/diasLancados;
+ let estado='green',icon='🟢',titulo='No ritmo',texto='';
+ if(faltaTotal<=0){
+  estado='green';icon='🏆';titulo='Meta batida';texto='A loja já alcançou a Meta da Loja. Excelente! Agora o foco pode ser a Super Meta.';
+ }else{
+  const razao=necessidadePorDia>0?mediaAtual/necessidadePorDia:1;
+  if(razao>=1.10){
+   estado='green';icon='🟢';titulo='No ritmo';
+   texto='O ritmo atual indica boa chance de alcançar a meta mantendo o desempenho.';
+  }else if(razao>=0.85){
+   estado='yellow';icon='🟡';titulo='Atenção';
+   texto='Estamos próximos do ritmo necessário, mas vale acelerar um pouco as vendas.';
+  }else{
+   estado='red';icon='🔴';titulo='Risco';
+   texto='O ritmo atual está abaixo do necessário. Precisamos aumentar o faturamento diário.';
+  }
+ }
+ const cores={green:'#27d7a0',yellow:'#fbbf24',red:'#fb7185'};
+ const cor=cores[estado]||cores.green;
+ const semCard=document.getElementById('biobelSemaforoMetaCard');
+ if(semCard) semCard.style.borderColor=cor+'55';
+ const ic=document.getElementById('biobelSemaforoMetaIcon');
+ if(ic) ic.textContent=icon;
+ const ti=document.getElementById('biobelSemaforoMetaTitulo');
+ if(ti){ti.textContent=titulo;ti.style.color=cor;}
+ set('biobelSemaforoMetaTexto','textContent',texto);
+ set('biobelSemaforoMetaDetalhe','textContent','Meta: '+money(meta)+' · Vendido: '+money(totalSales)+' · Média atual: '+money(mediaAtual)+'/dia');
+
+ const metaHoje=necessidadePorDia;
+ const faltaHoje=Math.max(0,metaHoje-vendidoHoje);
+ set('biobelMetaHojeValor','textContent',metaHoje>0?money(metaHoje):faltaTotal<=0?'Meta batida!':'—');
+ set('biobelMetaHojeVendido','textContent','Hoje: '+money(vendidoHoje));
+ set('biobelMetaHojeFalta','textContent',faltaHoje>0?'Falta hoje: '+money(faltaHoje):'✅ Necessidade de hoje atingida');
+ set('biobelMetaHojeTexto','textContent',
+  faltaTotal<=0
+   ? 'A Meta da Loja já foi alcançada. Todo valor vendido agora aumenta a folga e ajuda na Super Meta.'
+   : diasPrecisos>0
+    ? 'Para manter o ritmo até o fim do mês, a loja precisa buscar aproximadamente '+money(metaHoje)+' hoje.'
+    : 'Não há mais dias de venda suficientes para distribuir a meta restante.'
+ );
+}
 function renderAdvancedDashboard(){
   sortDays();
 
@@ -13844,6 +13931,7 @@ function renderAdvancedDashboard(){
   const metaGoal = getSalesGoal();
   const metaPct = metaGoal>0 ? Math.min(100,(totalSales/metaGoal)*100) : 0;
   const metaFaltam = Math.max(0, metaGoal-totalSales);
+  try{ renderMetaInteligenteBiobel(); }catch(e){ console.error('Erro no semáforo da meta:',e); }
   const elMV=document.getElementById('metaDestaqueValor'), elMT=document.getElementById('metaDestaqueTotal'),
         elMP=document.getElementById('metaDestaquePct'), elMB=document.getElementById('metaDestaqueBar'),
         elMF=document.getElementById('metaDestaqueFaltam');
