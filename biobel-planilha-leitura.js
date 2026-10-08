@@ -1,6 +1,6 @@
 /* ============================================================
    BIOBEL — LEITURA DE PLANILHAS
-   v11.74 — leitura principal/fallbacks + meta automática da célula N2.
+   v11.75 — leitura principal/fallbacks + meta automática da célula N2.
    As funções abaixo dependem de utilitários globais do núcleo
    (por exemplo: processarLinhasDoDia, normalizarNomeAba,
    obterAgoraBrasilia e fetchBiobelComTimeout).
