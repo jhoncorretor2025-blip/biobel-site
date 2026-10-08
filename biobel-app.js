@@ -1,4 +1,4 @@
-/* BIOBEL v11.72 — Configuração de Meta e Super Meta. */
+/* BIOBEL v11.73 — Configuração de Meta e Super Meta. */
 /* BIOBEL v11.69 — Meta mensal automática: célula N2 da planilha é a fonte oficial. */
 
 
@@ -2344,6 +2344,8 @@ function salvarMetaManual(valor){
 function toggleFonteMetaLoja(){
  const usar=!!document.getElementById('metaUsarPlanilhaToggle')?.checked;
  localStorage.setItem(BIOBEL_META_FONTE_KEY,usar?'planilha':'manual');
+ const fonteLabel=document.getElementById('metaFonteToggleLabel');
+ if(fonteLabel){fonteLabel.textContent=usar?'LIGADO':'DESLIGADO';fonteLabel.style.color=usar?'#34d399':'#fbbf24';}
  const input=document.getElementById('salesGoalInput');
  const wrap=document.getElementById('metaManualWrap');
  const source=document.getElementById('goalPlanilhaSource');
@@ -7823,6 +7825,7 @@ function dispararNotificacaoVencimentos(){
 function ativarNotificacoes(){
  const statusEl = document.getElementById('notificacoesStatus');
  const toggle = document.getElementById('notificacoesToggle');
+ const label=document.getElementById('notificacoesToggleLabel');
  if(typeof Notification === 'undefined'){
   if(statusEl) statusEl.innerHTML = '<span class="text-rose-400">Esse navegador não suporta notificações.</span>';
   if(toggle) toggle.checked = false;
@@ -7830,17 +7833,20 @@ function ativarNotificacoes(){
  }
  if(!toggle.checked){
   localStorage.setItem('biobel_notificacoes_ativas', 'no');
+  if(label){label.textContent='DESLIGADO';label.style.color='#fbbf24';}
   if(statusEl) statusEl.textContent = 'Notificações desativadas.';
   return;
  }
  Notification.requestPermission().then(permissao=>{
   if(permissao==='granted'){
    localStorage.setItem('biobel_notificacoes_ativas', 'yes');
+   if(label){label.textContent='LIGADO';label.style.color='#34d399';}
    if(statusEl) statusEl.innerHTML = '<span class="text-emerald-400">✅ Ativado! Você vai receber um aviso quando a meta do dia for batida.</span>';
    mostrarToast('✅ Notificações ativadas!');
   } else {
    localStorage.setItem('biobel_notificacoes_ativas', 'no');
    toggle.checked = false;
+   if(label){label.textContent='DESLIGADO';label.style.color='#fbbf24';}
    if(statusEl) statusEl.innerHTML = '<span class="text-rose-400">Permissão negada. Pra ativar, permita notificações desse site nas configurações do navegador.</span>';
   }
  });
@@ -7848,7 +7854,19 @@ function ativarNotificacoes(){
 function initNotificacoesUI(){
  const toggle = document.getElementById('notificacoesToggle');
  if(!toggle) return;
- toggle.checked = localStorage.getItem('biobel_notificacoes_ativas') === 'yes';
+ // Ativo por padrão. O navegador ainda pode pedir permissão na primeira ativação.
+ const salvo = localStorage.getItem('biobel_notificacoes_ativas');
+ if(salvo===null) localStorage.setItem('biobel_notificacoes_ativas','yes');
+ const ativo = localStorage.getItem('biobel_notificacoes_ativas') !== 'no';
+ toggle.checked = ativo;
+ const label=document.getElementById('notificacoesToggleLabel');
+ if(label){ label.textContent=ativo?'LIGADO':'DESLIGADO'; label.style.color=ativo?'#34d399':'#fbbf24'; }
+ const statusEl=document.getElementById('notificacoesStatus');
+ if(statusEl && ativo){
+  statusEl.innerHTML = (typeof Notification!=='undefined' && Notification.permission!=='granted')
+   ? '<span class="text-amber-300">🟡 Ativo, mas o navegador ainda precisa autorizar as notificações.</span>'
+   : '<span class="text-emerald-400">✅ Notificações ativas.</span>';
+ }
 }
 
 function mostrarSecaoInfo(secao){
