@@ -1,3 +1,4 @@
+/* BIOBEL v11.69 — Meta mensal automática: célula N2 da planilha é a fonte oficial. */
 
 
 /* ============================================================
@@ -2319,8 +2320,44 @@ function updateThemeButton(isLight){
 updateThemeButton(document.body.classList.contains('light-mode'));
 
 function getSalesGoal(){
+ // Fonte oficial: N2 da planilha ativa.
+ const aoVivo=Number(window.__biobelMetaLojaPlanilha?.valor);
+ if(aoVivo>0) return aoVivo;
+
+ // Contingência: último valor REAL de N2 salvo localmente.
+ try{
+  const metaSalva=typeof obterMetaLojaPlanilhaSalva==='function' ? obterMetaLojaPlanilhaSalva() : null;
+  const valorSalvo=Number(metaSalva?.valor);
+  if(valorSalvo>0) return valorSalvo;
+ }catch(e){ console.warn('Meta N2 salva não disponível:',e); }
+
+ // Compatibilidade com instalações antigas: somente se ainda não houver leitura real de N2.
  const saved = localStorage.getItem('biobel_sales_goal');
  return saved ? parseFloat(saved) : 45000;
+}
+function getSalesGoalSource(){
+ const aoVivo=window.__biobelMetaLojaPlanilha;
+ if(Number(aoVivo?.valor)>0) return {valor:Number(aoVivo.valor),celula:aoVivo.celula||'N2',aba:aoVivo.aba||'',aoVivo:true};
+ try{
+  const meta=typeof obterMetaLojaPlanilhaSalva==='function'?obterMetaLojaPlanilhaSalva():null;
+  if(Number(meta?.valor)>0) return {valor:Number(meta.valor),celula:meta.celula||'N2',aba:meta.aba||'',aoVivo:false};
+ }catch(e){}
+ return {valor:getSalesGoal(),celula:'N2',aba:'aguardando planilha',aoVivo:false};
+}
+function atualizarMetaLojaNaConfig(){
+ const input=document.getElementById('salesGoalInput');
+ const source=document.getElementById('goalPlanilhaSource');
+ const status=document.getElementById('goalStatus');
+ if(input) input.value=money(getSalesGoal());
+ const info=getSalesGoalSource();
+ if(source){
+  source.textContent=info.aoVivo
+   ? '📊 Fonte automática: planilha ativa · célula '+info.celula+(info.aba?' · aba '+info.aba:'')
+   : '🟡 Última leitura real da planilha · célula '+info.celula+(info.aba?' · aba '+info.aba:'');
+ }
+ if(status && info.aoVivo){
+  status.innerHTML='<span class="text-emerald-400">✅ Meta sincronizada automaticamente com a planilha.</span>';
+ }
 }
 /* ===== Log de alterações (simples, guarda as últimas 30) ===== */
 function registrarAlteracao(texto){
@@ -7066,18 +7103,10 @@ function importarBackupCompleto(arquivo){
 }
 
 function saveSalesGoal(){
- const val = parseMoneyInput(document.getElementById('salesGoalInput').value);
- const statusEl = document.getElementById('goalStatus');
- if(isNaN(val) || val <= 0){
-  statusEl.innerHTML = '<span class="text-rose-400">Digite um valor de meta válido.</span>';
-  return;
- }
- localStorage.setItem('biobel_sales_goal', String(val));
- statusEl.innerHTML = '<span class="text-emerald-400">Meta salva: ' + money(val) + '</span>';
- mostrarToast('✅ Meta mensal salva com sucesso!');
- atualizarInfoMetaDiariaAutomatica(); // a meta diária automática depende da meta mensal
- registrarAlteracao('Meta mensal alterada para '+money(val));
- renderLogAlteracoes();
+ const statusEl=document.getElementById('goalStatus');
+ if(statusEl) statusEl.innerHTML='<span class="text-amber-300">🎯 A meta da loja é automática e vem da célula N2 da planilha.</span>';
+ atualizarMetaLojaNaConfig();
+ mostrarToast('📊 A meta é sincronizada automaticamente pela célula N2 da planilha.');
 }
 
 function diasUteisDoMes(ano, mesIndex){
@@ -13303,6 +13332,7 @@ function solicitarNotificacaoHorarioAusente(){if(!('Notification'in window)){atu
 function atualizarStatusConfigAlertaHorarioAusente(t){const el=document.getElementById('alertaHorarioAusenteStatus');if(el)el.textContent=t;}
 function carregarConfigAlertaHorarioAusente(){const cfg=getConfigAlertaHorarioAusente();const a=document.getElementById('alertaHorarioAusenteAtivo'),i=document.getElementById('alertaHorarioAusenteIntervalo'),ini=document.getElementById('alertaHorarioAusenteInicio'),fim=document.getElementById('alertaHorarioAusenteFim');if(a)a.checked=cfg.habilitado!==false;if(i)i.value=String(cfg.intervaloMin||30);if(ini)ini.value=cfg.inicio||'09:00';if(fim)fim.value=cfg.fim||'18:00';}
 function testarAlertaHorarioAusente(){const info=obterAlertaHorarioAusenteHoje();if(info.semDados||info.quantidade<=0){mostrarToast('ℹ️ Não há venda sem horário detectada no dia de hoje para testar.');return;}dispararAlertaHorarioAusente(true);}
+window.addEventListener('biobel:data-updated',()=>setTimeout(atualizarMetaLojaNaConfig,50));
 window.addEventListener('biobel:data-updated',()=>setTimeout(verificarAlertaHorarioAusente,500));
 setInterval(verificarAlertaHorarioAusente,60000);
 
@@ -13341,6 +13371,7 @@ document.getElementById('fileInput')?.addEventListener('change',async e=>{
   try{
    const buf=await file.arrayBuffer();
    const wb=XLSX.read(buf,{type:'array'});
+   if(typeof extrairMetaN2DoWorkbook==='function') extrairMetaN2DoWorkbook(wb);
    const validSheets=wb.SheetNames.map(original=>({original,normalizado:normalizarNomeAba(original)})).filter(x=>x.normalizado!==null);
    const jaExistem=validSheets.filter(x=>daysData.some(d=>d.dia===x.normalizado)).map(x=>x.normalizado);
    if(!validSheets.length){ mostrarToast('⚠️ Nenhuma aba de dia (DD.MM) foi encontrada em "'+file.name+'".'); continue; }
@@ -13928,7 +13959,7 @@ render = function(){
   // Cada passo é protegido EM SEPARADO: um erro não pode pular os demais. Estavam faltando (campos apareciam VAZIOS mesmo com tudo
   // salvo): meta do mês, meta de atendimentos, metas de longo prazo, logo, link Trabalhe Conosco, e-mail da contadora e provedor de e-mail.
   const passo=fn=>{ try{ fn(); }catch(e){ console.warn('Configuração:',e); } };
-  passo(()=>{ const g=document.getElementById('salesGoalInput'); if(g) g.value=money(getSalesGoal()); });
+  passo(atualizarMetaLojaNaConfig);
   passo(initDailyGoalUI); passo(renderListaMetasVendedoras); passo(renderLogAlteracoes); passo(renderDiasSemErroConexao); passo(initNotificacoesUI);
   passo(()=>{ const q=document.getElementById('metaQtdVendasInput'); if(q){ const v=getMetaQtdVendas(); q.value=v>0?v:''; } });
   passo(initMetasLongoPrazoUI); passo(initLogoBiobelUI); passo(initLinkTrabalheConoscoUI);
