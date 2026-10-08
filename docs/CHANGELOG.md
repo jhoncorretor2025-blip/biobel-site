@@ -1,3 +1,10 @@
+## v11.69 — 08/10/2026
+- 🎯 Meta da loja automática pela planilha: a célula N2 da planilha ativa passa a ser a fonte oficial da meta mensal.
+- 🔄 Google Sheets, ponte Apps Script e upload de Excel usam o mesmo leitor de N2.
+- 📴 O último valor real de N2 fica salvo localmente apenas como contingência quando a planilha estiver temporariamente indisponível.
+- 🖥️ Dashboard e Central Operacional passam a usar a mesma meta, sem leitura paralela de localStorage.
+- ⚙️ Configuração deixa a meta como campo somente leitura, identificando a origem N2.
+
 ## v11.61 — 07/10/2026
 - Correção definitiva do cabeçalho da tela inicial: publicado um novo arquivo de shell `biobel-shell-v1161.js` para impedir que versões antigas do shell quebrado continuem sendo servidas pelo cache.
 - Todas as páginas agora carregam o shell novo com `?v=11.61`.
