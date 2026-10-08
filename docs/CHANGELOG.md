@@ -1,3 +1,9 @@
+## v11.72 — 08/10/2026
+- 🎯 Configuração passa a ter o botão **Usar informação da planilha** ligado por padrão.
+- 📊 Ligado: a Meta da Loja vem da célula **N2** da planilha.
+- ✍️ Desligado: aparece a opção de informar e salvar a **Meta da Loja manualmente**.
+- 🔥 Super Meta continua configurável separadamente e alimenta o segundo nível de comissão.
+
 ## v11.69 — 08/10/2026
 - 🎯 Meta da loja automática pela planilha: a célula N2 da planilha ativa passa a ser a fonte oficial da meta mensal.
 - 🔄 Google Sheets, ponte Apps Script e upload de Excel usam o mesmo leitor de N2.
