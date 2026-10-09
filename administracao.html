@@ -561,6 +561,18 @@ body.light-mode [style*="color:#93a3ba"]{color:#334155!important}
    </div>
   </div>
 
+  <div class="adv-card" data-func-view="cadastro" id="cardChavePixClt">
+   <div class="adv-card-title">
+    <h3>💼 Chave PIX — CLT (em teste)</h3>
+    <span>cadastro separado da chave PIX histórica da ex-funcionária</span>
+   </div>
+   <label class="block text-sm font-semibold mb-2" for="chavePixCltInput">Chave PIX da CLT</label>
+   <div style="display:flex;gap:8px;">
+    <input id="chavePixCltInput" type="text" placeholder="CPF, e-mail, telefone ou chave aleatória" style="flex:1;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
+    <button onclick="salvarChavePix('clt_treinamento')" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">💾 Salvar</button>
+   </div>
+  </div>
+
   <div class="adv-card" data-func-view="desligamentos" id="cardDesligamentoGabriela">
    <div class="adv-card-title">
     <h3>🚪 Desligamento — Gabriela</h3>
@@ -922,11 +934,11 @@ body.light-mode [style*="color:#93a3ba"]{color:#334155!important}
   </div>
  </div>
 </section>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell-v1168.js?v=11.77"></script>
-<script src="biobel-recognition.js?v=11.77"></script>
-<script src="biobel-planilha-leitura.js?v=11.77"></script>
-<script src="biobel-planilha-processamento.js?v=11.77"></script>
-<script src="biobel-planilha-comparacao.js?v=11.77"></script><script src="biobel-app.js?v=11.77"></script><script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell-v1168.js?v=11.90"></script>
+<script src="biobel-recognition.js?v=11.90"></script>
+<script src="biobel-planilha-leitura.js?v=11.90"></script>
+<script src="biobel-planilha-processamento.js?v=11.90"></script>
+<script src="biobel-planilha-comparacao.js?v=11.90"></script><script src="biobel-app.js?v=11.90"></script><script>
 (function(){
  function cardsFuncionarios(){
   const wrap=document.getElementById('conteudoGrupo-funcionarios');
