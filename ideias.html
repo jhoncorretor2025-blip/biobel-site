@@ -8,7 +8,7 @@
 <link rel="icon" type="image/png" href="./favicon-32.png">
 <link rel="manifest" href="manifest.json">
 <title>Biobel — Ideias para campanhas</title>
-<script src="https://cdn.tailwindcss.com"><\/script>
+<script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="biobel-design-system.css">
 <link rel="stylesheet" href="biobel-ux-refinement.css">
 <link rel="stylesheet" href="biobel-app.css">
@@ -64,14 +64,14 @@ body.light-mode .ideias-filter.active{background:#e6f8f1;color:#087f5b;border-co
  <div id="ideiasGrid" class="ideias-grid"></div>
  <p class="ideias-note">Dica: escolha poucas ações que a equipe consiga executar bem. Ajuste os preços, descontos e produtos conforme o estoque e a margem da Biobel antes de publicar uma oferta.</p>
 </main>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"><\/script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"><\/script>
-<script src="biobel-shell-v1168.js?v=11.80"><\/script>
-<script src="biobel-recognition.js?v=11.80"><\/script>
-<script src="biobel-planilha-leitura.js?v=11.80"><\/script>
-<script src="biobel-planilha-processamento.js?v=11.80"><\/script>
-<script src="biobel-planilha-comparacao.js?v=11.80"><\/script>
-<script src="biobel-app.js?v=11.80"><\/script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="biobel-shell-v1168.js?v=11.80"></script>
+<script src="biobel-recognition.js?v=11.80"></script>
+<script src="biobel-planilha-leitura.js?v=11.80"></script>
+<script src="biobel-planilha-processamento.js?v=11.80"></script>
+<script src="biobel-planilha-comparacao.js?v=11.80"></script>
+<script src="biobel-app.js?v=11.80"></script>
 <script>
 (function(){
  const params=new URLSearchParams(location.search),evento=params.get('evento')||'';
@@ -111,6 +111,6 @@ body.light-mode .ideias-filter.active{background:#e6f8f1;color:#087f5b;border-co
  document.querySelectorAll('[data-filtro]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-filtro]').forEach(x=>x.classList.toggle('active',x===b));render(b.dataset.filtro);}));
  render('todas');
 })();
-<\/script>
+</script>
 </body>
 </html>
