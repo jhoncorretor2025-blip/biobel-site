@@ -1,3 +1,9 @@
+## v11.81 — 09/10/2026
+- 🛠️ **Correção da Central de Ideias:** as ideias agora ficam presentes diretamente no HTML, sem depender de uma montagem dinâmica que poderia deixar a página vazia.
+- 🧭 **Filtros simplificados:** categorias filtram os cartões diretamente.
+- 📋 **Cópia de textos mais robusta:** botão com alternativa para navegadores que bloqueiam a área de transferência.
+- ♻️ **Versão/cache:** dashboard, navegação compartilhada e cache atualizados para v11.81.
+
 ## v11.80 — 09/10/2026
 - 💡 “Preciso de ideias” agora abre uma página dedicada com sugestões práticas para a campanha escolhida, filtros por categoria e textos prontos para copiar para WhatsApp/Instagram.
 - 🛍️ Central de ideias da Biobel: promoções, kits, reativação de clientes, organização da loja/estoque e conteúdo para Stories, com lembrete para conferir estoque, preços e margem.
