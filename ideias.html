@@ -38,6 +38,22 @@ body.light-mode .ideia-card{background:#fff;border-color:#d7e1ec}
 body.light-mode .ideia-card .passos{color:#334155}
 body.light-mode .ideias-filter{background:#f8fafc;border-color:#d7e1ec;color:#334155}
 body.light-mode .ideias-filter.active{background:#e6f8f1;color:#087f5b;border-color:#0ea97a}
+
+.ideias-search-panel{display:grid;grid-template-columns:minmax(0,2fr) repeat(2,minmax(0,1fr));gap:10px;margin:16px 0 10px;padding:14px;border:1px solid #223651;border-radius:14px;background:#0d1b2e}
+.ideias-search-panel label{display:flex;flex-direction:column;gap:6px;color:#9aabc0;font-size:10px;font-weight:900}
+.ideias-search-panel input,.ideias-search-panel select{width:100%;min-width:0;padding:10px 11px;border:1px solid #2b4059;border-radius:9px;background:#091525;color:#dce5f2;font:inherit;font-size:12px}
+.ideias-search-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 2px 12px;color:#9aabc0;font-size:11px}
+.ideias-search-meta button{border:1px solid #2b4059;border-radius:8px;padding:6px 9px;color:#27d7a0;background:transparent;font-weight:800;cursor:pointer}
+.ideia-arte{margin-top:2px;padding:10px;border:1px solid rgba(39,215,160,.22);border-radius:10px;background:rgba(39,215,160,.055)}
+.ideia-arte summary{cursor:pointer;color:#27d7a0;font-size:11px;font-weight:900}
+.ideia-arte p{margin-top:8px}
+.ideia-arte strong{color:#dce5f2}
+body.light-mode .ideias-search-panel{background:#fff;border-color:#d7e1ec}
+body.light-mode .ideias-search-panel label{color:#536579}
+body.light-mode .ideias-search-panel input,body.light-mode .ideias-search-panel select{background:#f8fafc;border-color:#d7e1ec;color:#172033}
+body.light-mode .ideia-arte strong{color:#172033}
+@media(max-width:650px){.ideias-search-panel{grid-template-columns:1fr 1fr}.ideias-search-panel label:first-child{grid-column:1/-1}}
+
 @media(max-width:600px){.ideias-wrap{padding:12px 10px 28px}.ideias-hero{padding:17px}.ideias-title{font-size:21px}.ideias-grid{grid-template-columns:1fr}}
 
 .ideias-tools-heading{margin:28px 0 12px;padding-top:22px;border-top:1px solid #223651}.ideias-tools-heading h2{font-size:19px;font-weight:900;color:#eef5ff;margin:6px 0}.ideias-tools-heading p{font-size:11.5px;line-height:1.6;color:#9aabc0}.ideias-tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0}
@@ -77,6 +93,13 @@ body.light-mode .ideias-tools-heading h2{color:#172033}body.light-mode .ideias-t
    <button class="ideias-filter" data-filtro="engajamento">Engajamento</button>
   </div>
  </div>
+
+  <section class="ideias-search-panel" aria-label="Busca e filtros avançados">
+   <label>🔎 Buscar ideias<input id="buscaIdeias" type="search" placeholder="Ex.: perfume, Dia das Mães, produto parado, WhatsApp" autocomplete="off"></label>
+   <label>💰 Orçamento<select id="filtroOrcamento"><option value="todos">Todos os orçamentos</option><option value="zero">Praticamente zero</option><option value="baixo">Baixo investimento</option><option value="maior">Orçamento maior</option></select></label>
+   <label>🎯 Objetivo<select id="filtroObjetivo"><option value="todos">Todos os objetivos</option><option value="vender">Vender mais</option><option value="atrair">Atrair novas clientes</option><option value="recuperar">Recuperar clientes inativas</option><option value="ticket">Aumentar valor por compra</option><option value="lancamento">Divulgar lançamentos</option></select></label>
+  </section>
+  <div class="ideias-search-meta"><span id="contadorIdeias" aria-live="polite">Carregando ideias...</span><button type="button" id="limparFiltrosIdeias">Limpar busca e filtros</button></div>
 
 
  <div id="ideiasGrid" class="ideias-grid">
@@ -163,8 +186,55 @@ body.light-mode .ideias-tools-heading h2{color:#172033}body.light-mode .ideias-t
  const titulo=document.getElementById('ideiasTitulo'),intro=document.getElementById('ideiasIntro');
  if(titulo)titulo.textContent='💡 Ideias para '+nome;
  if(intro)intro.textContent=criancas?'Ações rápidas para aproveitar o Dia das Crianças na Biobel: divulgação, presentes, combos e atendimento.':black?'Planeje a Black Friday com ofertas sustentáveis, estoque conferido e divulgação organizada.':'Sugestões práticas para divulgar produtos, movimentar a loja e preparar a próxima data comercial.';
+
+ const buscaIdeias=document.getElementById('buscaIdeias');
+ const filtroOrcamento=document.getElementById('filtroOrcamento');
+ const filtroObjetivo=document.getElementById('filtroObjetivo');
+ const contadorIdeias=document.getElementById('contadorIdeias');
+ const normalizarTexto=s=>String(s||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase();
+ function classificarIdeia(card){
+  const t=normalizarTexto((card.querySelector('h3')?.textContent||'')+' '+(card.querySelector('p')?.textContent||'')+' '+(card.dataset.categoria||''));
+  let orcamento='zero';
+  if(/brinde|sacola|kit|combo|desconto|oferta|vip|vantagens/.test(t))orcamento='baixo';
+  if(/evento|consultoria|vitrine|impulsion|anuncio pago|influenciador/.test(t))orcamento='maior';
+  let objetivos=[];
+  if(/venda|oferta|promoc|combo|kit|preco|sacola|produto parado|estoque/.test(t))objetivos.push('vender','ticket');
+  if(/indique|novas clientes|presente|stories|enquete|desafio|instagram|consultoria/.test(t))objetivos.push('atrair');
+  if(/reative|reativ|pos-venda|pos venda|cliente sem comprar|whatsapp|aniversario|vip|fideliz|clube/.test(t))objetivos.push('recuperar');
+  if(/combo|kit|sacola|rotina completa|faixa de preco|cada bolso/.test(t))objetivos.push('ticket');
+  if(/novidade|lancamento|demonstrando|bastidores|produto novo/.test(t))objetivos.push('lancamento');
+  if(!objetivos.length)objetivos=['vender'];
+  card.dataset.orcamento=orcamento;
+  card.dataset.objetivos=[...new Set(objetivos)].join(' ');
+  const titulo=card.querySelector('h3')?.textContent||'Campanha Biobel';
+  const arteMap=[
+   [/consultoria/i,'Visual: fundo verde-claro e creme; frase “Seu momento de beleza”; destaque para 2–3 produtos reais; título no topo, produtos no centro e chamada “Peça sua consultoria” no rodapé.'],
+   [/7 dias/i,'Visual: sequência de 7 Stories com numeração grande; paleta verde Biobel, branco e tons suaves; uma dica por tela e um produto relacionado em destaque; CTA “Acompanhe amanhã”.'],
+   [/surpresa na sacola/i,'Visual: sacola de presente central, detalhes verdes e dourados; frase “Tem surpresa na sacola!”; valor mínimo e regras em texto legível; brinde em destaque ao lado.'],
+   [/cada bolso/i,'Visual: carrossel dividido em faixas de preço; fundo claro com detalhes verdes; preço em destaque, foto do produto abaixo e rodapé “Consulte disponibilidade”.'],
+   [/cliente vip/i,'Visual: cartão VIP elegante em verde-escuro e dourado; frase “Um carinho para nossas clientes”; benefício e condições em bloco separado; evite expor nomes sem autorização.'],
+   [/produto parado|estoque/i,'Visual: foto nítida do produto em primeiro plano; fundo limpo e verde; destaque para benefício real e preço confirmado; etiqueta de oferta apenas se houver promoção válida.'],
+   [/kit|combo|presente|sacola/i,'Visual: produtos agrupados sobre fundo claro; cores da embalagem como apoio; frase curta no topo, composição no centro e faixa inferior com preço/itens e CTA.'],
+   [/whatsapp|reative|pós-venda|pos-venda/i,'Visual: layout de conversa com balões ilustrativos, verde e branco; frase acolhedora; um produto ou benefício por vez; CTA “Fale com a Biobel”.'],
+   [/instagram|stories|vídeo|video|enquete|desafio/i,'Visual: formato vertical 1080×1920; título curto no terço superior, produto real central e CTA no rodapé; use alto contraste e pouco texto.']
+  ];
+  const arte=arteMap.find(([re])=>re.test(t));
+  const textoArte=arte?arte[1]:'Visual: use a paleta verde da Biobel com fundo claro; destaque um produto real em boa iluminação; título curto no topo, benefício principal no centro e chamada para ação no rodapé.';
+  if(!card.querySelector('.ideia-arte')){
+   const details=document.createElement('details');details.className='ideia-arte';
+   const summary=document.createElement('summary');summary.textContent='🎨 Ver sugestão de arte para Instagram';
+   const p=document.createElement('p');p.innerHTML='<strong>Conceito:</strong> '+textoArte.replace(/^Visual: /,'');
+   const formato=document.createElement('p');formato.innerHTML='<strong>Formato recomendado:</strong> Story vertical (1080 × 1920) ou adaptação para feed (1080 × 1350). Use fotos e preços reais da loja.';
+   details.append(summary,p,formato);
+   const passos=card.querySelector('.passos');
+   if(passos)passos.insertAdjacentElement('afterend',details);else card.append(details);
+  }
+  card.dataset.buscaExtra=normalizarTexto(titulo+' '+textoArte+' perfume Dia das Maes mae dia das maes produto parado whatsapp Instagram arte story campanha');
+ }
+
  const cardsIdeias=Array.from(document.querySelectorAll('#ideiasGrid > .ideia-card'));
  const botoesFiltroIdeias=Array.from(document.querySelectorAll('.ideias-toolbar [data-filtro]'));
+
  function aplicarFiltroIdeias(filtro){
   const categoriasValidas=['todas','promocao','whatsapp','loja','conteudo','fidelizacao','engajamento'];
   if(!categoriasValidas.includes(filtro))filtro='todas';
@@ -173,14 +243,28 @@ body.light-mode .ideias-tools-heading h2{color:#172033}body.light-mode .ideias-t
    botao.classList.toggle('active',ativo);
    botao.setAttribute('aria-pressed',ativo?'true':'false');
   });
-  cardsIdeias.forEach(function(cartao){
-   const mostrar=filtro==='todas'||cartao.dataset.categoria===filtro;
-   cartao.hidden=!mostrar;
-   cartao.toggleAttribute('data-filtro-oculto',!mostrar);
-   cartao.style.setProperty('display',mostrar?'flex':'none','important');
+  cardsIdeias.forEach(classificarIdeia);
+  const q=normalizarTexto(buscaIdeias?.value||'').trim();
+  const termos=q.split(/\\s+/).filter(Boolean);
+  const mapaSinonimos={'maes':'presente familia dia das maes','mae':'presente familia dia das maes','perfume':'fragrancia presente beleza','inativas':'reativacao whatsapp clientes','parado':'estoque produto parado oferta','lancamento':'novidade produto novo','story':'stories instagram arte'};
+  const consultaExpandida=normalizarTexto([q,...termos.map(t=>mapaSinonimos[t]||'')].join(' '));
+  const buscaTermos=termos.map(t=>normalizarTexto(mapaSinonimos[t]||t).split(/\\s+/)).flat();
+  let visiveis=0;
+  cardsIdeias.forEach(function(card){
+   const categoriaOk=filtro==='todas'||card.dataset.categoria===filtro;
+   const texto=normalizarTexto((card.innerText||'')+' '+(card.dataset.buscaExtra||''));
+   const buscaOk=!q||buscaTermos.some(t=>texto.includes(t))||texto.includes(consultaExpandida);
+   const orcamentoOk=!filtroOrcamento||filtroOrcamento.value==='todos'||card.dataset.orcamento===filtroOrcamento.value;
+   const objetivoOk=!filtroObjetivo||filtroObjetivo.value==='todos'||(card.dataset.objetivos||'').split(' ').includes(filtroObjetivo.value);
+   const mostrar=categoriaOk&&buscaOk&&orcamentoOk&&objetivoOk;
+   card.hidden=!mostrar;
+   card.toggleAttribute('data-filtro-oculto',!mostrar);
+   card.style.setProperty('display',mostrar?'flex':'none','important');
+   if(mostrar)visiveis++;
   });
   const grid=document.getElementById('ideiasGrid');
   if(grid)grid.dataset.filtroAtual=filtro;
+  if(contadorIdeias)contadorIdeias.textContent=visiveis+' de '+cardsIdeias.length+' ideias encontradas';
  }
  // Captura o clique no documento para evitar conflito com outros scripts do painel.
  document.addEventListener('click',function(evento){
@@ -192,6 +276,14 @@ body.light-mode .ideias-tools-heading h2{color:#172033}body.light-mode .ideias-t
  },true);
  botoesFiltroIdeias.forEach(function(botao){botao.type='button';botao.setAttribute('aria-pressed',botao.classList.contains('active')?'true':'false');});
  aplicarFiltroIdeias('todas');
+ [buscaIdeias,filtroOrcamento,filtroObjetivo].forEach(el=>el?.addEventListener('input',()=>aplicarFiltroIdeias(document.querySelector('.ideias-toolbar .ideias-filter.active')?.dataset.filtro||'todas')));
+ [filtroOrcamento,filtroObjetivo].forEach(el=>el?.addEventListener('change',()=>aplicarFiltroIdeias(document.querySelector('.ideias-toolbar .ideias-filter.active')?.dataset.filtro||'todas')));
+ document.getElementById('limparFiltrosIdeias')?.addEventListener('click',()=>{
+  if(buscaIdeias)buscaIdeias.value='';
+  if(filtroOrcamento)filtroOrcamento.value='todos';
+  if(filtroObjetivo)filtroObjetivo.value='todos';
+  aplicarFiltroIdeias('todas');
+ });
 
  const situacoes={
   primeira:"Oi! 😊 Aqui é da Biobel. Posso te ajudar a encontrar algo para sua rotina de beleza ou um presente? Se quiser, me conte o que está procurando.",
