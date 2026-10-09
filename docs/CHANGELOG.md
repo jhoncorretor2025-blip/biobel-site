@@ -1,3 +1,11 @@
+## v11.89 — 09/10/2026
+- 🔎 **Busca de campanhas:** pesquisa por palavras-chave, sinônimos e termos relacionados.
+- 🎨 **Sugestão visual por campanha:** conceito, formato recomendado, paleta Biobel e botão para copiar o briefing de arte de Instagram.
+- 💰 **Filtro de orçamento de divulgação:** classifica sugestões em sem custo extra, baixo investimento e orçamento maior, conforme os recursos normalmente envolvidos. São estimativas orientativas.
+- 🎯 **Objetivos ampliados:** vender, atrair, recuperar clientes, aumentar o valor por compra, divulgar lançamentos, fidelizar e gerar engajamento.
+- 🏷️ Exibição de etiquetas de objetivo e orçamento nos cartões e aviso quando nenhum resultado corresponde aos filtros.
+- ♻️ Atualizados versão e cache para v11.89.
+
 ## v11.88 — 09/10/2026
 - 🧭 **Organização da Central de Ideias:** os 16 cartões de ideias agora aparecem imediatamente abaixo dos filtros; os recursos para campanhas, WhatsApp, ranking e favoritos foram movidos para uma seção separada, mais abaixo.
 - 👀 Novo título e texto explicativo para orientar a equipe e evitar confusão entre ideias e ferramentas.
