@@ -1,3 +1,9 @@
+## v11.82 — 09/10/2026
+- 💡 **Novas ideias comerciais:** clube de vantagens, indicação de amigas, enquete nos Stories, demonstração de produto, combo complementar, pós-venda e benefício de aniversário.
+- ⚠️ **Pix premiado — alerta de conformidade:** a página explica que não se deve oferecer Pix/dinheiro como prêmio em promoção comercial e sugere alternativas de descontos ou benefícios objetivos. Fonte oficial: Ministério da Fazenda.
+- 🧭 **Novos filtros:** Fidelização e Engajamento.
+- ♻️ **Versão/cache:** ideias, dashboard, shell e service worker atualizados para v11.82.
+
 ## v11.81 — 09/10/2026
 - 🛠️ **Correção da Central de Ideias:** as ideias agora ficam presentes diretamente no HTML, sem depender de uma montagem dinâmica que poderia deixar a página vazia.
 - 🧭 **Filtros simplificados:** categorias filtram os cartões diretamente.
