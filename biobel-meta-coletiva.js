@@ -180,7 +180,8 @@
       if (total === null || !Number.isFinite(total)) return;
       const data = chaveHoje();
       const h = historico();
-      const jaExiste = h.some(x => x.data === data);
+      const indiceHoje = h.findIndex(x => x.data === data);
+      const jaExiste = indiceHoje >= 0;
       if (total > META && !jaExiste) {
         const item = { data, total: Math.round(total * 100) / 100, criadoEm: new Date().toISOString() };
         h.push(item);
@@ -188,6 +189,11 @@
         atualizarHistoricoCard();
         mostrarCelebracao(total, item);
       } else {
+        // Atualiza o valor final do dia sem repetir a comemoração.
+        if (jaExiste && total > (Number(h[indiceHoje].total) || 0)) {
+          h[indiceHoje].total = Math.round(total * 100) / 100;
+          salvarHistorico(h);
+        }
         atualizarHistoricoCard();
       }
     } catch (e) {
