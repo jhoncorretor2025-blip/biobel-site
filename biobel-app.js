@@ -1163,24 +1163,49 @@ let equipeEditMode = false;
    As atividades são herdadas, mas o checklist começa zerado.
 */
 function getEquipePrincipal(){
- // O posto operacional atual fica identificado como CLT. Os registros de Gabriela
- // permanecem preservados para consulta, mas não são usados como nome da rotina ativa.
- const desligamento = getDesligamento('gabriela');
- try{ garantirSubstitutaCltTreinamento(desligamento?.data||null); }catch(e){}
- return {scope:'gabi_treinamento',nome:'CLT',titulo:'CLT',inicial:'C',treinamento:true,dataInicio:desligamento?.data||null};
+ // O nome é opcional: enquanto estiver vazio, o posto aparece como CLT.
+ // A rotina usa uma chave estável para não perder checklists quando o nome for preenchido.
+ const chaveMigracao='biobel_migracao_nome_posto_clt_v1';
+ if(localStorage.getItem(chaveMigracao)!=='yes'){
+  const chavesNome=['biobel_equipeNomeGabi','biobel_equipe_equipeNomeGabi'];
+  const nomeAntigoRegex=/^(?:gabi|gabriela|clt(?:\s*\(treinamento\))?)$/i;
+  chavesNome.forEach(chave=>{
+   const valor=(localStorage.getItem(chave)||'').trim();
+   if(nomeAntigoRegex.test(valor)) localStorage.removeItem(chave);
+  });
+  localStorage.setItem(chaveMigracao,'yes');
+ }
+ let salvo=(localStorage.getItem('biobel_equipeNomeGabi')||'').trim();
+ if(!salvo){
+  const legado=(localStorage.getItem('biobel_equipe_equipeNomeGabi')||'').trim();
+  if(legado) {
+   salvo=legado;
+   localStorage.setItem('biobel_equipeNomeGabi',legado);
+  }
+ }
+ const nome=salvo?normalizarNome(salvo):'CLT';
+ const desligamento=getDesligamento('gabriela');
+ try{ garantirSubstitutaCltTreinamento(desligamento?.data||null,nome); }catch(e){}
+ return {scope:'gabi_treinamento',nome,titulo:nome,inicial:nome==='CLT'?'C':nome.charAt(0).toUpperCase(),treinamento:true,dataInicio:desligamento?.data||null};
 }
 function equipePrincipalScope(dia){ return String(dia)+'_'+getEquipePrincipal().scope; }
 function adaptarTextoEquipePrincipal(texto){
  const principal=getEquipePrincipal();
- return principal.treinamento ? String(texto||'').replace(/Gabriela|Gabi/gi,principal.nome) : texto;
+ return String(texto||'').replace(/CLT\s*\(Treinamento\)|Gabriela|Gabi|CLT/gi,principal.nome);
 }
-function garantirSubstitutaCltTreinamento(dataDesligamento){
+function garantirSubstitutaCltTreinamento(dataDesligamento,nomeAtual){
  const chave='biobel_equipe_substituta_treinamento_gabriela';
  try{
   const atual=JSON.parse(localStorage.getItem(chave)||'null');
-  if(atual && atual.ativo) return atual;
+  if(atual && atual.ativo){
+   if(nomeAtual && atual.nome!==nomeAtual){
+    atual.nome=nomeAtual;
+    localStorage.setItem(chave,JSON.stringify(atual));
+   }
+   return atual;
+  }
  }catch(e){}
- const registro={ativo:true,nome:'CLT (Treinamento)',tipo:'CLT',status:'Treinamento',pessoaOrigem:'gabriela',origemNome:'Gabriela',dataInicio:dataDesligamento||null,criadoEm:new Date().toISOString(),atividadesHerdadas:true};
+ const registro={ativo:true,nome:nomeAtual||'CLT',tipo:'CLT',status:'Treinamento',pessoaOrigem:'gabriela',origemNome:'Gabriela',dataInicio:dataDesligamento||null,criadoEm:new Date().toISOString(),atividadesHerdadas:true};
  localStorage.setItem(chave,JSON.stringify(registro));
  return registro;
 }
@@ -1380,7 +1405,7 @@ function renderEquipeDia(dia){
  const tituloEl=document.getElementById('equipePrincipalTitulo');
  const avatarEl=document.getElementById('equipePrincipalAvatar');
  const statusEl=document.getElementById('equipePrincipalStatus');
- if(tituloEl) tituloEl.textContent=principal.treinamento?'🎓 CLT':'💇‍♀️ '+principal.titulo;
+ if(tituloEl) tituloEl.textContent=principal.nome==='CLT'?'🎓 CLT':'👩‍💼 '+principal.nome;
  if(avatarEl) avatarEl.textContent=principal.inicial;
  if(statusEl) statusEl.textContent=principal.treinamento?'🧪 Em teste':'';
  const gabiEl = document.getElementById('equipeListaGabi');
@@ -1528,7 +1553,16 @@ function initEquipeTab(){
   if(!el) return;
   const saved = localStorage.getItem('biobel_'+id);
   if(saved) el.value = saved;
-  el.addEventListener('change', ()=>localStorage.setItem('biobel_'+id, el.value));
+  el.addEventListener('change', ()=>{
+   el.value=el.value.trim();
+   localStorage.setItem('biobel_'+id,el.value);
+   if(id==='equipeNomeGabi'){
+    renderEquipeRotinaDiaria();
+    renderEquipeDia(equipeDiaAtual);
+    renderFolhaDePonto();
+    renderChavesPixLista();
+   }
+  });
  });
 
  renderEquipeRotinaDiaria();
@@ -1863,17 +1897,18 @@ function renderFolhaDePonto(){
  // registros históricos de ponto, sem ser tratado como funcionária ativa.
  const selectFuncionaria = document.getElementById('pontoFuncionariaSelect');
  if(selectFuncionaria){
-  const treinoAtivo=!!getEquipePrincipal().treinamento;
+  const principal=getEquipePrincipal();
+  const treinoAtivo=!!principal.treinamento;
   let optTreino=Array.from(selectFuncionaria.options).find(opt=>opt.value==='CLT_TREINAMENTO');
   if(!optTreino){
    optTreino=document.createElement('option');
    optTreino.value='CLT_TREINAMENTO';
    selectFuncionaria.insertBefore(optTreino,selectFuncionaria.firstChild);
   }
-  optTreino.textContent=treinoAtivo?'CLT':'CLT (histórico)';
+  optTreino.textContent=treinoAtivo?principal.nome:principal.nome+' (histórico)';
   Array.from(selectFuncionaria.options).forEach(opt=>{
    if(opt.value==='CLT_TREINAMENTO'){
-    opt.textContent=treinoAtivo?'CLT':'CLT (histórico)';
+    opt.textContent=treinoAtivo?principal.nome:principal.nome+' (histórico)';
     return;
    }
    if(opt.value==='Gabriela'){
@@ -2891,7 +2926,7 @@ function renderChavesPixLista(){
  const principal=getEquipePrincipal();
  const pessoas = [
   ...(principal.treinamento
-   ? [{ nome:'CLT', chave:getChavePix('clt_treinamento'), pessoaKey:'clt_treinamento' }]
+   ? [{ nome:principal.nome, chave:getChavePix('clt_treinamento'), pessoaKey:'clt_treinamento' }]
    : [{ nome:'Gabriela', chave:getChavePix('gabriela'), pessoaKey:'gabriela' }]),
   { nome:'Day', chave:getChavePix('day'), pessoaKey:'day' },
  ].filter(p=>!getDesligamento(p.pessoaKey)); // a lista mostra as opções atuais de pagamento

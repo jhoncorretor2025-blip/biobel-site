@@ -1,3 +1,9 @@
+## v11.91 — 09/10/2026
+- 👩‍💼 **Nome opcional para a funcionária em teste:** se Alessandra não preencher o nome, o posto aparece como **CLT**. Quando preencher o nome em Equipe → Rotina, as telas da rotina, folha de ponto e lista PIX passam a mostrar o nome informado.
+- 🔄 Mantida a chave interna da rotina/folha de ponto para não perder checklists e registros ao trocar de CLT para o nome da funcionária.
+- 🧾 O nome histórico de Gabriela continua separado; as vendas e os valores já importados da planilha não foram reescritos.
+- ♻️ Alinhados os arquivos e o cache para v11.91.
+
 ## v11.90 — 09/10/2026
 - 👥 Rotinas diárias e semanais identificam o posto atual como **CLT**, removendo o nome da ex-funcionária das tarefas ativas e migrando personalizações antigas.
 - 🧾 A folha de ponto abre em **CLT**; registros antigos de Gabriela continuam acessíveis como histórico.

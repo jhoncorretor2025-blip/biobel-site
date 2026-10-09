@@ -1,5 +1,5 @@
-/* Biobel — shell compartilhado. v11.90 */
-const BIOBEL_VERSION="v11.90";
+/* Biobel — shell compartilhado. v11.91 */
+const BIOBEL_VERSION="v11.91";
 (function(){
 "use strict";
 const PAGES={dashboard:"dashboard.html",caixa:"operacao.html",equipe:"equipe.html",campanhas:"vendas.html",info:"analises.html",alertas:"alertas.html",config:"config.html",adm:"administracao.html",backup:"backup.html"};
@@ -19,7 +19,7 @@ function montar(){
  '<div class="biobel-search-wrap"><label for="inputBuscaGlobal" class="sr-only">Buscar no sistema</label><input id="inputBuscaGlobal" type="text" aria-label="Buscar no sistema" placeholder="🔍 Buscar (ex: aluguel, meta...)" autocomplete="off" oninput="renderResultadosBuscaGlobal&&renderResultadosBuscaGlobal()" onfocus="renderResultadosBuscaGlobal&&renderResultadosBuscaGlobal()" style="width:100%;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:7px 10px;font-size:12px;color:#dce5f2;outline:none;"><div id="resultadosBuscaGlobal" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border:1px solid #1e2c42;border-radius:10px;margin-top:4px;max-height:320px;overflow-y:auto;z-index:200;"></div></div>'+
  '<span class="selo-app-instalado no-print" style="font-size:11px;color:#0ea97a;font-weight:800;background:rgba(14,169,122,.12);border:1px solid rgba(14,169,122,.35);border-radius:8px;padding:4px 8px;">📲 App</span>'+
  '<a href="backup.html" class="no-print biobel-header-backup" title="Abrir Backup" style="display:inline-flex;align-items:center;gap:5px;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:7px 10px;color:#cbd5e1;font-size:11px;text-decoration:none;font-weight:800;">💾 Backup</a><button id="btnInstalarApp" type="button" onclick="instalarAppBiobel()" class="no-print" style="display:none;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:7px 10px;color:#cbd5e1;font-size:11px;">📲 Instalar app</button>'+
- '<button id="versaoSistema" type="button" class="no-print" onclick="mostrarToast(\'📅 Sistema atualizado em 07/10/2026 — versão \'+BIOBEL_VERSION+\')" style="font-size:12px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 9px;cursor:pointer;" title="Versão atual do sistema Biobel" >'+BIOBEL_VERSION+'</button>'+
+ '<button id="versaoSistema" type="button" class="no-print" onclick="mostrarToast(\'📅 Sistema atualizado em 09/10/2026 — versão \'+BIOBEL_VERSION+\')" style="font-size:12px;color:#93a3ba;font-weight:800;background:#0b1728;border:1px solid #1c2c42;border-radius:8px;padding:5px 9px;cursor:pointer;" title="Versão atual do sistema Biobel" >'+BIOBEL_VERSION+'</button>'+
  '<span id="indicadorUltimoSalvamento" class="no-print" style="font-size:11px;color:#27d7a0;font-weight:700;display:none;white-space:nowrap;"></span>'+
  '<span id="nomePlanilhaAtivaHeader" class="no-print" style="font-size:11px;color:#93a3ba;font-weight:700;"></span>'+
  '<span id="connBadge" class="no-print conn-badge conn-connecting">🟡 Conectando...</span>'+
