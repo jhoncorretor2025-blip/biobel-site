@@ -579,6 +579,10 @@ body.light-mode[data-biobel-page="config"] #configTab > .card textarea{
   <input id="empresaInstagramInput" type="url" value="https://www.instagram.com/biobel.cosmeticos/" placeholder="https://www.instagram.com/nomedaloja/" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500 mb-4">
   <label class="block text-sm font-semibold mb-2" for="empresaEnderecoInput">Endereço</label>
   <input id="empresaEnderecoInput" type="text" value="Rua Anápio Gomes, 1601 - Centro, Gravataí - RS, CEP 94010-011" placeholder="Rua, número, bairro, cidade - UF" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500 mb-4">
+  <label class="block text-sm font-semibold mb-2" for="empresaResponsavelInput">Responsável / Empresária</label>
+  <input id="empresaResponsavelInput" type="text" value="Alesandra Denise Teixeira de Fraga" placeholder="Nome do responsável" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500 mb-4">
+  <label class="block text-sm font-semibold mb-2" for="empresaAtividadeInput">Atividade econômica principal</label>
+  <textarea id="empresaAtividadeInput" rows="2" placeholder="Atividade principal da empresa" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500 mb-4">Comércio varejista de cosméticos, produtos de perfumaria e de higiene pessoal</textarea>
   <button onclick="saveDadosEmpresa()" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-xl font-semibold text-sm">Salvar dados da empresa</button>
   <div id="empresaDadosStatus" class="mt-3 text-sm text-slate-400"></div>
   <p class="mt-2 text-xs text-slate-500">Atividade principal: Comércio varejista de cosméticos, produtos de perfumaria e de higiene pessoal. Responsável/empresária: Alesandra Denise Teixeira de Fraga.</p>
@@ -1087,4 +1091,55 @@ function alternarVisibilidadeSenhaDev(inputId,botao){
   if(!devAutenticado())aplicarProtecaoDevPlanilhas();
  });
  obs.observe(document.body,{subtree:true,childList:true});
-})();</script></body></html>
+})();</script><script id="biobelEmpresaCadastroV1">
+(function(){
+ 'use strict';
+ const KEY='biobel_dados_empresa_v1';
+ const defaults={
+  razaoSocial:'Alesandra Denise Teixeira de Fraga',
+  nomeFantasia:'Biobel Cosméticos',
+  cnpj:'61.087.051/0001-97',
+  endereco:'Rua Anápio Gomes, 1601 - Centro, Gravataí - RS, CEP 94010-011',
+  instagram:'https://www.instagram.com/biobel.cosmeticos/',
+  responsavel:'Alesandra Denise Teixeira de Fraga',
+  atividade:'Comércio varejista de cosméticos, produtos de perfumaria e de higiene pessoal'
+ };
+ const fields={
+  razaoSocial:'empresaRazaoSocialInput',
+  nomeFantasia:'empresaNomeFantasiaInput',
+  cnpj:'empresaCnpjInput',
+  endereco:'empresaEnderecoInput',
+  instagram:'empresaInstagramInput',
+  responsavel:'empresaResponsavelInput',
+  atividade:'empresaAtividadeInput'
+ };
+ function ler(){
+  try{return Object.assign({},defaults,JSON.parse(localStorage.getItem(KEY)||'{}'))}
+  catch(e){return Object.assign({},defaults)}
+ }
+ function preencher(){
+  const dados=ler();
+  Object.keys(fields).forEach(k=>{const el=document.getElementById(fields[k]);if(el&&!el.value.trim())el.value=dados[k]||'';else if(el&&(!localStorage.getItem(KEY)))el.value=dados[k]||''});
+  window.BiobelEmpresa=dados;
+ }
+ window.getDadosEmpresaBiobel=function(){return ler()};
+ window.saveDadosEmpresa=function(){
+  const dados={};
+  Object.keys(fields).forEach(k=>{const el=document.getElementById(fields[k]);dados[k]=el?el.value.trim():(defaults[k]||'')});
+  if(!dados.nomeFantasia){const el=document.getElementById('empresaDadosStatus');if(el)el.textContent='Informe o nome fantasia antes de salvar.';return}
+  try{
+   localStorage.setItem(KEY,JSON.stringify(dados));
+   window.BiobelEmpresa=dados;
+   const status=document.getElementById('empresaDadosStatus');
+   if(status)status.textContent='✅ Dados salvos neste navegador e disponíveis para integração com os módulos do sistema.';
+   window.dispatchEvent(new CustomEvent('biobel:dados-empresa-atualizados',{detail:dados}));
+  }catch(e){
+   const status=document.getElementById('empresaDadosStatus');
+   if(status)status.textContent='Não foi possível salvar neste navegador. Verifique as permissões de armazenamento.';
+  }
+ };
+ function init(){preencher();const status=document.getElementById('empresaDadosStatus');if(status)status.textContent='Dados padrão carregados. Clique em salvar para guardá-los neste navegador.'}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();
+</script>
+</body></html>
