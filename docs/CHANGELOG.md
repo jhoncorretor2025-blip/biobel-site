@@ -1,3 +1,7 @@
+## v11.87 — 09/10/2026
+- 🧰 **Correção reforçada dos filtros da Central de Ideias:** os cliques são capturados no documento em fase de captura; cada categoria atualiza a lista e oculta cartões não correspondentes com prioridade de estilo, evitando conflitos com outros scripts e regras de CSS.
+- ♻️ Atualizados versão e cache para v11.87.
+
 ## v11.86 — 09/10/2026
 - 🛠️ **Correção dos filtros da Central de Ideias:** clique nos botões agora aplica o filtro de categoria de forma explícita, atualiza o estado visual e oculta os cartões fora da categoria selecionada.
 - ♻️ Atualizados versão e cache para v11.86.
