@@ -251,10 +251,10 @@ body.light-mode .ideias-tools-heading h2{color:#172033}body.light-mode .ideias-t
   });
   cardsIdeias.forEach(classificarIdeia);
   const q=normalizarTexto(buscaIdeias?.value||'').trim();
-  const termos=q.split(/\\s+/).filter(Boolean);
+  const termos=q.split(/\s+/).filter(Boolean);
   const mapaSinonimos={'maes':'presente familia dia das maes','mae':'presente familia dia das maes','perfume':'fragrancia presente beleza','inativas':'reativacao whatsapp clientes','parado':'estoque produto parado oferta','lancamento':'novidade produto novo','story':'stories instagram arte'};
   const consultaExpandida=normalizarTexto([q,...termos.map(t=>mapaSinonimos[t]||'')].join(' '));
-  const buscaTermos=termos.map(t=>normalizarTexto(mapaSinonimos[t]||t).split(/\\s+/)).flat();
+  const buscaTermos=termos.map(t=>normalizarTexto(mapaSinonimos[t]||t).split(/\s+/)).flat();
   let visiveis=0;
   cardsIdeias.forEach(function(card){
    const categoriaOk=filtro==='todas'||card.dataset.categoria===filtro;
