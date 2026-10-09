@@ -1,3 +1,8 @@
+## v11.85 — 09/10/2026
+- 💰 **Gerador de campanha para produto parado:** campos separados para preço original e promocional; calcula automaticamente economia em reais e percentual de desconto.
+- ✅ Validação para impedir destaque de desconto quando o preço promocional não é menor; sem preço promocional, o texto informa apenas o preço atual.
+- ♻️ Atualizados versão e cache para v11.85.
+
 ## v11.84 — 09/10/2026
 - 🎨 **Melhoria visual na Central de Ideias:** adicionados emojis aos 16 títulos de cartões para facilitar a leitura e identificação rápida de cada ação.
 - ♻️ **Versão/cache:** página de ideias, dashboard, shell e service worker atualizados para v11.84.
