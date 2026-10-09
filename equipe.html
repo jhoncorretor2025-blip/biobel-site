@@ -130,6 +130,17 @@
  </div>
 
  <div id="equipeSubAbaRotina" style="display:none;">
+ <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7" id="biobelTreinamentoNovaFuncionaria" style="border-color:rgba(79,156,255,.35);">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+   <div><h2 class="text-xl font-bold">🧑‍🏫 Integração de nova funcionária</h2><p class="text-sm text-slate-400 mt-1">Checklist de treinamento para acompanhar a adaptação. O progresso fica salvo neste navegador.</p></div>
+   <span id="biobelTreinamentoPessoa" style="display:inline-flex;align-items:center;background:rgba(79,156,255,.1);border:1px solid rgba(79,156,255,.3);border-radius:999px;padding:6px 10px;font-size:11px;color:#93c5fd;font-weight:900;">CLT</span>
+  </div>
+  <div style="height:8px;background:#0b1728;border-radius:999px;overflow:hidden;margin-bottom:6px;"><div id="biobelTreinamentoBarra" style="height:100%;width:0;background:linear-gradient(90deg,#4f9cff,#27d7a0);transition:width .2s;"></div></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><span id="biobelTreinamentoProgresso" style="font-size:11px;color:#93a3ba;">0 de 10 etapas concluídas</span><span id="biobelTreinamentoEstado" style="font-size:11px;color:#fbbf24;font-weight:800;">Em andamento</span></div>
+  <div id="biobelTreinamentoLista" style="display:flex;flex-direction:column;gap:8px;"></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;"><button type="button" onclick="reiniciarChecklistTreinamentoBiobel()" class="no-print bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-lg font-semibold text-xs">↺ Novo treinamento</button><span style="font-size:10px;color:#64748b;align-self:center;">Use “Novo treinamento” ao iniciar outra contratação.</span></div>
+ </div>
+
  <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7" style="border-color:rgba(139,92,246,.35);">
   <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
    <div>
@@ -289,8 +300,48 @@
  </div>
 
 </section>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell-v1168.js?v=11.91"></script>
-<script src="biobel-recognition.js?v=11.91"></script>
-<script src="biobel-planilha-leitura.js?v=11.91"></script>
-<script src="biobel-planilha-processamento.js?v=11.91"></script>
-<script src="biobel-planilha-comparacao.js?v=11.91"></script><script src="biobel-app.js?v=11.91"></script></body></html>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell-v1168.js?v=11.92"></script>
+<script src="biobel-recognition.js?v=11.92"></script>
+<script src="biobel-planilha-leitura.js?v=11.92"></script>
+<script src="biobel-planilha-processamento.js?v=11.92"></script>
+<script src="biobel-planilha-comparacao.js?v=11.92"></script><script src="biobel-app.js?v=11.92"></script><script>
+(function(){
+ const KEY="biobel_treinamento_nova_funcionaria_v1";
+ const TAREFAS=[
+  "Apresentar a loja, a equipe e as regras básicas de convivência",
+  "Explicar a abertura, o fechamento e as rotinas diárias",
+  "Conhecer os setores, as marcas e a localização dos produtos",
+  "Treinar abordagem, escuta e atendimento às clientes",
+  "Aprender o caixa, os meios de pagamento e a conferência do valor",
+  "Entender como registrar e conferir as vendas na planilha",
+  "Conhecer preços, descontos autorizados e promoções vigentes",
+  "Aprender a conferir estoque, reposição e validade dos produtos",
+  "Conhecer o procedimento de trocas, devoluções e reclamações",
+  "Orientações sobre WhatsApp da loja, privacidade e pós-venda"
+ ];
+ const el=id=>document.getElementById(id);
+ function load(){try{const a=JSON.parse(localStorage.getItem(KEY)||"[]");return Array.isArray(a)?a:[];}catch(e){return [];}}
+ function save(arr){try{localStorage.setItem(KEY,JSON.stringify(arr));}catch(e){}}
+ function nomeAtual(){const input=el("equipeNomeGabi");return (input&&input.value.trim())||"CLT (nome ainda não cadastrado)";}
+ function render(){
+  const pessoa=el("biobelTreinamentoPessoa"),lista=el("biobelTreinamentoLista");if(!lista)return;
+  if(pessoa)pessoa.textContent=nomeAtual();
+  const estado=load(),done=TAREFAS.reduce((n,_,i)=>n+(estado[i]===true?1:0),0),pct=Math.round(done/TAREFAS.length*100);
+  const barra=el("biobelTreinamentoBarra");if(barra)barra.style.width=pct+"%";
+  const progresso=el("biobelTreinamentoProgresso");if(progresso)progresso.textContent=done+" de "+TAREFAS.length+" etapas concluídas";
+  const status=el("biobelTreinamentoEstado");if(status){status.textContent=done===TAREFAS.length?"✅ Treinamento concluído":done>0?"🟡 Em andamento":"⏳ Ainda não iniciado";status.style.color=done===TAREFAS.length?"#27d7a0":done>0?"#fbbf24":"#93a3ba";}
+  lista.innerHTML=TAREFAS.map((t,i)=>'<label style="display:flex;align-items:flex-start;gap:10px;padding:10px 11px;border:1px solid #20334d;border-radius:10px;background:rgba(255,255,255,.02);cursor:pointer;"><input type="checkbox" data-biobel-tarefa="'+i+'" '+(estado[i]===true?"checked":"")+' style="margin-top:3px;accent-color:#27d7a0;width:15px;height:15px;flex-shrink:0;"><span style="font-size:12px;line-height:1.5;color:#dce5f2;">'+t+'</span></label>').join("");
+  lista.querySelectorAll("input[data-biobel-tarefa]").forEach(input=>input.addEventListener("change",()=>{
+   const novos=load();novos[Number(input.dataset.biobelTarefa)]=input.checked;save(novos);render();
+  }));
+ }
+ window.reiniciarChecklistTreinamentoBiobel=function(){
+  if(!window.confirm("Reiniciar o checklist para uma nova funcionária? As marcações atuais serão apagadas."))return;
+  localStorage.removeItem(KEY);render();
+ };
+ const nomeInput=el("equipeNomeGabi");if(nomeInput)nomeInput.addEventListener("input",()=>{const p=el("biobelTreinamentoPessoa");if(p)p.textContent=nomeAtual();});
+ window.addEventListener("storage",e=>{if(e.key===KEY)render();});
+ render();
+})();
+</script>
+</body></html>
