@@ -1,3 +1,8 @@
+## v11.88 — 09/10/2026
+- 🧭 **Organização da Central de Ideias:** os 16 cartões de ideias agora aparecem imediatamente abaixo dos filtros; os recursos para campanhas, WhatsApp, ranking e favoritos foram movidos para uma seção separada, mais abaixo.
+- 👀 Novo título e texto explicativo para orientar a equipe e evitar confusão entre ideias e ferramentas.
+- ♻️ Atualizados versão e cache para v11.88.
+
 ## v11.87 — 09/10/2026
 - 🧰 **Correção reforçada dos filtros da Central de Ideias:** os cliques são capturados no documento em fase de captura; cada categoria atualiza a lista e oculta cartões não correspondentes com prioridade de estilo, evitando conflitos com outros scripts e regras de CSS.
 - ♻️ Atualizados versão e cache para v11.87.
