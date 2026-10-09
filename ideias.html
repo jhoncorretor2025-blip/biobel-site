@@ -135,6 +135,26 @@ body.light-mode .ideias-tools-heading h2{color:#172033}body.light-mode .ideias-t
   <p>Use estes recursos depois de escolher uma ideia acima: monte campanhas, prepare mensagens e acompanhe os resultados.</p>
  </div>
  <section class="ideias-tools" aria-label="Ferramentas de campanha">
+  <div class="tool-card" id="simuladorLucroCampanha">
+   <h2>🧮 Simulador de lucro da promoção</h2>
+   <p>Antes de divulgar a oferta, estime quanto sobra por unidade e no total depois do custo da mercadoria e do investimento na campanha.</p>
+   <div class="tool-fields">
+    <label>Custo do produto por unidade (R$)<input id="simCustoProduto" type="number" min="0" step="0.01" placeholder="Ex.: 35,00"></label>
+    <label>Preço normal (R$)<input id="simPrecoNormal" type="number" min="0" step="0.01" placeholder="Ex.: 69,90"></label>
+    <label>Preço promocional (R$)<input id="simPrecoPromo" type="number" min="0" step="0.01" placeholder="Opcional"></label>
+    <label>Quantidade prevista de vendas<input id="simQuantidade" type="number" min="1" step="1" value="10"></label>
+    <label>Investimento na campanha (R$)<input id="simInvestimento" type="number" min="0" step="0.01" value="0"></label>
+   </div>
+   <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;">
+    <div style="background:#091525;border:1px solid #2b4059;border-radius:10px;padding:10px;"><small style="display:block;color:#9aabc0;font-size:9.5px;font-weight:800;text-transform:uppercase;">Preço usado</small><strong id="simResultadoPreco" style="display:block;color:#eef5ff;font-size:16px;margin-top:4px;">—</strong></div>
+    <div style="background:#091525;border:1px solid #2b4059;border-radius:10px;padding:10px;"><small style="display:block;color:#9aabc0;font-size:9.5px;font-weight:800;text-transform:uppercase;">Margem por unidade</small><strong id="simResultadoMargem" style="display:block;color:#27d7a0;font-size:16px;margin-top:4px;">—</strong></div>
+    <div style="background:#091525;border:1px solid #2b4059;border-radius:10px;padding:10px;"><small style="display:block;color:#9aabc0;font-size:9.5px;font-weight:800;text-transform:uppercase;">Resultado estimado</small><strong id="simResultadoTotal" style="display:block;color:#27d7a0;font-size:16px;margin-top:4px;">—</strong></div>
+    <div style="background:#091525;border:1px solid #2b4059;border-radius:10px;padding:10px;"><small style="display:block;color:#9aabc0;font-size:9.5px;font-weight:800;text-transform:uppercase;">Desconto aplicado</small><strong id="simResultadoDesconto" style="display:block;color:#eef5ff;font-size:16px;margin-top:4px;">—</strong></div>
+   </div>
+   <div id="simResultadoAviso" role="status" style="font-size:11px;line-height:1.5;color:#9aabc0;background:rgba(255,255,255,.025);border-radius:9px;padding:9px 10px;">Preencha o custo e o preço normal para simular.</div>
+   <button type="button" id="simLimparLucro">↺ Limpar simulador</button>
+   <p style="font-size:10px!important;">Estimativa antes de impostos, taxas de cartão, comissões, frete e demais despesas não informadas.</p>
+  </div>
   <div class="tool-card">
    <h2>📦 Campanha para produto parado</h2>
    <p>Informe o preço original e, se houver, o promocional. O sistema calcula a economia para destacar a oferta. Confira a margem antes de divulgar.</p>
@@ -173,12 +193,12 @@ body.light-mode .ideias-tools-heading h2{color:#172033}body.light-mode .ideias-t
 </main>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-<script src="biobel-shell-v1168.js?v=11.91"></script>
-<script src="biobel-recognition.js?v=11.91"></script>
-<script src="biobel-planilha-leitura.js?v=11.91"></script>
-<script src="biobel-planilha-processamento.js?v=11.91"></script>
-<script src="biobel-planilha-comparacao.js?v=11.91"></script>
-<script src="biobel-app.js?v=11.91"></script>
+<script src="biobel-shell-v1168.js?v=11.92"></script>
+<script src="biobel-recognition.js?v=11.92"></script>
+<script src="biobel-planilha-leitura.js?v=11.92"></script>
+<script src="biobel-planilha-processamento.js?v=11.92"></script>
+<script src="biobel-planilha-comparacao.js?v=11.92"></script>
+<script src="biobel-app.js?v=11.92"></script>
 <script>
 (function(){
  const params=new URLSearchParams(location.search),evento=params.get('evento')||'';
@@ -361,6 +381,34 @@ body.light-mode .ideias-tools-heading h2{color:#172033}body.light-mode .ideias-t
   else fallback(texto);
   function fallback(valor){const ta=document.createElement('textarea');ta.value=valor;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');sucesso();}catch(e){window.prompt('Copie o texto abaixo:',valor);}ta.remove();}
  });});
+})();
+</script>
+<script>
+(function(){
+ const ids=["simCustoProduto","simPrecoNormal","simPrecoPromo","simQuantidade","simInvestimento"];
+ const byId=id=>document.getElementById(id);
+ const brl=n=>new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(Number(n)||0);
+ function calc(){
+  const cost=Number(byId("simCustoProduto").value),normal=Number(byId("simPrecoNormal").value),promo=Number(byId("simPrecoPromo").value),qty=Math.floor(Number(byId("simQuantidade").value)),investment=Number(byId("simInvestimento").value||0);
+  const usedPrice=promo>0?promo:normal;
+  const priceEl=byId("simResultadoPreco"),marginEl=byId("simResultadoMargem"),totalEl=byId("simResultadoTotal"),discountEl=byId("simResultadoDesconto"),notice=byId("simResultadoAviso");
+  if(!(cost>=0)||!(normal>0)||!(qty>0)||!(investment>=0)){
+   priceEl.textContent="—";marginEl.textContent="—";totalEl.textContent="—";discountEl.textContent="—";notice.textContent="Informe um custo válido, o preço normal e a quantidade prevista.";notice.style.color="#9aabc0";return;
+  }
+  const margin=usedPrice-cost,contribution=margin*qty,net=contribution-investment,discount=promo>0&&normal>0?(1-promo/normal)*100:0;
+  priceEl.textContent=brl(usedPrice);
+  marginEl.textContent=brl(margin);
+  totalEl.textContent=brl(net);
+  totalEl.style.color=net>=0?"#27d7a0":"#fb7185";
+  discountEl.textContent=promo>0?Math.max(-999,discount).toLocaleString("pt-BR",{maximumFractionDigits:1})+"%":"Sem desconto";
+  if(usedPrice<cost){notice.textContent="⚠️ O preço considerado está abaixo do custo unitário. A promoção gera prejuízo antes mesmo do investimento de divulgação.";notice.style.color="#fb7185";}
+  else if(promo>0&&promo>=normal){notice.textContent="⚠️ O preço promocional não é menor que o preço normal. Confira os valores informados.";notice.style.color="#fbbf24";}
+  else if(net<0){const breakeven=margin>0?Math.ceil(investment/margin):null;notice.textContent="⚠️ O resultado estimado é negativo. "+(breakeven!==null?"Você precisaria vender cerca de "+breakeven+" unidade(s) para cobrir o investimento.":"Com essa margem, a campanha não recupera o investimento.");notice.style.color="#fbbf24";}
+  else{const breakeven=investment>0&&margin>0?Math.ceil(investment/margin):0;notice.textContent="✅ Resultado estimado positivo de "+brl(net)+". "+(investment>0?"Ponto de equilíbrio aproximado: "+breakeven+" unidade(s).":"Sem investimento adicional cadastrado.");notice.style.color="#27d7a0";}
+ }
+ ids.forEach(id=>byId(id)?.addEventListener("input",calc));
+ byId("simLimparLucro")?.addEventListener("click",()=>{byId("simCustoProduto").value="";byId("simPrecoNormal").value="";byId("simPrecoPromo").value="";byId("simQuantidade").value="10";byId("simInvestimento").value="0";calc();});
+ calc();
 })();
 </script>
 </body>
