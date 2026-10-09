@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#0ea97a">
-<title>Biobel — Fornecedores</title>
+<title>Biobel — Fornecedores | V11.63</title>
 <link rel="icon" type="image/png" href="../favicon-32.png">
 <link rel="stylesheet" href="../biobel-design-system.css">
 <link rel="stylesheet" href="../biobel-ux-refinement.css">
@@ -938,5 +938,73 @@ window.addEventListener('DOMContentLoaded',()=>{
   const obs=new MutationObserver(()=>setTimeout(init,30));obs.observe(document.body,{childList:true,subtree:true});
 })();
 </script>
+
+<style id="fornecedor-modern-v1163">
+/* Biobel Fornecedores V11.63 */
+.supplier-page{max-width:1320px!important;padding:clamp(12px,2vw,24px)!important}
+.supplier-page .panel{border-radius:18px;border-color:rgba(100,130,165,.23);box-shadow:0 12px 30px rgba(0,0,0,.12)}
+.supplier-page .topbar{padding:18px;border:1px solid rgba(39,215,160,.23);border-radius:18px;background:radial-gradient(circle at 90% 0%,rgba(39,215,160,.12),transparent 36%),linear-gradient(135deg,#0d1a2c,#0b1728 65%,#10243a);margin-bottom:14px}
+.supplier-page .brand h1{font-size:clamp(22px,2.2vw,29px);letter-spacing:-.03em}
+.supplier-page .brand p{max-width:650px;line-height:1.6}
+.supplier-page .nav-tabs{border:1px solid rgba(100,130,165,.22);border-radius:15px;padding:8px;margin-bottom:14px;box-shadow:0 8px 24px rgba(0,0,0,.12)}
+.supplier-page .nav-tabs button{border-radius:11px;padding:10px 13px;transition:background .16s,border-color .16s,color .16s}
+.supplier-page .nav-tabs button.active{box-shadow:inset 0 0 0 1px rgba(14,169,122,.12);background:linear-gradient(135deg,rgba(14,169,122,.2),rgba(39,215,160,.07))}
+.supplier-page .kpi{border-radius:14px;padding:14px;min-height:94px;position:relative;overflow:hidden}
+.supplier-page .kpi strong{font-size:clamp(18px,2vw,24px);letter-spacing:-.025em;overflow-wrap:anywhere}
+.supplier-page .supplier-card,.supplier-page .supplier-summary-card,.supplier-page .supplier-overview-card,.supplier-page .tipo-analise-item{border-radius:14px;transition:border-color .16s,transform .16s,box-shadow .16s}
+.supplier-page .supplier-card:hover,.supplier-page .supplier-summary-card:hover{border-color:rgba(39,215,160,.35);box-shadow:0 8px 22px rgba(0,0,0,.13)}
+.supplier-page .field input,.supplier-page input.search,.supplier-page select{min-height:42px}
+.supplier-page button:focus-visible,.supplier-page a:focus-visible,.supplier-page input:focus-visible{outline:2px solid #27d7a0;outline-offset:2px}
+#fornecedorQuickOverview{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 14px}
+.fornecedor-overview-kpi{background:linear-gradient(145deg,#0d1a2c,#081424);border:1px solid #1c2c42;border-radius:15px;padding:13px;min-width:0;position:relative;overflow:hidden}
+.fornecedor-overview-kpi:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:#27d7a0;opacity:.8}
+.fornecedor-overview-kpi:nth-child(2):before{background:#4f9cff}.fornecedor-overview-kpi:nth-child(3):before{background:#fbbf24}.fornecedor-overview-kpi:nth-child(4):before{background:#a78bfa}
+.fornecedor-overview-kpi small{display:block;color:#93a3ba;font-size:10px;font-weight:800}
+.fornecedor-overview-kpi strong{display:block;color:#e8f0fa;font-size:clamp(17px,2vw,23px);margin-top:6px;overflow-wrap:anywhere}
+.fornecedor-overview-kpi span{display:block;color:#71839c;font-size:10px;margin-top:4px}
+.fornecedor-overview-kpi button,#fornecedorQuickNav button{margin-top:9px;border:1px solid #263a53;background:#101f34;color:#cbd5e1;border-radius:8px;padding:7px 9px;font-size:10px;font-weight:800;cursor:pointer}
+.fornecedor-overview-kpi button:hover,#fornecedorQuickNav button:hover{border-color:rgba(39,215,160,.4);color:#7ef2c8}
+#fornecedorQuickNav{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 14px}
+#fornecedorQuickNav .quick-label{font-size:10px;color:#71839c;font-weight:900;align-self:center;padding:0 4px;text-transform:uppercase;letter-spacing:.07em}
+body.light-mode .supplier-page .topbar{background:linear-gradient(135deg,#fff,#f0faf6)!important;border-color:#cfe6dc}
+body.light-mode .fornecedor-overview-kpi{background:linear-gradient(145deg,#fff,#f8fafc);border-color:#d7e0ea}
+body.light-mode .fornecedor-overview-kpi strong{color:#1e293b}
+body.light-mode .fornecedor-overview-kpi small,body.light-mode .fornecedor-overview-kpi span{color:#64748b}
+body.light-mode #fornecedorQuickNav button,body.light-mode .fornecedor-overview-kpi button{background:#fff;color:#334155;border-color:#d7e0ea}
+@media(max-width:850px){#fornecedorQuickOverview{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.supplier-page .topbar{padding:14px}.supplier-page .top-actions{width:100%}.supplier-page .top-actions .btn{flex:1;text-align:center}.supplier-page .nav-tabs{top:4px;gap:5px}.supplier-page .nav-tabs button{padding:9px 10px;font-size:11px}#fornecedorQuickOverview{gap:7px}.fornecedor-overview-kpi{padding:11px}.fornecedor-overview-kpi strong{font-size:18px}#fornecedorQuickNav{display:grid;grid-template-columns:1fr 1fr}#fornecedorQuickNav .quick-label{grid-column:1/-1}#fornecedorQuickNav button{width:100%}}
+@media(prefers-reduced-motion:reduce){.supplier-page *{transition:none!important}}
+</style>
+<script id="fornecedor-modern-v1163-js">
+(function(){
+ if(window.__fornecedorModernV1163)return;window.__fornecedorModernV1163=true;
+ function add(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e}
+ function money(v){return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
+ function openTab(name){if(typeof window.mostrarAbaFornecedor==='function')window.mostrarAbaFornecedor(name)}
+ function run(){
+  const app=document.getElementById('fornecedorApp');if(!app||app.classList.contains('hidden'))return;
+  const nav=app.querySelector('.nav-tabs');if(!nav)return;
+  let cards=document.getElementById('fornecedorQuickOverview');
+  if(!cards){cards=add('section','');cards.id='fornecedorQuickOverview';cards.setAttribute('aria-label','Resumo rápido de fornecedores');nav.insertAdjacentElement('afterend',cards)}
+  let quick=document.getElementById('fornecedorQuickNav');
+  if(!quick){quick=add('div','');quick.id='fornecedorQuickNav';quick.appendChild(add('span','quick-label','Acesso rápido'));
+   [['➕ Cadastro','cadastro'],['🧾 Compras e boletos','historico'],['🔎 Conferência','conferencia'],['📈 Visão geral','resumoFornecedor']].forEach(item=>{const b=add('button','',item[0]);b.type='button';b.addEventListener('click',()=>openTab(item[1]));quick.appendChild(b)});
+   cards.insertAdjacentElement('afterend',quick)
+  }
+  let cad={fornecedores:[],marcas:[]};try{if(typeof window.seedCadastrosAdm==='function')cad=window.seedCadastrosAdm()||cad}catch(e){}
+  let boletos=[];try{if(typeof window.getBoletos==='function')boletos=window.getBoletos()||[]}catch(e){}
+  const total=boletos.reduce((n,b)=>n+(Number(b.valor)||0),0),pend=boletos.filter(b=>!b.pago).reduce((n,b)=>n+(Number(b.valor)||0),0);
+  const data=[['🤝 Fornecedores',String((cad.fornecedores||[]).length),'cadastros ativos','cadastro'],['🏷️ Marcas',String((cad.marcas||[]).length),'marcas cadastradas','cadastro'],['💰 Total em boletos',money(total),boletos.length+' registros','historico'],['⏳ Em aberto',money(pend),boletos.filter(b=>!b.pago).length+' pendentes','historico']];
+  cards.replaceChildren();
+  data.forEach(item=>{const c=add('article','fornecedor-overview-kpi');c.appendChild(add('small','',item[0]));c.appendChild(add('strong','',item[1]));c.appendChild(add('span','',item[2]));const b=add('button','', 'Ver detalhes →');b.type='button';b.addEventListener('click',()=>openTab(item[3]));c.appendChild(b);cards.appendChild(c)});
+ }
+ function schedule(){setTimeout(run,300)}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule);else schedule();
+ document.addEventListener('click',e=>{if(e.target.closest('.nav-tabs button'))schedule()});
+ window.addEventListener('storage',schedule);
+ setTimeout(run,1400);setTimeout(run,2400);
+})();
+</script>
+
 </body>
 </html>
