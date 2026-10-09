@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#0ea97a">
-<title>Biobel — Fornecedores | V11.63</title>
+<title>Biobel — Fornecedores | V11.64</title>
 <link rel="icon" type="image/png" href="../favicon-32.png">
 <link rel="stylesheet" href="../biobel-design-system.css">
 <link rel="stylesheet" href="../biobel-ux-refinement.css">
@@ -221,6 +221,7 @@ body.light-mode [style*="color:#93a3ba"]{color:#334155!important}
   <nav class="nav-tabs" aria-label="Áreas de fornecedores">
     <button id="tabCadastro" class="active" onclick="mostrarAbaFornecedor('cadastro')">🤝 Cadastro</button>
     <button id="tabHistorico" onclick="mostrarAbaFornecedor('historico')">🧾 Compras e boletos</button>
+    <button id="tabPagamentos" onclick="mostrarAbaFornecedor('pagamentos')">📅 Agenda de pagamentos</button>
     <button id="tabConferencia" onclick="mostrarAbaFornecedor('conferencia')">🔎 Conferência</button>
     <button id="tabAnalise" onclick="mostrarAbaFornecedor('analise')">📊 Análise por tipo</button>
     <button id="tabResumoFornecedor" onclick="mostrarAbaFornecedor('resumoFornecedor')">📈 Visão do fornecedor</button>
@@ -481,6 +482,26 @@ body.light-mode [style*="color:#93a3ba"]{color:#334155!important}
     </div>
   </section>
 
+  <section id="abaPagamentos" class="hidden">
+    <div class="panel">
+      <div class="section-head"><div><h2>📅 Agenda de pagamentos</h2><p class="sub">Veja rapidamente quais boletos vencem em cada data. Os dados vêm dos boletos já cadastrados.</p></div><button type="button" class="btn" onclick="renderAgendaPagamentosFornecedor()">↻ Atualizar lista</button></div>
+      <div id="agendaPagamentoKpis" class="grid"></div>
+      <div class="supplier-smart-controls" style="margin-top:12px">
+        <input id="buscaAgendaPagamentos" class="search" type="search" placeholder="🔎 Buscar fornecedor, marca ou observação..." oninput="renderAgendaPagamentosFornecedor()">
+        <div class="supplier-filter-chips" role="group" aria-label="Filtrar boletos por vencimento">
+          <button type="button" class="supplier-chip is-active" data-agenda-filter="abertos" onclick="filtrarAgendaPagamentosFornecedor('abertos')">⏳ Em aberto</button>
+          <button type="button" class="supplier-chip" data-agenda-filter="hoje" onclick="filtrarAgendaPagamentosFornecedor('hoje')">📍 Vencem hoje</button>
+          <button type="button" class="supplier-chip" data-agenda-filter="proximos" onclick="filtrarAgendaPagamentosFornecedor('proximos')">🗓️ Próximos 7 dias</button>
+          <button type="button" class="supplier-chip" data-agenda-filter="vencidos" onclick="filtrarAgendaPagamentosFornecedor('vencidos')">🚨 Vencidos</button>
+          <button type="button" class="supplier-chip" data-agenda-filter="pagos" onclick="filtrarAgendaPagamentosFornecedor('pagos')">✅ Pagos</button>
+          <button type="button" class="supplier-chip" data-agenda-filter="todos" onclick="filtrarAgendaPagamentosFornecedor('todos')">📋 Todos</button>
+        </div>
+      </div>
+      <div id="agendaListaPagamentos" style="margin-top:12px"></div>
+      <div class="note">💡 Confira os valores e as datas cadastradas antes de realizar o pagamento. Marcar um boleto como pago deve ser feito no módulo original de boletos.</div>
+    </div>
+  </section>
+
   <section id="abaAnalise" class="hidden">
     <div class="panel">
       <div class="section-head">
@@ -529,11 +550,12 @@ function entrarFornecedores(){ location.href='../administracao.html'; }
 let filtroFornecedorAtual='todos';
 
 function mostrarAbaFornecedor(aba){
-  ['cadastro','historico','conferencia','analise','resumoFornecedor'].forEach(x=>{
+  ['cadastro','historico','pagamentos','conferencia','analise','resumoFornecedor'].forEach(x=>{
     document.getElementById('aba'+x.charAt(0).toUpperCase()+x.slice(1)).classList.toggle('hidden',x!==aba);
     document.getElementById('tab'+x.charAt(0).toUpperCase()+x.slice(1)).classList.toggle('active',x===aba);
   });
   if(aba==='historico')renderHistoricoFornecedores();
+  if(aba==='pagamentos')renderAgendaPagamentosFornecedor();
   if(aba==='resumoFornecedor')atualizarVisaoCompletaFornecedores();
   atualizarResumoGastosVariaveisFornecedores();
   if(aba==='conferencia')renderConferenciaPagina();
@@ -1003,6 +1025,61 @@ body.light-mode #fornecedorQuickNav button,body.light-mode .fornecedor-overview-
  document.addEventListener('click',e=>{if(e.target.closest('.nav-tabs button'))schedule()});
  window.addEventListener('storage',schedule);
  setTimeout(run,1400);setTimeout(run,2400);
+})();
+</script>
+
+
+<style id="fornecedor-agenda-v1164">
+#abaPagamentos .supplier-payment-day{margin-top:12px;border:1px solid #263a53;background:#081424;border-radius:13px;overflow:hidden}
+#abaPagamentos .supplier-payment-day-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:11px 13px;background:#0d1a2c;border-bottom:1px solid #1c2c42}
+#abaPagamentos .supplier-payment-day-head strong{font-size:12px}
+#abaPagamentos .supplier-payment-day-head span{font-size:11px;color:#fbbf24;font-weight:800}
+#abaPagamentos .supplier-payment-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:11px 13px;border-bottom:1px solid #1c2c42}
+#abaPagamentos .supplier-payment-row:last-child{border-bottom:0}
+#abaPagamentos .supplier-payment-row strong{display:block;font-size:12px}
+#abaPagamentos .supplier-payment-row small{display:block;color:#93a3ba;font-size:10px;margin-top:4px;line-height:1.5}
+#abaPagamentos .supplier-payment-value{text-align:right;font-weight:900;font-size:12px}
+#abaPagamentos .supplier-payment-status{display:inline-block;margin-top:4px;border-radius:999px;padding:3px 7px;font-size:9px;font-weight:900}
+#abaPagamentos .supplier-payment-status.late{color:#fda4af;background:rgba(251,113,133,.12)}
+#abaPagamentos .supplier-payment-status.today{color:#fcd34d;background:rgba(251,191,36,.12)}
+#abaPagamentos .supplier-payment-status.next{color:#86efac;background:rgba(74,222,128,.1)}
+#abaPagamentos .supplier-payment-status.paid{color:#86efac;background:rgba(74,222,128,.1)}
+@media(max-width:520px){#abaPagamentos .supplier-payment-row{grid-template-columns:1fr}#abaPagamentos .supplier-payment-value{text-align:left}}
+</style>
+<script id="fornecedor-agenda-v1164-js">
+(function(){
+ let filtro='abertos';
+ window.filtrarAgendaPagamentosFornecedor=function(f){filtro=f;document.querySelectorAll('[data-agenda-filter]').forEach(b=>b.classList.toggle('is-active',b.dataset.agendaFilter===f));renderAgendaPagamentosFornecedor()};
+ window.renderAgendaPagamentosFornecedor=function(){
+  const root=document.getElementById('agendaListaPagamentos');if(!root)return;
+  const boletos=typeof window.getBoletos==='function'?(window.getBoletos()||[]):[];
+  const hoje=new Date();hoje.setHours(0,0,0,0);
+  const isoHoje=hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-'+String(hoje.getDate()).padStart(2,'0');
+  const limite=new Date(hoje);limite.setDate(limite.getDate()+7);
+  const isoLimite=limite.getFullYear()+'-'+String(limite.getMonth()+1).padStart(2,'0')+'-'+String(limite.getDate()).padStart(2,'0');
+  const data=b=>String(b.vencimento||'').slice(0,10);
+  const aberto=b=>!b.pago;
+  const atrasado=b=>aberto(b)&&data(b)&&data(b)<isoHoje;
+  const hojeVence=b=>aberto(b)&&data(b)===isoHoje;
+  const proximo=b=>aberto(b)&&data(b)>isoHoje&&data(b)<=isoLimite;
+  const valor=b=>Number(b.valor)||0;
+  const fmt=d=>{if(!d)return 'Sem vencimento';const p=d.split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:d};
+  const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  const kpis=document.getElementById('agendaPagamentoKpis');
+  const abertos=boletos.filter(aberto),vencidos=boletos.filter(atrasado),venceHoje=boletos.filter(hojeVence),semana=boletos.filter(proximo);
+  if(kpis)kpis.innerHTML=[
+   ['⏳ Em aberto',abertos.length,money(abertos.reduce((s,b)=>s+valor(b),0))],
+   ['🚨 Vencidos',vencidos.length,money(vencidos.reduce((s,b)=>s+valor(b),0))],
+   ['📍 Vencem hoje',venceHoje.length,money(venceHoje.reduce((s,b)=>s+valor(b),0))],
+   ['🗓️ Próximos 7 dias',semana.length,money(semana.reduce((s,b)=>s+valor(b),0))]
+  ].map(x=>'<div class="kpi"><small>'+x[0]+'</small><strong>'+x[2]+'</strong><span>'+x[1]+' boleto(s)</span></div>').join('');
+  const busca=(document.getElementById('buscaAgendaPagamentos')?.value||'').trim().toLowerCase();
+  let lista=boletos.filter(b=>{const d=data(b);if(filtro==='abertos'&&!aberto(b))return false;if(filtro==='hoje'&&!hojeVence(b))return false;if(filtro==='proximos'&&!proximo(b))return false;if(filtro==='vencidos'&&!atrasado(b))return false;if(filtro==='pagos'&&aberto(b))return false;if(busca&&!([b.fornecedor,b.marca,b.tipoProduto,b.observacoes,b.obs].some(v=>String(v||'').toLowerCase().includes(busca))))return false;return true});
+  lista.sort((a,b)=>{const da=data(a),db=data(b);if(!da)return 1;if(!db)return -1;return da.localeCompare(db)});
+  if(!lista.length){root.innerHTML='<div class="empty">Nenhum boleto encontrado para este filtro. Se esperava ver pagamentos, confira se os boletos foram cadastrados e se têm data de vencimento.</div>';return}
+  const grupos={};lista.forEach(b=>{const d=data(b)||'sem-data';(grupos[d]||(grupos[d]=[])).push(b)});
+  root.innerHTML=Object.keys(grupos).map(d=>{const itens=grupos[d],total=itens.reduce((s,b)=>s+valor(b),0);return '<section class="supplier-payment-day"><div class="supplier-payment-day-head"><strong>📅 '+fmt(d==='sem-data'?'':d)+'</strong><span>'+itens.length+' boleto(s) · '+money(total)+'</span></div>'+itens.map(b=>{const status=b.pago?'Pago':atrasado(b)?'Vencido':hojeVence(b)?'Vence hoje':'Pendente';const cls=b.pago?'paid':atrasado(b)?'late':hojeVence(b)?'today':'next';return '<article class="supplier-payment-row"><div><strong>'+esc(b.fornecedor||'Fornecedor não informado')+'</strong><small>🏷️ '+esc(b.marca||'Sem marca')+' · '+esc(b.tipoProduto||'Boleto/compra')+(b.observacoes||b.obs?' · '+esc(b.observacoes||b.obs):'')+'</small><span class="supplier-payment-status '+cls+'">'+status+'</span></div><div class="supplier-payment-value">'+money(valor(b))+'</div></article>'}).join('')+'</section>'}).join('');
+ };
 })();
 </script>
 
