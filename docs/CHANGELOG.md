@@ -1,3 +1,9 @@
+## v11.79 — 09/10/2026
+- 🗓️ **Calendário comercial proativo:** abre automaticamente durante a janela de preparação e mostra contagem regressiva do Dia das Crianças (3 dias antes até o dia do evento).
+- 🧠 **Acompanhamento após a data:** nos 5 dias seguintes ao Dia das Crianças, direciona o foco para a Black Friday, com contagem regressiva e pergunta diária sobre ofertas, estoque e divulgação.
+- ✅ **Status dos preparativos:** botões “Já está pronto”, “Em andamento” e “Preciso de ideias” salvam a resposta no navegador e exibem o estado registrado.
+- ♻️ **Versão/cache:** dashboard e service worker atualizados para v11.79.
+
 ## v11.78 — 09/10/2026
 - 🧠 **Alertas inteligentes:** ocorrências repetidas de “Horário ausente na coluna L” agora são agrupadas em uma única linha, somando as vendas afetadas e listando as datas; o resumo conta tipos de alerta, não repetições.
 - 📈 **Comparativo diário em destaque:** o card foi movido para cima de “Alertas e ações críticas”, facilitando a leitura dos indicadores antes das pendências.
