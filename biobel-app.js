@@ -1859,27 +1859,36 @@ function renderFolhaDePonto(){
  if(inputSabadoPadrao && padrao.horasContratadasSabado!==undefined && padrao.horasContratadasSabado!=='') inputSabadoPadrao.value = padrao.horasContratadasSabado;
  renderCargaHorariaSemanal();
 
- // Marca no seletor quem já foi desligada, mas mantém a opção — importante continuar acessível
- // pra puxar a folha de ponto dela até o último mês trabalhado, pra contadora.
+ // CLT é o posto operacional atual; o nome antigo fica disponível apenas para consultar
+ // registros históricos de ponto, sem ser tratado como funcionária ativa.
  const selectFuncionaria = document.getElementById('pontoFuncionariaSelect');
  if(selectFuncionaria){
-  const treinoAtivo=!!getDesligamento('gabriela');
+  const treinoAtivo=!!getEquipePrincipal().treinamento;
   let optTreino=Array.from(selectFuncionaria.options).find(opt=>opt.value==='CLT_TREINAMENTO');
-  if(treinoAtivo && !optTreino){
+  if(!optTreino){
    optTreino=document.createElement('option');
    optTreino.value='CLT_TREINAMENTO';
-   optTreino.textContent='CLT (Treinamento)';
-   selectFuncionaria.appendChild(optTreino);
-  } else if(!treinoAtivo && optTreino){
-   if(selectFuncionaria.value==='CLT_TREINAMENTO') selectFuncionaria.value='Gabriela';
-   optTreino.remove();
+   selectFuncionaria.insertBefore(optTreino,selectFuncionaria.firstChild);
   }
+  optTreino.textContent=treinoAtivo?'CLT':'CLT (histórico)';
   Array.from(selectFuncionaria.options).forEach(opt=>{
-   const chave = opt.value.toLowerCase();
-   const nomeBase = opt.value;
-   const desligada = !!getDesligamento(chave);
-   opt.textContent = desligada ? nomeBase+' (desligada)' : nomeBase;
+   if(opt.value==='CLT_TREINAMENTO'){
+    opt.textContent=treinoAtivo?'CLT':'CLT (histórico)';
+    return;
+   }
+   if(opt.value==='Gabriela'){
+    opt.textContent='Gabriela (histórico)';
+    return;
+   }
+   const chave=opt.value.toLowerCase();
+   const nomeBase=opt.value;
+   const desligada=!!getDesligamento(chave);
+   opt.textContent=desligada?nomeBase+' (desligada)':nomeBase;
   });
+  if(!selectFuncionaria.dataset.biobelFuncionarioInicializada){
+   if(treinoAtivo) selectFuncionaria.value='CLT_TREINAMENTO';
+   selectFuncionaria.dataset.biobelFuncionarioInicializada='yes';
+  }
  }
 
  const funcionaria = document.getElementById('pontoFuncionariaSelect')?.value;
