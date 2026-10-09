@@ -28,7 +28,7 @@
  <div class="card rounded-2xl border border-slate-800 bg-slate-900 p-5 md:p-7" style="border-color:rgba(79,156,255,.35);">
   <div class="mb-4">
    <h2 class="text-xl font-bold">💳 Chaves PIX — Pagamento Rápido</h2>
-   <p class="text-sm text-slate-400 mt-1">Pra pagar a Gabriela e a Day sem precisar procurar em outro lugar.</p>
+   <p class="text-sm text-slate-400 mt-1">Consulte as chaves PIX cadastradas da equipe sem precisar procurar em outro lugar.</p>
   </div>
   <div id="conteudoChavesPixEquipe"></div>
  </div>
@@ -43,8 +43,9 @@
 
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
    <select id="pontoFuncionariaSelect" onchange="renderFolhaDePonto()" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
-    <option value="Gabriela">Gabriela</option>
+    <option value="CLT_TREINAMENTO">CLT</option>
     <option value="Day">Day</option>
+    <option value="Gabriela">Gabriela (histórico)</option>
    </select>
    <input id="pontoMesSelect" type="month" onchange="renderFolhaDePonto()" style="background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:9px 12px;color:#dce5f2;font-size:13px;">
   </div>
@@ -147,7 +148,7 @@
   <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
    <div>
     <h2 class="text-xl font-bold">👩‍💼 Rotina da Equipe</h2>
-    <p class="text-sm text-slate-400 mt-1">Checklist semanal de atividades — marca sozinho e fica salvo. Quando a vendedora principal sair, o sistema transforma este posto em <strong>CLT (Treinamento)</strong> e herda automaticamente as atividades.</p>
+    <p class="text-sm text-slate-400 mt-1">Checklist semanal de atividades — marca sozinho e fica salvo. Este posto é identificado como <strong>CLT</strong> e mantém a rotina para a funcionária em teste.</p>
    </div>
    <div class="flex items-center gap-2 flex-wrap">
     <button id="btnEquipeEditMode" onclick="toggleEquipeEditMode()" class="no-print bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap">⚙️ Configurar atividades</button>
@@ -157,7 +158,7 @@
   </div>
   <div id="equipeResetMsg" style="display:none;" class="mb-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300 font-semibold"></div>
   <div id="equipeEditHint" style="display:none;" class="mb-4 rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-3 text-sm text-blue-300">
-   ✏️ <strong>Modo de edição ligado.</strong> Agora dá pra <strong>remover</strong> (🗑), <strong>mover</strong> tarefas entre CLT (Treinamento) e Dai (🔁) e <strong>adicionar</strong> novas tarefas no fim de cada lista.
+   ✏️ <strong>Modo de edição ligado.</strong> Agora dá pra <strong>remover</strong> (🗑), <strong>mover</strong> tarefas entre CLT e Day (🔁) e <strong>adicionar</strong> novas tarefas no fim de cada lista.
    <button onclick="restaurarRotinaPadrao()" class="ml-2 text-rose-300 underline">Restaurar lista original</button>
   </div>
   <div class="no-print" style="background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
@@ -184,8 +185,8 @@
    <div id="equipeColunaGabi" style="background:rgba(39,215,160,.05);border:1px solid rgba(39,215,160,.15);border-radius:14px;padding:14px;">
     <div class="flex items-center justify-between gap-2 mb-2">
      <div style="display:flex;align-items:center;gap:8px;">
-      <span id="equipePrincipalAvatar" style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#27d7a0,#0ea97a);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#04241a;flex-shrink:0;">G</span>
-      <h3 id="equipePrincipalTitulo" class="font-bold text-emerald-400">🎓 CLT (Treinamento)</h3><span id="equipePrincipalStatus" style="font-size:10px;color:#fbbf24;font-weight:800;"></span>
+      <span id="equipePrincipalAvatar" style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#27d7a0,#0ea97a);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#04241a;flex-shrink:0;">C</span>
+      <h3 id="equipePrincipalTitulo" class="font-bold text-emerald-400">🎓 CLT</h3><span id="equipePrincipalStatus" style="font-size:10px;color:#fbbf24;font-weight:800;"></span>
      </div>
      <span id="equipeProgressoGabiTexto" class="text-xs text-slate-400 font-semibold whitespace-nowrap">0 de 0</span>
     </div>
@@ -288,8 +289,8 @@
  </div>
 
 </section>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell-v1168.js?v=11.77"></script>
-<script src="biobel-recognition.js?v=11.77"></script>
-<script src="biobel-planilha-leitura.js?v=11.77"></script>
-<script src="biobel-planilha-processamento.js?v=11.77"></script>
-<script src="biobel-planilha-comparacao.js?v=11.77"></script><script src="biobel-app.js?v=11.77"></script></body></html>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell-v1168.js?v=11.90"></script>
+<script src="biobel-recognition.js?v=11.90"></script>
+<script src="biobel-planilha-leitura.js?v=11.90"></script>
+<script src="biobel-planilha-processamento.js?v=11.90"></script>
+<script src="biobel-planilha-comparacao.js?v=11.90"></script><script src="biobel-app.js?v=11.90"></script></body></html>
