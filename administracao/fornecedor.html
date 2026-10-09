@@ -1046,7 +1046,7 @@ body.light-mode #fornecedorQuickNav button,body.light-mode .fornecedor-overview-
 #abaPagamentos .supplier-payment-status.paid{color:#86efac;background:rgba(74,222,128,.1)}
 @media(max-width:520px){#abaPagamentos .supplier-payment-row{grid-template-columns:1fr}#abaPagamentos .supplier-payment-value{text-align:left}}
 </style>
-<script id="fornecedor-agenda-v1164-js">
+<script>
 (function(){
  let filtro='abertos';
  window.filtrarAgendaPagamentosFornecedor=function(f){filtro=f;document.querySelectorAll('[data-agenda-filter]').forEach(b=>b.classList.toggle('is-active',b.dataset.agendaFilter===f));renderAgendaPagamentosFornecedor()};
