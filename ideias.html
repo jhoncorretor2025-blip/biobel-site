@@ -44,7 +44,7 @@ body.light-mode .ideias-filter.active{background:#e6f8f1;color:#087f5b;border-co
 .ideias-search-panel input,.ideias-search-panel select{width:100%;min-width:0;padding:10px 11px;border:1px solid #2b4059;border-radius:9px;background:#091525;color:#dce5f2;font:inherit;font-size:12px}
 .ideias-search-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 2px 12px;color:#9aabc0;font-size:11px}
 .ideias-search-meta button{border:1px solid #2b4059;border-radius:8px;padding:6px 9px;color:#27d7a0;background:transparent;font-weight:800;cursor:pointer}
-.ideia-arte{margin-top:2px;padding:10px;border:1px solid rgba(39,215,160,.22);border-radius:10px;background:rgba(39,215,160,.055)}
+.ideia-classificacao{display:flex;flex-wrap:wrap;gap:5px;margin:2px 0 5px}.ideia-classificacao span{font-size:9px;border:1px solid #2b4059;border-radius:999px;padding:4px 7px;color:#a9bacd;background:rgba(148,163,184,.05)}.ideia-arte{margin-top:2px;padding:10px;border:1px solid rgba(39,215,160,.22);border-radius:10px;background:rgba(39,215,160,.055)}
 .ideia-arte summary{cursor:pointer;color:#27d7a0;font-size:11px;font-weight:900}
 .ideia-arte p{margin-top:8px}
 .ideia-arte strong{color:#dce5f2}
@@ -97,7 +97,7 @@ body.light-mode .ideias-tools-heading h2{color:#172033}body.light-mode .ideias-t
   <section class="ideias-search-panel" aria-label="Busca e filtros avançados">
    <label>🔎 Buscar ideias<input id="buscaIdeias" type="search" placeholder="Ex.: perfume, Dia das Mães, produto parado, WhatsApp" autocomplete="off"></label>
    <label>💰 Orçamento<select id="filtroOrcamento"><option value="todos">Todos os orçamentos</option><option value="zero">Praticamente zero</option><option value="baixo">Baixo investimento</option><option value="maior">Orçamento maior</option></select></label>
-   <label>🎯 Objetivo<select id="filtroObjetivo"><option value="todos">Todos os objetivos</option><option value="vender">Vender mais</option><option value="atrair">Atrair novas clientes</option><option value="recuperar">Recuperar clientes inativas</option><option value="ticket">Aumentar valor por compra</option><option value="lancamento">Divulgar lançamentos</option></select></label>
+   <label>🎯 Objetivo<select id="filtroObjetivo"><option value="todos">Todos os objetivos</option><option value="vender">Vender mais</option><option value="atrair">Atrair novas clientes</option><option value="recuperar">Recuperar clientes inativas</option><option value="ticket">Aumentar valor por compra</option><option value="lancamento">Divulgar lançamentos</option><option value="fidelizar">Fidelizar clientes</option><option value="engajamento">Aumentar engajamento</option></select></label>
   </section>
   <div class="ideias-search-meta"><span id="contadorIdeias" aria-live="polite">Carregando ideias...</span><button type="button" id="limparFiltrosIdeias">Limpar busca e filtros</button></div>
 
@@ -127,6 +127,7 @@ body.light-mode .ideias-tools-heading h2{color:#172033}body.light-mode .ideias-t
  <article class="ideia-card" data-categoria="promocao"><div class="ideia-tag">Promoções</div><h3>💰 Beleza para Cada Bolso</h3><button type="button" class="fav-btn" data-favoritar>☆ Salvar nos favoritos</button><p>Monte uma seleção de produtos por faixas de preço para ajudar cada cliente a encontrar opções adequadas ao seu orçamento.</p><ul class="passos"><li>Escolha faixas realistas para o catálogo da Biobel.</li><li>Confirme preços e disponibilidade de cada produto.</li><li>Crie um carrossel ou status com uma opção por faixa.</li></ul><button type="button" data-copy="💚 Beleza para cada bolso! Na Biobel, podemos ajudar você a encontrar opções para diferentes orçamentos. Me conte quanto pretende investir e o que está procurando que apresentamos os produtos disponíveis.">📋 Copiar texto sugerido</button></article>
  <article class="ideia-card" data-categoria="fidelizacao"><div class="ideia-tag">Fidelização</div><h3>💚 Cliente VIP da Semana</h3><button type="button" class="fav-btn" data-favoritar>☆ Salvar nos favoritos</button><p>Valorize clientes recorrentes com um benefício simples, transparente e definido antes do início da campanha, sem sorteios.</p><ul class="passos"><li>Defina critérios objetivos e iguais para todas as pessoas participantes.</li><li>Escolha um benefício viável, como uma amostra ou mimo.</li><li>Convide apenas clientes que aceitaram receber mensagens e respeite a privacidade.</li></ul><button type="button" data-copy="💚 A Biobel adora ter você por perto! Nesta semana, clientes que atendem às condições da nossa ação VIP podem consultar um benefício especial. Fale com nossa equipe para conhecer as regras e a disponibilidade.">📋 Copiar texto sugerido</button></article>
 </div>
+ <div id="ideiasSemResultados" class="ideias-vazio" hidden>🔎 Nenhuma ideia encontrada. Experimente outra palavra ou limpe os filtros.</div>
  <p class="ideias-note">Dica: escolha poucas ações que a equipe consiga executar bem. Ajuste os preços, descontos e produtos conforme o estoque e a margem da Biobel antes de publicar uma oferta.</p>
  <div class="ideias-tools-heading">
   <div class="ideias-eyebrow">Ferramentas práticas</div>
@@ -172,12 +173,12 @@ body.light-mode .ideias-tools-heading h2{color:#172033}body.light-mode .ideias-t
 </main>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-<script src="biobel-shell-v1168.js?v=11.88"></script>
-<script src="biobel-recognition.js?v=11.88"></script>
-<script src="biobel-planilha-leitura.js?v=11.88"></script>
-<script src="biobel-planilha-processamento.js?v=11.88"></script>
-<script src="biobel-planilha-comparacao.js?v=11.88"></script>
-<script src="biobel-app.js?v=11.88"></script>
+<script src="biobel-shell-v1168.js?v=11.89"></script>
+<script src="biobel-recognition.js?v=11.89"></script>
+<script src="biobel-planilha-leitura.js?v=11.89"></script>
+<script src="biobel-planilha-processamento.js?v=11.89"></script>
+<script src="biobel-planilha-comparacao.js?v=11.89"></script>
+<script src="biobel-app.js?v=11.89"></script>
 <script>
 (function(){
  const params=new URLSearchParams(location.search),evento=params.get('evento')||'';
@@ -193,20 +194,32 @@ body.light-mode .ideias-tools-heading h2{color:#172033}body.light-mode .ideias-t
  const contadorIdeias=document.getElementById('contadorIdeias');
  const normalizarTexto=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
  function classificarIdeia(card){
-  const t=normalizarTexto((card.querySelector('h3')?.textContent||'')+' '+(card.querySelector('p')?.textContent||'')+' '+(card.dataset.categoria||''));
+  const titulo=card.querySelector('h3')?.textContent||'Campanha Biobel';
+  const paragrafo=card.querySelector('p')?.textContent||'';
+  const t=normalizarTexto(titulo+' '+paragrafo);
   let orcamento='zero';
-  if(/brinde|sacola|kit|combo|desconto|oferta|vip|vantagens/.test(t))orcamento='baixo';
-  if(/evento|consultoria|vitrine|impulsion|anuncio pago|influenciador/.test(t))orcamento='maior';
-  let objetivos=[];
-  if(/venda|oferta|promoc|combo|kit|preco|sacola|produto parado|estoque/.test(t))objetivos.push('vender','ticket');
-  if(/indique|novas clientes|presente|stories|enquete|desafio|instagram|consultoria/.test(t))objetivos.push('atrair');
-  if(/reative|reativ|pos-venda|pos venda|cliente sem comprar|whatsapp|aniversario|vip|fideliz|clube/.test(t))objetivos.push('recuperar');
+  if(/brinde|sacola|kit|combo|desconto|oferta|vip|vantagens|beneficio|surpresa/.test(t))orcamento='baixo';
+  if(/evento externo|consultoria presencial|vitrine nova|impulsionamento|anuncio pago|influenciador|material impresso/.test(t))orcamento='maior';
+  const objetivos=[];
+  if(/venda|oferta|promoc|combo|kit|preco|sacola|produto parado|estoque|cada bolso|surpresa na sacola/.test(t))objetivos.push('vender');
+  if(/indique|novas clientes|presente|stories|enquete|desafio|instagram|consultoria|guia de presentes/.test(t))objetivos.push('atrair');
+  if(/reative|reativ|cliente sem comprar|clientes inativas/.test(t))objetivos.push('recuperar');
   if(/combo|kit|sacola|rotina completa|faixa de preco|cada bolso/.test(t))objetivos.push('ticket');
   if(/novidade|lancamento|demonstrando|bastidores|produto novo/.test(t))objetivos.push('lancamento');
-  if(!objetivos.length)objetivos=['vender'];
+  if(/aniversario|cliente vip|clube|fideliz|pos-venda|pos venda|relacionamento|cliente frequente|agradecer pela compra/.test(t))objetivos.push('fidelizar');
+  if(/enquete|desafio|stories|instagram|engajamento|bastidores|votacao/.test(t))objetivos.push('engajamento');
+  if(!objetivos.length)objetivos.push('vender');
   card.dataset.orcamento=orcamento;
   card.dataset.objetivos=[...new Set(objetivos)].join(' ');
-  const titulo=card.querySelector('h3')?.textContent||'Campanha Biobel';
+  const rotulosObjetivo={vender:'Vender mais',atrair:'Atrair clientes',recuperar:'Recuperar clientes',ticket:'Aumentar valor por compra',lancamento:'Divulgar lançamentos',fidelizar:'Fidelizar clientes',engajamento:'Gerar engajamento'};
+  const rotuloOrcamento={zero:'Sem custo extra',baixo:'Baixo investimento',maior:'Orçamento maior'};
+  if(!card.querySelector('.ideia-classificacao')){
+   const meta=document.createElement('div');meta.className='ideia-classificacao';
+   const tag=card.querySelector('.ideia-tag');
+   if(tag)tag.insertAdjacentElement('afterend',meta);
+  }
+  const meta=card.querySelector('.ideia-classificacao');
+  if(meta)meta.innerHTML=[...new Set(objetivos)].slice(0,2).map(o=>'<span>🎯 '+rotulosObjetivo[o]+'</span>').join('')+'<span>💰 '+rotuloOrcamento[orcamento]+'</span>';
   const arteMap=[
    [/consultoria/i,'Visual: fundo verde-claro e creme; frase “Seu momento de beleza”; destaque para 2–3 produtos reais; título no topo, produtos no centro e chamada “Peça sua consultoria” no rodapé.'],
    [/7 dias/i,'Visual: sequência de 7 Stories com numeração grande; paleta verde Biobel, branco e tons suaves; uma dica por tela e um produto relacionado em destaque; CTA “Acompanhe amanhã”.'],
@@ -225,7 +238,15 @@ body.light-mode .ideias-tools-heading h2{color:#172033}body.light-mode .ideias-t
    const summary=document.createElement('summary');summary.textContent='🎨 Ver sugestão de arte para Instagram';
    const p=document.createElement('p');p.innerHTML='<strong>Conceito:</strong> '+textoArte.replace(/^Visual: /,'');
    const formato=document.createElement('p');formato.innerHTML='<strong>Formato recomendado:</strong> Story vertical (1080 × 1920) ou adaptação para feed (1080 × 1350). Use fotos e preços reais da loja.';
-   details.append(summary,p,formato);
+   const paleta=document.createElement('p');paleta.innerHTML='<strong>Identidade visual:</strong> verde Biobel, branco e tons neutros; mantenha o título legível e deixe espaço ao redor do produto.';
+   details.append(summary,p,formato,paleta);
+   const copiar=document.createElement('button');copiar.type='button';copiar.textContent='📋 Copiar briefing da arte';
+   copiar.addEventListener('click',function(){
+    const briefing='Briefing visual Biobel — '+titulo+'\n'+textoArte+'\nFormato: Story 1080 × 1920 ou Feed 1080 × 1350.\nPaleta: verde Biobel, branco e tons neutros.\nOrientação: usar foto e preço reais, com chamada legível e espaço para respirar.';
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(briefing).then(function(){copiar.textContent='✅ Briefing copiado';setTimeout(function(){copiar.textContent='📋 Copiar briefing da arte';},1600);}).catch(function(){window.prompt('Copie o briefing:',briefing);});
+    else window.prompt('Copie o briefing:',briefing);
+   });
+   details.appendChild(copiar);
    const passos=card.querySelector('.passos');
    if(passos)passos.insertAdjacentElement('afterend',details);else card.append(details);
   }
@@ -271,6 +292,7 @@ body.light-mode .ideias-tools-heading h2{color:#172033}body.light-mode .ideias-t
   const grid=document.getElementById('ideiasGrid');
   if(grid)grid.dataset.filtroAtual=filtro;
   if(contadorIdeias)contadorIdeias.textContent=visiveis+' de '+cardsIdeias.length+' ideias encontradas';
+  const vazioIdeias=document.getElementById('ideiasSemResultados');if(vazioIdeias)vazioIdeias.hidden=visiveis!==0;
  }
  // Captura o clique no documento para evitar conflito com outros scripts do painel.
  document.addEventListener('click',function(evento){
