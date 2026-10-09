@@ -1119,7 +1119,7 @@ function alternarVisibilidadeSenhaDev(inputId,botao){
  }
  function preencher(){
   const dados=ler();
-  Object.keys(fields).forEach(k=>{const el=document.getElementById(fields[k]);if(el&&!el.value.trim())el.value=dados[k]||'';else if(el&&(!localStorage.getItem(KEY)))el.value=dados[k]||''});
+  Object.keys(fields).forEach(k=>{const el=document.getElementById(fields[k]);if(el)el.value=dados[k]||''});
   window.BiobelEmpresa=dados;
  }
  window.getDadosEmpresaBiobel=function(){return ler()};
