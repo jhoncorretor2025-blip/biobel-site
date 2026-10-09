@@ -144,7 +144,7 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
 -->
 <main id="dashboardTab" class="max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabDashboard">
   <div class="biobel-dashboard-heading no-print" aria-label="Cabeçalho da Visão Geral">
-   <div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><div class="biobel-dashboard-heading-title">Visão Geral</div><span id="versaoSistemaTela" style="display:inline-flex;align-items:center;padding:4px 8px;border:1px solid rgba(14,169,122,.35);border-radius:8px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:10px;font-weight:900;letter-spacing:.04em;">v11.77</span></div><div class="biobel-dashboard-heading-sub">Resumo rápido da loja</div></div>
+   <div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><div class="biobel-dashboard-heading-title">Visão Geral</div><span id="versaoSistemaTela" style="display:inline-flex;align-items:center;padding:4px 8px;border:1px solid rgba(14,169,122,.35);border-radius:8px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:10px;font-weight:900;letter-spacing:.04em;">v11.78</span></div><div class="biobel-dashboard-heading-sub">Resumo rápido da loja</div></div>
    <div class="biobel-dashboard-heading-weather" aria-label="Clima de hoje e previsão de amanhã"><span style="font-size:10px;color:#71849d;font-weight:800;">🌦️ Clima</span><span id="indicadorClimaTopo" style="display:none;"></span></div>
   </div>
   <div class="biobel-dashboard-compact no-print">
@@ -183,12 +183,12 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
     <span class="biobel-context-label">🌦️ Clima</span><span id="kpiClimaTexto" class="biobel-context-label">—</span>
    </div>
    <details class="biobel-section-compact" open>
-    <summary>🚨 Alertas e ações críticas <span id="kpiAlertasResumo" style="font-weight:700;color:#fbbf24;">verificando...</span></summary>
-    <div class="biobel-alert-scroll" style="overflow-x:auto;"><table class="biobel-alert-table"><thead><tr><th>Data</th><th>Problema</th><th>Impacto</th><th>Ação</th></tr></thead><tbody id="kpiAlertasBody"><tr><td colspan="4" class="biobel-alert-empty">Analisando os dados...</td></tr></tbody></table></div>
-   </details>
-   <details class="biobel-section-compact" open>
     <summary>📈 Comparativo diário <span id="kpiComparativoResumo" style="font-weight:700;color:#93a3ba;">Hoje × ontem</span></summary>
     <div class="biobel-compare-scroll" style="overflow-x:auto;"><table class="biobel-compare-table"><thead><tr><th>Métrica</th><th id="kpiComparativoHojeHeader">Hoje</th><th id="kpiComparativoAnteriorHeader">Dia útil anterior</th><th>Média anterior</th><th>Variação</th></tr></thead><tbody id="kpiComparativoBody"></tbody></table></div>
+   </details>
+   <details class="biobel-section-compact" open>
+    <summary>🚨 Alertas e ações críticas <span id="kpiAlertasResumo" style="font-weight:700;color:#fbbf24;">verificando...</span></summary>
+    <div class="biobel-alert-scroll" style="overflow-x:auto;"><table class="biobel-alert-table"><thead><tr><th>Data(s)</th><th>Problema</th><th>Impacto</th><th>Ação</th></tr></thead><tbody id="kpiAlertasBody"><tr><td colspan="4" class="biobel-alert-empty">Analisando os dados...</td></tr></tbody></table></div>
    </details>
    <details class="biobel-section-compact">
     <summary>📅 Calendário comercial <span style="font-weight:700;color:#93a3ba;">próximos eventos</span></summary>
@@ -453,11 +453,11 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
 -->
 
 </main>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell-v1168.js?v=11.77"></script>
-<script src="biobel-recognition.js?v=11.77"></script>
-<script src="biobel-planilha-leitura.js?v=11.77"></script>
-<script src="biobel-planilha-processamento.js?v=11.77"></script>
-<script src="biobel-planilha-comparacao.js?v=11.77"></script><script src="biobel-app.js?v=11.77"></script><script src="inteligencia-operacional.js?v=11.77"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell-v1168.js?v=11.78"></script>
+<script src="biobel-recognition.js?v=11.78"></script>
+<script src="biobel-planilha-leitura.js?v=11.78"></script>
+<script src="biobel-planilha-processamento.js?v=11.78"></script>
+<script src="biobel-planilha-comparacao.js?v=11.78"></script><script src="biobel-app.js?v=11.78"></script><script src="inteligencia-operacional.js?v=11.78"></script>
 <script>
 (function(){
  function arrData(){try{return Array.isArray(daysData)?daysData:(Array.isArray(window.daysData)?window.daysData:[]);}catch(e){return Array.isArray(window.daysData)?window.daysData:[];}}
@@ -630,10 +630,17 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
     anteriorHeader.textContent=ontem?.dia ? 'Anterior ('+String(ontem.dia)+')' : 'Dia útil anterior';
    }
    const body=document.getElementById('kpiAlertasBody'), alertas=[];
-   a.forEach(d=>{if(d?.vendasSemHorario>0)alertas.push([d.dia,'Horário ausente na coluna L',d.vendasSemHorario+' venda(s)','Conferir planilha']);});
+   // Agrupa todos os dias com horário ausente em um único alerta, evitando linhas repetidas.
+   const diasSemHorario=a.filter(d=>Number(d?.vendasSemHorario)>0);
+   if(diasSemHorario.length){
+    const totalSemHorario=diasSemHorario.reduce((s,d)=>s+Number(d.vendasSemHorario||0),0);
+    const datas=diasSemHorario.map(d=>String(d.dia||'—'));
+    const datasResumo=datas.length===1?datas[0]:datas.length===2?datas[0]+' e '+datas[1]:datas.slice(0,-1).join(', ')+' e '+datas[datas.length-1];
+    alertas.push([datasResumo,'Horário ausente na coluna L · '+diasSemHorario.length+' dia(s)',totalSemHorario+' venda(s)','Conferir planilha']);
+   }
    if(qtd>0&&qtd<x.minimo)alertas.push([hoje?.dia||'Hoje','Atendimentos abaixo da referência',qtd+' atendimento(s)','Acompanhar movimento']);
    body.innerHTML=alertas.length?alertas.slice(0,5).map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td>'+r[3]+'</td></tr>').join(''):'<tr><td colspan="4" class="biobel-alert-empty">✅ Nenhuma pendência crítica encontrada pelos indicadores rápidos.</td></tr>';
-   document.getElementById('kpiAlertasResumo').textContent=alertas.length?(alertas.length+' pendência(s)'):'Tudo certo';
+   document.getElementById('kpiAlertasResumo').textContent=alertas.length?(alertas.length+' tipo(s) de alerta'):'Tudo certo';
    const cal=document.getElementById('listaDatasComerciaisDashboard'), out=document.getElementById('kpiCalendarioChips');
    if(cal&&out&&cal.children.length){out.innerHTML=Array.from(cal.children).slice(0,5).map(el=>'<span class="biobel-calendar-chip">'+el.innerText.replace(/\s+/g,' ').trim()+'</span>').join('')||'<span class="biobel-calendar-chip">Nenhum evento próximo.</span>';}
   }catch(e){console.warn('Dashboard compacto:',e);}
