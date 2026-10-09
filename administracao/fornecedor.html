@@ -1057,7 +1057,14 @@ body.light-mode #fornecedorQuickNav button,body.light-mode .fornecedor-overview-
   const isoHoje=hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-'+String(hoje.getDate()).padStart(2,'0');
   const limite=new Date(hoje);limite.setDate(limite.getDate()+7);
   const isoLimite=limite.getFullYear()+'-'+String(limite.getMonth()+1).padStart(2,'0')+'-'+String(limite.getDate()).padStart(2,'0');
-  const data=b=>String(b.vencimento||'').slice(0,10);
+  const data=b=>{
+   const raw=String(b.vencimento||'').trim().slice(0,10);if(!raw)return '';
+   let m=raw.match(/^(\\d{4})-(\\d{1,2})-(\\d{1,2})$/);
+   if(m){let a=Number(m[2]),z=Number(m[3]);if(a>12&&z>=1&&z<=12)return m[1]+'-'+String(z).padStart(2,'0')+'-'+String(a).padStart(2,'0');return m[1]+'-'+String(a).padStart(2,'0')+'-'+String(z).padStart(2,'0')}
+   m=raw.match(/^(\\d{1,2})[\\/.-](\\d{1,2})[\\/.-](\\d{4})$/);
+   if(m)return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
+   return raw;
+  };
   const aberto=b=>!b.pago;
   const atrasado=b=>aberto(b)&&data(b)&&data(b)<isoHoje;
   const hojeVence=b=>aberto(b)&&data(b)===isoHoje;
