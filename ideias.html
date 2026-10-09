@@ -80,12 +80,13 @@ body.light-mode .tool-card{background:#fff;border-color:#d7e1ec}body.light-mode 
  <section class="ideias-tools" aria-label="Ferramentas de campanha">
   <div class="tool-card">
    <h2>📦 Campanha para produto parado</h2>
-   <p>Informe os dados do produto para montar uma sugestão de divulgação. Confira a margem antes de oferecer desconto.</p>
+   <p>Informe o preço original e, se houver, o promocional. O sistema calcula a economia para destacar a oferta. Confira a margem antes de divulgar.</p>
    <div class="tool-fields">
     <label>Produto<input id="produtoParadoNome" placeholder="Ex.: hidratante X"></label>
     <label>Quantidade em estoque<input id="produtoParadoQtd" type="number" min="0" placeholder="Ex.: 18"></label>
     <label>Há quanto tempo está parado?<select id="produtoParadoTempo"><option value="30 dias">Até 30 dias</option><option value="60 dias">31 a 60 dias</option><option value="90 dias ou mais">90 dias ou mais</option></select></label>
-    <label>Preço atual (R$)<input id="produtoParadoPreco" type="number" min="0" step="0.01" placeholder="Ex.: 39,90"></label>
+    <label>Preço original (R$)<input id="produtoParadoPreco" type="number" min="0" step="0.01" placeholder="Ex.: 150,00"></label>
+    <label>Preço promocional (R$)<input id="produtoParadoPrecoPromo" type="number" min="0" step="0.01" placeholder="Ex.: 129,90 (opcional)"></label>
    </div>
    <button type="button" id="gerarCampanhaParado">✨ Gerar campanha</button><textarea id="resultadoCampanhaParado" rows="4" placeholder="A sugestão aparecerá aqui..." readonly></textarea><button type="button" id="copiarCampanhaParado">📋 Copiar campanha</button>
   </div>
@@ -135,12 +136,12 @@ body.light-mode .tool-card{background:#fff;border-color:#d7e1ec}body.light-mode 
 </main>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-<script src="biobel-shell-v1168.js?v=11.84"></script>
-<script src="biobel-recognition.js?v=11.84"></script>
-<script src="biobel-planilha-leitura.js?v=11.84"></script>
-<script src="biobel-planilha-processamento.js?v=11.84"></script>
-<script src="biobel-planilha-comparacao.js?v=11.84"></script>
-<script src="biobel-app.js?v=11.84"></script>
+<script src="biobel-shell-v1168.js?v=11.85"></script>
+<script src="biobel-recognition.js?v=11.85"></script>
+<script src="biobel-planilha-leitura.js?v=11.85"></script>
+<script src="biobel-planilha-processamento.js?v=11.85"></script>
+<script src="biobel-planilha-comparacao.js?v=11.85"></script>
+<script src="biobel-app.js?v=11.85"></script>
 <script>
 (function(){
  const params=new URLSearchParams(location.search),evento=params.get('evento')||'';
@@ -170,13 +171,23 @@ body.light-mode .tool-card{background:#fff;border-color:#d7e1ec}body.light-mode 
  function copiarTexto(texto,botao){if(!texto)return;const ok=()=>{const old=botao.textContent;botao.textContent='✅ Copiado!';setTimeout(()=>botao.textContent=old,1500);};if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(texto).then(ok).catch(()=>prompt('Copie o texto:',texto));else prompt('Copie o texto:',texto);}
  document.getElementById('copiarWhats')?.addEventListener('click',e=>copiarTexto(txtWhats.value,e.currentTarget));
  document.getElementById('gerarCampanhaParado')?.addEventListener('click',()=>{
-  const nome=document.getElementById('produtoParadoNome').value.trim(),qtd=document.getElementById('produtoParadoQtd').value,tempo=document.getElementById('produtoParadoTempo').value,preco=document.getElementById('produtoParadoPreco').value;
+  const nome=document.getElementById('produtoParadoNome').value.trim(),qtd=document.getElementById('produtoParadoQtd').value,tempo=document.getElementById('produtoParadoTempo').value,preco=document.getElementById('produtoParadoPreco').value,precoPromo=document.getElementById('produtoParadoPrecoPromo').value;
   const out=document.getElementById('resultadoCampanhaParado');
   if(!nome){alert('Informe o nome do produto.');return;}
-  out.value='📦 Destaque Biobel: '+nome+'! Temos '+(qtd||'quantidade a confirmar')+' unidade(s) em estoque e estamos preparando uma apresentação especial para você. Consulte a disponibilidade e o valor atualizado com nossa equipe.'+(preco?' Preço informado: R$ '+Number(preco).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'.':'')+'\n\nSugestão interna: produto parado há '+tempo+'. Considere demonstrar o produto, criar um combo complementar ou oferecer benefício somente após conferir custo, validade e margem. Não publique preço sem confirmação.';
+  const moeda=n=>Number(n).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  let chamada='';
+  if(precoPromo!=='' && preco!==''){
+   const original=Number(preco),promo=Number(precoPromo);
+   if(original<=0||promo<=0){alert('Informe preços maiores que zero.');return;}
+   if(promo>=original){alert('Para destacar uma promoção, o preço promocional precisa ser menor que o preço original. Se não houver desconto, deixe o campo promocional vazio.');return;}
+   const economia=original-promo,percentual=(economia/original)*100;
+   chamada=' De R$ '+moeda(original)+' por apenas R$ '+moeda(promo)+'! Você economiza R$ '+moeda(economia)+' ('+percentual.toLocaleString('pt-BR',{maximumFractionDigits:1})+'% de desconto).';
+  }else if(precoPromo!=='' && preco===''){alert('Preencha também o preço original para calcular a oferta.');return;}
+  else if(preco!==''){chamada=' Por R$ '+moeda(preco)+'.';}
+  out.value='📦 Destaque Biobel: '+nome+'!'+(chamada?'\n'+chamada:'')+' Temos '+(qtd||'quantidade a confirmar')+' unidade(s) em estoque. Consulte nossa equipe para confirmar disponibilidade e condições.'+'\n\nSugestão interna: produto parado há '+tempo+'. Considere demonstrar o produto ou criar um combo complementar. Confira custo, validade e margem antes de divulgar. Use o preço promocional somente se a oferta for real e estiver válida.';
  });
  document.getElementById('copiarCampanhaParado')?.addEventListener('click',e=>copiarTexto(document.getElementById('resultadoCampanhaParado').value,e.currentTarget));
- const KEY_FAV='biobel_ideias_favoritas_v1183',KEY_RANK='biobel_ranking_campanhas_v1183';
+ const KEY_FAV='biobel_ideias_favoritas_v1185',KEY_RANK='biobel_ranking_campanhas_v1185';
  const ler=(k)=>{try{return JSON.parse(localStorage.getItem(k)||'[]')}catch(e){return []}};
  const gravar=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
  function renderFav(){const box=document.getElementById('favoritasLista');if(!box)return;const fav=ler(KEY_FAV);box.innerHTML=fav.length?fav.map((f,i)=>'<div class="ranking-row"><div><strong>'+esc(f.titulo)+'</strong><small>'+esc(f.texto||'Ideia salva para consultar depois')+'</small></div><button data-remfav="'+i+'">Remover</button></div>').join(''):'<p class="ideias-note">Nenhuma favorita salva ainda. Clique em “☆ Salvar nos favoritos” nos cartões.</p>';box.querySelectorAll('[data-remfav]').forEach(b=>b.onclick=()=>{const a=ler(KEY_FAV);a.splice(Number(b.dataset.remfav),1);gravar(KEY_FAV,a);renderFav();atualizarBotoesFav();});}
