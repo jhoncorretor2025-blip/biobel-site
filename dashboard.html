@@ -155,6 +155,34 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
     <article class="biobel-kpi"><div class="kpi-label">🌦️ Clima hoje</div><div id="kpiClimaCard" class="kpi-value">Carregando...</div><div id="kpiClimaCardSub" class="kpi-sub">Buscando previsão...</div></article>
    </section>
 
+   <section id="biobelNovasFerramentas" class="no-print" aria-label="Previsão de faturamento e pesquisa de satisfação" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:12px;margin:12px 0;">
+    <article style="min-width:0;background:linear-gradient(145deg,#0d1b2e,#0b1728);border:1px solid #28513f;border-radius:16px;padding:15px 16px;">
+     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+      <div><div style="font-size:10px;font-weight:900;letter-spacing:.08em;color:#27d7a0;text-transform:uppercase;">📈 Projeção do mês</div><h2 style="font-size:16px;font-weight:900;color:#eef5ff;margin-top:3px;">Previsão de faturamento</h2></div>
+      <button type="button" onclick="atualizarPrevisaoFaturamentoBiobel()" style="background:#102b23;border:1px solid #28513f;color:#a7f3d0;padding:6px 9px;border-radius:8px;font-size:10px;font-weight:800;">↻ Atualizar</button>
+     </div>
+     <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px;">
+      <div style="background:rgba(255,255,255,.025);border:1px solid #20334d;border-radius:12px;padding:11px;"><small style="display:block;color:#8fa2ba;font-size:9.5px;font-weight:800;text-transform:uppercase;">Realizado no mês</small><strong id="biobelProjecaoRealizado" style="display:block;font-size:19px;font-weight:900;color:#eef5ff;margin-top:4px;">—</strong><span id="biobelProjecaoDias" style="display:block;font-size:10px;color:#71849d;margin-top:3px;">Aguardando dados</span></div>
+      <div style="background:rgba(39,215,160,.06);border:1px solid rgba(39,215,160,.24);border-radius:12px;padding:11px;"><small style="display:block;color:#8fa2ba;font-size:9.5px;font-weight:800;text-transform:uppercase;">Estimativa de fechamento</small><strong id="biobelProjecaoFinal" style="display:block;font-size:19px;font-weight:900;color:#27d7a0;margin-top:4px;">—</strong><span id="biobelProjecaoMedia" style="display:block;font-size:10px;color:#71849d;margin-top:3px;">Estimativa orientativa</span></div>
+     </div>
+     <div style="margin-top:10px;padding:9px 11px;border-radius:10px;background:rgba(255,255,255,.02);">
+      <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;"><span style="font-size:10px;color:#8fa2ba;font-weight:800;">Comparação com a meta</span><strong id="biobelProjecaoMetaComparativo" style="font-size:11px;color:#dce5f2;">Meta não carregada</strong></div>
+      <div id="biobelProjecaoNota" role="status" style="font-size:10px;line-height:1.5;color:#71849d;margin-top:5px;">A projeção usa o faturamento lançado no mês e os dias de funcionamento já transcorridos.</div>
+     </div>
+    </article>
+    <article style="min-width:0;background:linear-gradient(145deg,#0d1b2e,#0b1728);border:1px solid #243b57;border-radius:16px;padding:15px 16px;">
+     <div style="font-size:10px;font-weight:900;letter-spacing:.08em;color:#4f9cff;text-transform:uppercase;">💬 Experiência das clientes</div>
+     <h2 style="font-size:16px;font-weight:900;color:#eef5ff;margin-top:3px;">Pesquisa de satisfação com QR Code</h2>
+     <p style="font-size:10.5px;line-height:1.5;color:#8fa2ba;margin-top:5px;">Gere um QR para deixar no balcão. A cliente responde pelo celular, sem informar nome ou telefone.</p>
+     <div style="display:grid;grid-template-columns:145px minmax(0,1fr);gap:12px;align-items:center;margin-top:10px;">
+      <div style="background:#fff;border-radius:12px;padding:8px;min-height:145px;display:grid;place-items:center;"><img id="biobelSatisfacaoQr" alt="QR Code da pesquisa de satisfação" width="129" height="129" style="width:129px;height:129px;object-fit:contain;" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f1f5f9'/%3E%3Ctext x='50' y='48' text-anchor='middle' font-size='7' fill='%2364758b'%3EPreparando QR%3C/text%3E%3C/svg%3E"></div>
+      <div style="min-width:0;"><div id="biobelSatisfacaoQrStatus" role="status" style="font-size:10.5px;line-height:1.5;color:#fbbf24;">Verificando configuração da coleta…</div><label for="biobelSatisfacaoQrLink" style="display:block;margin-top:8px;font-size:9.5px;color:#8fa2ba;font-weight:800;">LINK DA PESQUISA</label><input id="biobelSatisfacaoQrLink" readonly style="width:100%;min-width:0;background:#091525;border:1px solid #2b4059;border-radius:8px;padding:7px;color:#dce5f2;font-size:9.5px;" value="">
+      </div>
+     </div>
+     <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;"><button type="button" onclick="copiarLinkPesquisaSatisfacao()" style="flex:1;background:rgba(79,156,255,.1);border:1px solid rgba(79,156,255,.35);color:#93c5fd;padding:8px;border-radius:9px;font-size:10.5px;font-weight:900;">📋 Copiar link</button><button type="button" onclick="abrirPesquisaSatisfacao()" style="flex:1;background:rgba(39,215,160,.1);border:1px solid rgba(39,215,160,.3);color:#6ee7b7;padding:8px;border-radius:9px;font-size:10.5px;font-weight:900;">↗ Abrir pesquisa</button></div>
+    </article>
+   </section>
+
    <section id="biobelMetaInteligente" class="no-print" aria-label="Controle inteligente da meta" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px;margin-bottom:10px;">
     <article id="biobelSemaforoMetaCard" style="background:#0b1728;border:1px solid #1e2c42;border-radius:14px;padding:14px 16px;">
      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
@@ -464,11 +492,11 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
 -->
 
 </main>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell-v1168.js?v=11.91"></script>
-<script src="biobel-recognition.js?v=11.91"></script>
-<script src="biobel-planilha-leitura.js?v=11.91"></script>
-<script src="biobel-planilha-processamento.js?v=11.91"></script>
-<script src="biobel-planilha-comparacao.js?v=11.91"></script><script src="biobel-app.js?v=11.91"></script><script src="inteligencia-operacional.js?v=11.91"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell-v1168.js?v=11.92"></script>
+<script src="biobel-recognition.js?v=11.92"></script>
+<script src="biobel-planilha-leitura.js?v=11.92"></script>
+<script src="biobel-planilha-processamento.js?v=11.92"></script>
+<script src="biobel-planilha-comparacao.js?v=11.92"></script><script src="biobel-app.js?v=11.92"></script><script src="inteligencia-operacional.js?v=11.92"></script>
 <script>
 (function(){
  'use strict';
@@ -1210,6 +1238,81 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
  window.addEventListener("biobel:data-updated",function(){setTimeout(atualizarVendaHojeMini,300);});
  setTimeout(atualizarVendaHojeMini,1200);
  setInterval(atualizarVendaHojeMini,60000);
+})();
+</script>
+<script>
+(function(){
+ "use strict";
+ const moneyBRL=v=>new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(Number(v)||0);
+ function hojeBiobel(){return typeof window.obterAgoraBrasilia==="function"?window.obterAgoraBrasilia():new Date();}
+ function dataAba(valor){
+  const m=String(valor||"").trim().match(/^(\d{1,2})\.(\d{1,2})(?:\.(\d{4}))?$/);
+  if(!m)return null;
+  return {dia:Number(m[1]),mes:Number(m[2]),ano:m[3]?Number(m[3]):null};
+ }
+ function diasAbertos(ano,mes,ate){
+  let n=0;for(let d=1;d<=ate;d++){const dow=new Date(ano,mes-1,d).getDay();if(dow!==0)n++;}return n;
+ }
+ window.atualizarPrevisaoFaturamentoBiobel=function(){
+  const real=document.getElementById("biobelProjecaoRealizado"),finalEl=document.getElementById("biobelProjecaoFinal");
+  const diasEl=document.getElementById("biobelProjecaoDias"),mediaEl=document.getElementById("biobelProjecaoMedia");
+  const metaEl=document.getElementById("biobelProjecaoMetaComparativo"),nota=document.getElementById("biobelProjecaoNota");
+  if(!real||!finalEl)return;
+  const agora=hojeBiobel(),ano=agora.getFullYear(),mes=agora.getMonth()+1,diaHoje=agora.getDate();
+  let arr=[];try{arr=typeof daysData!=="undefined"&&Array.isArray(daysData)?daysData:(Array.isArray(window.daysData)?window.daysData:[]);}catch(e){arr=Array.isArray(window.daysData)?window.daysData:[];}
+  const rows=arr.map(x=>({raw:x,dt:dataAba(x&&x.dia)})).filter(x=>x.dt&&x.dt.mes===mes&&(!x.dt.ano||x.dt.ano===ano)&&x.dt.dia<=diaHoje);
+  if(!rows.length){
+   real.textContent="—";finalEl.textContent="—";diasEl.textContent="Sem abas do mês atual carregadas";mediaEl.textContent="Aguardando leitura da planilha";metaEl.textContent="—";
+   if(nota)nota.textContent="Atualize a leitura da planilha. A previsão aparece quando houver dados reais do mês atual.";
+   return;
+  }
+  const atual=rows.reduce((sum,x)=>sum+(Number(x.raw.sales)||Number(x.raw.vendaP2)||0),0);
+  const diasPassados=diasAbertos(ano,mes,diaHoje);
+  const ultimoDia=new Date(ano,mes,0).getDate();
+  const diasNoMes=diasAbertos(ano,mes,ultimoDia);
+  const media=diasPassados>0?atual/diasPassados:0;
+  const proje=media*diasNoMes;
+  const goalObj=(()=>{try{return JSON.parse(localStorage.getItem("biobel_sales_goal_planilha_v1")||"null");}catch(e){return null;}})();
+  const meta=Number(goalObj&&goalObj.valor)||0;
+  real.textContent=moneyBRL(atual);
+  finalEl.textContent=moneyBRL(proje);
+  diasEl.textContent=rows.length+" aba(s) do mês com dados · "+diasPassados+" dia(s) de funcionamento transcorridos";
+  mediaEl.textContent=moneyBRL(media)+" por dia de funcionamento";
+  if(meta>0){
+   const diff=proje-meta;
+   metaEl.textContent=(diff>=0?"Estimativa "+moneyBRL(diff)+" acima da meta":"Estimativa "+moneyBRL(Math.abs(diff))+" abaixo da meta);
+   metaEl.style.color=diff>=0?"#27d7a0":"#fbbf24";
+  }else{metaEl.textContent="Meta mensal não encontrada";metaEl.style.color="#fbbf24";}
+  if(nota)nota.textContent="Estimativa linear pelos dias de funcionamento (segunda a sábado). Não é garantia de resultado; depende dos lançamentos e do movimento futuro.";
+ };
+ function urlPesquisa(){
+  const base=new URL("satisfacao.html",window.location.href);
+  let api="";try{api=(localStorage.getItem("biobel_apps_script_url")||"").trim();}catch(e){}
+  if(api)base.searchParams.set("api",api);else base.searchParams.delete("api");
+  return base.href;
+ }
+ function atualizarQrSatisfacao(){
+  const input=document.getElementById("biobelSatisfacaoQrLink"),img=document.getElementById("biobelSatisfacaoQr"),status=document.getElementById("biobelSatisfacaoQrStatus");
+  if(!input||!img||!status)return;
+  const url=urlPesquisa(),api=(()=>{try{return (localStorage.getItem("biobel_apps_script_url")||"").trim();}catch(e){return "";}})();
+  input.value=url;
+  img.src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=8&data="+encodeURIComponent(url);
+  if(api){status.textContent="Ponte encontrada. Antes de imprimir, publique a versão atualizada do Apps Script e configure uma planilha própria para as respostas.";status.style.color="#fbbf24";}
+  else{status.textContent="Coleta central ainda não configurada. Configure a URL da ponte em Configuração; sem ela, as respostas não serão enviadas à loja.";status.style.color="#fbbf24";}
+ }
+ window.abrirPesquisaSatisfacao=function(){window.open(urlPesquisa(),"_blank","noopener");};
+ window.copiarLinkPesquisaSatisfacao=function(){
+  const texto=urlPesquisa(),status=document.getElementById("biobelSatisfacaoQrStatus");
+  const ok=()=>{if(status){status.textContent="✅ Link copiado. Confira a configuração de coleta antes de imprimir o QR.";status.style.color="#27d7a0";}};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(texto).then(ok).catch(()=>{window.prompt("Copie o link da pesquisa:",texto);});
+  else window.prompt("Copie o link da pesquisa:",texto);
+ };
+ window.addEventListener("biobel:data-updated",()=>setTimeout(window.atualizarPrevisaoFaturamentoBiobel,350));
+ window.addEventListener("storage",e=>{if(e.key==="biobel_sales_goal_planilha_v1"||e.key==="biobel_apps_script_url") {window.atualizarPrevisaoFaturamentoBiobel();atualizarQrSatisfacao();}});
+ window.atualizarPrevisaoFaturamentoBiobel();
+ atualizarQrSatisfacao();
+ setTimeout(window.atualizarPrevisaoFaturamentoBiobel,1300);
+ setInterval(window.atualizarPrevisaoFaturamentoBiobel,60000);
 })();
 </script>
 </body></html>
