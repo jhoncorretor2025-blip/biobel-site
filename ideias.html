@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0ea97a">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" type="image/png" href="./favicon-32.png">
+<link rel="manifest" href="manifest.json">
+<title>Biobel — Ideias para campanhas</title>
+<script src="https://cdn.tailwindcss.com"><\/script>
+<link rel="stylesheet" href="biobel-design-system.css">
+<link rel="stylesheet" href="biobel-ux-refinement.css">
+<link rel="stylesheet" href="biobel-app.css">
+<style>
+:root{color-scheme:dark}body{background:#0f172a!important;color:#dce5f2;font-family:Inter,system-ui,sans-serif}
+.ideias-wrap{max-width:980px;margin:0 auto;padding:20px 16px 40px}
+.ideias-hero{padding:22px;border:1px solid rgba(39,215,160,.28);border-radius:18px;background:linear-gradient(135deg,#10253a,#0b1728);margin-bottom:16px}
+.ideias-eyebrow{font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#27d7a0}
+.ideias-title{font-size:24px;font-weight:900;line-height:1.2;margin:7px 0}
+.ideias-sub{font-size:12px;color:#9aabc0;line-height:1.6}
+.ideias-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+.ideias-filter{padding:8px 11px;border:1px solid #2b4059;border-radius:999px;background:#101f34;color:#cbd5e1;font-size:11px;font-weight:800;cursor:pointer}
+.ideias-filter.active{background:rgba(39,215,160,.13);border-color:#27d7a0;color:#27d7a0}
+.ideias-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.ideia-card{border:1px solid #223651;border-radius:14px;background:#0d1b2e;padding:15px;display:flex;flex-direction:column;gap:9px;min-width:0}
+.ideia-tag{font-size:9px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#27d7a0}
+.ideia-card h3{font-size:14px;font-weight:900;color:#eef5ff}
+.ideia-card p{font-size:11.5px;line-height:1.6;color:#9aabc0}
+.ideia-card .passos{font-size:11px;line-height:1.6;color:#cbd5e1;padding-left:17px;list-style:disc}
+.ideia-card button{margin-top:auto;border:1px solid rgba(39,215,160,.35);background:rgba(39,215,160,.1);color:#27d7a0;border-radius:9px;padding:8px 10px;font-size:11px;font-weight:900;cursor:pointer}
+.ideias-note{font-size:10.5px;color:#8fa2ba;margin-top:14px;line-height:1.6}
+body.light-mode .ideias-hero{background:linear-gradient(135deg,#fff,#f1faf6);border-color:#c8eadc}
+body.light-mode .ideias-title,body.light-mode .ideia-card h3{color:#172033}
+body.light-mode .ideias-sub,body.light-mode .ideia-card p{color:#536579}
+body.light-mode .ideia-card{background:#fff;border-color:#d7e1ec}
+body.light-mode .ideia-card .passos{color:#334155}
+body.light-mode .ideias-filter{background:#f8fafc;border-color:#d7e1ec;color:#334155}
+body.light-mode .ideias-filter.active{background:#e6f8f1;color:#087f5b;border-color:#0ea97a}
+@media(max-width:600px){.ideias-wrap{padding:12px 10px 28px}.ideias-hero{padding:17px}.ideias-title{font-size:21px}.ideias-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body data-biobel-page="campanhas" class="min-h-screen text-slate-100">
+<div id="faixaMensagemProgramada" style="display:none;"></div>
+<div id="tourGuiadoOverlay" style="display:none;"></div>
+<div id="dicaDoDiaOverlay" style="display:none;"></div>
+<div id="lembreteReunioesOverlay" style="display:none;"></div>
+<div id="assistenteDesligamentoOverlay" style="display:none;"></div>
+<button id="btnVoltarTopo" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Voltar ao topo">↑</button>
+<div id="biobel-shell"></div>
+<main class="ideias-wrap">
+ <div class="ideias-hero">
+  <div class="ideias-eyebrow">Biobel · Central de ideias</div>
+  <h1 id="ideiasTitulo" class="ideias-title">💡 Ideias práticas para vender mais</h1>
+  <p id="ideiasIntro" class="ideias-sub">Sugestões rápidas para transformar datas comerciais em ações reais na loja. Escolha uma ideia e copie o texto quando estiver disponível.</p>
+  <div class="ideias-toolbar" role="group" aria-label="Filtrar ideias">
+   <button class="ideias-filter active" data-filtro="todas">Todas as ideias</button>
+   <button class="ideias-filter" data-filtro="promocao">Promoções</button>
+   <button class="ideias-filter" data-filtro="whatsapp">WhatsApp</button>
+   <button class="ideias-filter" data-filtro="loja">Loja e estoque</button>
+   <button class="ideias-filter" data-filtro="conteudo">Instagram</button>
+  </div>
+ </div>
+ <div id="ideiasGrid" class="ideias-grid"></div>
+ <p class="ideias-note">Dica: escolha poucas ações que a equipe consiga executar bem. Ajuste os preços, descontos e produtos conforme o estoque e a margem da Biobel antes de publicar uma oferta.</p>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"><\/script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"><\/script>
+<script src="biobel-shell-v1168.js?v=11.80"><\/script>
+<script src="biobel-recognition.js?v=11.80"><\/script>
+<script src="biobel-planilha-leitura.js?v=11.80"><\/script>
+<script src="biobel-planilha-processamento.js?v=11.80"><\/script>
+<script src="biobel-planilha-comparacao.js?v=11.80"><\/script>
+<script src="biobel-app.js?v=11.80"><\/script>
+<script>
+(function(){
+ const params=new URLSearchParams(location.search),evento=params.get('evento')||'';
+ const isCriancas=evento.indexOf('dia-das-criancas')===0;
+ const isBlackFriday=evento.indexOf('black-friday')===0;
+ const campanha=isCriancas?'Dia das Crianças':isBlackFriday?'Black Friday':'próxima campanha';
+ document.getElementById('ideiasTitulo').textContent='💡 Ideias para '+campanha;
+ document.getElementById('ideiasIntro').textContent=isCriancas
+  ?'Ações rápidas para aproveitar o Dia das Crianças na Biobel: divulgação, presentes, combos e atendimento. Adapte as sugestões aos produtos disponíveis.'
+  :isBlackFriday
+   ?'Comece a planejar a Black Friday com ofertas sustentáveis, estoque conferido e divulgação organizada, sem deixar tudo para a última hora.'
+   :'Ideias práticas para divulgar produtos, movimentar a loja e preparar a próxima data comercial.';
+ const base=[
+  {c:'promocao',tag:'Promoções',t:'Monte kits para presentear',p:'Agrupe produtos complementares em faixas de preço diferentes para facilitar a escolha do presente.',steps:['Escolha 3 combinações com produtos em estoque.','Calcule o custo e confira a margem antes de definir o preço.','Fotografe cada kit com uma identificação simples.'],copy:'🎁 Está procurando uma ideia de presente? Na Biobel temos opções para montar um kit especial. Chame a gente e consulte as opções disponíveis!'},
+  {c:'promocao',tag:'Promoções',t:'Oferta-relâmpago com prazo real',p:'Destaque um produto ou combo por um período curto, com regras claras e sem criar descontos que prejudiquem a margem.',steps:['Escolha um item com estoque suficiente.','Defina preço, quantidade e validade reais.','Avise a equipe para responder dúvidas com a mesma informação.'],copy:'✨ Oferta especial na Biobel! Consulte nossa condição para os produtos selecionados. Chame no WhatsApp para conferir disponibilidade e detalhes.'},
+  {c:'whatsapp',tag:'WhatsApp',t:'Reative clientes com uma mensagem pessoal',p:'Convide clientes que já compraram a conhecer as opções atuais, sem enviar mensagens em excesso.',steps:['Separe contatos que aceitaram receber novidades.','Personalize a saudação.','Respeite quem não quiser receber mensagens.'],copy:'Oi! 😊 Aqui é da Biobel. Estamos organizando algumas opções especiais de beleza e presentes. Quer que eu te envie as novidades disponíveis?'},
+  {c:'whatsapp',tag:'WhatsApp',t:'Envie uma seleção de presentes',p:'Ajude o cliente a escolher perguntando orçamento e preferência antes de indicar produtos.',steps:['Pergunte para quem é o presente.','Pergunte a faixa de preço desejada.','Envie 2 ou 3 opções com fotos e valores confirmados.'],copy:'🎁 Posso te ajudar a escolher um presente! Me conta para quem é e qual faixa de valor você procura que separamos algumas opções disponíveis na Biobel.'},
+  {c:'loja',tag:'Loja e estoque',t:'Prepare uma mesa de sugestões',p:'Deixe os produtos para presente agrupados e fáceis de visualizar para acelerar o atendimento.',steps:['Organize por faixa de preço ou tipo de produto.','Confira etiquetas e preços.','Retire da exposição o que estiver sem estoque.']},
+  {c:'loja',tag:'Loja e estoque',t:'Faça uma checagem de estoque antes de divulgar',p:'Evite anunciar produtos indisponíveis e prepare alternativas semelhantes.',steps:['Confira quantidades dos itens escolhidos.','Separe os produtos mais procurados.','Defina uma alternativa caso algum item termine.']},
+  {c:'conteudo',tag:'Instagram',t:'Publique um guia de presentes nos Stories',p:'Faça uma sequência curta para mostrar opções e convidar a pessoa a pedir ajuda.',steps:['Story 1: “Precisa de uma ideia de presente?”','Stories 2–4: mostre produtos com preços confirmados.','Último Story: inclua chamada para conversar no WhatsApp.'],copy:'🎁 Guia de presentes da Biobel: opções para diferentes gostos e bolsos. Responda este Story ou chame no WhatsApp para consultar os produtos disponíveis.'},
+  {c:'conteudo',tag:'Instagram',t:'Mostre os bastidores da preparação',p:'Vídeos curtos organizando a vitrine ou montando kits dão contexto e ajudam a divulgar os produtos reais.',steps:['Grave 3 clipes curtos com boa iluminação.','Mostre detalhes dos produtos e preços corretos.','Finalize convidando o público a consultar as opções.'],copy:'✨ Estamos preparando novidades por aqui! Acompanhe os Stories da Biobel e chame a gente para descobrir as opções disponíveis.'}
+ ];
+ const grid=document.getElementById('ideiasGrid');
+ function render(filter){
+  grid.innerHTML='';
+  base.filter(x=>filter==='todas'||x.c===filter).forEach(x=>{
+   const card=document.createElement('article');card.className='ideia-card';
+   const tag=document.createElement('div');tag.className='ideia-tag';tag.textContent=x.tag;
+   const h=document.createElement('h3');h.textContent=x.t;
+   const p=document.createElement('p');p.textContent=x.p;
+   const ul=document.createElement('ul');ul.className='passos';x.steps.forEach(step=>{const li=document.createElement('li');li.textContent=step;ul.appendChild(li);});
+   card.append(tag,h,p,ul);
+   if(x.copy){const b=document.createElement('button');b.type='button';b.textContent='📋 Copiar texto sugerido';b.onclick=async()=>{try{await navigator.clipboard.writeText(x.copy);b.textContent='✅ Texto copiado!';}catch(e){const ta=document.createElement('textarea');ta.value=x.copy;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');b.textContent='✅ Texto copiado!';}catch(_){b.textContent='Selecione e copie o texto: '+x.copy;}ta.remove();}setTimeout(()=>b.textContent='📋 Copiar texto sugerido',1800);};card.appendChild(b);}
+   grid.appendChild(card);
+  });
+ }
+ document.querySelectorAll('[data-filtro]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-filtro]').forEach(x=>x.classList.toggle('active',x===b));render(b.dataset.filtro);}));
+ render('todas');
+})();
+<\/script>
+</body>
+</html>
