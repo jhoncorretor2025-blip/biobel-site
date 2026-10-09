@@ -1,3 +1,8 @@
+## v11.80 — 09/10/2026
+- 💡 “Preciso de ideias” agora abre uma página dedicada com sugestões práticas para a campanha escolhida, filtros por categoria e textos prontos para copiar para WhatsApp/Instagram.
+- 🛍️ Central de ideias da Biobel: promoções, kits, reativação de clientes, organização da loja/estoque e conteúdo para Stories, com lembrete para conferir estoque, preços e margem.
+- ♻️ Navegação e cache: dashboard direciona para ideias.html?evento=...; página incluída nos arquivos essenciais do service worker e versão compartilhada atualizada para v11.80.
+
 ## v11.79 — 09/10/2026
 - 🗓️ **Calendário comercial proativo:** abre automaticamente durante a janela de preparação e mostra contagem regressiva do Dia das Crianças (3 dias antes até o dia do evento).
 - 🧠 **Acompanhamento após a data:** nos 5 dias seguintes ao Dia das Crianças, direciona o foco para a Black Friday, com contagem regressiva e pergunta diária sobre ofertas, estoque e divulgação.
