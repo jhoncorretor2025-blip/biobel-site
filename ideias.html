@@ -136,12 +136,12 @@ body.light-mode .tool-card{background:#fff;border-color:#d7e1ec}body.light-mode 
 </main>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-<script src="biobel-shell-v1168.js?v=11.85"></script>
-<script src="biobel-recognition.js?v=11.85"></script>
-<script src="biobel-planilha-leitura.js?v=11.85"></script>
-<script src="biobel-planilha-processamento.js?v=11.85"></script>
-<script src="biobel-planilha-comparacao.js?v=11.85"></script>
-<script src="biobel-app.js?v=11.85"></script>
+<script src="biobel-shell-v1168.js?v=11.86"></script>
+<script src="biobel-recognition.js?v=11.86"></script>
+<script src="biobel-planilha-leitura.js?v=11.86"></script>
+<script src="biobel-planilha-processamento.js?v=11.86"></script>
+<script src="biobel-planilha-comparacao.js?v=11.86"></script>
+<script src="biobel-app.js?v=11.86"></script>
 <script>
 (function(){
  const params=new URLSearchParams(location.search),evento=params.get('evento')||'';
@@ -150,12 +150,14 @@ body.light-mode .tool-card{background:#fff;border-color:#d7e1ec}body.light-mode 
  const titulo=document.getElementById('ideiasTitulo'),intro=document.getElementById('ideiasIntro');
  if(titulo)titulo.textContent='💡 Ideias para '+nome;
  if(intro)intro.textContent=criancas?'Ações rápidas para aproveitar o Dia das Crianças na Biobel: divulgação, presentes, combos e atendimento.':black?'Planeje a Black Friday com ofertas sustentáveis, estoque conferido e divulgação organizada.':'Sugestões práticas para divulgar produtos, movimentar a loja e preparar a próxima data comercial.';
- const cards=Array.from(document.querySelectorAll('.ideia-card'));
- document.querySelectorAll('[data-filtro]').forEach(function(btn){btn.addEventListener('click',function(){
-  const filtro=btn.getAttribute('data-filtro');
-  document.querySelectorAll('[data-filtro]').forEach(function(b){b.classList.toggle('active',b===btn);});
-  cards.forEach(function(card){card.style.display=(filtro==='todas'||card.getAttribute('data-categoria')===filtro)?'flex':'none';});
- });});
+ const cards=Array.from(document.querySelectorAll('#ideiasGrid .ideia-card'));
+ const botoesFiltro=Array.from(document.querySelectorAll('.ideias-toolbar button[data-filtro]'));
+ function aplicarFiltro(filtro){
+  botoesFiltro.forEach(function(b){const ativo=b.getAttribute('data-filtro')===filtro;b.classList.toggle('active',ativo);b.setAttribute('aria-pressed',ativo?'true':'false');});
+  cards.forEach(function(card){const categoria=card.getAttribute('data-categoria');const mostrar=filtro==='todas'||categoria===filtro;card.hidden=!mostrar;card.style.display=mostrar?'flex':'none';});
+ }
+ botoesFiltro.forEach(function(btn){btn.type='button';btn.addEventListener('click',function(event){event.preventDefault();aplicarFiltro(btn.getAttribute('data-filtro'));});});
+ aplicarFiltro('todas');
 
  const situacoes={
   primeira:"Oi! 😊 Aqui é da Biobel. Posso te ajudar a encontrar algo para sua rotina de beleza ou um presente? Se quiser, me conte o que está procurando.",
@@ -187,7 +189,7 @@ body.light-mode .tool-card{background:#fff;border-color:#d7e1ec}body.light-mode 
   out.value='📦 Destaque Biobel: '+nome+'!'+(chamada?'\n'+chamada:'')+' Temos '+(qtd||'quantidade a confirmar')+' unidade(s) em estoque. Consulte nossa equipe para confirmar disponibilidade e condições.'+'\n\nSugestão interna: produto parado há '+tempo+'. Considere demonstrar o produto ou criar um combo complementar. Confira custo, validade e margem antes de divulgar. Use o preço promocional somente se a oferta for real e estiver válida.';
  });
  document.getElementById('copiarCampanhaParado')?.addEventListener('click',e=>copiarTexto(document.getElementById('resultadoCampanhaParado').value,e.currentTarget));
- const KEY_FAV='biobel_ideias_favoritas_v1185',KEY_RANK='biobel_ranking_campanhas_v1185';
+ const KEY_FAV='biobel_ideias_favoritas_v1186',KEY_RANK='biobel_ranking_campanhas_v1186';
  const ler=(k)=>{try{return JSON.parse(localStorage.getItem(k)||'[]')}catch(e){return []}};
  const gravar=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
  function renderFav(){const box=document.getElementById('favoritasLista');if(!box)return;const fav=ler(KEY_FAV);box.innerHTML=fav.length?fav.map((f,i)=>'<div class="ranking-row"><div><strong>'+esc(f.titulo)+'</strong><small>'+esc(f.texto||'Ideia salva para consultar depois')+'</small></div><button data-remfav="'+i+'">Remover</button></div>').join(''):'<p class="ideias-note">Nenhuma favorita salva ainda. Clique em “☆ Salvar nos favoritos” nos cartões.</p>';box.querySelectorAll('[data-remfav]').forEach(b=>b.onclick=()=>{const a=ler(KEY_FAV);a.splice(Number(b.dataset.remfav),1);gravar(KEY_FAV,a);renderFav();atualizarBotoesFav();});}
