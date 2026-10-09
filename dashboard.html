@@ -144,7 +144,7 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
 -->
 <main id="dashboardTab" class="max-w-7xl mx-auto p-4 md:p-6 space-y-4" role="tabpanel" aria-labelledby="tabDashboard">
   <div class="biobel-dashboard-heading no-print" aria-label="Cabeçalho da Visão Geral">
-   <div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><div class="biobel-dashboard-heading-title">Visão Geral</div><span id="versaoSistemaTela" style="display:inline-flex;align-items:center;padding:4px 8px;border:1px solid rgba(14,169,122,.35);border-radius:8px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:10px;font-weight:900;letter-spacing:.04em;">v11.78</span></div><div class="biobel-dashboard-heading-sub">Resumo rápido da loja</div></div>
+   <div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><div class="biobel-dashboard-heading-title">Visão Geral</div><span id="versaoSistemaTela" style="display:inline-flex;align-items:center;padding:4px 8px;border:1px solid rgba(14,169,122,.35);border-radius:8px;background:rgba(14,169,122,.10);color:#27d7a0;font-size:10px;font-weight:900;letter-spacing:.04em;">v11.79</span></div><div class="biobel-dashboard-heading-sub">Resumo rápido da loja</div></div>
    <div class="biobel-dashboard-heading-weather" aria-label="Clima de hoje e previsão de amanhã"><span style="font-size:10px;color:#71849d;font-weight:800;">🌦️ Clima</span><span id="indicadorClimaTopo" style="display:none;"></span></div>
   </div>
   <div class="biobel-dashboard-compact no-print">
@@ -190,8 +190,19 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
     <summary>🚨 Alertas e ações críticas <span id="kpiAlertasResumo" style="font-weight:700;color:#fbbf24;">verificando...</span></summary>
     <div class="biobel-alert-scroll" style="overflow-x:auto;"><table class="biobel-alert-table"><thead><tr><th>Data(s)</th><th>Problema</th><th>Impacto</th><th>Ação</th></tr></thead><tbody id="kpiAlertasBody"><tr><td colspan="4" class="biobel-alert-empty">Analisando os dados...</td></tr></tbody></table></div>
    </details>
-   <details class="biobel-section-compact">
-    <summary>📅 Calendário comercial <span style="font-weight:700;color:#93a3ba;">próximos eventos</span></summary>
+   <details class="biobel-section-compact" id="calendarioComercialSection">
+    <summary>📅 Calendário comercial <span id="calendarioComercialResumo" style="font-weight:700;color:#93a3ba;">próximos eventos</span></summary>
+    <div id="calendarioPreparativosInteligente" style="margin:0 12px 10px;padding:12px;border:1px solid rgba(39,215,160,.28);border-radius:12px;background:linear-gradient(135deg,rgba(39,215,160,.08),rgba(79,156,255,.05));">
+     <div id="calendarioPreparativosTitulo" style="font-size:12px;font-weight:900;color:#dce5f2;margin-bottom:5px;">🧠 Preparando a próxima data comercial...</div>
+     <div id="calendarioPreparativosTexto" style="font-size:11.5px;line-height:1.5;color:#93a3ba;">O sistema vai ajudar você a acompanhar os preparativos.</div>
+     <div id="calendarioPreparativosPergunta" style="font-size:11.5px;line-height:1.5;color:#dce5f2;margin-top:7px;font-weight:700;"></div>
+     <div id="calendarioPreparativosBotoes" style="display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;">
+      <button type="button" data-prep="pronto" style="border:1px solid rgba(39,215,160,.4);background:rgba(39,215,160,.12);color:#27d7a0;border-radius:8px;padding:7px 10px;font-size:10.5px;font-weight:800;cursor:pointer;">✅ Já está pronto</button>
+      <button type="button" data-prep="andamento" style="border:1px solid #344861;background:#101f34;color:#dce5f2;border-radius:8px;padding:7px 10px;font-size:10.5px;font-weight:800;cursor:pointer;">🔄 Em andamento</button>
+      <button type="button" data-prep="ideias" style="border:1px solid #344861;background:#101f34;color:#dce5f2;border-radius:8px;padding:7px 10px;font-size:10.5px;font-weight:800;cursor:pointer;">💡 Preciso de ideias</button>
+     </div>
+     <div id="calendarioPreparativosFeedback" aria-live="polite" style="font-size:10.5px;color:#27d7a0;margin-top:8px;"></div>
+    </div>
     <div id="kpiCalendarioChips" class="biobel-calendar-chips"><span class="biobel-calendar-chip">Carregando...</span></div>
    </details>
   </div>
@@ -453,11 +464,84 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
 -->
 
 </main>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell-v1168.js?v=11.78"></script>
-<script src="biobel-recognition.js?v=11.78"></script>
-<script src="biobel-planilha-leitura.js?v=11.78"></script>
-<script src="biobel-planilha-processamento.js?v=11.78"></script>
-<script src="biobel-planilha-comparacao.js?v=11.78"></script><script src="biobel-app.js?v=11.78"></script><script src="inteligencia-operacional.js?v=11.78"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="biobel-shell-v1168.js?v=11.79"></script>
+<script src="biobel-recognition.js?v=11.79"></script>
+<script src="biobel-planilha-leitura.js?v=11.79"></script>
+<script src="biobel-planilha-processamento.js?v=11.79"></script>
+<script src="biobel-planilha-comparacao.js?v=11.79"></script><script src="biobel-app.js?v=11.79"></script><script src="inteligencia-operacional.js?v=11.79"></script>
+<script>
+(function(){
+ 'use strict';
+ const $=id=>document.getElementById(id);
+ function hojeBrasilia(){
+  const agora=typeof window.obterAgoraBrasilia==='function'?window.obterAgoraBrasilia():new Date();
+  return new Date(agora.getFullYear(),agora.getMonth(),agora.getDate(),12);
+ }
+ function diffDias(a,b){return Math.round((b.getTime()-a.getTime())/86400000);}
+ function dataBR(d){return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});}
+ function lerStatus(chave){try{return JSON.parse(localStorage.getItem('biobel_preparativos_comerciais_v1')||'{}')[chave]||null;}catch(e){return null;}}
+ function salvarStatus(chave,status){
+  try{const dados=JSON.parse(localStorage.getItem('biobel_preparativos_comerciais_v1')||'{}');dados[chave]={status:status,at:new Date().toISOString()};localStorage.setItem('biobel_preparativos_comerciais_v1',JSON.stringify(dados));}catch(e){}
+ }
+ function atualizar(){
+  const sec=$('calendarioComercialSection');if(!sec)return;
+  const hoje=hojeBrasilia();
+  const criancas=new Date(hoje.getFullYear(),9,12,12);
+  if(diffDias(hoje,criancas)<-1)criancas.setFullYear(criancas.getFullYear()+1);
+  const blackFriday=new Date(hoje.getFullYear(),10,27,12);
+  if(blackFriday<hoje)blackFriday.setFullYear(blackFriday.getFullYear()+1);
+  const ateCriancas=diffDias(hoje,criancas);
+  const posCriancas=diffDias(criancas,hoje);
+  const janelaPre=ateCriancas>=0&&ateCriancas<=3;
+  const janelaPos=posCriancas>=1&&posCriancas<=5&&hoje.getFullYear()===criancas.getFullYear();
+  let evento, titulo, texto, pergunta, resumo;
+  if(janelaPre){
+   evento='dia-das-criancas-'+criancas.getFullYear();
+   titulo=ateCriancas===0?'🎈 Hoje é Dia das Crianças!': '🎯 Dia das Crianças: faltam '+ateCriancas+' dia'+(ateCriancas===1?'':'s')+'!';
+   texto='Data: '+dataBR(criancas)+'. Vamos conferir se a loja está preparada para aproveitar a oportunidade de vendas.';
+   pergunta='Como estão os preparativos: promoções, estoque e divulgação já estão organizados?';
+   resumo='Preparação prioritária';
+  }else if(janelaPos){
+   evento='black-friday-'+blackFriday.getFullYear();
+   const falta=diffDias(hoje,blackFriday);
+   titulo='➡️ Próxima campanha: Black Friday';
+   texto='O Dia das Crianças passou. Durante estes 5 dias, vamos direcionar a atenção para a Black Friday ('+dataBR(blackFriday)+'), que está a '+falta+' dias.';
+   pergunta='Você já começou a planejar ofertas, estoque e divulgação da Black Friday?';
+   resumo='Preparar próxima data';
+  }else{
+   evento='black-friday-'+blackFriday.getFullYear();
+   const falta=diffDias(hoje,blackFriday);
+   titulo='🗓️ Próxima grande oportunidade: Black Friday';
+   texto='Black Friday em '+dataBR(blackFriday)+' — faltam '+falta+' dias. Antecipar ofertas, estoque e conteúdo ajuda a evitar correria de última hora.';
+   pergunta='Como está o planejamento desta campanha?';
+   resumo='Contagem regressiva';
+  }
+  $('calendarioPreparativosTitulo').textContent=titulo;
+  $('calendarioPreparativosTexto').textContent=texto;
+  $('calendarioPreparativosPergunta').textContent=pergunta;
+  $('calendarioComercialResumo').textContent=resumo;
+  const status=lerStatus(evento);
+  const feedback=$('calendarioPreparativosFeedback');
+  if(status){
+   const labels={pronto:'Você marcou os preparativos como prontos.',andamento:'Registrado: preparativos em andamento.',ideias:'Registrado: você quer ideias para esta campanha.'};
+   feedback.textContent=labels[status.status]||'Status salvo.';
+  }else feedback.textContent='Acompanhamento diário ativo — seu status fica salvo neste navegador.';
+  sec.open=true;
+  $('calendarioPreparativosBotoes').querySelectorAll('button[data-prep]').forEach(btn=>{
+   btn.onclick=()=>{
+    const escolha=btn.getAttribute('data-prep');salvarStatus(evento,escolha);atualizar();
+    if(escolha==='ideias'){
+     if(typeof window.mostrarToast==='function')window.mostrarToast('Anotado! Priorize ideias de promoção, estoque e divulgação para a campanha.');
+     $('calendarioPreparativosFeedback').textContent='Anotado! Próximo passo sugerido: definir oferta, conferir estoque e planejar a divulgação.';
+    }
+   };
+  });
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',atualizar);else atualizar();
+ window.addEventListener('focus',atualizar);
+ window.addEventListener('biobel:data-updated',atualizar);
+})();
+</script>
 <script>
 (function(){
  function arrData(){try{return Array.isArray(daysData)?daysData:(Array.isArray(window.daysData)?window.daysData:[]);}catch(e){return Array.isArray(window.daysData)?window.daysData:[];}}
