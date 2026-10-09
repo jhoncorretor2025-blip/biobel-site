@@ -191,7 +191,7 @@ body.light-mode .ideias-tools-heading h2{color:#172033}body.light-mode .ideias-t
  const filtroOrcamento=document.getElementById('filtroOrcamento');
  const filtroObjetivo=document.getElementById('filtroObjetivo');
  const contadorIdeias=document.getElementById('contadorIdeias');
- const normalizarTexto=s=>String(s||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase();
+ const normalizarTexto=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
  function classificarIdeia(card){
   const t=normalizarTexto((card.querySelector('h3')?.textContent||'')+' '+(card.querySelector('p')?.textContent||'')+' '+(card.dataset.categoria||''));
   let orcamento='zero';
@@ -229,7 +229,13 @@ body.light-mode .ideias-tools-heading h2{color:#172033}body.light-mode .ideias-t
    const passos=card.querySelector('.passos');
    if(passos)passos.insertAdjacentElement('afterend',details);else card.append(details);
   }
-  card.dataset.buscaExtra=normalizarTexto(titulo+' '+textoArte+' perfume Dia das Maes mae dia das maes produto parado whatsapp Instagram arte story campanha');
+  const palavrasExtras=[];
+  if(/presente|kit|sacola|aniversario/i.test(titulo))palavrasExtras.push('dia das maes mae lembranca presente');
+  if(/produto|demonstrando|novidade|estoque|combo/i.test(titulo))palavrasExtras.push('produto lançamento perfume maquiagem skincare cabelo');
+  if(/reative|whatsapp|pos-venda|cliente vip|clube/i.test(titulo))palavrasExtras.push('whatsapp recuperar clientes inativas relacionamento');
+  if(/stories|instagram|desafio|enquete|bastidores/i.test(titulo))palavrasExtras.push('instagram story arte publicação');
+  if(/produto parado|estoque/i.test(titulo))palavrasExtras.push('produto parado estoque parado');
+  card.dataset.buscaExtra=normalizarTexto(titulo+' '+textoArte+' '+palavrasExtras.join(' '));
  }
 
  const cardsIdeias=Array.from(document.querySelectorAll('#ideiasGrid > .ideia-card'));
