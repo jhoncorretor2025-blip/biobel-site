@@ -1,3 +1,8 @@
+## v11.78 — 09/10/2026
+- 🧠 **Alertas inteligentes:** ocorrências repetidas de “Horário ausente na coluna L” agora são agrupadas em uma única linha, somando as vendas afetadas e listando as datas; o resumo conta tipos de alerta, não repetições.
+- 📈 **Comparativo diário em destaque:** o card foi movido para cima de “Alertas e ações críticas”, facilitando a leitura dos indicadores antes das pendências.
+- ♻️ **Cache atualizado:** versão do dashboard e do service worker incrementada para v11.78.
+
 ## v11.77 — 08/10/2026
 Cinco melhorias gráficas simples, e correções que apareceram ao testar cada uma.
 - 📱 **Celular — cabeçalho enxuto.** O título "Visão Geral" começava a 410 px do topo (tela de ~844 px); agora começa a ~265 px. Sumiram o subtítulo de 3 linhas, o menu de abas (a barra Início/Operação/Equipe/Vendas/Mais já leva a tudo, e o "Mais" foi testado) e, na Visão Geral, o "Você está em...". O subtítulo agora é **certo por página** ("Ponto, rotina e pagamentos da equipe", "Fechamento do caixa do dia"...) e a linha técnica "🧭 Páginas independentes com dados compartilhados" foi removida.
