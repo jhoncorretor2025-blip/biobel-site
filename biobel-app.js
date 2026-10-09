@@ -2570,25 +2570,23 @@ function getLogoAtivaParaExibicao(){
  if(url) return url;
  return caminhoLogoPadrao(512);
 }
+// Link de miniatura do Google que ANTES era gravado sozinho como "logo personalizada" de todo mundo: arquivo de terceiros (pode sumir
+// ou mudar) e logo pequena/borrada. Agora o padrão é a logo do próprio site (leve e nítida).
+const LOGO_GSTATIC_ANTIGA='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9SwF4jZXYBWKBwWhxqdwut1wnZRS4hqyU47xNSpsuHg&s';
 function seedLogoUrlPadrao(){
- // Se a loja ainda não configurou nenhuma logo (nem upload, nem link), usa automaticamente
- // o link que foi combinado como padrão — só na primeira vez, sem sobrescrever escolhas já feitas.
- const jaTemUpload = localStorage.getItem('biobel_logo_custom');
- const jaTemUrl = localStorage.getItem('biobel_logo_custom_url');
- const jaEscolheuPadrao = localStorage.getItem('biobel_logo_padrao_escolhido'); // marca se a pessoa clicou "restaurar padrão" de propósito
- if(!jaTemUpload && !jaTemUrl && !jaEscolheuPadrao){
-  localStorage.setItem('biobel_logo_custom_url', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9SwF4jZXYBWKBwWhxqdwut1wnZRS4hqyU47xNSpsuHg&s');
- }
+ // Migração: quem tem gravado o link antigo do Google (gravado sozinho, não escolhido) volta a usar a logo do site.
+ // Logo enviada por arquivo, ou outro link escolhido pela pessoa, NÃO é mexida.
+ try{ if(localStorage.getItem('biobel_logo_custom_url')===LOGO_GSTATIC_ANTIGA) localStorage.removeItem('biobel_logo_custom_url'); }catch(e){}
 }
 function aplicarLogoPersonalizadaNoSistema(){
- // Aplica a logo (personalizada ou padrão) no cabeçalho do painel E no ícone da aba do navegador,
- // pra deixar o sistema visualmente da loja em todos os lugares, não só no PDF.
+ // Aplica a logo (personalizada ou padrão) no cabeçalho do painel e, SÓ se houver logo própria, no ícone da aba.
  seedLogoUrlPadrao();
+ const ehPadrao = !localStorage.getItem('biobel_logo_custom') && !localStorage.getItem('biobel_logo_custom_url');
  const logoParaUsar = getLogoAtivaParaExibicao();
  const logoHeader = document.getElementById('logoHeaderBiobel');
- if(logoHeader) logoHeader.src = logoParaUsar;
+ if(logoHeader) logoHeader.src = ehPadrao ? caminhoLogoPadrao(256) : logoParaUsar;   // o cabeçalho mostra ~44px: 256px (16 KB) basta
  const favicon = document.querySelector('link[rel="icon"]');
- if(favicon) favicon.href = logoParaUsar;
+ if(favicon && !ehPadrao) favicon.href = logoParaUsar;                                 // sem logo própria, mantém o ícone leve da página
 }
 function carregarLogoBiobel(event){
  const file = event.target.files[0];
@@ -13821,6 +13819,15 @@ function renderPosicaoMesDashboard(){
  '</div>';
 }
 
+// Barra de progresso da meta (cartão "Meta do mês"): largura = % já vendido; cor e texto de acessibilidade = o MESMO estado do Semáforo da Meta.
+function pintarBarraMetaBiobel(pct,cor,descricao){
+ const barra=document.getElementById('kpiMetaBarra'); if(!barra) return;
+ const p=Math.max(0,Math.min(100,Number.isFinite(pct)?pct:0));
+ const fill=barra.firstElementChild;
+ if(fill){ fill.style.width=p.toFixed(1)+'%'; fill.style.backgroundColor=cor||'#64748b'; }
+ barra.setAttribute('aria-valuenow',String(Math.round(p)));
+ barra.setAttribute('aria-valuetext',Math.round(p)+'% da meta'+(descricao?' — '+descricao:''));
+}
 function renderMetaInteligenteBiobel(){
  const card=document.getElementById('biobelMetaInteligente');
  if(!card) return;
@@ -13841,6 +13848,7 @@ function renderMetaInteligenteBiobel(){
   set('biobelMetaHojeTexto','textContent','Aguardando a Meta da Loja.');
   set('biobelMetaHojeVendido','textContent','Hoje: —');
   set('biobelMetaHojeFalta','textContent','Falta hoje: —');
+  pintarBarraMetaBiobel(0,null,'sem dados');
   return;
  }
 
@@ -13886,6 +13894,7 @@ function renderMetaInteligenteBiobel(){
  }
  const cores={green:'#27d7a0',yellow:'#fbbf24',red:'#fb7185'};
  const cor=cores[estado]||cores.green;
+ pintarBarraMetaBiobel(meta>0?(totalSales/meta)*100:0,cor,titulo);
  const semCard=document.getElementById('biobelSemaforoMetaCard');
  if(semCard) semCard.style.borderColor=cor+'55';
  const ic=document.getElementById('biobelSemaforoMetaIcon');
@@ -14445,7 +14454,7 @@ let promptDeInstalacaoGuardado=null;
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();promptDeInstalacaoGuardado=e;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='inline-block';});
 function instalarAppBiobel(){if(!promptDeInstalacaoGuardado)return;promptDeInstalacaoGuardado.prompt();promptDeInstalacaoGuardado.userChoice.then(function(){promptDeInstalacaoGuardado=null;const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';});}
 window.addEventListener('appinstalled',function(){const b=document.getElementById('btnInstalarApp');if(b)b.style.display='none';try{mostrarToast('✅ Biobel instalado!');}catch(e){}});
-if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=11.68',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
+if('serviceWorker' in navigator){window.addEventListener('load',async function(){try{const reg=await navigator.serviceWorker.register('service-worker.js?v=11.77',{updateViaCache:'none'});await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',function(){if(!window.__biobelSwReloaded){window.__biobelSwReloaded=true;window.location.reload();}});}catch(e){console.error(e);}});}
 window.addEventListener('load',initPaginaAtiva,{once:true});
 
 /* Marca final: se esta linha não rodou, o shell avisa que o sistema não carregou (ver avisarFalhaCarregamento em biobel-shell.js). */

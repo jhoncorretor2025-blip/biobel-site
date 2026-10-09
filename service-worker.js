@@ -6,7 +6,7 @@
 // internet, a versão mais nova é buscada e exibida; o cache só entra em ação quando o
 // aparelho está genuinamente sem conexão.
 
-const CACHE_NAME = 'biobel-cache-v11.76';
+const CACHE_NAME = 'biobel-cache-v11.77';
 const ARQUIVOS_ESSENCIAIS=[
  './dashboard.html','./login.html','./operacao.html','./equipe.html',
  './vendas.html','./analises.html','./alertas.html','./config.html','./administracao.html','./administracao/fornecedor.html',
@@ -61,7 +61,7 @@ self.addEventListener('fetch', (event) => {
         // Sem internet — tenta achar uma cópia salva antes, pra não ficar com a tela em branco.
         return caches.match(event.request).then((direto)=>{
           if(direto) return direto;
-          // As páginas usam ?v=11.62 para cache-busting, mas os arquivos essenciais
+          // As páginas usam ?v=11.77 para cache-busting, mas os arquivos essenciais
           // são pré-cacheados sem query string. No modo offline, tenta também a URL normalizada.
           const u=new URL(event.request.url);
           u.searchParams.delete('v');

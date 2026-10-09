@@ -75,10 +75,10 @@ button:active{transform:translateY(1px)}
     var logoUpload = localStorage.getItem('biobel_logo_custom');
     var logoUrl = localStorage.getItem('biobel_logo_custom_url');
     var jaEscolheuPadrao = localStorage.getItem('biobel_logo_padrao_escolhido');
+    // O link de miniatura do Google, que antes era gravado sozinho como logo de todo mundo, não vale mais: sem logo própria,
+    // a tela usa a logo do próprio site (já no HTML, leve e nítida).
+    if(logoUrl === 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9SwF4jZXYBWKBwWhxqdwut1wnZRS4hqyU47xNSpsuHg&s') logoUrl = null;
     var logoParaUsar = logoUpload || logoUrl;
-    if(!logoParaUsar && !jaEscolheuPadrao){
-      logoParaUsar = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9SwF4jZXYBWKBwWhxqdwut1wnZRS4hqyU47xNSpsuHg&s';
-    }
     if(logoParaUsar){
       var imgLogo = document.getElementById('logoLoginBiobel');
       var faviconEl = document.getElementById('faviconLogin');

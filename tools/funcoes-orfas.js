@@ -23,6 +23,9 @@ const CONHECIDAS = {
   // --- recursos que PERDERAM a chamada e merecem ser religados (decisão do dono) ---
   carregarMesAtualViaGviz: 'leitor de reserva (gviz) que deixou de ser usado na reescrita da leitura (v11.29/v11.33)',
   carregarPlanilhaViaGoogleVisualizationDireta: 'idem: leitor de reserva (gviz)',
+  // --- surgiram na v11.7x (outra sessão: nova Meta da Loja / Movimento da loja) — ainda NÃO analisadas ---
+  saveSalesGoal: 'a Configuração ganhou o botão "Usar informação da planilha" (v11.72); provavelmente o antigo salvar manual foi trocado',
+  moedaQtd: 'helper do dashboard.html que nenhum trecho chama hoje',
   // --- intencionais / código morto / falso positivo ---
   setPlanilhaLoading: 'a faixa de status do topo foi removida de propósito no v11.10',
   printDaily: 'código morto: nenhuma tela chama e o #daySelect não existe mais',

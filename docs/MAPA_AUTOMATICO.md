@@ -6,14 +6,14 @@
 ## Páginas do painel (8)
 | Arquivo | data-biobel-page | id do conteúdo | Tamanho | IDs no HTML | Scripts locais próprios |
 |---|---|---|---|---|---|
-| `dashboard.html` | `dashboard` | `dashboardTab` | 58 KB | 99 | — |
-| `operacao.html` | `caixa` | `caixaTab` | 8 KB | 27 | — |
-| `equipe.html` | `equipe` | `equipeTab` | 23 KB | 70 | — |
-| `vendas.html` | `campanhas` | `campanhasTab` | 5 KB | 18 | — |
-| `analises.html` | `info` | `infoTab` | 33 KB | 145 | — |
-| `alertas.html` | `alertas` | `alertasTab` | 3 KB | 11 | — |
-| `config.html` | `config` | `configTab` | 77 KB | 130 | — |
-| `administracao.html` | `adm` | `admTab` | 85 KB | 168 | — |
+| `dashboard.html` | `dashboard` | `dashboardTab` | 84 KB | 121 | biobel-shell-v1168.js |
+| `operacao.html` | `caixa` | `caixaTab` | 8 KB | 27 | biobel-shell-v1168.js |
+| `equipe.html` | `equipe` | `equipeTab` | 24 KB | 73 | biobel-shell-v1168.js |
+| `vendas.html` | `campanhas` | `campanhasTab` | 5 KB | 18 | biobel-shell-v1168.js |
+| `analises.html` | `info` | `infoTab` | 33 KB | 145 | biobel-shell-v1168.js |
+| `alertas.html` | `alertas` | `alertasTab` | 3 KB | 11 | biobel-shell-v1168.js |
+| `config.html` | `config` | `configTab` | 85 KB | 145 | biobel-shell-v1168.js |
+| `administracao.html` | `adm` | `admTab` | 85 KB | 168 | biobel-shell-v1168.js |
 
 ## Mapa de navegação (de `biobel-shell.js`)
 ```js
@@ -24,10 +24,10 @@ const PAGES={dashboard:"dashboard.html",caixa:"operacao.html",equipe:"equipe.htm
 ## Arquivos JavaScript compartilhados
 | Arquivo | Tamanho | Funções (aprox.) | Usado em |
 |---|---|---|---|
-| `biobel-app.js` | 729 KB | 752 | todas as 8 páginas |
-| `biobel-shell.js` | 15 KB | 4 | todas as 8 páginas |
+| `biobel-app.js` | 749 KB | 772 | todas as 8 páginas |
+| `biobel-shell.js` | 16 KB | 4 |  |
 | `biobel-recognition.js` | 10 KB | 10 | todas as 8 páginas |
-| `biobel-planilha-leitura.js` | 10 KB | 10 | todas as 8 páginas |
+| `biobel-planilha-leitura.js` | 14 KB | 16 | todas as 8 páginas |
 | `biobel-planilha-processamento.js` | 18 KB | 23 | todas as 8 páginas |
 | `biobel-planilha-comparacao.js` | 2 KB | 1 | todas as 8 páginas |
 | `central-operacional.js` | 43 KB | 16 |  |
@@ -39,9 +39,9 @@ const PAGES={dashboard:"dashboard.html",caixa:"operacao.html",equipe:"equipe.htm
 | index.html | 29 KB |
 | login.html | 5 KB |
 | biobel-design-system.css | 7 KB |
-| biobel-ux-refinement.css | 41 KB |
+| biobel-ux-refinement.css | 45 KB |
 | biobel-app.css | 86 KB |
-| service-worker.js | 3 KB |
+| service-worker.js | 4 KB |
 
 ## Seções do código JavaScript em `biobel-app.js` (comentários `/* ===== Nome ===== */`)
 Para achar uma: `grep -n "===== Nome" biobel-app.js`
@@ -182,14 +182,16 @@ Para achar uma: `grep -n "===== Nome" biobel-app.js`
 - https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js
 - https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js
 
-## Chaves de dados no navegador (localStorage): 144
+## Chaves de dados no navegador (localStorage): 150
 Prefixo comum `biobel_`. Agrupadas pelo 1º termo depois do prefixo:
 
 **adm** (35): `biobel_adm_autenticado`, `biobel_adm_boletos`, `biobel_adm_comissoes`, `biobel_adm_data_admissao_gabriela`, `biobel_adm_fechamentos_mensais`, `biobel_adm_gastos_fixos`, `biobel_adm_historico_comissoes`, `biobel_adm_historico_ferias_gabriela`, `biobel_adm_historico_recesso_day`, `biobel_adm_inicio_estagio_day`, `biobel_adm_inicio_informal_gabriela`, `biobel_adm_login_ts`, `biobel_adm_meta_lucro_mensal`, `biobel_adm_migracao_salarios_v2`, `biobel_adm_migracao_vencimentos_v1`, `biobel_adm_nascimento_`, `biobel_adm_nascimento_day`, `biobel_adm_nascimento_gabriela`, `biobel_adm_niveis_comissao`, `biobel_adm_pct_participacao_lucro`, `biobel_adm_renovacao_estagio_meses`, `biobel_adm_reunioes`, `biobel_adm_secao_isolada`, `biobel_adm_seed_dados_pessoais_v1`, `biobel_adm_taxa_credito`, `biobel_adm_taxa_debito`, `biobel_adm_tipo_imposto`, `biobel_adm_usuario_logado`, `biobel_adm_valor_estoque`, `biobel_adm_valor_estoque_data`, `biobel_adm_valor_hora_extra`, `biobel_adm_valor_hora_extra_definido_manualmente`, `biobel_adm_valor_imposto_mensal`, `biobel_adm_valor_reserva`, `biobel_adm_valor_reserva_data`
 
-**equipe** (7): `biobel_equipe_assinatura_atual`, `biobel_equipe_assinaturas`, `biobel_equipe_dia_atual`, `biobel_equipe_diaria_`, `biobel_equipe_historico`, `biobel_equipe_rotina_custom`, `biobel_equipe_sub_aba`
+**equipe** (9): `biobel_equipe_assinatura_atual`, `biobel_equipe_assinaturas`, `biobel_equipe_dia_atual`, `biobel_equipe_diaria_`, `biobel_equipe_gabriela_ativa`, `biobel_equipe_historico`, `biobel_equipe_rotina_custom`, `biobel_equipe_sub_aba`, `biobel_equipe_substituta_treinamento_gabriela`
 
 **horario** (4): `biobel_horario_abertura`, `biobel_horario_fechamento_sabado`, `biobel_horario_fechamento_semana`, `biobel_horario_padrao_ponto`
+
+**meta** (4): `biobel_meta_anual`, `biobel_meta_loja_fonte_v1`, `biobel_meta_qtd_vendas`, `biobel_meta_trimestral`
 
 **campanhas** (3): `biobel_campanhas`, `biobel_campanhas_`, `biobel_campanhas_migracao_v2`
 
@@ -203,9 +205,9 @@ Prefixo comum `biobel_`. Agrupadas pelo 1º termo depois do prefixo:
 
 **logo** (3): `biobel_logo_custom`, `biobel_logo_custom_url`, `biobel_logo_padrao_escolhido`
 
-**meta** (3): `biobel_meta_anual`, `biobel_meta_qtd_vendas`, `biobel_meta_trimestral`
-
 **notif** (3): `biobel_notif_mes_divergente_dia`, `biobel_notif_meta_dia`, `biobel_notif_vencimentos_dia`
+
+**sales** (3): `biobel_sales_goal`, `biobel_sales_goal_manual_v1`, `biobel_sales_goal_planilha_v1`
 
 **ultimo** (3): `biobel_ultimo_backup_automatico`, `biobel_ultimo_erro_conexao`, `biobel_ultimo_horario_fechamento_registrado`
 
@@ -315,9 +317,9 @@ Prefixo comum `biobel_`. Agrupadas pelo 1º termo depois do prefixo:
 
 **resumo** (1): `biobel_resumo_1715_v1`
 
-**sales** (1): `biobel_sales_goal`
-
 **snapshot** (1): `biobel_snapshot_automatico`
+
+**super** (1): `biobel_super_meta_v1`
 
 **texto** (1): `biobel_texto_vaga_`
 

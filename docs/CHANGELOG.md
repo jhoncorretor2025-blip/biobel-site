@@ -1,3 +1,14 @@
+## v11.77 — 08/10/2026
+Cinco melhorias gráficas simples, e correções que apareceram ao testar cada uma.
+- 📱 **Celular — cabeçalho enxuto.** O título "Visão Geral" começava a 410 px do topo (tela de ~844 px); agora começa a ~265 px. Sumiram o subtítulo de 3 linhas, o menu de abas (a barra Início/Operação/Equipe/Vendas/Mais já leva a tudo, e o "Mais" foi testado) e, na Visão Geral, o "Você está em...". O subtítulo agora é **certo por página** ("Ponto, rotina e pagamentos da equipe", "Fechamento do caixa do dia"...) e a linha técnica "🧭 Páginas independentes com dados compartilhados" foi removida.
+- 🐞 **Celular — a Visão Geral estava com 601 px de largura numa tela de 390 px.** Causa: o seletor de mês do "Movimento da loja" (`label.biobel-atendimento-v2-monthselect`, 470 px). Corrigido (página = 390 px).
+- 🐞 **Celular — "📊 Visão Geral" em 2 linhas dentro da barra de ícones, em TODAS as páginas:** resto do desenho antigo (`nav.no-print::before` com texto fixo). Removido.
+- 👀 **Contraste (WCAG AA 4,5:1) no modo escuro:** textos cinza-azulados pequenos (títulos do menu, legendas, detalhe do semáforo, "Segunda a sexta", `.text-slate-500`) ficaram legíveis; o select de mês tinha fundo cinza do navegador (4,2:1). Medido com axe: dashboard 11 → 0 textos fracos. Só no escuro (`body:not(.light-mode)`); o modo claro não foi alterado.
+- 🎯 **Barra de progresso no cartão "Meta do mês":** enche conforme o vendido e usa **a mesma cor e o mesmo estado do 🚦 Semáforo da Meta** (verde "No ritmo"/"Meta batida", amarelo "Atenção", vermelho "Risco"). Acessível: `role="progressbar"` com `aria-valuetext` ("22% da meta — No ritmo"). Testado com 6 metas diferentes.
+- ✨ **Esqueleto brilhante enquanto a planilha carrega** nos cartões Meta, Venda hoje e Líder (some quando chegam os dados; se o Google falhar, aparece a mensagem "Sem dados…" e não o esqueleto; respeita `prefers-reduced-motion`).
+- 🌸 **Logo padrão = logo do próprio site (`logo_biobel_gravatai_256.jpg`, 16 KB)**, no cabeçalho e no login. O link de miniatura do Google, que era gravado sozinho como "logo personalizada" de todo mundo, foi aposentado: quem o tinha gravado volta à logo do site; **logo enviada ou outro link escolhido pela loja não são mexidos**. O ícone da aba só é trocado se houver logo própria (antes virava a miniatura do Google).
+- ⚠️ **Qual shell vale?** As páginas carregam `biobel-shell-v1168.js`; `biobel-shell.js`, `-v1161` e `-v1167` não são carregados por nenhuma página (editar neles não muda nada). Veja `docs/PENDENCIAS.md`.
+
 ## v11.72 — 08/10/2026
 - 🎯 Configuração passa a ter o botão **Usar informação da planilha** ligado por padrão.
 - 📊 Ligado: a Meta da Loja vem da célula **N2** da planilha.

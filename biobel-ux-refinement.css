@@ -642,3 +642,50 @@ body.light-mode input,body.light-mode select,body.light-mode textarea{color:#172
 body.light-mode input::placeholder,body.light-mode textarea::placeholder{color:#94a3b8!important}
 body.light-mode .biobel-mobile-more-panel{background:#fff!important;color:#172033!important;border-color:#d7e0ea!important}
 body.light-mode .biobel-mobile-more-panel a,body.light-mode .biobel-mobile-more-head{color:#334155!important}
+
+/* ===== v11.77 — melhorias gráficas simples ===== */
+
+/* 1) CELULAR: cabeçalho enxuto. Antes o título "Visão Geral" só começava a 410px do topo (a tela tem ~844px):
+      subtítulo e jargão ocupavam 3 linhas, o menu de abas repetia a barra de ícones e o "Você está em" repetia o título.
+      ("body" na frente: o biobel-app.css é carregado DEPOIS deste arquivo e anularia regras de mesma força.) */
+@media (max-width:760px){
+ body .biobel-brand-left p{display:none}
+ body .biobel-header-brand{flex-wrap:wrap;padding:8px 10px;gap:8px}
+ body .biobel-brand-left>div{min-width:0}
+ body .biobel-brand-left h1{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ body .biobel-brand-left img{width:36px!important;height:36px!important}
+ body .biobel-header-brand label{padding:7px 10px!important;font-size:11px!important}
+ body .biobel-nav-direct{display:none}                               /* a barra Início/Operação/Equipe/Vendas/Mais já leva a tudo */
+ body[data-biobel-page="dashboard"] .biobel-breadcrumb{display:none!important}
+ body nav.biobel-mobile-direct::before,body nav.biobel-nav-direct::before{content:none!important;display:none!important}   /* resto do desenho antigo: escrevia "📊 Visão Geral" (em 2 linhas) dentro da barra de ícones de TODAS as páginas */   /* !important: existe outra regra .biobel-breadcrumb{display:flex!important} */
+}
+
+/* 2) CONTRASTE (WCAG AA = 4,5:1) no modo escuro: os cinzas-azulados pequenos ficavam em 3,8–4,3:1.
+      Só no escuro (body:not(.light-mode)); o modo claro tem as próprias cores. */
+body:not(.light-mode) .biobel-nav-group-label{color:#8fa3bd}
+body:not(.light-mode) [style*="color:#64748b"]{color:#8fa3bd!important}
+body:not(.light-mode) [style*="color:#71849d"]{color:#a3b4ca!important}
+
+/* 3) BARRA DE PROGRESSO da meta do mês (a cor vem do Semáforo da Meta: verde / amarelo / vermelho) */
+.biobel-meta-barra{height:8px;border-radius:999px;background:rgba(148,163,184,.20);overflow:hidden;margin:7px 0 5px}
+.biobel-meta-barra>span{display:block;height:100%;width:0;border-radius:inherit;background:#64748b;transition:width .6s ease,background-color .3s ease}
+body.light-mode .biobel-meta-barra{background:rgba(100,116,139,.24)}
+
+/* 4) ESQUELETO brilhante enquanto a planilha carrega (no lugar do texto "Aguardando a planilha…") */
+@keyframes biobelBrilho{0%{background-position:100% 0}100%{background-position:-100% 0}}
+.biobel-kpi.kpi-carregando .kpi-value,.biobel-kpi.kpi-carregando .kpi-sub{
+ color:transparent!important;border-radius:8px;user-select:none;pointer-events:none;
+ background:linear-gradient(90deg,rgba(148,163,184,.10) 25%,rgba(148,163,184,.26) 50%,rgba(148,163,184,.10) 75%);
+ background-size:300% 100%;animation:biobelBrilho 1.4s ease-in-out infinite}
+.biobel-kpi.kpi-carregando .kpi-value{max-width:70%;min-height:1.1em}
+.biobel-kpi.kpi-carregando .kpi-sub{max-width:85%;min-height:.9em;margin-top:6px}
+.biobel-kpi.kpi-carregando .biobel-meta-barra{opacity:.35}
+@media (prefers-reduced-motion:reduce){.biobel-kpi.kpi-carregando .kpi-value,.biobel-kpi.kpi-carregando .kpi-sub{animation:none}.biobel-meta-barra>span{transition:none}}
+
+/* 5) Seletor de mês do "Movimento da loja": no celular ele tinha 470px e deixava a PÁGINA INTEIRA com 601px (a tela tem 390px) */
+body .biobel-atendimento-v2-monthselect{max-width:100%;min-width:0;box-sizing:border-box}
+body .biobel-atendimento-v2-monthselect select{width:auto;min-width:0;max-width:100%;flex:1 1 auto;background:transparent;color:inherit}   /* sem fundo próprio: o cinza padrão do navegador dava contraste 4,2:1 */
+body:not(.light-mode) .biobel-atendimento-v2-projbox small,body:not(.light-mode) .biobel-atendimento-v2-projbox .muted,body:not(.light-mode) #atendimentosProjecaoSub{color:#a3b4ca}
+body:not(.light-mode) .text-slate-500{color:#8fa3bd}   /* classe do Tailwind (#64748b) usada em textos pequenos de várias páginas */
+@media (max-width:760px){body .biobel-atendimento-v2-monthselect{width:100%}}
+
