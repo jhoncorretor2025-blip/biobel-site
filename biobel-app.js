@@ -1,4 +1,4 @@
-/* BIOBEL v11.76 — Configuração de Meta e Super Meta. */
+/* BIOBEL v11.90 — rotina da equipe identificada como CLT e histórico preservado. */
 /* BIOBEL v11.69 — Meta mensal automática: célula N2 da planilha é a fonte oficial. */
 
 
@@ -26,10 +26,10 @@ if (sessionStorage.getItem('biobel_logged_in') !== 'yes') {
 
 
 const rotinaDiariaBasePadrao = [
- {texto:'☕ Abertura (Gabi): Fazer o café fresco na chegada e dar "Bom Dia" no WhatsApp da loja.', quem:'Gabi'},
- {texto:'📱 Durante o dia (Gabi & Dai): Atendimento focado, alinhamento do balcão e passagem do celular à tarde.', quem:'Gabi & Dai'},
- {texto:'📸 Criação e Conteúdo (Dai): Postagem de stories e criação de artes promocionais/WhatsApp.', quem:'Dai'},
- {texto:'🧼 Fechamento / Copa (Dai): Higienizar e deixar a cafeteira pronta na copa para a Gabi só ligar na manhã seguinte.', quem:'Dai'}
+ {texto:'☕ Abertura (CLT): Fazer o café fresco na chegada e dar "Bom Dia" no WhatsApp da loja.', quem:'CLT'},
+ {texto:'📱 Durante o dia (CLT & Day): Atendimento focado, alinhamento do balcão e passagem do celular à tarde.', quem:'CLT & Day'},
+ {texto:'📸 Criação e Conteúdo (Day): Postagem de stories e criação de artes promocionais/WhatsApp.', quem:'Day'},
+ {texto:'🧼 Fechamento / Copa (Day): Higienizar e deixar a cafeteira pronta na copa para a CLT só ligar na manhã seguinte.', quem:'Day'}
 ];
 
 const rotinaSemanalPadrao = {
@@ -56,13 +56,39 @@ const rotinaSemanalPadrao = {
 // Cópia editável da rotina (usada em toda a aba Equipe). Começa igual ao padrão,
 // mas é substituída pela versão personalizada salva no navegador, se existir.
 function cloneRotina(obj){ return JSON.parse(JSON.stringify(obj)); }
+function substituirNomeExFuncionarioPorCLT(valor){
+ return typeof valor==='string' ? valor.replace(/Gabriela|Gabi/gi,'CLT') : valor;
+}
+function migrarRotinaLegadaParaCLT(rotina){
+ if(!rotina || typeof rotina!=='object') return rotina;
+ const migrada=cloneRotina(rotina);
+ if(Array.isArray(migrada.diaria)){
+  migrada.diaria.forEach(item=>{
+   if(!item || typeof item!=='object') return;
+   item.texto=substituirNomeExFuncionarioPorCLT(item.texto);
+   item.quem=substituirNomeExFuncionarioPorCLT(item.quem);
+  });
+ }
+ if(migrada.semanal && typeof migrada.semanal==='object'){
+  Object.values(migrada.semanal).forEach(dia=>{
+   if(!dia || typeof dia!=='object') return;
+   ['gabi','dai'].forEach(chave=>{
+    if(Array.isArray(dia[chave])) dia[chave]=dia[chave].map(substituirNomeExFuncionarioPorCLT);
+   });
+  });
+ }
+ if(JSON.stringify(migrada)!==JSON.stringify(rotina)){
+  localStorage.setItem('biobel_equipe_rotina_custom',JSON.stringify(migrada));
+ }
+ return migrada;
+}
 function carregarRotinaPersonalizada(){
  try{
   const raw = localStorage.getItem('biobel_equipe_rotina_custom');
   return raw ? JSON.parse(raw) : null;
  }catch(e){ return null; }
 }
-const rotinaCustomSalva = carregarRotinaPersonalizada();
+const rotinaCustomSalva = migrarRotinaLegadaParaCLT(carregarRotinaPersonalizada());
 let rotinaDiariaBase = rotinaCustomSalva?.diaria || cloneRotina(rotinaDiariaBasePadrao);
 let rotinaSemanal = rotinaCustomSalva?.semanal || cloneRotina(rotinaSemanalPadrao);
 function salvarRotinaPersonalizada(){
@@ -1137,22 +1163,16 @@ let equipeEditMode = false;
    As atividades são herdadas, mas o checklist começa zerado.
 */
 function getEquipePrincipal(){
- // Gabriela é ex-funcionária: o posto ativo da rotina fica com CLT (Treinamento).
- // O posto só volta a ser Gabriela com uma reativação explícita no localStorage.
+ // O posto operacional atual fica identificado como CLT. Os registros de Gabriela
+ // permanecem preservados para consulta, mas não são usados como nome da rotina ativa.
  const desligamento = getDesligamento('gabriela');
- const reativada = localStorage.getItem('biobel_equipe_gabriela_ativa') === 'yes';
- if(desligamento || !reativada){
-  if(!desligamento){ try{ garantirSubstitutaCltTreinamento(null); }catch(e){} }
-  return {scope:'gabi_treinamento',nome:'CLT (Treinamento)',titulo:'CLT (Treinamento)',inicial:'T',treinamento:true,dataInicio:desligamento?.data||null};
- }
- const nomeSalvo=(localStorage.getItem('biobel_equipe_equipeNomeGabi')||'').trim();
- const nome=nomeSalvo||'Gabriela';
- return {scope:'gabi',nome,titulo:nome.toUpperCase(),inicial:nome.charAt(0).toUpperCase(),treinamento:false,dataInicio:null};
+ try{ garantirSubstitutaCltTreinamento(desligamento?.data||null); }catch(e){}
+ return {scope:'gabi_treinamento',nome:'CLT',titulo:'CLT',inicial:'C',treinamento:true,dataInicio:desligamento?.data||null};
 }
 function equipePrincipalScope(dia){ return String(dia)+'_'+getEquipePrincipal().scope; }
 function adaptarTextoEquipePrincipal(texto){
  const principal=getEquipePrincipal();
- return principal.treinamento ? String(texto||'').replace(/Gabi/gi,principal.nome) : texto;
+ return principal.treinamento ? String(texto||'').replace(/Gabriela|Gabi/gi,principal.nome) : texto;
 }
 function garantirSubstitutaCltTreinamento(dataDesligamento){
  const chave='biobel_equipe_substituta_treinamento_gabriela';
@@ -1249,7 +1269,7 @@ function removerTarefaDia(dia, quem, index){
 
 function moverTarefaDia(dia, quem, index){
  const outraQuem = quem==='gabi' ? 'dai' : 'gabi';
- const nomeOutra = outraQuem==='gabi' ? 'GABI' : 'DAI';
+ const nomeOutra = outraQuem==='gabi' ? getEquipePrincipal().nome.toUpperCase() : 'DAY';
  const textoTarefa = rotinaSemanal[dia]?.[quem]?.[index] || 'esta tarefa';
  confirmarBiobel(`Mover a tarefa "${textoTarefa}" para a ${nomeOutra}?`, ()=>{
   const [texto] = rotinaSemanal[dia][quem].splice(index,1);
@@ -1360,9 +1380,9 @@ function renderEquipeDia(dia){
  const tituloEl=document.getElementById('equipePrincipalTitulo');
  const avatarEl=document.getElementById('equipePrincipalAvatar');
  const statusEl=document.getElementById('equipePrincipalStatus');
- if(tituloEl) tituloEl.textContent=principal.treinamento?'🎓 CLT (Treinamento)':'💇‍♀️ '+principal.titulo;
+ if(tituloEl) tituloEl.textContent=principal.treinamento?'🎓 CLT':'💇‍♀️ '+principal.titulo;
  if(avatarEl) avatarEl.textContent=principal.inicial;
- if(statusEl) statusEl.textContent=principal.treinamento?'🔄 Atividades herdadas da Gabriela':'';
+ if(statusEl) statusEl.textContent=principal.treinamento?'🧪 Em teste':'';
  const gabiEl = document.getElementById('equipeListaGabi');
  const daiEl = document.getElementById('equipeListaDai');
  const gabiScope=equipePrincipalScope(dia);
@@ -1371,7 +1391,7 @@ function renderEquipeDia(dia){
    const editControls = equipeEditMode ? `
     <button onclick="moverTarefaDia('${dia}','gabi',${i})" title="Mover para a DAI" class="no-print text-blue-400 hover:text-blue-300 text-lg px-1 flex-shrink-0">🔁</button>
     <button onclick="removerTarefaDia('${dia}','gabi',${i})" title="Remover tarefa" class="no-print text-rose-400 hover:text-rose-300 text-lg px-1 flex-shrink-0">🗑</button>` : '';
-   return renderEquipeChecklistItem(gabiScope,i,texto,editControls);
+   return renderEquipeChecklistItem(gabiScope,i,adaptarTextoEquipePrincipal(texto),editControls);
   }).join('');
   if(equipeEditMode) html += addTarefaInputHtml(`${dia}_gabi`,'Nova tarefa para '+principal.nome+'...');
   gabiEl.innerHTML = html;
@@ -1379,7 +1399,7 @@ function renderEquipeDia(dia){
  if(daiEl){
   let html = d.dai.map((texto,i)=>{
    const editControls = equipeEditMode ? `
-    <button onclick="moverTarefaDia('${dia}','dai',${i})" title="Mover para a GABI" class="no-print text-blue-400 hover:text-blue-300 text-lg px-1 flex-shrink-0">🔁</button>
+    <button onclick="moverTarefaDia('${dia}','dai',${i})" title="Mover para CLT" class="no-print text-blue-400 hover:text-blue-300 text-lg px-1 flex-shrink-0">🔁</button>
     <button onclick="removerTarefaDia('${dia}','dai',${i})" title="Remover tarefa" class="no-print text-rose-400 hover:text-rose-300 text-lg px-1 flex-shrink-0">🗑</button>` : '';
    return renderEquipeChecklistItem(`${dia}_dai`,i,texto,editControls);
   }).join('');
@@ -2825,12 +2845,18 @@ function getChavePix(pessoa){
  return localStorage.getItem('biobel_chave_pix_'+pessoa) || '';
 }
 function salvarChavePix(pessoa){
- const idInput = pessoa==='gabriela' ? 'chavePixGabrielaInput' : 'chavePixDayInput';
- const nomeExibicao = pessoa==='gabriela' ? 'Gabriela' : 'Day';
- const valor = document.getElementById(idInput).value.trim();
- localStorage.setItem('biobel_chave_pix_'+pessoa, valor);
- mostrarToast('✅ Chave PIX de '+nomeExibicao+' salva!');
- registrarAlteracao('Chave PIX de '+nomeExibicao+' atualizada');
+ const cadastro={
+  gabriela:{id:'chavePixGabrielaInput',nome:'Gabriela'},
+  day:{id:'chavePixDayInput',nome:'Day'},
+  clt_treinamento:{id:'chavePixCltInput',nome:'CLT'}
+ }[pessoa];
+ if(!cadastro){ mostrarToast('⚠️ Funcionária não reconhecida.'); return; }
+ const campo=document.getElementById(cadastro.id);
+ if(!campo){ mostrarToast('⚠️ Campo da chave PIX não encontrado.'); return; }
+ const valor=campo.value.trim();
+ localStorage.setItem('biobel_chave_pix_'+pessoa,valor);
+ mostrarToast('✅ Chave PIX de '+cadastro.nome+' salva!');
+ registrarAlteracao('Chave PIX de '+cadastro.nome+' atualizada');
  renderLogAlteracoes();
 }
 function seedChavesPix(){
@@ -2846,15 +2872,20 @@ function initChavesPixUI(){
  seedChavesPix();
  const inputGabriela = document.getElementById('chavePixGabrielaInput');
  const inputDay = document.getElementById('chavePixDayInput');
+ const inputClt = document.getElementById('chavePixCltInput');
  if(inputGabriela) inputGabriela.value = getChavePix('gabriela');
  if(inputDay) inputDay.value = getChavePix('day');
+ if(inputClt) inputClt.value = getChavePix('clt_treinamento');
  renderChavesPixLista();
 }
 function renderChavesPixLista(){
+ const principal=getEquipePrincipal();
  const pessoas = [
-  { nome:'Gabriela', chave: getChavePix('gabriela'), pessoaKey:'gabriela' },
-  { nome:'Day', chave: getChavePix('day'), pessoaKey:'day' },
- ].filter(p=>!getDesligamento(p.pessoaKey)); // quem já foi desligada não aparece mais aqui
+  ...(principal.treinamento
+   ? [{ nome:'CLT', chave:getChavePix('clt_treinamento'), pessoaKey:'clt_treinamento' }]
+   : [{ nome:'Gabriela', chave:getChavePix('gabriela'), pessoaKey:'gabriela' }]),
+  { nome:'Day', chave:getChavePix('day'), pessoaKey:'day' },
+ ].filter(p=>!getDesligamento(p.pessoaKey)); // a lista mostra as opções atuais de pagamento
  const html = pessoas.map(p=>`
    <div style="display:flex;justify-content:space-between;align-items:center;background:#0b1728;border:1px solid #1e2c42;border-radius:10px;padding:12px 14px;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
     <div>
