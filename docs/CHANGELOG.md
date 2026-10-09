@@ -1,3 +1,7 @@
+## v11.84 — 09/10/2026
+- 🎨 **Melhoria visual na Central de Ideias:** adicionados emojis aos 16 títulos de cartões para facilitar a leitura e identificação rápida de cada ação.
+- ♻️ **Versão/cache:** página de ideias, dashboard, shell e service worker atualizados para v11.84.
+
 ## v11.83 — 09/10/2026
 - 📦 **Campanha para produtos parados:** gera uma sugestão a partir do nome, estoque, tempo parado e preço informado, com lembrete para validar margem e disponibilidade.
 - 💬 **WhatsApp por situação:** modelos para primeiro contato, reativação, pós-venda, novidades, consulta de produto e aniversário.
