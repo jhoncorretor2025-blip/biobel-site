@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0ea97a">
+<meta name="robots" content="noindex,nofollow">
+<title>Pesquisa de satisfação | Biobel Cosméticos</title>
+<style>
+:root{color-scheme:dark;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+*{box-sizing:border-box}body{margin:0;background:#081522;color:#e5edf6;min-height:100vh;display:flex;justify-content:center;padding:20px 12px}
+.wrap{width:100%;max-width:520px;margin:auto}.brand{display:flex;align-items:center;gap:12px;margin-bottom:16px}.logo{width:48px;height:48px;border-radius:13px;background:#0ea97a;color:#05251a;display:grid;place-items:center;font-size:26px;font-weight:900}.brand small{display:block;color:#8fa2ba;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}.brand strong{font-size:20px;display:block;margin-top:2px}
+.card{background:linear-gradient(160deg,#102238,#0d1b2e);border:1px solid #27405b;border-radius:22px;padding:22px;box-shadow:0 12px 35px #0003}.eyebrow{font-size:10px;color:#27d7a0;font-weight:900;letter-spacing:.12em;text-transform:uppercase}.card h1{font-size:25px;line-height:1.15;margin:7px 0 8px}.intro{font-size:13px;line-height:1.6;color:#a9b9cc;margin-bottom:20px}
+.question{padding:14px 0;border-top:1px solid #24384f}.question legend,.qtitle{font-size:13px;font-weight:800;display:block;margin-bottom:10px}.choices{display:flex;gap:7px;flex-wrap:wrap}.choice{flex:1;min-width:52px}.choice input{position:absolute;opacity:0;pointer-events:none}.choice span{display:flex;justify-content:center;align-items:center;min-height:42px;padding:8px;border-radius:10px;border:1px solid #2d4561;background:#091624;color:#cbd5e1;font-size:12px;font-weight:800;cursor:pointer}.choice input:checked+span{background:#0a3c2d;border-color:#27d7a0;color:#6ee7b7;box-shadow:0 0 0 2px #27d7a01c}.choice input:focus-visible+span{outline:2px solid #93c5fd;outline-offset:2px}
+select,textarea{width:100%;border:1px solid #2d4561;border-radius:10px;background:#091624;color:#e5edf6;padding:11px 12px;font:inherit;font-size:13px}textarea{min-height:88px;resize:vertical}.field-help{display:block;color:#8295ad;font-size:10px;margin-top:6px;line-height:1.5}
+.submit{width:100%;border:0;border-radius:12px;background:#27d7a0;color:#05251a;padding:13px 16px;font-size:13px;font-weight:900;cursor:pointer;margin-top:16px}.submit:disabled{opacity:.45;cursor:not-allowed}.privacy{font-size:10px;line-height:1.6;color:#8295ad;text-align:center;margin-top:12px}.status{display:none;padding:12px 13px;border-radius:11px;font-size:12px;line-height:1.5;margin:12px 0}.status.show{display:block}.status.error{color:#fecaca;background:#451a20;border:1px solid #7f1d1d}.status.success{color:#a7f3d0;background:#063b2b;border:1px solid #166534}.thanks{display:none;text-align:center;padding:25px 10px}.thanks span{display:block;font-size:42px;margin-bottom:10px}.thanks h2{font-size:21px;margin:0 0 8px}.thanks p{font-size:13px;color:#a9b9cc;line-height:1.6}
+@media(max-width:420px){.card{padding:18px}.card h1{font-size:22px}.brand strong{font-size:18px}}
+@media(prefers-color-scheme:light){body{background:#f1f5f9;color:#172033}.card{background:linear-gradient(160deg,#fff,#f8fafc);border-color:#d7e1ec;box-shadow:0 12px 30px #0f172a12}.brand small,.intro,.thanks p{color:#64748b}.question{border-color:#e2e8f0}.choice span,select,textarea{background:#fff;border-color:#cbd5e1;color:#334155}.field-help,.privacy{color:#64748b}.choice input:checked+span{background:#e6f8f1;color:#087f5b}}
+</style>
+</head>
+<body>
+<main class="wrap">
+ <div class="brand"><div class="logo" aria-hidden="true">B</div><div><small>Cosméticos · Gravataí</small><strong>Biobel</strong></div></div>
+ <section class="card">
+  <div class="eyebrow">Sua opinião importa</div>
+  <h1>Como foi sua experiência?</h1>
+  <p class="intro">São poucas perguntas e leva menos de um minuto. Sua resposta ajuda a melhorar nosso atendimento e a experiência na loja.</p>
+  <div id="pesquisaStatus" class="status" role="status" aria-live="polite"></div>
+  <form id="formPesquisaSatisfacao">
+   <fieldset class="question" style="border-left:0;border-right:0;border-bottom:0;margin:0;padding-left:0;padding-right:0;">
+    <legend>1. Como você avalia nosso atendimento?</legend>
+    <div class="choices" role="radiogroup" aria-label="Nota do atendimento">
+     <label class="choice"><input type="radio" name="nota" value="1" required><span>1<br>Ruim</span></label>
+     <label class="choice"><input type="radio" name="nota" value="2"><span>2</span></label>
+     <label class="choice"><input type="radio" name="nota" value="3"><span>3</span></label>
+     <label class="choice"><input type="radio" name="nota" value="4"><span>4</span></label>
+     <label class="choice"><input type="radio" name="nota" value="5"><span>5<br>Ótimo</span></label>
+    </div>
+   </fieldset>
+   <div class="question"><label class="qtitle" for="encontrou">2. Encontrou o que procurava?</label><select id="encontrou" name="encontrou" required><option value="">Escolha uma opção</option><option>Sim</option><option>Parcialmente</option><option>Não</option></select></div>
+   <div class="question"><label class="qtitle" for="recomendaria">3. Você recomendaria a Biobel a uma amiga?</label><select id="recomendaria" name="recomendaria" required><option value="">Escolha uma opção</option><option>Sim</option><option>Talvez</option><option>Não</option></select></div>
+   <div class="question"><label class="qtitle" for="comentario">4. Quer deixar uma sugestão? (opcional)</label><textarea id="comentario" name="comentario" maxlength="1000" placeholder="Conte o que foi bom ou o que podemos melhorar…"></textarea><span class="field-help">Não informe dados pessoais ou informações de pagamento.</span></div>
+   <button class="submit" id="enviarPesquisa" type="submit">Enviar minha opinião</button>
+   <p class="privacy">Pesquisa anônima. Não pedimos nome, telefone ou e-mail.</p>
+  </form>
+  <div id="pesquisaObrigado" class="thanks"><span>💚</span><h2>Obrigado pela sua opinião!</h2><p>Seu feedback ajuda a Biobel a cuidar melhor de cada cliente.</p></div>
+ </section>
+</main>
+<script>
+(function(){
+ const params=new URLSearchParams(location.search),api=(params.get("api")||"").trim();
+ const form=document.getElementById("formPesquisaSatisfacao"),status=document.getElementById("pesquisaStatus"),button=document.getElementById("enviarPesquisa");
+ function avisar(msg,tipo){status.textContent=msg;status.className="status show "+tipo;}
+ if(!api){
+  avisar("A pesquisa ainda não está conectada ao envio central de respostas. Avise a equipe Biobel antes de usar este QR Code.","error");
+  button.disabled=true;
+ }
+ form.addEventListener("submit",function(e){
+  e.preventDefault();
+  if(!api){avisar("O envio ainda não está configurado. A equipe precisa conectar a pesquisa antes de receber respostas.","error");return;}
+  const nota=form.querySelector('input[name="nota"]:checked');
+  if(!nota){avisar("Escolha uma nota para continuar.","error");return;}
+  const payload={action:"submitSatisfaction",rating:nota.value,encontrou:document.getElementById("encontrou").value,recomendaria:document.getElementById("recomendaria").value,comentario:document.getElementById("comentario").value.trim().slice(0,1000),callback:"biobelSatisfacaoCallback"};
+  button.disabled=true;button.textContent="Enviando…";
+  let respondeu=false,script=document.createElement("script");
+  window.biobelSatisfacaoCallback=function(result){
+   respondeu=true;clearTimeout(timer);script.remove();
+   if(result&&result.success){
+    form.style.display="none";status.className="status";document.getElementById("pesquisaObrigado").style.display="block";
+   }else{
+    button.disabled=false;button.textContent="Tentar novamente";
+    avisar("Não foi possível registrar a resposta centralmente. "+(result&&result.error?String(result.error):"Confira a conexão e tente novamente."),"error");
+   }
+  };
+  script.onerror=function(){if(respondeu)return;clearTimeout(timer);script.remove();button.disabled=false;button.textContent="Tentar novamente";avisar("Falha na conexão com o sistema de respostas. Tente novamente ou avise uma atendente.","error");};
+  const target=api+(api.indexOf("?")>=0?"&":"?")+new URLSearchParams(payload).toString();
+  script.src=target;
+  const timer=setTimeout(function(){if(respondeu)return;script.remove();button.disabled=false;button.textContent="Tentar novamente";avisar("O sistema demorou para responder. Sua resposta não foi confirmada; tente novamente.","error");},15000);
+  document.head.appendChild(script);
+ });
+})();
+</script>
+</body>
+</html>
