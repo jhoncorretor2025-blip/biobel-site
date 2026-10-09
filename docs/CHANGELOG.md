@@ -1,3 +1,7 @@
+## v11.86 — 09/10/2026
+- 🛠️ **Correção dos filtros da Central de Ideias:** clique nos botões agora aplica o filtro de categoria de forma explícita, atualiza o estado visual e oculta os cartões fora da categoria selecionada.
+- ♻️ Atualizados versão e cache para v11.86.
+
 ## v11.85 — 09/10/2026
 - 💰 **Gerador de campanha para produto parado:** campos separados para preço original e promocional; calcula automaticamente economia em reais e percentual de desconto.
 - ✅ Validação para impedir destaque de desconto quando o preço promocional não é menor; sem preço promocional, o texto informa apenas o preço atual.
