@@ -1,3 +1,10 @@
+## v11.90 — 09/10/2026
+- 👥 Rotinas diárias e semanais identificam o posto atual como **CLT**, removendo o nome da ex-funcionária das tarefas ativas e migrando personalizações antigas.
+- 🧾 A folha de ponto abre em **CLT**; registros antigos de Gabriela continuam acessíveis como histórico.
+- 💳 A chave PIX da CLT tem cadastro separado para não reutilizar a chave da ex-funcionária.
+- 📊 O rótulo **CLT** das vendas na planilha/Excel foi mantido; nenhuma venda ou histórico de faturamento foi reescrito.
+- ♻️ Atualizados versão e cache para v11.90.
+
 ## v11.89 — 09/10/2026
 - 🔎 **Busca de campanhas:** pesquisa por palavras-chave, sinônimos e termos relacionados.
 - 🎨 **Sugestão visual por campanha:** conceito, formato recomendado, paleta Biobel e botão para copiar o briefing de arte de Instagram.
