@@ -1,3 +1,10 @@
+## v11.83 — 09/10/2026
+- 📦 **Campanha para produtos parados:** gera uma sugestão a partir do nome, estoque, tempo parado e preço informado, com lembrete para validar margem e disponibilidade.
+- 💬 **WhatsApp por situação:** modelos para primeiro contato, reativação, pós-venda, novidades, consulta de produto e aniversário.
+- 📊 **Ranking de campanhas:** registra vendas, custo e quantidade vendida; ordena pelo saldo estimado. Dados ficam salvos no navegador.
+- ⭐ **Favoritas:** salva e remove ideias para reutilização no mesmo navegador.
+- ♻️ **Versão/cache:** página de ideias, dashboard, shell e service worker atualizados para v11.83.
+
 ## v11.82 — 09/10/2026
 - 💡 **Novas ideias comerciais:** clube de vantagens, indicação de amigas, enquete nos Stories, demonstração de produto, combo complementar, pós-venda e benefício de aniversário.
 - ⚠️ **Pix premiado — alerta de conformidade:** a página explica que não se deve oferecer Pix/dinheiro como prêmio em promoção comercial e sugere alternativas de descontos ou benefícios objetivos. Fonte oficial: Ministério da Fazenda.
