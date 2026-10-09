@@ -2,7 +2,7 @@
 const BIOBEL_VERSION="v11.83";
 (function(){
 "use strict";
-const PAGES={dashboard:"dashboard.html",caixa:"operacao.html",equipe:"equipe.html",campanhas:"vendas.html",info:"analises.html",alertas:"alertas.html",config:"config.html",adm:"administracao.html",backup:"backup.html"};
+const PAGES={dashboard:"dashboard.html",caixa:"operacao.html",equipe:"equipe.html",campanhas:"vendas.html",ideias:"ideias.html",info:"analises.html",alertas:"alertas.html",config:"config.html",adm:"administracao.html",backup:"backup.html"};
 // Os módulos (recognition, planilha-leitura, planilha-processamento, planilha-comparacao) são <script> no HTML,
 // ANTES do biobel-app.js — o navegador garante a ordem. Nada a esperar; mantido só por compatibilidade.
 window.biobelModulesReady=Promise.resolve();
@@ -69,7 +69,7 @@ function montar(){
   if(wrap&&!wrap.contains(e.target)){const box=document.getElementById("resultadosBuscaGlobal");if(box)box.style.display="none";}
  });
  function configurarShellNavegacaoInterna(){
-  const nomes={dashboard:"🏠 Visão Geral",caixa:"💰 Operação",equipe:"👥 Equipe",campanhas:"📣 Vendas",info:"📊 Análises",alertas:"🚨 Alertas",config:"🔧 Configuração",adm:"⚙️ Administração",fornecedores:"🤝 Fornecedores",backup:"💾 Backup"};
+  const nomes={dashboard:"🏠 Visão Geral",caixa:"💰 Operação",equipe:"👥 Equipe",campanhas:"📣 Vendas",ideias:"💡 Ideias e campanhas",info:"📊 Análises",alertas:"🚨 Alertas",config:"🔧 Configuração",adm:"⚙️ Administração",fornecedores:"🤝 Fornecedores",backup:"💾 Backup"};
   const hrefMap={dashboard:pageHref("dashboard"),caixa:pageHref("caixa"),equipe:pageHref("equipe"),campanhas:pageHref("campanhas"),info:pageHref("info"),alertas:pageHref("alertas"),config:pageHref("config"),adm:pageHref("adm"),backup:pageHref("backup"),fornecedores:ROOT+"administracao/fornecedor.html"};
   m.querySelectorAll("a[href]").forEach(link=>{
    const href=link.getAttribute("href");
@@ -81,12 +81,12 @@ function montar(){
    const key=link.dataset.page;if(hrefMap[key])link.setAttribute("href",hrefMap[key]);
    link.classList.toggle("active",p===key);
   });
-  const moreBtn=m.querySelector("#btnMobileMoreBiobel");if(moreBtn)moreBtn.classList.toggle("active",["fornecedores","adm","info","alertas","config","backup"].includes(p));
+  const moreBtn=m.querySelector("#btnMobileMoreBiobel");if(moreBtn)moreBtn.classList.toggle("active",["fornecedores","adm","info","alertas","config","backup","ideias"].includes(p));
   m.querySelectorAll(".biobel-nav-direct-inner a").forEach(link=>{if(!link.getAttribute("title"))link.setAttribute("title",link.textContent.trim());});
   m.querySelectorAll(".biobel-nav-direct-inner a.active").forEach(link=>link.setAttribute("aria-current","page"));
-  const tituloBase={dashboard:"Biobel — Visão Geral",caixa:"Biobel — Operação",equipe:"Biobel — Equipe",campanhas:"Biobel — Vendas",info:"Biobel — Análises",alertas:"Biobel — Alertas",config:"Biobel — Configuração",adm:"Biobel — Administração",fornecedores:"Biobel — Fornecedores",backup:"Biobel — Backup"};
+  const tituloBase={dashboard:"Biobel — Visão Geral",caixa:"Biobel — Operação",equipe:"Biobel — Equipe",campanhas:"Biobel — Vendas",ideias:"Biobel — Ideias e campanhas",info:"Biobel — Análises",alertas:"Biobel — Alertas",config:"Biobel — Configuração",adm:"Biobel — Administração",fornecedores:"Biobel — Fornecedores",backup:"Biobel — Backup"};
   const tituloEl=m.querySelector("#biobelTituloPagina"); if(tituloEl) tituloEl.textContent=tituloBase[p]||"Biobel";
- const subtituloBase={dashboard:"Resumo rápido da loja",caixa:"Fechamento do caixa do dia",equipe:"Ponto, rotina e pagamentos da equipe",campanhas:"Campanhas e ações de venda",info:"Análises e comparativos",alertas:"Pendências e avisos",config:"Metas, horários e ajustes",adm:"Área da gerência",fornecedores:"Boletos e fornecedores",backup:"Cópia de segurança dos dados"};
+ const subtituloBase={dashboard:"Resumo rápido da loja",caixa:"Fechamento do caixa do dia",equipe:"Ponto, rotina e pagamentos da equipe",campanhas:"Campanhas e ações de venda",ideias:"Planejamento e resultados de campanhas",info:"Análises e comparativos",alertas:"Pendências e avisos",config:"Metas, horários e ajustes",adm:"Área da gerência",fornecedores:"Boletos e fornecedores",backup:"Cópia de segurança dos dados"};
  const subtituloEl=m.querySelector("#biobelSubtituloPagina"); if(subtituloEl) subtituloEl.textContent=subtituloBase[p]||"";
   const bc=m.querySelector("#biobelBreadcrumb");
   if(bc){
