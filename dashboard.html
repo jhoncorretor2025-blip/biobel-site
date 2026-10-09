@@ -1280,7 +1280,7 @@ body.light-mode .biobel-atendimento-v2-chart-title{color:#172033}
   mediaEl.textContent=moneyBRL(media)+" por dia de funcionamento";
   if(meta>0){
    const diff=proje-meta;
-   metaEl.textContent=(diff>=0?"Estimativa "+moneyBRL(diff)+" acima da meta":"Estimativa "+moneyBRL(Math.abs(diff))+" abaixo da meta);
+   metaEl.textContent=(diff>=0?"Estimativa "+moneyBRL(diff)+" acima da meta":"Estimativa "+moneyBRL(Math.abs(diff))+" abaixo da meta");
    metaEl.style.color=diff>=0?"#27d7a0":"#fbbf24";
   }else{metaEl.textContent="Meta mensal não encontrada";metaEl.style.color="#fbbf24";}
   if(nota)nota.textContent="Estimativa linear pelos dias de funcionamento (segunda a sábado). Não é garantia de resultado; depende dos lançamentos e do movimento futuro.";
