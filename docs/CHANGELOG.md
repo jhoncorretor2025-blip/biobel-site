@@ -1,3 +1,8 @@
+## v11.94 — 10/10/2026
+- 🧹 Removidos da Visão Geral os painéis “Projeção do mês / Previsão de faturamento” e “Pesquisa de satisfação com QR Code”, conforme solicitado.
+- 🧩 Removido o JavaScript exclusivo desses painéis, sem alterar os indicadores principais, vendas, metas ou demais áreas do dashboard.
+- ♻️ Atualizada a versão visível e a referência de cache do dashboard para v11.94.
+
 ## v11.91 — 09/10/2026
 - 👩‍💼 **Nome opcional para a funcionária em teste:** se Alessandra não preencher o nome, o posto aparece como **CLT**. Quando preencher o nome em Equipe → Rotina, as telas da rotina, folha de ponto e lista PIX passam a mostrar o nome informado.
 - 🔄 Mantida a chave interna da rotina/folha de ponto para não perder checklists e registros ao trocar de CLT para o nome da funcionária.
