@@ -1,3 +1,8 @@
+## v11.95 — 10/10/2026
+- 🔗 Adicionados links de continuidade no final da Central de Ideias e da área Vendas — Campanhas, conectando as páginas nos dois sentidos.
+- 📱 Os atalhos usam cartões responsivos com explicação clara do próximo passo e botões de navegação.
+- ♻️ Atualizadas as referências de cache dos scripts dessas páginas para v11.95.
+
 ## v11.94 — 10/10/2026
 - 🧹 Removidos da Visão Geral os painéis “Projeção do mês / Previsão de faturamento” e “Pesquisa de satisfação com QR Code”, conforme solicitado.
 - 🧩 Removido o JavaScript exclusivo desses painéis, sem alterar os indicadores principais, vendas, metas ou demais áreas do dashboard.
