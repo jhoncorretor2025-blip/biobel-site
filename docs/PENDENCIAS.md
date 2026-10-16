@@ -6,3 +6,7 @@
 - **Contraste que sobrou:** botões com texto branco sobre verde/vermelho/azul (`#059669`, `#10b981`, `#e11d48`, `#2f78e0`, `#8b5cf6`: 2,3–4,3:1) e **63 textos fracos no modo claro** (ex.: verde-água `#27d7a0` sobre branco = 1,85:1 no selo de conexão).
 - **Versões desencontradas:** o código tinha `?v=11.73` (42×), `11.74`, `11.75`, `11.76` e `BIOBEL_VERSION v11.67`; a v11.77 unificou, mas quem trocar versão deve usar a troca ampla (`?v=11\.\d+`).
 
+
+## 🟡 Atualização v12.00
+- O lembrete de inatividade funciona dentro das páginas abertas; não envia notificações com o navegador fechado. Para push real, configurar backend/serviço de notificações.
+- A autenticação segura, permissões efetivas e sincronização central continuam exigindo backend; não simular segurança no front-end.
