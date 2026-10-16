@@ -197,6 +197,8 @@ body.light-mode [style*="color:#93a3ba"]{color:#334155!important}
    <button type="button" id="btnMostrarSenhaAdm" onclick="alternarMostrarSenhaAdm()" aria-label="Mostrar senha" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:#7e92aa;">👁️</button>
   </div>
   <button onclick="fazerLoginAdm()" class="mt-4 w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-3 rounded-xl font-semibold text-sm">Entrar</button>
+  <button type="button" onclick="solicitarRecuperacaoSenhaAdm()" style="width:100%;margin-top:10px;background:transparent;border:1px solid #29405e;color:#93c5fd;border-radius:11px;padding:10px;font-size:12px;font-weight:800;cursor:pointer;">Esqueci minha senha</button>
+  <div id="admRecuperacaoAviso" role="status" aria-live="polite" style="display:none;margin-top:10px;padding:10px 12px;border:1px solid #29405e;border-radius:10px;color:#cbd5e1;font-size:11px;line-height:1.5;"></div>
   <div id="admLoginErro" style="color:#fb7185;font-size:12.5px;margin-top:10px;text-align:center;min-height:16px;"></div>
  </div>
 
@@ -1185,4 +1187,25 @@ body.light-mode .adm-v1162-tag{background:#e7f8f1;color:#087f5b;border-color:#b7
 })();
 </script>
 
+
+<script>
+/* Recuperação de acesso da Gerência Biobel — fluxo compatível com hospedagem estática. */
+function solicitarRecuperacaoSenhaAdm(){
+  var aviso=document.getElementById('admRecuperacaoAviso');
+  if(!aviso)return;
+  aviso.style.display='block';
+  aviso.textContent='Por segurança, a senha atual não será enviada por e-mail. Este site está hospedado como página estática e não possui serviço de redefinição automática configurado. Você pode enviar uma solicitação para o e-mail autorizado; será necessário confirmar sua identidade e redefinir a senha manualmente ou configurar um serviço seguro de autenticação.';
+  var assunto=encodeURIComponent('Recuperação de acesso — Administração Biobel');
+  var corpo=encodeURIComponent('Olá, preciso recuperar o acesso à Área da Gerência da Biobel. Por favor, confirme minha identidade e me oriente sobre a redefinição segura da senha.');
+  var link=document.createElement('a');
+  link.href='mailto:Alesandra2015.fraga@gmail.com?subject='+assunto+'&body='+corpo;
+  link.textContent='Abrir e-mail para solicitar recuperação';
+  link.style.cssText='display:inline-block;margin-top:8px;color:#27d7a0;font-weight:800;text-decoration:underline;';
+  var existente=aviso.querySelector('a');
+  if(existente)existente.remove();
+  aviso.appendChild(document.createElement('br'));
+  aviso.appendChild(link);
+  link.focus();
+}
+</script>
 </body></html>
