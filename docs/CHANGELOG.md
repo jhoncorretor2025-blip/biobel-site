@@ -1,3 +1,8 @@
+## v11.96 — 16/10/2026
+- 🔐 Adicionado o botão **Esqueci minha senha** na tela da Área da Gerência.
+- ✉️ O botão explica o limite da hospedagem estática e oferece um link para solicitar recuperação ao e-mail autorizado, sem enviar nem revelar a senha atual.
+- ♻️ Atualizadas as referências de cache dos scripts da administração para v11.96.
+
 ## v11.95 — 10/10/2026
 - 🔗 Adicionados links de continuidade no final da Central de Ideias e da área Vendas — Campanhas, conectando as páginas nos dois sentidos.
 - 📱 Os atalhos usam cartões responsivos com explicação clara do próximo passo e botões de navegação.
