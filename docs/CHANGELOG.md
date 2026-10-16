@@ -1,3 +1,10 @@
+## v11.97 — 16/10/2026
+- 🔐 Adicionado painel de Segurança e Acessos à Administração.
+- 🧾 Registrados neste navegador os logins, tentativas malsucedidas, saídas e expirações de sessão, com histórico limitado aos 100 eventos mais recentes.
+- 👤 Documentados os perfis Master, Gerência e Funcionária e suas permissões previstas; a conta Master existente foi preservada.
+- ⏱️ Exibido o limite de sessão administrativa de 2 horas e registrado o encerramento automático.
+- ♻️ Atualizadas as referências de cache dos scripts da Administração para v11.97.
+
 ## v11.96 — 16/10/2026
 - 🔐 Adicionado o botão **Esqueci minha senha** na tela da Área da Gerência.
 - ✉️ O botão explica o limite da hospedagem estática e oferece um link para solicitar recuperação ao e-mail autorizado, sem enviar nem revelar a senha atual.
