@@ -2828,6 +2828,46 @@ function alternarMostrarSenhaAdm(){
 const ADM_USUARIOS_VALIDOS = [
  { usuario:'alesandra', senha:'jhonmeulindo', nomeExibicao:'Alesandra', perfil:'master' }
 ];
+
+/* ===== Segurança ADM v11.97: perfis, histórico local e sessão limitada ===== */
+const ADM_PERFIS_ACESSO = {
+ master:{nome:'Master',descricao:'Acesso total à administração, fornecedores e áreas internas.',permissoes:['dashboard','administracao','fornecedores','equipe','configuracoes']},
+ gerencia:{nome:'Gerência',descricao:'Acesso às rotinas administrativas e financeiras autorizadas.',permissoes:['dashboard','administracao','financeiro']},
+ funcionaria:{nome:'Funcionária',descricao:'Acesso apenas às ferramentas operacionais liberadas para a equipe.',permissoes:['rotina','equipe','tarefas']}
+};
+const ADM_HISTORICO_KEY='biobel_adm_historico_acessos_v1';
+function registrarEventoSegurancaAdm(evento,usuario){
+ try{
+  const lista=JSON.parse(localStorage.getItem(ADM_HISTORICO_KEY)||'[]');
+  lista.unshift({data:new Date().toISOString(),evento:String(evento||'Evento'),usuario:String(usuario||sessionStorage.getItem('biobel_adm_usuario_logado')||'Não identificado'),pagina:location.pathname});
+  localStorage.setItem(ADM_HISTORICO_KEY,JSON.stringify(lista.slice(0,100)));
+  if(typeof renderHistoricoSegurancaAdm==='function')renderHistoricoSegurancaAdm();
+ }catch(e){console.warn('Não foi possível registrar evento de segurança.',e);}
+}
+function lerHistoricoSegurancaAdm(){
+ try{return JSON.parse(localStorage.getItem(ADM_HISTORICO_KEY)||'[]').slice(0,100);}catch(e){return [];}
+}
+function renderHistoricoSegurancaAdm(){
+ const el=document.getElementById('admHistoricoAcessos');
+ if(!el)return;
+ const lista=lerHistoricoSegurancaAdm();
+ if(!lista.length){el.innerHTML='<p style="font-size:12px;color:#93a3ba;">Nenhum evento registrado neste navegador ainda.</p>';return;}
+ el.innerHTML='<div style="overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr style="color:#93a3ba;text-align:left"><th style="padding:8px">Data/hora</th><th style="padding:8px">Evento</th><th style="padding:8px">Usuário</th></tr></thead><tbody>'+lista.map(x=>'<tr style="border-top:1px solid #1e2c42"><td style="padding:8px;white-space:nowrap;color:#93a3ba">'+new Date(x.data).toLocaleString('pt-BR')+'</td><td style="padding:8px;color:#dce5f2">'+String(x.evento).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))+'</td><td style="padding:8px;color:#dce5f2">'+String(x.usuario).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))+'</td></tr>').join('')+'</tbody></table></div>';
+}
+function limparHistoricoSegurancaAdm(){
+ if(sessionStorage.getItem('biobel_perfil')!=='master'){mostrarToast('Apenas o perfil Master pode limpar o histórico.');return;}
+ confirmarBiobel('Limpar o histórico de acessos salvo neste navegador?',()=>{
+  localStorage.removeItem(ADM_HISTORICO_KEY);renderHistoricoSegurancaAdm();registrarEventoSegurancaAdm('Histórico de acessos limpo');
+ });
+}
+function renderPerfisSegurancaAdm(){
+ const el=document.getElementById('admPerfisAcesso');
+ if(!el)return;
+ el.innerHTML=Object.keys(ADM_PERFIS_ACESSO).map(k=>{const p=ADM_PERFIS_ACESSO[k];return '<div style="background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:12px"><strong style="color:#dce5f2;font-size:12px">'+p.nome+'</strong><p style="color:#93a3ba;font-size:11px;margin-top:5px">'+p.descricao+'</p><p style="color:#27d7a0;font-size:10px;margin-top:7px">Permissões previstas: '+p.permissoes.join(', ')+'</p></div>'}).join('');
+ const status=document.getElementById('admPerfilAtual');
+ if(status)status.textContent='Perfil ativo nesta sessão: '+(ADM_PERFIS_ACESSO[sessionStorage.getItem('biobel_perfil')]||ADM_PERFIS_ACESSO.master).nome+'. No momento, apenas a conta Master está cadastrada neste login.';
+}
+
 /* ===== Sessão administrativa — expiração automática em 2 horas ===== */
 const ADM_SESSAO_MAX_MS = 2 * 60 * 60 * 1000;
 function iniciarTemporizadorSessaoAdm(){
@@ -2838,6 +2878,7 @@ function sessaoAdmExpirada(){
  return !ts || (Date.now()-ts)>=ADM_SESSAO_MAX_MS;
 }
 function encerrarSessaoAdmPorTempo(){
+ registrarEventoSegurancaAdm('Sessão expirada automaticamente');
  ['biobel_logged_in','biobel_adm_autenticado','biobel_adm_usuario_logado','biobel_perfil','biobel_acesso_total','biobel_adm_login_ts'].forEach(k=>sessionStorage.removeItem(k));
  const login=document.getElementById('admLoginWrap'), app=document.getElementById('admConteudoWrap');
  if(login)login.style.display='block';
@@ -2863,11 +2904,15 @@ function fazerLoginAdm(){
   sessionStorage.setItem('biobel_perfil', encontrado.perfil || 'admin');
   sessionStorage.setItem('biobel_acesso_total', encontrado.perfil === 'master' ? 'yes' : 'no');
   iniciarTemporizadorSessaoAdm();
+  registrarEventoSegurancaAdm('Login realizado', encontrado.nomeExibicao);
   document.getElementById('admLoginUser').value='';
   document.getElementById('admLoginPass').value='';
   if(erroEl) erroEl.textContent='';
   mostrarConteudoAdm();
+  renderPerfisSegurancaAdm();
+  renderHistoricoSegurancaAdm();
  } else {
+  registrarEventoSegurancaAdm('Tentativa de login malsucedida', usuario || 'Usuário não informado');
   if(erroEl) erroEl.textContent = 'Usuário ou senha incorretos.';
  }
 }
@@ -2875,6 +2920,8 @@ setInterval(verificarSessaoAdm, 60 * 1000);
 
 function sairAdm(){
  confirmarBiobel('Sair da área da gerência?', ()=>{
+  registrarEventoSegurancaAdm('Logout manual');
+  sessionStorage.removeItem('biobel_adm_login_ts');
   sessionStorage.removeItem('biobel_logged_in');
   sessionStorage.removeItem('biobel_adm_autenticado');
   sessionStorage.removeItem('biobel_adm_usuario_logado');
