@@ -1,3 +1,7 @@
+## v11.98 — 16/10/2026
+- 🚪 Adicionado atalho destacado e persistente **Sair da conta** na área autenticada da Administração, com identificação da conta conectada.
+- ♻️ Atualizadas as referências de cache dos scripts da Administração para v11.98.
+
 ## v11.97 — 16/10/2026
 - 🔐 Adicionado painel de Segurança e Acessos à Administração.
 - 🧾 Registrados neste navegador os logins, tentativas malsucedidas, saídas e expirações de sessão, com histórico limitado aos 100 eventos mais recentes.
