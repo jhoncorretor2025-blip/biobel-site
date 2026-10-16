@@ -217,6 +217,21 @@ body.light-mode [style*="color:#93a3ba"]{color:#334155!important}
    </div>
   </div>
 
+  <section class="adv-card" id="admSegurancaPainel" style="margin-top:12px;border-color:rgba(39,215,160,.28);">
+   <div class="adv-card-title"><h3>🔐 Segurança e acessos</h3><span>Perfis previstos, eventos recentes e duração da sessão administrativa</span></div>
+   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:14px;">
+    <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:12px"><strong style="color:#dce5f2;font-size:12px">⏱️ Sessão administrativa</strong><p style="font-size:11px;color:#93a3ba;margin-top:5px">Expira após 2 horas do login. O prazo não é prorrogado por atividade.</p><p id="admSessaoStatus" style="font-size:10px;color:#27d7a0;margin-top:7px">Verificação automática ativa nesta página.</p></div>
+    <div style="background:#0b1728;border:1px solid #1e2c42;border-radius:12px;padding:12px"><strong style="color:#dce5f2;font-size:12px">👤 Perfil atual</strong><p id="admPerfilAtual" style="font-size:11px;color:#93a3ba;margin-top:5px">Carregando perfil...</p></div>
+   </div>
+   <h4 style="font-size:12px;font-weight:800;color:#dce5f2;margin:12px 0 8px">Perfis de acesso previstos</h4>
+   <div id="admPerfisAcesso" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px"></div>
+   <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:18px">
+    <h4 style="font-size:12px;font-weight:800;color:#dce5f2">🧾 Histórico de acessos neste navegador</h4>
+    <button type="button" onclick="limparHistoricoSegurancaAdm()" class="bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-lg text-xs font-semibold">Limpar histórico</button>
+   </div>
+   <p style="font-size:10px;color:#93a3ba;margin:5px 0 10px">Registra logins, tentativas malsucedidas, saídas e expirações. O histórico fica neste navegador; não é um registro central entre dispositivos.</p>
+   <div id="admHistoricoAcessos"></div>
+  </section>
   <nav class="adm-shortcut-nav no-print" aria-label="Atalhos da área ADM" style="position:relative;top:auto;z-index:1;background:rgba(13,26,44,.96);border:1px solid #1c2c42;border-radius:14px;padding:8px 12px;margin:10px 0 12px;">
    <div class="adm-shortcut-group">
     <span class="adm-shortcut-group-label">👁️ Visão</span>
@@ -940,7 +955,7 @@ body.light-mode [style*="color:#93a3ba"]{color:#334155!important}
 <script src="biobel-recognition.js?v=11.92"></script>
 <script src="biobel-planilha-leitura.js?v=11.92"></script>
 <script src="biobel-planilha-processamento.js?v=11.92"></script>
-<script src="biobel-planilha-comparacao.js?v=11.96"></script><script src="biobel-app.js?v=11.96"></script><script>
+<script src="biobel-planilha-comparacao.js?v=11.97"></script><script src="biobel-app.js?v=11.97"></script><script>
 (function(){
  function cardsFuncionarios(){
   const wrap=document.getElementById('conteudoGrupo-funcionarios');
