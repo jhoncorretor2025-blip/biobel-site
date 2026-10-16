@@ -1,5 +1,5 @@
 /* Biobel — shell compartilhado. v11.91 */
-const BIOBEL_VERSION="v11.91";
+const BIOBEL_VERSION="v12.00";
 (function(){
 "use strict";
 const PAGES={dashboard:"dashboard.html",caixa:"operacao.html",equipe:"equipe.html",campanhas:"vendas.html",ideias:"ideias.html",info:"analises.html",alertas:"alertas.html",config:"config.html",adm:"administracao.html",backup:"backup.html"};
@@ -11,6 +11,47 @@ const p=document.body&&document.body.dataset?document.body.dataset.biobelPage:"d
 const ROOT=(document.body&&document.body.dataset&&document.body.dataset.biobelRoot)||"./";
 const pageHref=k=>ROOT+PAGES[k];
 const a=k=>p===k?" active":"";
+
+/* Lembrete de inatividade: após 30 min sem interação, oferece atalho para as atividades da equipe. */
+let biobelInatividadeTimer=null;
+let biobelAvisoInatividadeVisivel=false;
+const BIOBEL_INATIVIDADE_MS=30*60*1000;
+function fecharAvisoInatividadeBiobel(){
+ const el=document.getElementById("biobelAvisoInatividade");
+ if(el)el.remove();
+ biobelAvisoInatividadeVisivel=false;
+}
+function agendarAvisoInatividadeBiobel(){
+ if(biobelInatividadeTimer)clearTimeout(biobelInatividadeTimer);
+ biobelInatividadeTimer=setTimeout(mostrarAvisoInatividadeBiobel,BIOBEL_INATIVIDADE_MS);
+}
+function mostrarAvisoInatividadeBiobel(){
+ if(document.hidden){agendarAvisoInatividadeBiobel();return;}
+ const existente=document.getElementById("biobelAvisoInatividade");
+ if(existente){biobelAvisoInatividadeVisivel=true;return;}
+ biobelAvisoInatividadeVisivel=true;
+ const aviso=document.createElement("aside");
+ aviso.id="biobelAvisoInatividade";
+ aviso.className="no-print";
+ aviso.setAttribute("role","status");
+ aviso.setAttribute("aria-live","polite");
+ aviso.style.cssText="position:fixed;right:18px;bottom:18px;z-index:10050;width:min(390px,calc(100vw - 28px));padding:16px;background:#0b1728;color:#e2e8f0;border:1px solid #27d7a0;border-radius:16px;box-shadow:0 14px 44px rgba(0,0,0,.38);font-family:inherit;";
+ aviso.innerHTML='<div style="display:flex;align-items:flex-start;gap:10px"><div style="font-size:24px" aria-hidden="true">🌿</div><div style="flex:1;min-width:0"><strong style="display:block;font-size:14px;color:#fff;margin-bottom:5px">Está sem atividades?</strong><p style="font-size:12px;line-height:1.5;color:#cbd5e1;margin:0 0 12px">Não sabe o que fazer agora? Confira a rotina e as atividades da equipe da Biobel.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><a id="biobelIrAtividades" href="'+pageHref("equipe")+'#listaAtividadesGerencia" style="display:inline-flex;align-items:center;justify-content:center;background:#059669;color:#fff;border-radius:9px;padding:9px 12px;text-decoration:none;font-size:12px;font-weight:800">📋 Ver atividades da equipe</a><button id="biobelFecharAvisoInatividade" type="button" style="background:#172338;color:#cbd5e1;border:1px solid #334155;border-radius:9px;padding:9px 12px;font-size:12px;cursor:pointer">Agora não</button></div></div></div>';
+ document.body.appendChild(aviso);
+ const fechar=document.getElementById("biobelFecharAvisoInatividade");
+ if(fechar)fechar.addEventListener("click",()=>{fecharAvisoInatividadeBiobel();agendarAvisoInatividadeBiobel();});
+ const ir=document.getElementById("biobelIrAtividades");
+ if(ir)ir.addEventListener("click",()=>{if(biobelInatividadeTimer)clearTimeout(biobelInatividadeTimer);});
+}
+function configurarLembreteInatividadeBiobel(){
+ if(window.__biobelInatividadeConfigurado)return;
+ window.__biobelInatividadeConfigurado=true;
+ const houveAtividade=()=>{fecharAvisoInatividadeBiobel();agendarAvisoInatividadeBiobel();};
+ ["pointerdown","keydown","click","scroll","touchstart"].forEach(evt=>document.addEventListener(evt,houveAtividade,{passive:true,capture:true}));
+ document.addEventListener("visibilitychange",()=>{if(!document.hidden)agendarAvisoInatividadeBiobel();});
+ agendarAvisoInatividadeBiobel();
+}
+
 function montar(){
  const m=document.getElementById("biobel-shell"); if(!m||m.dataset.ready==="yes") return;
  m.innerHTML =
@@ -106,6 +147,7 @@ function montar(){
  const versaoTela=document.getElementById("versaoSistemaTela");
  if(versaoTela) versaoTela.textContent=BIOBEL_VERSION;
  m.dataset.ready="yes";
+ configurarLembreteInatividadeBiobel();
 }
 // Rede de proteção: se o biobel-app.js não terminar de carregar (erro de sintaxe, erro logo no início, arquivo
 // faltando...), o selo ficaria "Conectando..." pra sempre com tudo zerado — e parece que a planilha não está
