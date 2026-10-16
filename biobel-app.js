@@ -2860,6 +2860,34 @@ function limparHistoricoSegurancaAdm(){
   localStorage.removeItem(ADM_HISTORICO_KEY);renderHistoricoSegurancaAdm();registrarEventoSegurancaAdm('Histórico de acessos limpo');
  });
 }
+/* ===== Dados da conta e alteração local de senha ===== */
+function alterarSenhaAdministrador(){
+ const atual=document.getElementById('admSenhaAtual');
+ const nova=document.getElementById('admSenhaNova');
+ const confirmar=document.getElementById('admSenhaConfirmar');
+ const status=document.getElementById('admSenhaStatus');
+ if(!atual||!nova||!confirmar||!status)return;
+ const senhaSalva=localStorage.getItem('biobel_adm_senha_local_v1')||'jhonmeulindo';
+ if(atual.value!==senhaSalva){status.textContent='A senha atual informada não confere.';status.style.color='#fb7185';return;}
+ if(nova.value.length<10){status.textContent='Use pelo menos 10 caracteres para a nova senha.';status.style.color='#fb7185';return;}
+ if(nova.value!==confirmar.value){status.textContent='A confirmação está diferente da nova senha.';status.style.color='#fb7185';return;}
+ if(nova.value===atual.value){status.textContent='Escolha uma senha diferente da atual.';status.style.color='#fbbf24';return;}
+ try{
+  localStorage.setItem('biobel_adm_senha_local_v1',nova.value);
+  registrarEventoSegurancaAdm('Senha administrativa alterada neste navegador');
+  atual.value='';nova.value='';confirmar.value='';
+  status.textContent='Senha alterada neste navegador. Use a nova senha neste mesmo navegador.';
+  status.style.color='#27d7a0';
+ }catch(e){status.textContent='Não foi possível salvar a alteração neste navegador.';status.style.color='#fb7185';}
+}
+function preencherDadosAdministrador(){
+ const nome=document.getElementById('admDadosNome');
+ const usuario=document.getElementById('admDadosUsuario');
+ const email=document.getElementById('admDadosEmail');
+ if(nome)nome.textContent=sessionStorage.getItem('biobel_adm_usuario_logado')||'Alesandra';
+ if(usuario)usuario.textContent='alesandra';
+ if(email)email.textContent='Alesandra2015.fraga@gmail.com';
+}
 function renderPerfisSegurancaAdm(){
  const el=document.getElementById('admPerfisAcesso');
  if(!el)return;
@@ -2895,7 +2923,7 @@ function fazerLoginAdm(){
  const usuario = (document.getElementById('admLoginUser').value||'').trim().toLowerCase();
  const senha = document.getElementById('admLoginPass').value||'';
  const erroEl = document.getElementById('admLoginErro');
- const encontrado = ADM_USUARIOS_VALIDOS.find(u=>u.usuario===usuario && u.senha===senha);
+ const encontrado = ADM_USUARIOS_VALIDOS.find(u=>u.usuario===usuario && u.senha===(localStorage.getItem('biobel_adm_senha_local_v1') || u.senha));
  if(encontrado){
   // Usuário Master: um único login libera o painel normal e toda a área interna.
   sessionStorage.setItem('biobel_logged_in', 'yes');
@@ -2911,6 +2939,7 @@ function fazerLoginAdm(){
   mostrarConteudoAdm();
   renderPerfisSegurancaAdm();
   renderHistoricoSegurancaAdm();
+  preencherDadosAdministrador();
  } else {
   registrarEventoSegurancaAdm('Tentativa de login malsucedida', usuario || 'Usuário não informado');
   if(erroEl) erroEl.textContent = 'Usuário ou senha incorretos.';
