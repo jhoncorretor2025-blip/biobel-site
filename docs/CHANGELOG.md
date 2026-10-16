@@ -1,3 +1,10 @@
+## v12.00 — 16/10/2026
+- ⏳ Adicionado ao shell compartilhado um lembrete após 30 minutos sem interação: “Está sem atividades? Não sabe o que fazer agora?” com atalho direto para as atividades da equipe.
+- 🔁 O lembrete reinicia após interação do usuário e pode ser adiado; volta a aparecer se houver novo período de inatividade.
+- 🔢 Atualizada a versão oficial do shell para v12.00 e invalidado o cache do Service Worker.
+- 🔄 Atualizada a referência de cache do shell nas páginas principais do sistema.
+- ⚠️ A mensagem aparece enquanto o sistema estiver aberto; notificações com o navegador fechado exigem serviço push/backend e permissão do usuário.
+
 ## v11.99 — 16/10/2026
 - 👤 Adicionada seção **Dados do administrador** com nome, usuário e e-mail de recuperação.
 - 🔑 Adicionado formulário para alterar a senha, confirmar a nova senha e exigir no mínimo 10 caracteres.
