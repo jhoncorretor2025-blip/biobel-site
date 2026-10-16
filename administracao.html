@@ -230,6 +230,24 @@ body.light-mode [style*="color:#93a3ba"]{color:#334155!important}
    </div>
    <h4 style="font-size:12px;font-weight:800;color:#dce5f2;margin:12px 0 8px">Perfis de acesso previstos</h4>
    <div id="admPerfisAcesso" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px"></div>
+   <div style="margin-top:16px;padding:14px;background:#0b1728;border:1px solid #1e2c42;border-radius:14px">
+    <h4 style="font-size:13px;font-weight:900;color:#dce5f2;margin-bottom:10px">👤 Dados do administrador</h4>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-bottom:14px">
+     <div><span style="display:block;font-size:10px;color:#93a3ba">Nome</span><strong id="admDadosNome" style="font-size:12px;color:#dce5f2">Alesandra</strong></div>
+     <div><span style="display:block;font-size:10px;color:#93a3ba">Usuário</span><strong id="admDadosUsuario" style="font-size:12px;color:#dce5f2">alesandra</strong></div>
+     <div><span style="display:block;font-size:10px;color:#93a3ba">E-mail de recuperação</span><strong id="admDadosEmail" style="font-size:12px;color:#dce5f2;overflow-wrap:anywhere">Alesandra2015.fraga@gmail.com</strong></div>
+    </div>
+    <h4 style="font-size:12px;font-weight:900;color:#dce5f2;margin:8px 0">🔑 Alterar senha do administrador</h4>
+    <label for="admSenhaAtual" style="display:block;font-size:11px;color:#93a3ba;margin:8px 0 4px">Senha atual</label>
+    <input id="admSenhaAtual" type="password" autocomplete="current-password" placeholder="Digite a senha atual" style="width:100%;background:#07111f;border:1px solid #29405e;border-radius:9px;padding:10px;color:#dce5f2">
+    <label for="admSenhaNova" style="display:block;font-size:11px;color:#93a3ba;margin:8px 0 4px">Nova senha (mínimo 10 caracteres)</label>
+    <input id="admSenhaNova" type="password" autocomplete="new-password" placeholder="Crie uma nova senha" style="width:100%;background:#07111f;border:1px solid #29405e;border-radius:9px;padding:10px;color:#dce5f2">
+    <label for="admSenhaConfirmar" style="display:block;font-size:11px;color:#93a3ba;margin:8px 0 4px">Confirmar nova senha</label>
+    <input id="admSenhaConfirmar" type="password" autocomplete="new-password" placeholder="Digite novamente a nova senha" style="width:100%;background:#07111f;border:1px solid #29405e;border-radius:9px;padding:10px;color:#dce5f2">
+    <button type="button" onclick="alterarSenhaAdministrador()" style="width:100%;margin-top:12px;background:#059669;color:#fff;border:0;border-radius:9px;padding:11px;font-size:12px;font-weight:900;cursor:pointer">💾 Salvar nova senha</button>
+    <p id="admSenhaStatus" role="status" aria-live="polite" style="font-size:11px;margin-top:8px;color:#93a3ba"></p>
+    <p style="font-size:10px;line-height:1.5;color:#fbbf24;margin-top:8px">⚠️ Esta versão estática salva a alteração somente neste navegador. Para alterar a senha de forma segura e sincronizar em todos os dispositivos, é necessária autenticação com backend; não use esta opção como proteção definitiva.</p>
+   </div>
    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:18px">
     <h4 style="font-size:12px;font-weight:800;color:#dce5f2">🧾 Histórico de acessos neste navegador</h4>
     <button type="button" onclick="limparHistoricoSegurancaAdm()" class="bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-lg text-xs font-semibold">Limpar histórico</button>
@@ -960,7 +978,7 @@ body.light-mode [style*="color:#93a3ba"]{color:#334155!important}
 <script src="biobel-recognition.js?v=11.92"></script>
 <script src="biobel-planilha-leitura.js?v=11.92"></script>
 <script src="biobel-planilha-processamento.js?v=11.92"></script>
-<script src="biobel-planilha-comparacao.js?v=11.98"></script><script src="biobel-app.js?v=11.98"></script><script>
+<script src="biobel-planilha-comparacao.js?v=11.99"></script><script src="biobel-app.js?v=11.99"></script><script>
 (function(){
  function cardsFuncionarios(){
   const wrap=document.getElementById('conteudoGrupo-funcionarios');
