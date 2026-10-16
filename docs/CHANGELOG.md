@@ -1,3 +1,9 @@
+## v11.99 — 16/10/2026
+- 👤 Adicionada seção **Dados do administrador** com nome, usuário e e-mail de recuperação.
+- 🔑 Adicionado formulário para alterar a senha, confirmar a nova senha e exigir no mínimo 10 caracteres.
+- ⚠️ A alteração de senha nesta versão estática é local ao navegador; o aviso explica que a sincronização entre dispositivos exige autenticação segura no backend.
+- ♻️ Atualizadas as referências de cache da Administração para v11.99.
+
 ## v11.98 — 16/10/2026
 - 🚪 Adicionado atalho destacado e persistente **Sair da conta** na área autenticada da Administração, com identificação da conta conectada.
 - ♻️ Atualizadas as referências de cache dos scripts da Administração para v11.98.
