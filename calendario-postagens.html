@@ -51,7 +51,7 @@ function render(){
  $('dayTitle').textContent=dayNames[idx]+' • '+nice(date);
  const rows=dayRows(selectedDate);$('empty').hidden=rows.length>0;
  $('rows').innerHTML=rows.map((r,i)=>'<tr data-index="'+i+'"><td><input type="time" aria-label="Horário" data-field="time" value="'+esc(r.time||'09:00')+'"></td><td><input type="text" aria-label="Postagem ou campanha" data-field="title" placeholder="Ex.: Bom dia / campanha X" value="'+esc(r.title||'')+'"></td><td><select aria-label="Canal" data-field="channel">'+opts(['Instagram Feed','Instagram Stories','Reels','WhatsApp','Facebook','TikTok','Outro'],r.channel||'Instagram Stories')+'</select></td><td><select class="status" aria-label="Status" data-field="status">'+opts(['Planejada','Arte em produção','Aprovada','Agendada','Publicada'],r.status||'Planejada')+'</select></td><td><textarea aria-label="Legenda e observações" data-field="notes" placeholder="Legenda, link, produto, responsável...">'+esc(r.notes||'')+'</textarea></td><td><button class="btn delete" data-delete="'+i+'" aria-label="Excluir postagem">✕</button></td></tr>').join('');
- $('rows').querySelectorAll('[data-field]').forEach(el=>el.addEventListener('change',()=>{const i=Number(el.closest('tr').dataset.index);dayRows(selectedDate)[i][el.dataset.field]=el.value;persist();renderDaysOnly()}));
+ $('rows').querySelectorAll('[data-field]').forEach(el=>el.addEventListener('change',()=>{const i=Number(el.closest('tr').dataset.index);dayRows(selectedDate)[i][el.dataset.field]=el.value;persist();render()}));
  $('rows').querySelectorAll('[data-delete]').forEach(b=>b.addEventListener('click',()=>{dayRows(selectedDate).splice(Number(b.dataset.delete),1);persist();render()}));
 }
 function renderDaysOnly(){const dates=weekDates();$('days').innerHTML=dates.map((d,i)=>{const iso=toISO(d),n=dayRows(iso).length;return '<button class="day '+(iso===selectedDate?'active':'')+'" data-date="'+iso+'"><strong>'+shortDays[i]+'</strong><small>'+nice(d)+'</small><span class="count">'+n+' '+(n===1?'postagem':'postagens')+'</span></button>'}).join('');$('days').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{selectedDate=b.dataset.date;render()}))}
@@ -82,7 +82,7 @@ function checkReminders(){
  else if(next){box.className='notice good';box.textContent='⏰ Próxima postagem planejada hoje: '+next.time+' — '+(next.title||'Sem título')+'.';}
  else {box.className='notice good';box.textContent='✓ Nenhuma postagem pendente com horário vencido para hoje.';}
  if('Notification' in window&&Notification.permission==='granted'){
-   const due=rows.filter(r=>r.time&&r.status!=='Publicada'&&r.status!=='Agendada'&&Math.abs(now-new Date(today+'T'+r.time+':00'))<30000);
+   const due=rows.filter(r=>r.time&&r.status!=='Publicada'&&r.status!=='Agendada'&&Math.abs(now-new Date(today+'T'+r.time+':00'))<120000);
    due.forEach(r=>{const key='biobel_post_alert_'+today+'_'+r.time+'_'+r.title;if(!localStorage.getItem(key)){new Notification('Biobel — hora de postar',{body:r.time+' • '+(r.title||'Postagem planejada')});localStorage.setItem(key,'1')}});
  }
 }
