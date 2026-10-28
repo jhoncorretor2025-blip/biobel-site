@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0ea97a"><title>Biobel — Calendário de Postagens</title>
+<link rel="stylesheet" href="biobel-design-system.css"><link rel="stylesheet" href="biobel-app.css">
+<style>
+:root{color-scheme:dark;--bg:#0f172a;--panel:#101f34;--line:#263b56;--muted:#8fa2ba;--text:#eef5ff;--green:#27d7a0}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;padding:22px}
+.wrap{max-width:1200px;margin:auto}.top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px}.eyebrow{color:var(--green);font-size:11px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}.title{font-size:clamp(23px,4vw,32px);font-weight:900;margin:4px 0}.sub{color:var(--muted);margin:0}.btn{border:1px solid var(--line);border-radius:10px;background:#14263c;color:var(--text);padding:10px 13px;font-weight:800;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:7px}.btn.primary{background:#0e9f75;border-color:#0e9f75;color:#fff}.btn:hover{filter:brightness(1.12)}.panel{background:#0d1b2e;border:1px solid var(--line);border-radius:16px;padding:16px;margin:14px 0}.panel h2{font-size:16px;margin:0 0 5px}.hint{font-size:12px;color:var(--muted);margin:0 0 12px}.drive-row{display:flex;gap:9px;flex-wrap:wrap}.drive-row input{flex:1;min-width:220px}.field,input,select,textarea{font:inherit;color:var(--text);background:#0a1728;border:1px solid #30445f;border-radius:9px;padding:10px;width:100%;min-width:0}.weekbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}.weekrange{font-size:14px;font-weight:900}.days{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}.day{border:1px solid var(--line);background:#101f34;border-radius:12px;padding:10px 8px;text-align:left;color:var(--text);cursor:pointer;min-width:0}.day.active{border-color:var(--green);background:rgba(39,215,160,.12);box-shadow:inset 0 0 0 1px rgba(39,215,160,.25)}.day strong{display:block;font-size:12px}.day small{color:var(--muted);font-size:11px}.day .count{display:inline-block;margin-top:7px;background:#20354d;border-radius:999px;padding:2px 7px;font-size:10px}.day.active .count{background:#075e49;color:#b9ffeb}.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:780px}th,td{padding:8px;border-bottom:1px solid #1c2c42;text-align:left;vertical-align:top}th{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.05em}td input,td select,td textarea{padding:8px;font-size:12px}td textarea{resize:vertical;min-height:38px}.status{min-width:120px}.actions{display:flex;gap:6px;flex-wrap:wrap}.delete{color:#ffb4b4;border-color:#633b48}.empty{text-align:center;padding:28px;color:var(--muted)}.foot{font-size:11px;color:var(--muted);margin-top:12px}.toast{color:#8ef0cb;font-size:12px;min-height:18px;margin-top:8px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.label{display:block;color:var(--muted);font-size:11px;font-weight:800;margin-bottom:5px}
+@media(max-width:760px){body{padding:13px}.days{grid-template-columns:repeat(3,minmax(0,1fr))}.panel{padding:12px}.top .btn{flex:1}.formgrid{grid-template-columns:1fr}}
+@media(max-width:380px){.days{gap:5px}.day{padding:8px 6px}}
+body.light-mode{--bg:#f3f6fa;--panel:#fff;--line:#d7e1ec;--muted:#64748b;--text:#172033;color-scheme:light;background:var(--bg);color:var(--text)}body.light-mode .panel,body.light-mode .day{background:#fff}body.light-mode .field,body.light-mode input,body.light-mode select,body.light-mode textarea{background:#fff;color:#172033;border-color:#d7e1ec}body.light-mode .btn{background:#f8fafc;color:#172033;border-color:#d7e1ec}body.light-mode .btn.primary{background:#0e9f75;color:white}body.light-mode th,body.light-mode td{border-color:#e2e8f0}
+</style></head>
+<body><main class="wrap">
+<header class="top"><div><div class="eyebrow">📣 Marketing • Biobel</div><h1 class="title">Calendário de postagens</h1><p class="sub">Organize o que será publicado, em qual horário e em cada dia da semana.</p></div><a class="btn" href="dashboard.html">← Voltar ao painel</a></header>
+<section class="panel"><h2>📁 Pasta de postagens no Google Drive</h2><p class="hint">Cole abaixo o link da pasta compartilhada da equipe. Ele ficará salvo neste navegador para facilitar o acesso da próxima vez.</p><div class="drive-row"><input id="driveUrl" type="url" placeholder="Cole aqui o link da pasta do Google Drive"><button class="btn" id="saveDrive">💾 Salvar link</button><button class="btn primary" id="openDrive">↗ Abrir pasta</button></div><div class="toast" id="driveMsg" aria-live="polite"></div></section>
+<section class="panel"><div class="weekbar"><div><h2>🗓️ Planejamento semanal</h2><div class="hint" style="margin:4px 0 0">De segunda a sábado • os dados são salvos automaticamente neste navegador.</div></div><div class="actions"><button class="btn" id="prevWeek">← Semana anterior</button><button class="btn" id="thisWeek">Semana atual</button><button class="btn" id="nextWeek">Próxima semana →</button></div></div><div class="weekrange" id="weekRange"></div><div class="days" id="days" style="margin-top:10px"></div></section>
+<section class="panel"><div class="weekbar"><div><h2 id="dayTitle">Postagens do dia</h2><p class="hint" style="margin:4px 0 0">Preencha como em uma planilha: horário, campanha, canal e observações.</p></div><div class="actions"><button class="btn primary" id="addRow">＋ Adicionar postagem</button><button class="btn" id="exportCsv">⬇ Exportar semana (.CSV)</button></div></div>
+<div class="table-wrap"><table><thead><tr><th style="width:105px">Horário</th><th style="width:190px">Postagem / campanha</th><th style="width:135px">Canal</th><th style="width:140px">Status</th><th>Legenda / observações</th><th style="width:60px">Ação</th></tr></thead><tbody id="rows"></tbody></table><div id="empty" class="empty" hidden>Nenhuma postagem planejada para este dia. Clique em “Adicionar postagem” para começar ✨</div></div><div class="foot">💡 Dica: use o status para acompanhar o andamento. As informações ficam no navegador deste dispositivo; para não perder os dados, exporte a semana periodicamente.</div><div class="toast" id="saveMsg" aria-live="polite"></div></section>
+</main>
+<script>
+(function(){
+const STORAGE='biobel_social_calendar_v1', DRIVE='biobel_social_drive_url_v1';
+const dayNames=['Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+const shortDays=['Seg','Ter','Qua','Qui','Sex','Sáb'];
+let selectedDate=toISO(startOfWeek(new Date()));
+let all=readData();
+const $=id=>document.getElementById(id);
+function toISO(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function parseISO(s){const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d,12)}
+function startOfWeek(d){const x=new Date(d.getFullYear(),d.getMonth(),d.getDate(),12);const dow=(x.getDay()+6)%7;x.setDate(x.getDate()-dow);return x}
+function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}
+function nice(d){return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}
+function weekDates(){const start=startOfWeek(parseISO(selectedDate));return Array.from({length:6},(_,i)=>addDays(start,i))}
+function readData(){try{return JSON.parse(localStorage.getItem(STORAGE)||'{}')}catch(e){return {}}}
+function persist(){localStorage.setItem(STORAGE,JSON.stringify(all));$('saveMsg').textContent='✓ Alterações salvas neste navegador.'}
+function dayRows(date){return Array.isArray(all[date])?all[date]:[]}
+function render(){
+ const dates=weekDates(),start=dates[0],end=dates[5];
+ $('weekRange').textContent='Semana: '+nice(start)+' a '+nice(end)+' de '+end.getFullYear();
+ $('days').innerHTML=dates.map((d,i)=>{const iso=toISO(d),n=dayRows(iso).length;return '<button class="day '+(iso===selectedDate?'active':'')+'" data-date="'+iso+'"><strong>'+shortDays[i]+'</strong><small>'+nice(d)+'</small><span class="count">'+n+' '+(n===1?'postagem':'postagens')+'</span></button>'}).join('');
+ $('days').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{selectedDate=b.dataset.date;render()}));
+ const date=parseISO(selectedDate),idx=(date.getDay()+6)%7;
+ $('dayTitle').textContent=dayNames[idx]+' • '+nice(date);
+ const rows=dayRows(selectedDate);$('empty').hidden=rows.length>0;
+ $('rows').innerHTML=rows.map((r,i)=>'<tr data-index="'+i+'"><td><input type="time" aria-label="Horário" data-field="time" value="'+esc(r.time||'09:00')+'"></td><td><input type="text" aria-label="Postagem ou campanha" data-field="title" placeholder="Ex.: Bom dia / campanha X" value="'+esc(r.title||'')+'"></td><td><select aria-label="Canal" data-field="channel">'+opts(['Instagram Feed','Instagram Stories','Reels','WhatsApp','Facebook','TikTok','Outro'],r.channel||'Instagram Stories')+'</select></td><td><select class="status" aria-label="Status" data-field="status">'+opts(['Planejada','Arte em produção','Aprovada','Agendada','Publicada'],r.status||'Planejada')+'</select></td><td><textarea aria-label="Legenda e observações" data-field="notes" placeholder="Legenda, link, produto, responsável...">'+esc(r.notes||'')+'</textarea></td><td><button class="btn delete" data-delete="'+i+'" aria-label="Excluir postagem">✕</button></td></tr>').join('');
+ $('rows').querySelectorAll('[data-field]').forEach(el=>el.addEventListener('change',()=>{const i=Number(el.closest('tr').dataset.index);dayRows(selectedDate)[i][el.dataset.field]=el.value;persist();renderDaysOnly()}));
+ $('rows').querySelectorAll('[data-delete]').forEach(b=>b.addEventListener('click',()=>{if(confirm('Excluir esta postagem?')){dayRows(selectedDate).splice(Number(b.dataset.delete),1);persist();render()}}));
+}
+function renderDaysOnly(){const dates=weekDates();$('days').innerHTML=dates.map((d,i)=>{const iso=toISO(d),n=dayRows(iso).length;return '<button class="day '+(iso===selectedDate?'active':'')+'" data-date="'+iso+'"><strong>'+shortDays[i]+'</strong><small>'+nice(d)+'</small><span class="count">'+n+' '+(n===1?'postagem':'postagens')+'</span></button>'}).join('');$('days').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{selectedDate=b.dataset.date;render()}))}
+function opts(values,selected){return values.map(v=>'<option '+(v===selected?'selected':'')+'>'+v+'</option>').join('')}
+function esc(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+$('addRow').addEventListener('click',()=>{dayRows(selectedDate).push({time:'09:00',title:'',channel:'Instagram Stories',status:'Planejada',notes:''});persist();render();const inputs=$('rows').querySelectorAll('[data-field="title"]');if(inputs.length)inputs[inputs.length-1].focus()});
+$('prevWeek').addEventListener('click',()=>{selectedDate=toISO(addDays(startOfWeek(parseISO(selectedDate)),-7));render()});
+$('nextWeek').addEventListener('click',()=>{selectedDate=toISO(addDays(startOfWeek(parseISO(selectedDate)),7));render()});
+$('thisWeek').addEventListener('click',()=>{selectedDate=toISO(startOfWeek(new Date()));render()});
+$('saveDrive').addEventListener('click',()=>{const url=$('driveUrl').value.trim();if(url&&!/^https:\/\/(drive\.google\.com|docs\.google\.com)\//i.test(url)){ $('driveMsg').textContent='Use um link válido do Google Drive ou Google Docs.';return}localStorage.setItem(DRIVE,url);$('driveMsg').textContent=url?'✓ Link salvo neste navegador.':'Link removido.'});
+$('openDrive').addEventListener('click',()=>{const url=$('driveUrl').value.trim()||localStorage.getItem(DRIVE)||'';if(!url){$('driveMsg').textContent='Cole e salve primeiro o link da pasta do Google Drive.';return}if(!/^https:\/\/(drive\.google\.com|docs\.google\.com)\//i.test(url)){$('driveMsg').textContent='O link precisa ser do Google Drive ou Google Docs.';return}window.open(url,'_blank','noopener,noreferrer')});
+$('driveUrl').value=localStorage.getItem(DRIVE)||'';
+$('exportCsv').addEventListener('click',()=>{const dates=weekDates(),lines=[['Data','Dia','Horário','Postagem/Campanha','Canal','Status','Legenda/Observações']];dates.forEach((d,i)=>dayRows(toISO(d)).forEach(r=>lines.push([toISO(d),dayNames[i],r.time||'',r.title||'',r.channel||'',r.status||'',r.notes||''])));const csv='\uFEFF'+lines.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\r\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='biobel-calendario-'+toISO(weekDates()[0])+'.csv';a.click();URL.revokeObjectURL(url)});
+render();
+})();
+</script></body></html>
