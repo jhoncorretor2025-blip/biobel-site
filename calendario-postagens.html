@@ -11,9 +11,25 @@
 @media(max-width:760px){body{padding:13px}.days{grid-template-columns:repeat(3,minmax(0,1fr))}.panel{padding:12px}.top .btn{flex:1}.formgrid{grid-template-columns:1fr}}
 @media(max-width:380px){.days{gap:5px}.day{padding:8px 6px}}
 body.light-mode{--bg:#f3f6fa;--panel:#fff;--line:#d7e1ec;--muted:#64748b;--text:#172033;color-scheme:light;background:var(--bg);color:var(--text)}body.light-mode .panel,body.light-mode .day{background:#fff}body.light-mode .field,body.light-mode input,body.light-mode select,body.light-mode textarea{background:#fff;color:#172033;border-color:#d7e1ec}body.light-mode .btn{background:#f8fafc;color:#172033;border-color:#d7e1ec}body.light-mode .btn.primary{background:#0e9f75;color:white}body.light-mode th,body.light-mode td{border-color:#e2e8f0}
+
+/* Modo claro da página de calendário */
+body.light-mode{background:#f1f5f9!important;color:#172033!important;color-scheme:light}
+body.light-mode .panel{background:#fff;border-color:#dbe4ee}
+body.light-mode .day{background:#f8fafc;color:#172033;border-color:#dbe4ee}
+body.light-mode .day.active{background:#dcfce7;border-color:#10b981}
+body.light-mode .day small,body.light-mode .sub,body.light-mode .hint,body.light-mode .foot{color:#64748b}
+body.light-mode .field,body.light-mode input,body.light-mode select,body.light-mode textarea{background:#fff;color:#172033;border-color:#cbd5e1}
+body.light-mode .btn{background:#fff;color:#172033;border-color:#cbd5e1}
+body.light-mode .btn.primary{background:#059669;color:#fff;border-color:#059669}
+body.light-mode .notice{background:#fffbeb;color:#92400e;border-color:#fcd34d}
+body.light-mode .notice.good{background:#ecfdf5;color:#065f46;border-color:#6ee7b7}
+body.light-mode th,body.light-mode td{border-color:#e2e8f0}
+body.light-mode .empty{color:#64748b}
+body.light-mode .day .count{background:#e2e8f0;color:#334155}
+body.light-mode .day.active .count{background:#bbf7d0;color:#166534}
 </style></head>
 <body><main class="wrap">
-<header class="top"><div><div class="eyebrow">📣 Marketing • Biobel</div><h1 class="title">Calendário de postagens</h1><p class="sub">Organize o que será publicado, em qual horário e em cada dia da semana.</p></div><a class="btn" href="dashboard.html">← Voltar ao painel</a></header>
+<header class="top"><div><div class="eyebrow">📣 Marketing • Biobel</div><h1 class="title">Calendário de postagens</h1><p class="sub">Organize o que será publicado, em qual horário e em cada dia da semana.</p></div><div class="actions"><button class="btn" id="toggleTheme" type="button">☀️ Modo claro</button><a class="btn" href="dashboard.html">← Voltar ao painel</a></div></header>
 <section class="panel"><h2>📁 Pasta de postagens no Google Drive</h2><p class="hint">Cole abaixo o link da pasta compartilhada da equipe. Ele ficará salvo neste navegador para facilitar o acesso da próxima vez.</p><div class="drive-row"><input id="driveUrl" type="url" placeholder="Cole aqui o link da pasta do Google Drive"><button class="btn" id="saveDrive">💾 Salvar link</button><button class="btn primary" id="openDrive">↗ Abrir pasta</button></div><div class="toast" id="driveMsg" aria-live="polite"></div></section>
 <section class="panel"><div class="weekbar"><div><h2>🗓️ Planejamento semanal</h2><div class="hint" style="margin:4px 0 0">De segunda a sábado • os dados são salvos automaticamente neste navegador.</div></div><div class="actions"><button class="btn" id="prevWeek">← Semana anterior</button><button class="btn" id="thisWeek">Semana atual</button><button class="btn" id="nextWeek">Próxima semana →</button></div></div><div class="weekbar"><div class="weekrange" id="weekRange"></div><div class="actions"><button class="btn" id="viewWeek">📅 Semana</button><button class="btn" id="viewMonth">🗓️ Mês</button></div></div><div class="days" id="days" style="margin-top:10px"></div></section>
 <section class="panel"><div class="weekbar"><div><h2 id="dayTitle">Postagens do dia</h2><p class="hint" style="margin:4px 0 0">Preencha como em uma planilha: horário, campanha, canal e observações.</p></div><div class="actions"><button class="btn" id="addRow">＋ Adicionar postagem</button><select id="templateSelect" aria-label="Modelo de postagem" style="width:auto;max-width:210px"><option value="">✨ Usar modelo...</option><option value="bomdia">Bom dia</option><option value="produto">Produto em destaque</option><option value="oferta">Oferta do dia</option><option value="reels">Reels de demonstração</option><option value="semanal">Promoção da semana</option></select><button class="btn" id="duplicateLast">⧉ Duplicar última</button><button class="btn" id="exportCsv">⬇ Exportar semana (.CSV)</button></div></div><div class="notice" id="alertsBox" role="status">🔔 Configure os lembretes para receber avisos de postagens próximas.</div><div class="actions" style="margin-bottom:12px"><button class="btn primary" id="enableAlerts">🔔 Ativar lembretes</button><span class="hint" style="margin:0;align-self:center">Os avisos funcionam enquanto esta página estiver aberta.</span></div>
@@ -94,6 +110,11 @@ $('enableAlerts').addEventListener('click',async()=>{if(!('Notification' in wind
 checkReminders();setInterval(checkReminders,30000);
 $('driveUrl').value=localStorage.getItem(DRIVE)||'';
 $('exportCsv').addEventListener('click',()=>{const dates=weekDates(),lines=[['Data','Dia','Horário','Postagem/Campanha','Canal','Status','Legenda/Observações']];dates.forEach((d,i)=>dayRows(toISO(d)).forEach(r=>lines.push([toISO(d),dayNames[i],r.time||'',r.title||'',r.channel||'',r.status||'',r.notes||''])));const csv='\uFEFF'+lines.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\r\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='biobel-calendario-'+toISO(weekDates()[0])+'.csv';a.click();URL.revokeObjectURL(url)});
+
+const THEME_KEY='biobel_calendario_theme_v1';
+function applyTheme(mode){document.body.classList.toggle('light-mode',mode==='light');const btn=$('toggleTheme');if(btn)btn.textContent=mode==='light'?'🌙 Modo escuro':'☀️ Modo claro';}
+applyTheme(localStorage.getItem(THEME_KEY)||'dark');
+$('toggleTheme').addEventListener('click',()=>{const mode=document.body.classList.contains('light-mode')?'dark':'light';localStorage.setItem(THEME_KEY,mode);applyTheme(mode)});
 render();
 })();
 </script></body></html>
