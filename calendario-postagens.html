@@ -24,7 +24,7 @@ body.light-mode{--bg:#f3f6fa;--panel:#fff;--line:#d7e1ec;--muted:#64748b;--text:
 const STORAGE='biobel_social_calendar_v1', DRIVE='biobel_social_drive_url_v1';
 const dayNames=['Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
 const shortDays=['Seg','Ter','Qua','Qui','Sex','Sáb'];
-let selectedDate=toISO(startOfWeek(new Date()));
+let selectedDate=toISO(new Date());
 let all=readData();
 const $=id=>document.getElementById(id);
 function toISO(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
@@ -36,7 +36,9 @@ function weekDates(){const start=startOfWeek(parseISO(selectedDate));return Arra
 function readData(){try{return JSON.parse(localStorage.getItem(STORAGE)||'{}')}catch(e){return {}}}
 function persist(){localStorage.setItem(STORAGE,JSON.stringify(all));$('saveMsg').textContent='✓ Alterações salvas neste navegador.'}
 function dayRows(date){return Array.isArray(all[date])?all[date]:[]}
+function ensureDefaultPosts(date){if(Object.prototype.hasOwnProperty.call(all,date))return;all[date]=[{time:'09:00',title:'Bom dia — postar arte de bom dia',channel:'Instagram Stories',status:'Planejada',notes:'Publicar a arte de bom dia da Biobel.'},{time:'10:00',title:'Promoção com desconto — postar arte da promoção',channel:'Instagram Stories',status:'Planejada',notes:'Conferir desconto, validade e produtos antes de publicar a arte promocional.'}];persist()}
 function render(){
+ ensureDefaultPosts(selectedDate);
  const dates=weekDates(),start=dates[0],end=dates[5];
  const monthStart=new Date(parseISO(selectedDate).getFullYear(),parseISO(selectedDate).getMonth(),1,12);
  const monthEnd=new Date(parseISO(selectedDate).getFullYear(),parseISO(selectedDate).getMonth()+1,0,12);
